@@ -21,6 +21,8 @@ WooCommerce shipping rates calculator based on products shipping class and dista
 * Set distances unit: Mile, Kilometre.
 * Set travel mode: Driving, Walking, Bicycling.
 * Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
+* Set cost calculation type per order or per item.
+* Translation ready.
 
 == Installation ==
 = Minimum Requirements =
@@ -36,12 +38,28 @@ In the search field type “WooCommerce Shipping Distance Matrix” and click Se
 
 = MANUAL INSTALLATION =
 
-* Download the plugin zip file to your computer
-* Go to the WordPress admin panel menu Plugins > Add New
-* Choose upload
-* Upload the plugin zip file, the plugin will now be installed
-* After installation has finished, click the ‘activate plugin’ link
+1. Download the plugin zip file to your computer
+1. Go to the WordPress admin panel menu Plugins > Add New
+1. Choose upload
+1. Upload the plugin zip file, the plugin will now be installed
+1. After installation has finished, click the ‘activate plugin’ link
 
 == Screenshots ==
 1. Settings panel top area
 2. Settings panel bottom area
+
+== Changelog ==
+
+= 1.1.0 - 2018-01-05 =
+
+* Feature - Set cost calculation type per order or per item.
+* Localization - Update POT file.
+
+= 1.0.0 - 2018-01-05 =
+
+* Feature - Set shipping cost by product shipping class.
+* Feature - Set unlimited distances ranges.
+* Feature - Set origin info by coordinates.
+* Feature - Set distances unit: Mile, Kilometre.
+* Feature - Set travel mode: Driving, Walking, Bicycling.
+* Feature - Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
