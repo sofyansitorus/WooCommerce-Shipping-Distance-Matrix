@@ -305,14 +305,14 @@ class Wcsdm extends WC_Shipping_Method {
 			return false;
 		}
 
-		$distance = $this->calculate_distance( $package['destination'] );
+		$api_request = $this->api_request( $package['destination'] );
 
-		if ( ! $distance ) {
+		if ( ! $api_request ) {
 			return false;
 		}
 
 		foreach ( $package['contents'] as $item ) {
-			$shipping_cost = $this->calculate_cost( $distance, $item['data']->get_shipping_class_id() );
+			$shipping_cost = $this->calculate_cost( $api_request['distance'], $item['data']->get_shipping_class_id() );
 			if ( is_wp_error( $shipping_cost ) ) {
 				return false;
 			}
@@ -330,41 +330,47 @@ class Wcsdm extends WC_Shipping_Method {
 	public function calculate_shipping( $package = array() ) {
 		$shipping_cost_total = 0;
 
-		$distance = $this->calculate_distance( $package['destination'] );
+		$api_request = $this->api_request( $package['destination'] );
 
-		if ( ! $distance ) {
+		if ( ! $api_request ) {
 			return;
 		}
 
-		$meta_data = array();
+		$calc_type = $this->get_option( 'calc_type' );
 
 		foreach ( $package['contents'] as $hash => $item ) {
-			$shipping_cost = $this->calculate_cost( $distance, $item['data']->get_shipping_class_id() );
+			$shipping_cost = $this->calculate_cost( $api_request['distance'], $item['data']->get_shipping_class_id() );
 			if ( is_wp_error( $shipping_cost ) ) {
 				return;
 			}
-			$shipping_cost_total += $shipping_cost * $item['quantity'];
-			$meta_data[ $hash ]   = array(
-				'quantity'      => $item['quantity'],
-				'shipping_cost' => $shipping_cost,
-			);
+			switch ( $calc_type ) {
+				case 'per_order':
+					if ( $shipping_cost > $shipping_cost_total ) {
+						$shipping_cost_total = $shipping_cost;
+					}
+					break;
+				default:
+					$shipping_cost_total += $shipping_cost * $item['quantity'];
+					$api_request[ $hash ] = array(
+						'quantity'      => $item['quantity'],
+						'shipping_cost' => $shipping_cost,
+					);
+					break;
+			}
 		}
 
 		$rate = array(
 			'id'        => $this->id,
 			'label'     => $this->title,
 			'cost'      => $shipping_cost_total,
-			'meta_data' => $meta_data,
+			'meta_data' => $api_request,
 		);
 
 		// Register the rate.
 		$this->add_rate( $rate );
 
 		/**
-		 * Developers can add additional flat rates based on this one via this action since @version 2.4.
-		 *
-		 * Previously there were (overly complex) options to add additional rates however this was not user.
-		 * friendly and goes against what Flat Rate Shipping was originally intended for.
+		 * Developers can add additional flat rates based on this one via this action.
 		 *
 		 * This example shows how you can add an extra rate based on this flat rate via custom function:
 		 *
@@ -384,7 +390,7 @@ class Wcsdm extends WC_Shipping_Method {
 	}
 
 	/**
-	 * Calculate rates by distance
+	 * Calculate cost by distance and shipping class
 	 *
 	 * @since    1.0.0
 	 * @param int $distance Distance of shipping destination.
@@ -409,12 +415,13 @@ class Wcsdm extends WC_Shipping_Method {
 	}
 
 	/**
-	 * Calculate destination distance
+	 * Making HTTP request to Google Maps Distance Matrix API
 	 *
 	 * @since    1.0.0
 	 * @param array $destination Destination info in assciative array: address, address_2, city, state, postcode, country.
+	 * @return array
 	 */
-	private function calculate_distance( $destination ) {
+	private function api_request( $destination ) {
 
 		$destination = $this->get_destination_info( $destination );
 
@@ -453,17 +460,33 @@ class Wcsdm extends WC_Shipping_Method {
 			return false;
 		}
 
+		$distance  = 0;
+		$api_units = $this->get_option( 'gmaps_api_units' );
+
 		foreach ( $response['rows'] as $rows ) {
 			foreach ( $rows['elements'] as $element ) {
 				if ( 'OK' === $element['status'] ) {
-					if ( 'metric' === $this->get_option( 'gmaps_api_units' ) ) {
-						return (int) str_replace( ' km', '', $element['distance']['text'] );
+					if ( 'metric' === $api_units ) {
+						$element_distance = ceil( str_replace( ' km', '', $element['distance']['text'] ) );
+						if ( $element_distance > $distance ) {
+							$distance = $element_distance;
+						}
 					}
-					if ( 'imperial' === $this->get_option( 'gmaps_api_units' ) ) {
-						return (int) str_replace( ' mi', '', $element['distance']['text'] );
+					if ( 'imperial' === $api_units ) {
+						$element_distance = ceil( str_replace( ' mi', '', $element['distance']['text'] ) );
+						if ( $element_distance > $distance ) {
+							$distance = $element_distance;
+						}
 					}
 				}
 			}
+		}
+
+		if ( $distance ) {
+			return array(
+				'distance' => $distance,
+				'response' => $response,
+			);
 		}
 
 		return false;
