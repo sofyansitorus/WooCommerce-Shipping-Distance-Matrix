@@ -1,0 +1,47 @@
+=== WooCommerce Shipping Distance Matrix ===
+Contributors: sofyansitorus
+Tags: woocommerce,shipping,woocommerce shipping
+Requires at least: 4.8
+Tested up to: 4.9.1
+Requires PHP: 5.6
+Stable tag: trunk
+License: GPL-2.0+
+License URI: http://www.gnu.org/licenses/gpl-2.0.txt
+
+WooCommerce shipping rates calculator based on products shipping class and distances that calculated using Google Maps Distance Matrix API.
+
+== Description ==
+WooCommerce shipping rates calculator based on products shipping class and distances that calculated using Google Maps Distance Matrix API.
+
+= Features =
+
+* Set shipping cost by product shipping class.
+* Set unlimited distances ranges.
+* Set origin info by coordinates.
+* Set distances unit: Mile, Kilometre.
+* Set travel mode: Driving, Walking, Bicycling.
+* Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
+
+== Installation ==
+= Minimum Requirements =
+
+* WordPress 4.8 or later
+* WooCommerce 3.0 or later
+
+= AUTOMATIC INSTALLATION =
+
+Automatic installation is the easiest option as WordPress handles the file transfers itself and you don’t even need to leave your web browser. To do an automatic install of WooCommerce Shipping Distance Matrix, log in to your WordPress admin panel, navigate to the Plugins menu and click Add New.
+
+In the search field type “WooCommerce Shipping Distance Matrix” and click Search Plugins. You can install it by simply clicking Install Now. After clicking that link you will be asked if you’re sure you want to install the plugin. Click yes and WordPress will automatically complete the installation. After installation has finished, click the ‘activate plugin’ link.
+
+= MANUAL INSTALLATION =
+
+* Download the plugin zip file to your computer
+* Go to the WordPress admin panel menu Plugins > Add New
+* Choose upload
+* Upload the plugin zip file, the plugin will now be installed
+* After installation has finished, click the ‘activate plugin’ link
+
+== Screenshots ==
+1. Settings panel top area
+2. Settings panel bottom area
