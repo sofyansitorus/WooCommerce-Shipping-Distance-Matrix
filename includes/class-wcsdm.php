@@ -158,6 +158,16 @@ class Wcsdm extends WC_Shipping_Method {
 					'indoor'   => __( 'Avoid Indoor', 'wcsdm' ),
 				),
 			),
+			'calc_type'       => array(
+				'title'   => __( 'Calculation type', 'wcsdm' ),
+				'type'    => 'select',
+				'class'   => 'wc-enhanced-select',
+				'default' => 'per_item',
+				'options' => array(
+					'per_item'  => __( 'Per item: Charge shipping for each items individually', 'wcsdm' ),
+					'per_order' => __( 'Per order: Charge shipping for the most expensive shipping cost', 'wcsdm' ),
+				),
+			),
 			'tax_status'       => array(
 				'title'   => __( 'Tax status', 'wcsdm' ),
 				'type'    => 'select',
