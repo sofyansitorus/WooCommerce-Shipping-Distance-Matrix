@@ -1,6 +1,6 @@
 === WooCommerce Shipping Distance Matrix ===
 Contributors: sofyansitorus
-Tags: woocommerce,shipping,woocommerce shipping,local shipping,private shipping,gojek,grab,gojek shipping,grab shipping
+Tags: woocommerce shipping,local shipping,private shipping,gojek shipping,grab shipping
 Requires at least: 4.8
 Tested up to: 4.9.1
 Requires PHP: 5.6
