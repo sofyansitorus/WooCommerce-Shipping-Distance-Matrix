@@ -456,7 +456,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'key'          => rawurlencode( $this->get_option( 'gmaps_api_key' ) ),
 				'units'        => rawurlencode( $this->get_option( 'gmaps_api_units', 'metric' ) ),
 				'mode'         => rawurlencode( $this->get_option( 'gmaps_api_mode' ) ),
-				'mode'         => rawurlencode( implode( ',', $this->get_option( 'gmaps_api_avoid' ) ) ),
+				'avoid'         => rawurlencode( implode( ',', $this->get_option( 'gmaps_api_avoid' ) ) ),
 				'destinations' => rawurlencode( $destination ),
 				'origins'      => rawurlencode( $origins ),
 			), $this->google_api_url
