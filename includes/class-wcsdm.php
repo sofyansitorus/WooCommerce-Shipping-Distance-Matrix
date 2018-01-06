@@ -53,8 +53,6 @@ class Wcsdm extends WC_Shipping_Method {
 
 		$this->enabled = $this->get_option( 'enabled' );
 
-		$this->title = $this->get_option( 'title', $this->method_title );
-
 		$this->instance_id = absint( $instance_id );
 
 		$this->supports = array(
@@ -62,8 +60,6 @@ class Wcsdm extends WC_Shipping_Method {
 			'instance-settings',
 			'instance-settings-modal',
 		);
-
-		$this->tax_status = $this->get_option( 'tax_status' );
 
 		$this->init();
 	}
@@ -168,7 +164,16 @@ class Wcsdm extends WC_Shipping_Method {
 					'per_order' => __( 'Per order: Charge shipping for the most expensive shipping cost', 'wcsdm' ),
 				),
 			),
-			'tax_status'       => array(
+			'show_distance'   => array(
+				'title'   => __( 'Show distance', 'wcsdm' ),
+				'type'    => 'select',
+				'default' => 'no',
+				'options' => array(
+					'yes' => __( 'Yes: Show the distance info to customer during checkout', 'wcsdm' ),
+					'no'  => __( 'No: Do not show the distance info', 'wcsdm' ),
+				),
+			),
+			'tax_status'      => array(
 				'title'   => __( 'Tax status', 'wcsdm' ),
 				'type'    => 'select',
 				'class'   => 'wc-enhanced-select',
@@ -178,12 +183,12 @@ class Wcsdm extends WC_Shipping_Method {
 					'none'    => __( 'None', 'wcsdm' ),
 				),
 			),
-			'shipping_rates'   => array(
+			'shipping_rates'  => array(
 				'title'       => __( 'Shipping Rates', 'wcsdm' ),
 				'type'        => 'title',
 				'description' => __( 'Table rates for each shipping class and maximum distances. Leave blank to disable. Fill 0 (zero) to set as free shipping.', 'wcsdm' ),
 			),
-			'rates'            => array(
+			'rates'           => array(
 				'type' => 'rates_table',
 			),
 		);
@@ -361,7 +366,7 @@ class Wcsdm extends WC_Shipping_Method {
 
 		$rate = array(
 			'id'        => $this->id,
-			'label'     => $this->title,
+			'label'     => ( 'yes' === $this->get_option( 'show_distance' ) ) ? sprintf( '%s (%s)', $this->title, $api_request['distance_text'] ) : $this->title,
 			'cost'      => $shipping_cost_total,
 			'meta_data' => $api_request,
 		);
@@ -478,13 +483,15 @@ class Wcsdm extends WC_Shipping_Method {
 					if ( 'metric' === $api_units ) {
 						$element_distance = ceil( str_replace( ' km', '', $element['distance']['text'] ) );
 						if ( $element_distance > $distance ) {
-							$distance = $element_distance;
+							$distance      = $element_distance;
+							$distance_text = $distance . ' km';
 						}
 					}
 					if ( 'imperial' === $api_units ) {
 						$element_distance = ceil( str_replace( ' mi', '', $element['distance']['text'] ) );
 						if ( $element_distance > $distance ) {
-							$distance = $element_distance;
+							$distance      = $element_distance;
+							$distance_text = $distance . ' mi';
 						}
 					}
 				}
@@ -494,6 +501,7 @@ class Wcsdm extends WC_Shipping_Method {
 		if ( $distance ) {
 			$data = array(
 				'distance' => $distance,
+				'distance_text' => $distance_text,
 				'response' => $response,
 			);
 
