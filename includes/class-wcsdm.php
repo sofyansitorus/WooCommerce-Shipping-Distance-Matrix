@@ -370,9 +370,9 @@ class Wcsdm extends WC_Shipping_Method {
 		$this->add_rate( $rate );
 
 		/**
-		 * Developers can add additional flat rates based on this one via this action.
+		 * Developers can add additional rates via action.
 		 *
-		 * This example shows how you can add an extra rate based on this flat rate via custom function:
+		 * This example shows how you can add an extra rate via custom function:
 		 *
 		 *      add_action( 'woocommerce_wcsdm_shipping_add_rate', 'add_another_custom_flat_rate', 10, 2 );
 		 *
