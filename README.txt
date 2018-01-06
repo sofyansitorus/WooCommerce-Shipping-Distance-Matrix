@@ -53,6 +53,12 @@ In the search field type “WooCommerce Shipping Distance Matrix” and click Se
 
 == Changelog ==
 
+= 1.2.1 - 2018-01-06 =
+
+* Improvement - Add filter to enable city field in shipping calculator form.
+* Fix - Filter destination address, address_2, city, postcode fields for shipping calculator request.
+* Fix - Change wrong API request param from mode to avoid.
+
 = 1.2.0 - 2018-01-06 =
 
 * Feature - Set visibility distance info to customer.
