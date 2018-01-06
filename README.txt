@@ -13,6 +13,8 @@ WooCommerce shipping rates calculator based on products shipping class and dista
 == Description ==
 WooCommerce shipping rates calculator based on products shipping class and distances that calculated using Google Maps Distance Matrix API.
 
+This plugin perfect for online store that use local shipping or private shipping such as selling flower, food & beverage but not limited to.
+
 = Features =
 
 * Set shipping cost by product shipping class.
