@@ -15,6 +15,8 @@ WooCommerce shipping rates calculator based on products shipping class and dista
 
 This plugin perfect for online store that use local shipping or private shipping such as selling flower, food & beverage but not limited to.
 
+For online store that located in Indonesia can use this plugin to use shipping via GOJEK and GRAB. Please note that this plugin is not using GOJEK/GRAB API. The plugin just estimate the distance and then calculating the cost using the table rates defined in the settings.
+
 = Features =
 
 * Set shipping cost by product shipping class.
