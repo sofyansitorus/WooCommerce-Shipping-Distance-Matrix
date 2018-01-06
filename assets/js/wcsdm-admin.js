@@ -1,21 +1,5 @@
 (function ($) {
 	$(document).ready(function () {
-		$(document).on('change', '#rates-list-table tbody .select-item', function (e) {
-			var $tr = $(this).closest('tr');
-			if (this.checked) {
-				$(this).closest('tr').addClass('selected');
-				if ($('#rates-list-table tbody tr.selected').length == $('#rates-list-table tbody tr').length) {
-					$('#rates-list-table thead .select-item').prop({
-						checked: true
-					});
-				}
-			} else {
-				$(this).closest('tr').removeClass('selected');
-				$('#rates-list-table thead .select-item').prop({
-					checked: false
-				});
-			}
-		});
 
 		$(document).on('change', '#rates-list-table thead .select-item', function (e) {
 			if (this.checked) {
