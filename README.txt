@@ -1,6 +1,6 @@
 === WooCommerce Shipping Distance Matrix ===
 Contributors: sofyansitorus
-Tags: woocommerce,shipping,woocommerce shipping
+Tags: woocommerce,shipping,woocommerce shipping,local shipping,private shipping,gojek,grab,gojek shipping,grab shipping
 Requires at least: 4.8
 Tested up to: 4.9.1
 Requires PHP: 5.6
@@ -49,6 +49,11 @@ In the search field type “WooCommerce Shipping Distance Matrix” and click Se
 2. Settings panel bottom area
 
 == Changelog ==
+
+= 1.1.1 - 2018-01-06 =
+
+* Improvement - Enable WP Object Cache for API HTTP request to improve the speed and reduce request count to API server.
+* Fix - Remove unused js code.
 
 = 1.1.0 - 2018-01-05 =
 
