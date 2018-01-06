@@ -435,6 +435,15 @@ class Wcsdm extends WC_Shipping_Method {
 			return false;
 		}
 
+		$cache_key = $destination . '_' . $origins;
+
+		// Check if the data already chached and return it.
+		$cached_data = wp_cache_get( $cache_key, $this->id );
+		if ( false !== $cached_data ) {
+			$this->show_debug( 'Cached Google Maps Distance Matrix API response: ' . wp_json_encode( $cached_data ) );
+			return $cached_data;
+		}
+
 		$request_url = add_query_arg(
 			array(
 				'key'          => rawurlencode( $this->get_option( 'gmaps_api_key' ) ),
@@ -483,10 +492,14 @@ class Wcsdm extends WC_Shipping_Method {
 		}
 
 		if ( $distance ) {
-			return array(
+			$data = array(
 				'distance' => $distance,
 				'response' => $response,
 			);
+
+			wp_cache_set( $cache_key, $data, $this->id ); // Store the data to WP Object Cache for later use.
+
+			return $data;
 		}
 
 		return false;
