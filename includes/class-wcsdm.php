@@ -549,6 +549,18 @@ class Wcsdm extends WC_Shipping_Method {
 
 		$keys = array( 'address', 'address_2', 'city', 'state', 'postcode', 'country' );
 
+		// Filter destination field keys for shipping calculator request.
+		if ( ! empty( $_POST['calc_shipping'] ) && wp_verify_nonce( $_POST['_wpnonce'], 'woocommerce-cart' ) ) {
+			$keys_remove = array( 'address', 'address_2' );
+			if ( ! apply_filters( 'woocommerce_shipping_calculator_enable_city', false ) ) {
+				array_push( $keys_remove, 'city' );
+			}
+			if ( ! apply_filters( 'woocommerce_shipping_calculator_enable_postcode', false ) ) {
+				array_push( $keys_remove, 'postcode' );
+			}
+			$keys = array_diff( $keys, $keys_remove );
+		}
+
 		$country_code = false;
 
 		foreach ( $keys as $key ) {
