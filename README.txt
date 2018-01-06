@@ -24,6 +24,7 @@ This plugin perfect for online store that use local shipping or private shipping
 * Set travel mode: Driving, Walking, Bicycling.
 * Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
 * Set cost calculation type per order or per item.
+* Set visibility distance info to customer.
 * Translation ready.
 
 == Installation ==
@@ -51,6 +52,10 @@ In the search field type “WooCommerce Shipping Distance Matrix” and click Se
 2. Settings panel bottom area
 
 == Changelog ==
+
+= 1.2.0 - 2018-01-06 =
+
+* Feature - Set visibility distance info to customer.
 
 = 1.1.1 - 2018-01-06 =
 
