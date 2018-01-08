@@ -84,8 +84,6 @@ class Wcsdm extends WC_Shipping_Method {
 
 		// Check if this shipping method is availbale for current order.
 		apply_filters( 'woocommerce_shipping_' . $this->id . '_is_available', array( $this, 'check_is_available' ), 10, 2 );
-
-		add_filter( 'woocommerce_shipping_calculator_enable_city', '__return_true' );
 	}
 
 	/**

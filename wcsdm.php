@@ -79,4 +79,7 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 		}
 	}
 	add_action( 'admin_enqueue_scripts', 'wcsdm_admin_enqueue_scripts' );
+
+	// Show city field on the cart shipping calculator.
+	add_filter( 'woocommerce_shipping_calculator_enable_city', '__return_true' );
 }// End if().
