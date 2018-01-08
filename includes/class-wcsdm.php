@@ -83,42 +83,42 @@ class Wcsdm extends WC_Shipping_Method {
 		add_action( 'woocommerce_update_options_shipping_' . $this->id, array( $this, 'process_admin_options' ) );
 
 		// Check if this shipping method is availbale for current order.
-		apply_filters( 'woocommerce_shipping_' . $this->id . '_is_available', array( $this, 'check_is_available' ), 10, 2 );
+		add_filter( 'woocommerce_shipping_' . $this->id . '_is_available', array( $this, 'check_is_available' ), 10, 2 );
 	}
 
 	/**
 	 * Init form fields.
-	 * 
+	 *
 	 * @since    1.0.0
 	 */
 	public function init_form_fields() {
 		$this->instance_form_fields = array(
-			'title'            => array(
+			'title'           => array(
 				'title'       => __( 'Title', 'wcsdm' ),
 				'type'        => 'text',
 				'description' => __( 'This controls the title which the user sees during checkout.', 'wcsdm' ),
 				'default'     => $this->method_title,
 				'desc_tip'    => true,
 			),
-			'gmaps_api_key'    => array(
+			'gmaps_api_key'   => array(
 				'title'       => __( 'API Key', 'wcsdm' ),
 				'type'        => 'text',
 				'description' => __( '<a href="https://developers.google.com/maps/documentation/distance-matrix/get-api-key" target="_blank">Click here</a> to get a Google Maps Distance Matrix API Key.', 'wcsdm' ),
 				'default'     => '',
 			),
-			'origin_lat'       => array(
+			'origin_lat'      => array(
 				'title'       => __( 'Store Location Latitude', 'wcsdm' ),
 				'type'        => 'text',
 				'description' => __( '<a href="http://www.latlong.net/" target="_blank">Click here</a> to get your store location coordinates info.', 'wcsdm' ),
 				'default'     => '',
 			),
-			'origin_lng'       => array(
+			'origin_lng'      => array(
 				'title'       => __( 'Store Location Longitude', 'wcsdm' ),
 				'type'        => 'text',
 				'description' => __( '<a href="http://www.latlong.net/" target="_blank">Click here</a> to get your store location coordinates info.', 'wcsdm' ),
 				'default'     => '',
 			),
-			'gmaps_api_units'  => array(
+			'gmaps_api_units' => array(
 				'title'       => __( 'Distance Units', 'wcsdm' ),
 				'type'        => 'select',
 				'description' => __( 'Google Maps Distance Matrix API distance units parameter.', 'wcsdm' ),
@@ -129,7 +129,7 @@ class Wcsdm extends WC_Shipping_Method {
 					'imperial' => __( 'Miles', 'wcsdm' ),
 				),
 			),
-			'gmaps_api_mode'   => array(
+			'gmaps_api_mode'  => array(
 				'title'       => __( 'Travel Mode', 'wcsdm' ),
 				'type'        => 'select',
 				'description' => __( 'Google Maps Distance Matrix API travel mode parameter.', 'wcsdm' ),
@@ -141,7 +141,7 @@ class Wcsdm extends WC_Shipping_Method {
 					'bicycling' => __( 'Bicycling', 'wcsdm' ),
 				),
 			),
-			'gmaps_api_avoid'  => array(
+			'gmaps_api_avoid' => array(
 				'title'       => __( 'Restrictions', 'wcsdm' ),
 				'type'        => 'multiselect',
 				'description' => __( 'Google Maps Distance Matrix API restrictions parameter.', 'wcsdm' ),
@@ -310,19 +310,6 @@ class Wcsdm extends WC_Shipping_Method {
 			return false;
 		}
 
-		$api_request = $this->api_request( $package['destination'] );
-
-		if ( ! $api_request ) {
-			return false;
-		}
-
-		foreach ( $package['contents'] as $item ) {
-			$shipping_cost = $this->calculate_cost( $api_request['distance'], $item['data']->get_shipping_class_id() );
-			if ( is_wp_error( $shipping_cost ) ) {
-				return false;
-			}
-		}
-
 		return $available;
 	}
 
@@ -428,23 +415,47 @@ class Wcsdm extends WC_Shipping_Method {
 	 */
 	private function api_request( $destination ) {
 
-		$destination = $this->get_destination_info( $destination );
+		$api_key = $this->get_option( 'gmaps_api_key' );
+		if ( empty( $api_key ) ) {
+			return false;
+		}
 
+		$destination = $this->get_destination_info( $destination );
 		if ( empty( $destination ) ) {
 			return false;
 		}
 
 		$origins = $this->get_origin_info();
-
 		if ( empty( $origins ) ) {
 			return false;
 		}
 
-		$cache_key = $destination . '_' . $origins;
+		$travel_mode = $this->get_option( 'gmaps_api_mode', 'driving' );
+
+		$distance_unit = $this->get_option( 'gmaps_api_units', 'metric' );
+
+		$cache_keys = array(
+			$api_key,
+			$destination,
+			$origins,
+			$travel_mode,
+			$distance_unit,
+		);
+
+		$route_avoid = $this->get_option( 'gmaps_api_avoid' );
+		if ( is_array( $route_avoid ) ) {
+			$route_avoid = implode( ',', $route_avoid );
+		}
+		if ( $route_avoid ) {
+			array_push( $cache_keys, $route_avoid );
+		}
+
+		$cache_key = implode( '_', $cache_keys );
 
 		// Check if the data already chached and return it.
 		$cached_data = wp_cache_get( $cache_key, $this->id );
 		if ( false !== $cached_data ) {
+			$this->show_debug( 'Google Maps Distance Matrix API cache key: ' . $cache_key );
 			$this->show_debug( 'Cached Google Maps Distance Matrix API response: ' . wp_json_encode( $cached_data ) );
 			return $cached_data;
 		}
@@ -452,12 +463,13 @@ class Wcsdm extends WC_Shipping_Method {
 		$request_url = add_query_arg(
 			array(
 				'key'          => rawurlencode( $this->get_option( 'gmaps_api_key' ) ),
-				'units'        => rawurlencode( $this->get_option( 'gmaps_api_units', 'metric' ) ),
-				'mode'         => rawurlencode( $this->get_option( 'gmaps_api_mode' ) ),
-				'avoid'         => rawurlencode( implode( ',', $this->get_option( 'gmaps_api_avoid' ) ) ),
+				'units'        => rawurlencode( $distance_unit ),
+				'mode'         => rawurlencode( $travel_mode ),
+				'avoid'        => rawurlencode( $route_avoid ),
 				'destinations' => rawurlencode( $destination ),
 				'origins'      => rawurlencode( $origins ),
-			), $this->google_api_url
+			),
+			$this->google_api_url
 		);
 		$this->show_debug( 'Google Maps Distance Matrix API request URL: ' . $request_url );
 
@@ -474,20 +486,19 @@ class Wcsdm extends WC_Shipping_Method {
 			return false;
 		}
 
-		$distance  = 0;
-		$api_units = $this->get_option( 'gmaps_api_units' );
+		$distance = 0;
 
 		foreach ( $response['rows'] as $rows ) {
 			foreach ( $rows['elements'] as $element ) {
 				if ( 'OK' === $element['status'] ) {
-					if ( 'metric' === $api_units ) {
+					if ( 'metric' === $distance_unit ) {
 						$element_distance = ceil( str_replace( ' km', '', $element['distance']['text'] ) );
 						if ( $element_distance > $distance ) {
 							$distance      = $element_distance;
 							$distance_text = $distance . ' km';
 						}
 					}
-					if ( 'imperial' === $api_units ) {
+					if ( 'imperial' === $distance_unit ) {
 						$element_distance = ceil( str_replace( ' mi', '', $element['distance']['text'] ) );
 						if ( $element_distance > $distance ) {
 							$distance      = $element_distance;
@@ -500,9 +511,9 @@ class Wcsdm extends WC_Shipping_Method {
 
 		if ( $distance ) {
 			$data = array(
-				'distance' => $distance,
+				'distance'      => $distance,
 				'distance_text' => $distance_text,
-				'response' => $response,
+				'response'      => $response,
 			);
 
 			wp_cache_set( $cache_key, $data, $this->id ); // Store the data to WP Object Cache for later use.
