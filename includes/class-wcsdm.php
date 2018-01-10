@@ -49,7 +49,7 @@ class Wcsdm extends WC_Shipping_Method {
 		$this->method_title = __( 'Shipping Distance Matrix', 'wcsdm' );
 
 		// Description shown in admin.
-		$this->method_description = __( 'Shipping rates calculator based on distance and product shipping class.', 'wcsdm' );
+		$this->method_description = __( 'Shipping rates calculator based on distance matrix and product shipping class.', 'wcsdm' );
 
 		$this->enabled = $this->get_option( 'enabled' );
 
@@ -76,8 +76,17 @@ class Wcsdm extends WC_Shipping_Method {
 		$this->init_settings(); // This is part of the settings API. Loads settings you previously init.
 
 		// Define user set variables.
-		$this->title      = $this->get_option( 'title' );
-		$this->tax_status = $this->get_option( 'tax_status' );
+		$this->title           = $this->get_option( 'title' );
+		$this->gmaps_api_key   = $this->get_option( 'gmaps_api_key' );
+		$this->origin_lat      = $this->get_option( 'origin_lat' );
+		$this->origin_lng      = $this->get_option( 'origin_lng' );
+		$this->gmaps_api_units = $this->get_option( 'gmaps_api_units' );
+		$this->gmaps_api_mode  = $this->get_option( 'gmaps_api_mode' );
+		$this->gmaps_api_avoid = $this->get_option( 'gmaps_api_avoid' );
+		$this->calc_type       = $this->get_option( 'calc_type' );
+		$this->show_distance   = $this->get_option( 'show_distance' );
+		$this->table_rates     = $this->get_option( 'table_rates' );
+		$this->tax_status      = $this->get_option( 'tax_status' );
 
 		// Save settings in admin if you have any defined.
 		add_action( 'woocommerce_update_options_shipping_' . $this->id, array( $this, 'process_admin_options' ) );
