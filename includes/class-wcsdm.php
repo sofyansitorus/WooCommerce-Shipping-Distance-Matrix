@@ -611,14 +611,25 @@ class Wcsdm extends WC_Shipping_Method {
 	 */
 	private function get_origin_info() {
 		$origin_info = array();
-		$origin_lat  = $this->get_option( 'origin_lat' );
-		$origin_lng  = $this->get_option( 'origin_lng' );
-		if ( empty( $origin_lat ) && empty( $origin_lng ) ) {
-			return false;
+
+		if ( ! empty( $this->origin_lat ) && ! empty( $this->origin_lng ) ) {
+			array_push( $origin_info, $this->origin_lat, $this->origin_lng );
 		}
-		$origin_info[] = $origin_lat;
-		$origin_info[] = $origin_lng;
-		return implode( ',', $origin_info );
+
+		/**
+		 * Developers can modify the origin info via filter hooks.
+		 *
+		 * @since 1.0.1
+		 *
+		 * This example shows how you can modify the shipping origin info via custom function:
+		 *
+		 *      add_action( 'woocommerce_wcsdm_shipping_origin_info', 'modify_shipping_origin_info', 10, 2 );
+		 *
+		 *      function modify_shipping_origin_info( $origin_info, $method ) {
+		 *          return '1600 Amphitheatre Parkway,Mountain View,CA,94043';
+		 *      }
+		 */
+		return apply_filters( 'woocommerce_' . $this->id . '_shipping_origin_info', implode( ',', $origin_info ), $this );
 	}
 
 	/**
