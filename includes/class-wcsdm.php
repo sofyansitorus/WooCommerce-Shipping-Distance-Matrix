@@ -197,8 +197,8 @@ class Wcsdm extends WC_Shipping_Method {
 				'type'        => 'title',
 				'description' => __( 'Table rates for each shipping class and maximum distances. Leave blank to disable. Fill 0 (zero) to set as free shipping.', 'wcsdm' ),
 			),
-			'rates'           => array(
-				'type' => 'rates_table',
+			'table_rates'           => array(
+				'type' => 'table_rates',
 			),
 		);
 	}
@@ -209,7 +209,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @since    1.0.0
 	 * @param string $key Input field key.
 	 */
-	public function generate_rates_table_html( $key ) {
+	public function generate_table_rates_html( $key ) {
 		ob_start();
 		$field_key        = $this->get_field_key( $key );
 		$shipping_classes = WC()->shipping->get_shipping_classes();
@@ -277,7 +277,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @param string $key Input field key.
 	 * @param string $value Input field currenet value.
 	 */
-	public function validate_rates_field( $key, $value ) {
+	public function validate_table_rates_field( $key, $value ) {
 		$field_key = $this->get_field_key( $key );
 		$post_data = $this->get_post_data();
 
@@ -400,7 +400,7 @@ class Wcsdm extends WC_Shipping_Method {
 	private function calculate_cost( $distance, $class_id ) {
 		$class_id = intval( $class_id );
 
-		$rates = $this->get_option( 'rates' );
+		$rates = $this->get_option( 'table_rates' );
 
 		if ( $rates ) {
 			$offset = 0;
