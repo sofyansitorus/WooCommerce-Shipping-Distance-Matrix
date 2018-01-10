@@ -197,7 +197,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'type'        => 'title',
 				'description' => __( 'Table rates for each shipping class and maximum distances. Leave blank to disable. Fill 0 (zero) to set as free shipping.', 'wcsdm' ),
 			),
-			'table_rates'           => array(
+			'table_rates'     => array(
 				'type' => 'table_rates',
 			),
 		);
@@ -275,34 +275,46 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @since    1.0.0
 	 * @param string $key Input field key.
 	 * @param string $value Input field currenet value.
+	 * @throws Exception If the field value is invalid.
+	 * @return array
 	 */
 	public function validate_table_rates_field( $key, $value ) {
-		$field_key = $this->get_field_key( $key );
-		$post_data = $this->get_post_data();
+		try {
+			$field_key = $this->get_field_key( $key );
+			$post_data = $this->get_post_data();
 
-		$rates = array();
+			$rates = array();
 
-		foreach ( $post_data as $post_data_key => $post_data_value ) {
-			if ( 0 === strpos( $post_data_key, $field_key ) ) {
-				$field_key_short = str_replace( $field_key . '_', '', $post_data_key );
-				foreach ( $post_data_value as $index => $row_value ) {
-					$rates[ $index ][ $field_key_short ] = $row_value;
+			foreach ( $post_data as $post_data_key => $post_data_value ) {
+				if ( 0 === strpos( $post_data_key, $field_key ) ) {
+					$field_key_short = str_replace( $field_key . '_', '', $post_data_key );
+					foreach ( $post_data_value as $index => $row_value ) {
+						$rates[ $index ][ $field_key_short ] = $row_value;
+					}
 				}
 			}
-		}
 
-		$rates_filtered = array();
+			$rates_filtered = array();
 
-		foreach ( $rates as $key => $value ) {
-			$value['distance'] = intval( $value['distance'] );
-			if ( ! empty( $value['distance'] ) ) {
-				$rates_filtered[ $value['distance'] ] = $value;
+			foreach ( $rates as $key => $value ) {
+				$value['distance'] = intval( $value['distance'] );
+				if ( ! empty( $value['distance'] ) ) {
+					$rates_filtered[ $value['distance'] ] = $value;
+				}
 			}
+
+			ksort( $rates_filtered );
+
+			$value = array_values( $rates_filtered );
+
+			if ( empty( $value ) ) {
+				throw new Exception( __( 'Shipping Rates is required', 'woogosend' ) );
+			}
+			return $value;
+		} catch ( Exception $e ) {
+			$this->add_error( $e->getMessage() );
+			return $this->table_rates;
 		}
-
-		ksort( $rates_filtered );
-
-		return array_values( $rates_filtered );
 	}
 
 	/**
