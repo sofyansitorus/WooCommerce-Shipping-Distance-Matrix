@@ -212,8 +212,7 @@ class Wcsdm extends WC_Shipping_Method {
 	public function generate_table_rates_html( $key ) {
 		ob_start();
 		$field_key        = $this->get_field_key( $key );
-		$shipping_classes = WC()->shipping->get_shipping_classes();
-		$options          = $this->get_option( $key ); ?>
+		$shipping_classes = WC()->shipping->get_shipping_classes(); ?>
 		<tr valign="top">
 			<td>
 				<table id="rates-list-table" class="widefat wc_input_table" cellspacing="0">
@@ -235,11 +234,11 @@ class Wcsdm extends WC_Shipping_Method {
 						</tr>
 					</thead>
 					<tbody>
-						<?php if ( $options ) : ?>
-						<?php foreach ( $options as $option ) : ?>
+						<?php if ( $this->table_rates ) : ?>
+						<?php foreach ( $this->table_rates as $table_rate ) : ?>
 						<tr>
 						<td class="col-select"><input class="select-item" type="checkbox"></td>
-						<?php foreach ( $option as $key => $value ) : ?>
+						<?php foreach ( $table_rate as $key => $value ) : ?>
 						<td class="col-<?php echo esc_attr( $key ); ?>"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $key ); ?>[]" type="number" value="<?php echo esc_attr( $value ); ?>" min="0"></td>
 						<?php endforeach; ?>
 						</tr>
