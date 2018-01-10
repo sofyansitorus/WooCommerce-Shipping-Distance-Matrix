@@ -80,10 +80,10 @@ class Wcsdm extends WC_Shipping_Method {
 		$this->gmaps_api_key   = $this->get_option( 'gmaps_api_key' );
 		$this->origin_lat      = $this->get_option( 'origin_lat' );
 		$this->origin_lng      = $this->get_option( 'origin_lng' );
-		$this->gmaps_api_units = $this->get_option( 'gmaps_api_units' );
-		$this->gmaps_api_mode  = $this->get_option( 'gmaps_api_mode' );
+		$this->gmaps_api_units = $this->get_option( 'gmaps_api_units', 'metric' );
+		$this->gmaps_api_mode  = $this->get_option( 'gmaps_api_mode', 'driving' );
 		$this->gmaps_api_avoid = $this->get_option( 'gmaps_api_avoid' );
-		$this->calc_type       = $this->get_option( 'calc_type' );
+		$this->calc_type       = $this->get_option( 'calc_type', 'per_item' );
 		$this->show_distance   = $this->get_option( 'show_distance' );
 		$this->table_rates     = $this->get_option( 'table_rates' );
 		$this->tax_status      = $this->get_option( 'tax_status' );
@@ -493,9 +493,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @return array
 	 */
 	private function api_request( $destination ) {
-
-		$api_key = $this->get_option( 'gmaps_api_key' );
-		if ( empty( $api_key ) ) {
+		if ( empty( $this->gmaps_api_key ) ) {
 			return false;
 		}
 
@@ -509,19 +507,15 @@ class Wcsdm extends WC_Shipping_Method {
 			return false;
 		}
 
-		$travel_mode = $this->get_option( 'gmaps_api_mode', 'driving' );
-
-		$distance_unit = $this->get_option( 'gmaps_api_units', 'metric' );
-
 		$cache_keys = array(
-			$api_key,
+			$this->gmaps_api_key,
 			$destination,
 			$origins,
-			$travel_mode,
-			$distance_unit,
+			$this->gmaps_api_mode,
+			$this->gmaps_api_units,
 		);
 
-		$route_avoid = $this->get_option( 'gmaps_api_avoid' );
+		$route_avoid = $this->gmaps_api_avoid;
 		if ( is_array( $route_avoid ) ) {
 			$route_avoid = implode( ',', $route_avoid );
 		}
@@ -541,9 +535,9 @@ class Wcsdm extends WC_Shipping_Method {
 
 		$request_url = add_query_arg(
 			array(
-				'key'          => rawurlencode( $this->get_option( 'gmaps_api_key' ) ),
-				'units'        => rawurlencode( $distance_unit ),
-				'mode'         => rawurlencode( $travel_mode ),
+				'key'          => rawurlencode( $this->gmaps_api_key ),
+				'units'        => rawurlencode( $this->gmaps_api_units ),
+				'mode'         => rawurlencode( $this->gmaps_api_mode ),
 				'avoid'        => rawurlencode( $route_avoid ),
 				'destinations' => rawurlencode( $destination ),
 				'origins'      => rawurlencode( $origins ),
@@ -570,14 +564,14 @@ class Wcsdm extends WC_Shipping_Method {
 		foreach ( $response['rows'] as $rows ) {
 			foreach ( $rows['elements'] as $element ) {
 				if ( 'OK' === $element['status'] ) {
-					if ( 'metric' === $distance_unit ) {
+					if ( 'metric' === $this->gmaps_api_units ) {
 						$element_distance = ceil( str_replace( ' km', '', $element['distance']['text'] ) );
 						if ( $element_distance > $distance ) {
 							$distance      = $element_distance;
 							$distance_text = $distance . ' km';
 						}
 					}
-					if ( 'imperial' === $distance_unit ) {
+					if ( 'imperial' === $this->gmaps_api_units ) {
 						$element_distance = ceil( str_replace( ' mi', '', $element['distance']['text'] ) );
 						if ( $element_distance > $distance ) {
 							$distance      = $element_distance;
