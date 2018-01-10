@@ -411,14 +411,12 @@ class Wcsdm extends WC_Shipping_Method {
 			return;
 		}
 
-		$calc_type = $this->get_option( 'calc_type' );
-
 		foreach ( $package['contents'] as $hash => $item ) {
 			$shipping_cost = $this->calculate_cost( $api_request['distance'], $item['data']->get_shipping_class_id() );
 			if ( is_wp_error( $shipping_cost ) ) {
 				return;
 			}
-			switch ( $calc_type ) {
+			switch ( $this->calc_type ) {
 				case 'per_order':
 					if ( $shipping_cost > $shipping_cost_total ) {
 						$shipping_cost_total = $shipping_cost;
@@ -436,7 +434,7 @@ class Wcsdm extends WC_Shipping_Method {
 
 		$rate = array(
 			'id'        => $this->id,
-			'label'     => ( 'yes' === $this->get_option( 'show_distance' ) ) ? sprintf( '%s (%s)', $this->title, $api_request['distance_text'] ) : $this->title,
+			'label'     => ( 'yes' === $this->show_distance ) ? sprintf( '%s (%s)', $this->title, $api_request['distance_text'] ) : $this->title,
 			'cost'      => $shipping_cost_total,
 			'meta_data' => $api_request,
 		);
