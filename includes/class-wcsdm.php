@@ -270,6 +270,27 @@ class Wcsdm extends WC_Shipping_Method {
 	}
 
 	/**
+	 * Validate gmaps_api_key settings field.
+	 *
+	 * @since    1.0.0
+	 * @param  string $key Settings field key.
+	 * @param  string $value Posted field value.
+	 * @throws Exception If the field value is invalid.
+	 * @return string
+	 */
+	public function validate_gmaps_api_key_field( $key, $value ) {
+		try {
+			if ( empty( $value ) ) {
+				throw new Exception( __( 'API Key is required', 'wcsdm' ) );
+			}
+			return $value;
+		} catch ( Exception $e ) {
+			$this->add_error( $e->getMessage() );
+			return $this->gmaps_api_key;
+		}
+	}
+
+	/**
 	 * Validate and format table_rates settings field.
 	 *
 	 * @since    1.0.0
@@ -308,7 +329,7 @@ class Wcsdm extends WC_Shipping_Method {
 			$value = array_values( $rates_filtered );
 
 			if ( empty( $value ) ) {
-				throw new Exception( __( 'Shipping Rates is required', 'woogosend' ) );
+				throw new Exception( __( 'Shipping Rates is required', 'wcsdm' ) );
 			}
 			return $value;
 		} catch ( Exception $e ) {
