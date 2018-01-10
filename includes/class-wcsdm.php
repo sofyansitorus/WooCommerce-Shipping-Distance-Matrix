@@ -312,6 +312,27 @@ class Wcsdm extends WC_Shipping_Method {
 	}
 
 	/**
+	 * Validate origin_lng settings field.
+	 *
+	 * @since    1.0.0
+	 * @param  string $key Settings field key.
+	 * @param  string $value Posted field value.
+	 * @throws Exception If the field value is invalid.
+	 * @return string
+	 */
+	public function validate_origin_lng_field( $key, $value ) {
+		try {
+			if ( empty( $value ) ) {
+				throw new Exception( __( 'Store Location Longitude is required', 'wcsdm' ) );
+			}
+			return $value;
+		} catch ( Exception $e ) {
+			$this->add_error( $e->getMessage() );
+			return $this->origin_lng;
+		}
+	}
+
+	/**
 	 * Validate and format table_rates settings field.
 	 *
 	 * @since    1.0.0
