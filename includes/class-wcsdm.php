@@ -270,7 +270,7 @@ class Wcsdm extends WC_Shipping_Method {
 	}
 
 	/**
-	 * Save rates table data.
+	 * Validate and format table_rates settings field.
 	 *
 	 * @since    1.0.0
 	 * @param string $key Input field key.
