@@ -174,13 +174,11 @@ class Wcsdm extends WC_Shipping_Method {
 				),
 			),
 			'show_distance'   => array(
-				'title'   => __( 'Show distance', 'wcsdm' ),
-				'type'    => 'select',
-				'default' => 'no',
-				'options' => array(
-					'yes' => __( 'Yes: Show the distance info to customer during checkout', 'wcsdm' ),
-					'no'  => __( 'No: Do not show the distance info', 'wcsdm' ),
-				),
+				'title'       => __( 'Show distance', 'wcsdm' ),
+				'label'       => __( 'Yes', 'wcsdm' ),
+				'type'        => 'checkbox',
+				'description' => __( 'Show the distance info to customer during checkout.', 'wcsdm' ),
+				'desc_tip'    => true,
 			),
 			'tax_status'      => array(
 				'title'   => __( 'Tax status', 'wcsdm' ),
