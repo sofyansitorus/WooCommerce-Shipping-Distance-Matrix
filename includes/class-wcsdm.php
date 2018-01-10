@@ -470,11 +470,9 @@ class Wcsdm extends WC_Shipping_Method {
 	private function calculate_cost( $distance, $class_id ) {
 		$class_id = intval( $class_id );
 
-		$rates = $this->get_option( 'table_rates' );
-
-		if ( $rates ) {
+		if ( $this->table_rates ) {
 			$offset = 0;
-			foreach ( $rates as $rate ) {
+			foreach ( $this->table_rates as $rate ) {
 				if ( $distance > $offset && $distance <= $rate['distance'] && isset( $rate[ 'class_' . $class_id ] ) && is_numeric( $rate[ 'class_' . $class_id ] ) ) {
 					return $rate[ 'class_' . $class_id ];
 				}
