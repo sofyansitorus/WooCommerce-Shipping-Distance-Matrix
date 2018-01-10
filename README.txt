@@ -55,8 +55,8 @@ In the search field type “WooCommerce Shipping Distance Matrix” and click Se
 
 = 1.2.3 - 2018-01-10 =
 
-* Improvements - Add new filter hooks: woocommerce_woograbexpress_shipping_destination_info.
-* Improvements - Add new filter hooks: woocommerce_woograbexpress_shipping_origin_info.
+* Improvements - Add new filter hooks: woocommerce_wcsdm_shipping_destination_info.
+* Improvements - Add new filter hooks: woocommerce_wcsdm_shipping_origin_info.
 * Improvement - Tweak settings panel UI and default value.
 * Improvement - Add validation for settings field: gmaps_api_key, origin_lat, origin_lng, table_rates.
 
