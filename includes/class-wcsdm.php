@@ -431,7 +431,7 @@ class Wcsdm extends WC_Shipping_Method {
 		}
 
 		$rate = array(
-			'id'        => $this->id,
+			'id'        => $this->get_rate_id(),
 			'label'     => ( 'yes' === $this->show_distance ) ? sprintf( '%s (%s)', $this->title, $api_request['distance_text'] ) : $this->title,
 			'cost'      => $shipping_cost_total,
 			'meta_data' => $api_request,
