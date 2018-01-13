@@ -47,6 +47,32 @@ In the search field type “WooCommerce Shipping Distance Matrix” and click Se
 1. Upload the plugin zip file, the plugin will now be installed
 1. After installation has finished, click the ‘activate plugin’ link
 
+== Frequently Asked Questions ==
+= How to set the plugin settings? =
+You can setup the plugin setting from the Shipping Zones settings. Please check the following video tutorial how to setup the WooCommerce Shipping Zones:
+
+https://www.youtube.com/watch?v=eThWmrnBP38
+
+Credits: [InMotion Hosting](https://www.inmotionhosting.com/)
+
+= Where can I get support? =
+You can either create ticket at plugin support forum or GitHub repository:
+
+* [Plugin Support Forum](https://wordpress.org/support/plugin/wcsdm)
+* [Plugin GitHub Repository](https://github.com/sofyansitorus/WooCommerce-Shipping-Distance-Matrix)
+
+= Where can I report bugs? =
+You can either create ticket at plugin support forum or GitHub repository:
+
+* [Plugin Support Forum](https://wordpress.org/support/plugin/wcsdm)
+* [Plugin GitHub Repository](https://github.com/sofyansitorus/WooCommerce-Shipping-Distance-Matrix)
+
+= Where can I request a feature? =
+You can either create ticket at plugin support forum or GitHub repository:
+
+* [Plugin Support Forum](https://wordpress.org/support/plugin/wcsdm)
+* [Plugin GitHub Repository](https://github.com/sofyansitorus/WooCommerce-Shipping-Distance-Matrix)
+
 == Screenshots ==
 1. Settings panel top area
 2. Settings panel bottom area
