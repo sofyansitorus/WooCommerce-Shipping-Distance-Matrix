@@ -57,7 +57,7 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 	 *
 	 * Add a link to the settings page on the plugins.php page.
 	 *
-	 * @since 1.2.4
+	 * @since 1.2.3
 	 *
 	 * @param  array $links List of existing plugin action links.
 	 * @return array         List of modified plugin action links.
