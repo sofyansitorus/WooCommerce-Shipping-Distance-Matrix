@@ -1,5 +1,23 @@
 (function ($) {
 	$(document).ready(function () {
+		// Try show settings modal on settings page.
+		if (wcsdm_params.show_settings) {
+			setTimeout(function () {
+				var wcsdmAdded = false;
+				var methods = $(document).find('.wc-shipping-zone-method-type');
+				for (var i = 0; i < methods.length; i++) {
+					var method = methods[i];
+					if ($(method).text() == 'Shipping Distance Matrix') {
+						$(method).closest('tr').find('.row-actions .wc-shipping-zone-method-settings').trigger('click');
+						wcsdmAdded = true;
+						return;
+					}
+				}
+				if (!wcsdmAdded) {
+					$(document).find('.wc-shipping-zone-add-method').trigger('click');
+				}
+			}, 300);
+		}
 
 		// Handle bulk select rate rows.
 		$(document).on('change', '#rates-list-table thead .select-item', function (e) {

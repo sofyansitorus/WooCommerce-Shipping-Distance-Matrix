@@ -53,6 +53,42 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 	add_action( 'plugins_loaded', 'wcsdm_load_textdomain' );
 
 	/**
+	 * Add plugin action links.
+	 *
+	 * Add a link to the settings page on the plugins.php page.
+	 *
+	 * @since 1.2.4
+	 *
+	 * @param  array $links List of existing plugin action links.
+	 * @return array         List of modified plugin action links.
+	 */
+	function wcsdm_plugin_action_links( $links ) {
+		$zone_id = 0;
+		$zones   = WC_Shipping_Zones::get_zones();
+		foreach ( $zones as $zone ) {
+			if ( empty( $zone['shipping_methods'] ) || empty( $zone['zone_id'] ) ) {
+				continue;
+			}
+			foreach ( $zone['shipping_methods'] as $zone_shipping_method ) {
+				if ( $zone_shipping_method instanceof Wcsdm ) {
+					$zone_id = $zone['zone_id'];
+					break;
+				}
+			}
+		}
+
+		$links = array_merge(
+			array(
+				'<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=wc-settings&tab=shipping&zone_id=' . $zone_id . '&wcsdm_settings=1' ), 'wcsdm_settings', 'wcsdm_nonce' ) ) . '">' . __( 'Settings', 'wcsdm' ) . '</a>',
+			),
+			$links
+		);
+
+		return $links;
+	}
+	add_action( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'wcsdm_plugin_action_links' );
+
+	/**
 	 * Load the main class
 	 *
 	 * @since    1.0.0
@@ -100,6 +136,13 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 				array( 'jquery' ), // Define dependencies.
 				WCSDM_VERSION, // Define a version (optional).
 				true // Specify whether to put in footer (leave this true).
+			);
+			wp_localize_script(
+				'wcsdm-admin',
+				'wcsdm_params',
+				array(
+					'show_settings' => ( isset( $_GET['wcsdm_settings'] ) && wp_verify_nonce( $_GET['wcsdm_nonce'], 'wcsdm_settings' ) && is_admin() ),
+				)
 			);
 		}
 	}
