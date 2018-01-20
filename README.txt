@@ -8,10 +8,10 @@ Stable tag: trunk
 License: GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
-WooCommerce shipping rates calculator based on products shipping class and distances that calculated using Google Maps Distance Matrix API.
+WooCommerce shipping rates calculator based on products shipping class and route distances that calculated using Google Maps Distance Matrix API.
 
 == Description ==
-WooCommerce shipping rates calculator based on products shipping class and distances that calculated using Google Maps Distance Matrix API.
+WooCommerce shipping rates calculator based on products shipping class and route distances that calculated using Google Maps Distance Matrix API.
 
 This plugin perfect for online store that use local shipping or private shipping such as selling flower, food & beverage but not limited to.
 
@@ -51,9 +51,9 @@ In the search field type “WooCommerce Shipping Distance Matrix” and click Se
 = How to set the plugin settings? =
 You can setup the plugin setting from the Shipping Zones settings. Please check the following video tutorial how to setup the WooCommerce Shipping Zones:
 
-https://www.youtube.com/watch?v=eThWmrnBP38
+[youtube https://www.youtube.com/watch?v=eThWmrnBP38]
 
-Credits: [InMotion Hosting](https://www.inmotionhosting.com/)
+[Video](https://www.youtube.com/watch?v=eThWmrnBP38) by [InMotion Hosting](https://www.inmotionhosting.com)
 
 = Where can I get support? =
 You can either create ticket at plugin support forum or GitHub repository:
