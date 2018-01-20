@@ -1,27 +1,21 @@
 #rates-list-table thead th,
 #rates-list-table thead td {
-    text-align: center;
-    font-weight: bold;
-}
+  text-align: center;
+  font-weight: bold; }
 
 #rates-list-table thead .col-select,
 #rates-list-table tbody .col-select {
-    padding: 8px 16px !important;
-    text-align: center !important;
-}
-
-#rates-list-table thead .col-select input,
-#rates-list-table tbody .col-select input {
+  padding: 8px 16px !important;
+  text-align: center !important; }
+  #rates-list-table thead .col-select input,
+  #rates-list-table tbody .col-select input {
     margin: 0 !important;
-    padding: 0 !important;
-}
+    padding: 0 !important; }
 
-#rates-list-table tbody input[type=number] {
-    min-width: 180px !important;
-    max-width: 100% !important;
-    width: 100%;
-}
+#rates-list-table tbody .col-select input[type=number] {
+  min-width: 180px !important;
+  max-width: 100% !important;
+  width: 100%; }
 
 #rates-list-table tbody .selected input[type=number] {
-    background-color: #fefbcc;
-}
+  background-color: #fefbcc; }

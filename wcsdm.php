@@ -33,20 +33,25 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 /**
- * Load plugin textdomain.
- *
- * @since 1.0.0
- */
-function wcsdm_load_textdomain() {
-	load_plugin_textdomain( 'wcsdm', false, basename( dirname( __FILE__ ) ) . '/languages' );
-}
-add_action( 'plugins_loaded', 'wcsdm_load_textdomain' );
-
-
-/**
  * Check if WooCommerce is active
  */
 if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
+
+	// Defines plugin named constants.
+	define( 'WCSDM_PATH', plugin_dir_path( __FILE__ ) );
+	define( 'WCSDM_URL', plugin_dir_url( __FILE__ ) );
+	define( 'WCSDM_VERSION', '1.2.3' );
+
+	/**
+	 * Load plugin textdomain.
+	 *
+	 * @since 1.0.0
+	 */
+	function wcsdm_load_textdomain() {
+		load_plugin_textdomain( 'wcsdm', false, basename( WCSDM_PATH ) . '/languages' );
+	}
+	add_action( 'plugins_loaded', 'wcsdm_load_textdomain' );
+
 	/**
 	 * Load the main class
 	 *
@@ -77,8 +82,25 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 	 */
 	function wcsdm_admin_enqueue_scripts( $hook ) {
 		if ( 'woocommerce_page_wc-settings' === $hook ) {
-			wp_enqueue_style( 'wcsdm-admin', plugin_dir_url( __FILE__ ) . 'assets/css/wcsdm-admin.css' );
-			wp_enqueue_script( 'wcsdm-admin', plugin_dir_url( __FILE__ ) . 'assets/js/wcsdm-admin.js', array( 'jquery' ) );
+			// Enqueue admin styles.
+			$wcsdm_admin_css = ( defined( 'WCSDM_DEV' ) && WCSDM_DEV ) ? add_query_arg( array( 't' => time() ), WCSDM_URL . 'assets/css/wcsdm-admin.css' ) : WCSDM_URL . 'assets/css/wcsdm-admin.min.css';
+			wp_enqueue_style(
+				'wcsdm-admin', // Give the script a unique ID.
+				$wcsdm_admin_css, // Define the path to the JS file.
+				array(), // Define dependencies.
+				WCSDM_VERSION, // Define a version (optional).
+				false // Specify whether to put in footer (leave this false).
+			);
+
+			// Enqueue admin scripts.
+			$wcsdm_admin_js = ( defined( 'WCSDM_DEV' ) && WCSDM_DEV ) ? add_query_arg( array( 't' => time() ), WCSDM_URL . 'assets/js/wcsdm-admin.js' ) : WCSDM_URL . 'assets/js/wcsdm-admin.min.js';
+			wp_enqueue_script(
+				'wcsdm-admin', // Give the script a unique ID.
+				$wcsdm_admin_js, // Define the path to the JS file.
+				array( 'jquery' ), // Define dependencies.
+				WCSDM_VERSION, // Define a version (optional).
+				true // Specify whether to put in footer (leave this true).
+			);
 		}
 	}
 	add_action( 'admin_enqueue_scripts', 'wcsdm_admin_enqueue_scripts' );

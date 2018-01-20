@@ -1,6 +1,7 @@
 (function ($) {
 	$(document).ready(function () {
 
+		// Handle bulk select rate rows.
 		$(document).on('change', '#rates-list-table thead .select-item', function (e) {
 			if (this.checked) {
 				$('#rates-list-table tbody .select-item').each(function (index, el) {
@@ -13,6 +14,7 @@
 			}
 		});
 
+		// Handle select rate rows.
 		$(document).on('change', '#rates-list-table tbody .select-item', function (e) {
 			var $tr = $(this).closest('tr');
 			if (this.checked) {
@@ -30,6 +32,7 @@
 			}
 		});
 
+		// Handle add rate rows.
 		$(document).on('click', '#rates-list-table a.add', function (e) {
 			e.preventDefault();
 
@@ -47,6 +50,7 @@
 			$('#rates-list-table tbody').append(row);
 		});
 
+		// Handle remove rate rows.
 		$(document).on('click', '#rates-list-table a.remove_rows', function (e) {
 			e.preventDefault();
 			$('#rates-list-table tbody tr.selected').remove();
