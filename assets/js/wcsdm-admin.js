@@ -14,7 +14,8 @@
 					}
 				}
 				if (!wcsdmAdded) {
-					$(document).find('.wc-shipping-zone-add-method').trigger('click');
+					$(".wc-shipping-zone-add-method").trigger('click');
+					$("select[name='add_method_id']").val('wcsdm');
 				}
 			}, 300);
 		}
