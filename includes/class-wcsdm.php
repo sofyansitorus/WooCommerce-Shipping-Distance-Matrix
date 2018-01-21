@@ -43,10 +43,10 @@ class Wcsdm extends WC_Shipping_Method {
 	 */
 	public function __construct( $instance_id = 0 ) {
 		// ID for your shipping method. Should be unique.
-		$this->id = 'wcsdm';
+		$this->id = WCSDM_METHOD_ID;
 
 		// Title shown in admin.
-		$this->method_title = __( 'Shipping Distance Matrix', 'wcsdm' );
+		$this->method_title = WCSDM_METHOD_TITLE;
 
 		// Description shown in admin.
 		$this->method_description = __( 'Shipping rates calculator based on products shipping class and route distances.', 'wcsdm' );

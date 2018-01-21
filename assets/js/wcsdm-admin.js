@@ -1,23 +1,30 @@
 (function ($) {
 	$(document).ready(function () {
-		// Try show settings modal on settings page.
+
 		if (wcsdm_params.show_settings) {
+
 			setTimeout(function () {
-				var wcsdmAdded = false;
+
+				// Try show settings modal on settings page.
+				var isMethodAdded = false;
 				var methods = $(document).find('.wc-shipping-zone-method-type');
 				for (var i = 0; i < methods.length; i++) {
 					var method = methods[i];
-					if ($(method).text() == 'Shipping Distance Matrix') {
+					if ($(method).text() == wcsdm_params.method_title) {
 						$(method).closest('tr').find('.row-actions .wc-shipping-zone-method-settings').trigger('click');
-						wcsdmAdded = true;
+						isMethodAdded = true;
 						return;
 					}
 				}
-				if (!wcsdmAdded) {
+
+				// Show Add shipping method modal if the shipping is not added.
+				if (!isMethodAdded) {
 					$(".wc-shipping-zone-add-method").trigger('click');
-					$("select[name='add_method_id']").val('wcsdm');
+					$("select[name='add_method_id']").val(wcsdm_params.method_id).trigger('change');
 				}
+
 			}, 300);
+
 		}
 
 		// Handle bulk select rate rows.
