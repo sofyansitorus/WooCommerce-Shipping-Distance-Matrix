@@ -51,6 +51,7 @@
 					$("#" + self.mapCanvasId).remove();
 					$("#" + self.mapSearchId).remove();
 					$("#" + self.inputApiKeyId).trigger("change");
+					$("#woocommerce_wcsdm_gmaps_api_units").trigger("change");
 				}
 			});
 
@@ -58,6 +59,17 @@
 			$(document).on("change", "#" + self.inputApiKeyId, function() {
 				self._loadScript($(this).val());
 			});
+
+			// Handle setting API key changed.
+			$(document).on(
+				"change",
+				"#woocommerce_wcsdm_gmaps_api_units",
+				function() {
+					$(".input-group-distance")
+						.removeClass("metric imperial")
+						.addClass($(this).val());
+				}
+			);
 
 			// Handle select rate row.
 			$(document).on(
@@ -361,7 +373,8 @@
 
 			// Let's fake some data (maybe this is data from an API request?)
 			var tmplData = {
-				field_key: elem.data("key")
+				field_key: elem.data("key"),
+				distance_unit: $("#woocommerce_wcsdm_gmaps_api_units").val()
 			};
 
 			var row = template(tmplData);
@@ -376,7 +389,10 @@
 
 			elem.hide();
 
-			elem.closest("table").find(".button.add").show();
+			elem
+				.closest("table")
+				.find(".button.add")
+				.show();
 
 			elem
 				.closest("table")

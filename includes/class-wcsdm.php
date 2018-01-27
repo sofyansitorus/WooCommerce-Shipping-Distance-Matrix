@@ -280,8 +280,8 @@ class Wcsdm extends WC_Shipping_Method {
 				<table id="rates-list-table" class="widefat wc_input_table" cellspacing="0">
 					<thead>
 						<tr>
-							<td class="col-select"><a href="#" class="add button" data-key="<?php echo esc_attr( $field_key ); ?>"><?php esc_html_e( 'Add', 'wcsdm' ); ?><a href="#" class="remove_rows button" style="display: none"><?php esc_html_e( 'Remove', 'wcsdm' ); ?></a></a></td>
-							<td class="distance"></td>
+							<td class="col-select"><a href="#" class="add button" data-key="<?php echo esc_attr( $field_key ); ?>"><?php esc_html_e( 'Add Row', 'wcsdm' ); ?><a href="#" class="remove_rows button" style="display: none"><?php esc_html_e( 'Remove Row', 'wcsdm' ); ?></a></a></td>
+							<td class="col-distance"></td>
 							<td colspan="<?php echo count( $shipping_classes ) + 1; ?>"><?php esc_html_e( 'Cost by Shipping Class', 'wcsdm' ); ?></td>
 						</tr>
 						<tr>
@@ -297,29 +297,31 @@ class Wcsdm extends WC_Shipping_Method {
 					</thead>
 					<tbody>
 						<?php if ( $this->table_rates ) : ?>
-						<?php foreach ( $this->table_rates as $table_rate ) : ?>
-						<tr>
-						<td class="col-select"><input class="select-item" type="checkbox"></td>
-						<?php foreach ( $table_rate as $key => $value ) : ?>
-						<?php if ( 'distance' === $key ) : ?>
-						<td class="col-<?php echo esc_attr( $key ); ?>"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $key ); ?>[]" type="number" value="<?php echo esc_attr( $value ); ?>" min="0"></td>
-						<?php else : ?>
-						<td class="col-<?php echo esc_attr( $key ); ?>"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $key ); ?>[]" class="wc_input_price input-text regular-input" type="text" value="<?php echo esc_attr( $value ); ?>" min="0"></td>
-						<?php endif; ?>
-						<?php endforeach; ?>
-						</tr>
-						<?php endforeach; ?>
+							<?php foreach ( $this->table_rates as $table_rate ) : ?>
+							<tr>
+								<td class="col-select"><input class="select-item" type="checkbox"></td>
+								<?php foreach ( $table_rate as $key => $value ) : ?>
+								<td class="col-<?php echo esc_attr( $key ); ?>">
+								<?php if ( 'distance' === $key ) : ?>
+								<span class="input-group-distance"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $key ); ?>[]" class="input-text regular-input" type="number" value="<?php echo esc_attr( $value ); ?>" min="0"></span>
+								<?php else : ?>
+								<span class="input-group-price"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $key ); ?>[]" class="wc_input_price input-text regular-input" type="text" value="<?php echo esc_attr( $value ); ?>" min="0"></span>
+								<?php endif; ?>
+								</td>
+								<?php endforeach; ?>
+							</tr>
+							<?php endforeach; ?>
 						<?php endif; ?>
 					</tbody>
 				</table>
 				<script type="text/template" id="tmpl-rates-list-input-table-row">
 				<tr>
 					<td class="col-select"><input class="select-item" type="checkbox"></td>
-					<td class="col-distance"><input name="{{{ data.field_key }}}_distance[]" type="number" value="" min="0"></td>
-					<td class="col-no-class"><input name="{{{ data.field_key }}}_class_0[]" class="wc_input_price input-text regular-input" type="text" value="" min="0"></td>
+					<td class="col-distance"><span class="input-group-distance {{ data.distance_unit }}"><input name="{{{ data.field_key }}}_distance[]" type="number" value="" min="0"></span></td>
+					<td class="col-no-class"><span class="input-group-price"><input name="{{{ data.field_key }}}_class_0[]" class="wc_input_price input-text regular-input" type="text" value="" min="0"></span></td>
 					<?php if ( $shipping_classes ) : ?>
 					<?php foreach ( $shipping_classes as $shipping_class ) : ?>
-					<td class="col-has-class col-class<?php echo esc_attr( $shipping_class->term_id ); ?>"><input name="{{{ data.field_key }}}_class_<?php echo esc_attr( $shipping_class->term_id ); ?>[]" class="wc_input_price input-text regular-input" type="text" value="" min="0"></td>
+					<td class="col-has-class col-class<?php echo esc_attr( $shipping_class->term_id ); ?>"><span class="input-group-price"><input name="{{{ data.field_key }}}_class_<?php echo esc_attr( $shipping_class->term_id ); ?>[]" class="wc_input_price input-text regular-input" type="text" value="" min="0"></span></td>
 					<?php endforeach; ?>
 					<?php endif; ?>
 				</tr>
@@ -410,11 +412,16 @@ class Wcsdm extends WC_Shipping_Method {
 			$rates = array();
 
 			foreach ( $post_data as $post_data_key => $post_data_value ) {
-				if ( 0 === strpos( $post_data_key, $field_key ) ) {
-					$field_key_short = str_replace( $field_key . '_', '', $post_data_key );
-					foreach ( $post_data_value as $index => $row_value ) {
-						$rates[ $index ][ $field_key_short ] = $row_value;
-					}
+
+				// Check if posted data key begin with field key value.
+				if ( 0 !== strpos( $post_data_key, $field_key ) ) {
+					continue;
+				}
+
+				$field_key_short = str_replace( $field_key . '_', '', $post_data_key );
+
+				foreach ( $post_data_value as $index => $row_value ) {
+					$rates[ $index ][ $field_key_short ] = $row_value;
 				}
 			}
 
@@ -422,9 +429,10 @@ class Wcsdm extends WC_Shipping_Method {
 
 			foreach ( $rates as $key => $value ) {
 				$value['distance'] = intval( $value['distance'] );
-				if ( ! empty( $value['distance'] ) ) {
-					$rates_filtered[ $value['distance'] ] = $value;
+				if ( empty( $value['distance'] ) ) {
+					continue;
 				}
+				$rates_filtered[ $value['distance'] ] = $value;
 			}
 
 			ksort( $rates_filtered );
