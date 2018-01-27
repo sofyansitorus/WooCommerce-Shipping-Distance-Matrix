@@ -149,7 +149,7 @@ function wcsdm_admin_enqueue_scripts( $hook ) {
 				'method_id'     => WCSDM_METHOD_ID,
 				'method_title'  => WCSDM_METHOD_TITLE,
 				'txt'           => array(
-					'drag_marker' => __( 'Drag this marker or search your address at the input above.', 'woograbexpress' ),
+					'drag_marker' => __( 'Drag this marker or search your address at the input above.', 'wcsdm' ),
 				),
 				'marker'        => WCSDM_URL . 'assets/img/marker.png',
 			)
