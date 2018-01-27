@@ -60,7 +60,7 @@
 				self._loadScript($(this).val());
 			});
 
-			// Handle setting API key changed.
+			// Handle setting distance units changed.
 			$(document).on(
 				"change",
 				"#woocommerce_wcsdm_gmaps_api_units",
@@ -68,6 +68,29 @@
 					$(".input-group-distance")
 						.removeClass("metric imperial")
 						.addClass($(this).val());
+					$("#per_distance_unit_selected").text(
+						$(this)
+							.find("option:selected")
+							.text()
+					);
+					$(".input-group-price").removeClass("metric imperial");
+					if ($("#woocommerce_wcsdm_charge_per_distance_unit").is(":checked")) {
+						$(".input-group-price").addClass($(this).val());
+					}
+				}
+			);
+
+			// Handle setting charge_per_distance_unit changed.
+			$(document).on(
+				"change",
+				"#woocommerce_wcsdm_charge_per_distance_unit",
+				function() {
+					$(".input-group-price").removeClass("metric imperial");
+					if ($(this).is(":checked")) {
+						$(".input-group-price").addClass(
+							$("#woocommerce_wcsdm_gmaps_api_units").val()
+						);
+					}
 				}
 			);
 
@@ -338,14 +361,18 @@
 					.addClass("selected")
 					.find("input[type=checkbox]")
 					.prop("checked", true);
-				elem
-					.closest("table")
-					.find(".button.remove_rows")
-					.show();
-				elem
-					.closest("table")
-					.find(".button.add")
-					.hide();
+
+				if (elem.closest("table").find("tbody input[type=checkbox]").length) {
+					elem
+						.closest("table")
+						.find(".button.remove_rows")
+						.show();
+
+					elem
+						.closest("table")
+						.find(".button.add")
+						.hide();
+				}
 			} else {
 				elem
 					.closest("table")
@@ -353,14 +380,18 @@
 					.removeClass("selected")
 					.find("input[type=checkbox]")
 					.prop("checked", false);
-				elem
-					.closest("table")
-					.find(".button.remove_rows")
-					.hide();
-				elem
-					.closest("table")
-					.find(".button.add")
-					.show();
+
+				if (elem.closest("table").find("tbody input[type=checkbox]").length) {
+					elem
+						.closest("table")
+						.find(".button.remove_rows")
+						.hide();
+
+					elem
+						.closest("table")
+						.find(".button.add")
+						.show();
+				}
 			}
 		},
 
@@ -371,10 +402,17 @@
 
 			var template = wp.template("rates-list-input-table-row"); // uses script tag ID minus "tmpl-"
 
+			var charge_per_distance_unit = $(
+				"#woocommerce_wcsdm_charge_per_distance_unit"
+			).is(":checked")
+				? $("#woocommerce_wcsdm_gmaps_api_units").val()
+				: "";
+
 			// Let's fake some data (maybe this is data from an API request?)
 			var tmplData = {
 				field_key: elem.data("key"),
-				distance_unit: $("#woocommerce_wcsdm_gmaps_api_units").val()
+				distance_unit: $("#woocommerce_wcsdm_gmaps_api_units").val(),
+				charge_per_distance_unit: charge_per_distance_unit
 			};
 
 			var row = template(tmplData);
