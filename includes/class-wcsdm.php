@@ -205,7 +205,7 @@ class Wcsdm extends WC_Shipping_Method {
 	/**
 	 * Generate origin settings field.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.4
 	 * @param string $key Settings field key.
 	 * @param array  $data Settings field data.
 	 */
@@ -250,7 +250,7 @@ class Wcsdm extends WC_Shipping_Method {
 	/**
 	 * Generate hidden settings field.
 	 *
-	 * @since 1.3.0
+	 * @since 1.2.4
 	 * @param string $key Settings field key.
 	 * @param array  $data Settings field data.
 	 */
