@@ -551,7 +551,7 @@ class Wcsdm extends WC_Shipping_Method {
 			}
 		}
 
-		return new WP_Error( 'no_rates', __( 'No rates data availbale.' ) );
+		return new WP_Error( 'no_rates', __( 'No rates data availbale.', 'wcsdm' ) );
 	}
 
 	/**
