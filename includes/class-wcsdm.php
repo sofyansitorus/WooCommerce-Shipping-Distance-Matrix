@@ -287,7 +287,7 @@ class Wcsdm extends WC_Shipping_Method {
 						<tr>
 							<td class="col-select"><input class="select-item" type="checkbox"></td>
 							<td><?php esc_html_e( 'Maximum Distances', 'wcsdm' ); ?></td>
-							<td><?php esc_html_e( 'Undefined', 'wcsdm' ); ?></td>
+							<td><?php esc_html_e( 'Default', 'wcsdm' ); ?></td>
 							<?php if ( $shipping_classes ) : ?>
 							<?php foreach ( $shipping_classes as $shipping_class ) : ?>
 							<td><?php echo esc_html( $shipping_class->name ); ?></td>
