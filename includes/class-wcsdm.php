@@ -77,17 +77,18 @@ class Wcsdm extends WC_Shipping_Method {
 		$this->init_settings(); // This is part of the settings API. Loads settings you previously init.
 
 		// Define user set variables.
-		$this->title           = $this->get_option( 'title' );
-		$this->gmaps_api_key   = $this->get_option( 'gmaps_api_key' );
-		$this->origin_lat      = $this->get_option( 'origin_lat' );
-		$this->origin_lng      = $this->get_option( 'origin_lng' );
-		$this->gmaps_api_units = $this->get_option( 'gmaps_api_units', 'metric' );
-		$this->gmaps_api_mode  = $this->get_option( 'gmaps_api_mode', 'driving' );
-		$this->gmaps_api_avoid = $this->get_option( 'gmaps_api_avoid' );
-		$this->calc_type       = $this->get_option( 'calc_type', 'per_item' );
-		$this->show_distance   = $this->get_option( 'show_distance' );
-		$this->table_rates     = $this->get_option( 'table_rates' );
-		$this->tax_status      = $this->get_option( 'tax_status' );
+		$this->title                    = $this->get_option( 'title' );
+		$this->gmaps_api_key            = $this->get_option( 'gmaps_api_key' );
+		$this->origin_lat               = $this->get_option( 'origin_lat' );
+		$this->origin_lng               = $this->get_option( 'origin_lng' );
+		$this->gmaps_api_units          = $this->get_option( 'gmaps_api_units', 'metric' );
+		$this->gmaps_api_mode           = $this->get_option( 'gmaps_api_mode', 'driving' );
+		$this->gmaps_api_avoid          = $this->get_option( 'gmaps_api_avoid' );
+		$this->calc_type                = $this->get_option( 'calc_type', 'per_item' );
+		$this->charge_per_distance_unit = $this->get_option( 'charge_per_distance_unit', 'no' );
+		$this->show_distance            = $this->get_option( 'show_distance' );
+		$this->table_rates              = $this->get_option( 'table_rates' );
+		$this->tax_status               = $this->get_option( 'tax_status' );
 
 		// Save settings in admin if you have any defined.
 		add_action( 'woocommerce_update_options_shipping_' . $this->id, array( $this, 'process_admin_options' ) );
@@ -103,43 +104,49 @@ class Wcsdm extends WC_Shipping_Method {
 	 */
 	public function init_form_fields() {
 		$this->instance_form_fields = array(
-			'title'                => array(
+			'title'                    => array(
 				'title'       => __( 'Title', 'wcsdm' ),
 				'type'        => 'text',
 				'description' => __( 'This controls the title which the user sees during checkout.', 'wcsdm' ),
 				'default'     => $this->method_title,
 				'desc_tip'    => true,
 			),
-			'gmaps_api_key'        => array(
+			'tax_status'               => array(
+				'title'   => __( 'Tax status', 'wcsdm' ),
+				'type'    => 'select',
+				'class'   => 'wc-enhanced-select',
+				'default' => 'taxable',
+				'options' => array(
+					'taxable' => __( 'Taxable', 'wcsdm' ),
+					'none'    => __( 'None', 'wcsdm' ),
+				),
+			),
+			'show_distance'            => array(
+				'title'       => __( 'Show distance', 'wcsdm' ),
+				'label'       => __( 'Yes', 'wcsdm' ),
+				'type'        => 'checkbox',
+				'description' => __( 'Show the distance info to customer during checkout.', 'wcsdm' ),
+				'desc_tip'    => true,
+			),
+			'gmaps_api_key'            => array(
 				'title'       => __( 'API Key', 'wcsdm' ),
 				'type'        => 'text',
 				'description' => __( '<a href="https://developers.google.com/maps/documentation/distance-matrix/get-api-key" target="_blank">Click here</a> to get a Google Maps Distance Matrix API Key.', 'wcsdm' ),
 				'default'     => '',
 			),
-			'gmaps_address_picker' => array(
+			'gmaps_address_picker'     => array(
 				'title' => __( 'Store Location', 'wcsdm' ),
 				'type'  => 'address_picker',
 			),
-			'origin_lat'           => array(
+			'origin_lat'               => array(
 				'type'    => 'hidden',
 				'default' => '',
 			),
-			'origin_lng'           => array(
+			'origin_lng'               => array(
 				'type'    => 'hidden',
 				'default' => '',
 			),
-			'gmaps_api_units'      => array(
-				'title'       => __( 'Distance Units', 'wcsdm' ),
-				'type'        => 'select',
-				'description' => __( 'Google Maps Distance Matrix API distance units parameter.', 'wcsdm' ),
-				'desc_tip'    => true,
-				'default'     => 'metric',
-				'options'     => array(
-					'metric'   => __( 'Kilometers', 'wcsdm' ),
-					'imperial' => __( 'Miles', 'wcsdm' ),
-				),
-			),
-			'gmaps_api_mode'       => array(
+			'gmaps_api_mode'           => array(
 				'title'       => __( 'Travel Mode', 'wcsdm' ),
 				'type'        => 'select',
 				'description' => __( 'Google Maps Distance Matrix API travel mode parameter.', 'wcsdm' ),
@@ -151,7 +158,7 @@ class Wcsdm extends WC_Shipping_Method {
 					'bicycling' => __( 'Bicycling', 'wcsdm' ),
 				),
 			),
-			'gmaps_api_avoid'      => array(
+			'gmaps_api_avoid'          => array(
 				'title'       => __( 'Restrictions', 'wcsdm' ),
 				'type'        => 'multiselect',
 				'description' => __( 'Google Maps Distance Matrix API restrictions parameter.', 'wcsdm' ),
@@ -164,7 +171,18 @@ class Wcsdm extends WC_Shipping_Method {
 					'indoor'   => __( 'Avoid Indoor', 'wcsdm' ),
 				),
 			),
-			'calc_type'            => array(
+			'gmaps_api_units'          => array(
+				'title'       => __( 'Distance Units', 'wcsdm' ),
+				'type'        => 'select',
+				'description' => __( 'Google Maps Distance Matrix API distance units parameter.', 'wcsdm' ),
+				'desc_tip'    => true,
+				'default'     => 'metric',
+				'options'     => array(
+					'metric'   => __( 'Kilometers', 'wcsdm' ),
+					'imperial' => __( 'Miles', 'wcsdm' ),
+				),
+			),
+			'calc_type'                => array(
 				'title'   => __( 'Calculation type', 'wcsdm' ),
 				'type'    => 'select',
 				'class'   => 'wc-enhanced-select',
@@ -174,29 +192,19 @@ class Wcsdm extends WC_Shipping_Method {
 					'per_order' => __( 'Per order: Charge shipping for the most expensive shipping cost', 'wcsdm' ),
 				),
 			),
-			'show_distance'        => array(
-				'title'       => __( 'Show distance', 'wcsdm' ),
+			'charge_per_distance_unit' => array(
+				'title'       => __( 'Charge per ', 'wcsdm' ) . '<span id="per_distance_unit_selected"></span>',
 				'label'       => __( 'Yes', 'wcsdm' ),
 				'type'        => 'checkbox',
-				'description' => __( 'Show the distance info to customer during checkout.', 'wcsdm' ),
+				'description' => __( 'Charge customer based on shipping distance multiplied with shipping class rate defined. Example: If the rate defined is $4 and the shipping distance is 7 miles, the shipping cost will be $28.', 'wcsdm' ),
 				'desc_tip'    => true,
 			),
-			'tax_status'           => array(
-				'title'   => __( 'Tax status', 'wcsdm' ),
-				'type'    => 'select',
-				'class'   => 'wc-enhanced-select',
-				'default' => 'taxable',
-				'options' => array(
-					'taxable' => __( 'Taxable', 'wcsdm' ),
-					'none'    => __( 'None', 'wcsdm' ),
-				),
-			),
-			'shipping_rates'       => array(
+			'shipping_rates'           => array(
 				'title'       => __( 'Shipping Rates', 'wcsdm' ),
 				'type'        => 'title',
 				'description' => __( 'Table rates for each shipping class and maximum distances. Leave blank to disable. Fill 0 (zero) to set as free shipping.', 'wcsdm' ),
 			),
-			'table_rates'          => array(
+			'table_rates'              => array(
 				'type' => 'table_rates',
 			),
 		);
@@ -318,10 +326,10 @@ class Wcsdm extends WC_Shipping_Method {
 				<tr>
 					<td class="col-select"><input class="select-item" type="checkbox"></td>
 					<td class="col-distance"><span class="input-group-distance {{ data.distance_unit }}"><input name="{{{ data.field_key }}}_distance[]" type="number" value="" min="0"></span></td>
-					<td class="col-no-class"><span class="input-group-price"><input name="{{{ data.field_key }}}_class_0[]" class="wc_input_price input-text regular-input" type="text" value="" min="0"></span></td>
+					<td class="col-no-class"><span class="input-group-price {{ data.charge_per_distance_unit }}"><input name="{{{ data.field_key }}}_class_0[]" class="wc_input_price input-text regular-input" type="text" value="" min="0"></span></td>
 					<?php if ( $shipping_classes ) : ?>
 					<?php foreach ( $shipping_classes as $shipping_class ) : ?>
-					<td class="col-has-class col-class<?php echo esc_attr( $shipping_class->term_id ); ?>"><span class="input-group-price"><input name="{{{ data.field_key }}}_class_<?php echo esc_attr( $shipping_class->term_id ); ?>[]" class="wc_input_price input-text regular-input" type="text" value="" min="0"></span></td>
+					<td class="col-has-class col-class<?php echo esc_attr( $shipping_class->term_id ); ?>"><span class="input-group-price {{ data.charge_per_distance_unit }}"><input name="{{{ data.field_key }}}_class_<?php echo esc_attr( $shipping_class->term_id ); ?>[]" class="wc_input_price input-text regular-input" type="text" value="" min="0"></span></td>
 					<?php endforeach; ?>
 					<?php endif; ?>
 				</tr>
@@ -484,6 +492,9 @@ class Wcsdm extends WC_Shipping_Method {
 			$shipping_cost = $this->calculate_cost( $api_request['distance'], $item['data']->get_shipping_class_id() );
 			if ( is_wp_error( $shipping_cost ) ) {
 				return;
+			}
+			if ( 'yes' === $this->charge_per_distance_unit ) {
+				$shipping_cost = $shipping_cost * $api_request['distance'];
 			}
 			switch ( $this->calc_type ) {
 				case 'per_order':
