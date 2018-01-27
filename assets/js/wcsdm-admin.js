@@ -284,6 +284,26 @@
 					.prop("checked", false);
 			}
 
+			if (checkboxes_checked.length) {
+				elem
+					.closest("table")
+					.find(".button.remove_rows")
+					.show();
+				elem
+					.closest("table")
+					.find(".button.add")
+					.hide();
+			} else {
+				elem
+					.closest("table")
+					.find(".button.remove_rows")
+					.hide();
+				elem
+					.closest("table")
+					.find(".button.add")
+					.show();
+			}
+
 			checkboxes_all.each(function(index, checkbox) {
 				if ($(checkbox).is(":checked")) {
 					$(checkbox)
@@ -306,6 +326,14 @@
 					.addClass("selected")
 					.find("input[type=checkbox]")
 					.prop("checked", true);
+				elem
+					.closest("table")
+					.find(".button.remove_rows")
+					.show();
+				elem
+					.closest("table")
+					.find(".button.add")
+					.hide();
 			} else {
 				elem
 					.closest("table")
@@ -313,6 +341,14 @@
 					.removeClass("selected")
 					.find("input[type=checkbox]")
 					.prop("checked", false);
+				elem
+					.closest("table")
+					.find(".button.remove_rows")
+					.hide();
+				elem
+					.closest("table")
+					.find(".button.add")
+					.show();
 			}
 		},
 
@@ -337,6 +373,10 @@
 			e.preventDefault();
 
 			var elem = $(e.currentTarget);
+
+			elem.hide();
+
+			elem.closest("table").find(".button.add").show();
 
 			elem
 				.closest("table")

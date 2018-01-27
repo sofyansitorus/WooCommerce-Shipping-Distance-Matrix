@@ -280,8 +280,8 @@ class Wcsdm extends WC_Shipping_Method {
 				<table id="rates-list-table" class="widefat wc_input_table" cellspacing="0">
 					<thead>
 						<tr>
-							<td class="col-select"></td>
-							<td></td>
+							<td class="col-select"><a href="#" class="add button" data-key="<?php echo esc_attr( $field_key ); ?>"><?php esc_html_e( 'Add', 'wcsdm' ); ?><a href="#" class="remove_rows button" style="display: none"><?php esc_html_e( 'Remove', 'wcsdm' ); ?></a></a></td>
+							<td class="distance"></td>
 							<td colspan="<?php echo count( $shipping_classes ) + 1; ?>"><?php esc_html_e( 'Cost by Shipping Class', 'wcsdm' ); ?></td>
 						</tr>
 						<tr>
@@ -311,11 +311,6 @@ class Wcsdm extends WC_Shipping_Method {
 						<?php endforeach; ?>
 						<?php endif; ?>
 					</tbody>
-					<tfoot>
-						<tr>
-							<th colspan="<?php echo count( $shipping_classes ) + 3; ?>"><a href="#" class="add button" data-key="<?php echo esc_attr( $field_key ); ?>"><?php esc_html_e( '+ Add row', 'wcsdm' ); ?></a> <a href="#" class="remove_rows button"><?php esc_html_e( 'Remove selected row(s)', 'wcsdm' ); ?></a></th>
-						</tr>
-					</tfoot>
 				</table>
 				<script type="text/template" id="tmpl-rates-list-input-table-row">
 				<tr>

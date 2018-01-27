@@ -3,22 +3,24 @@
   text-align: center;
   font-weight: bold; }
 
-#rates-list-table thead .col-select,
-#rates-list-table tbody .col-select {
-  padding: 8px 16px !important;
-  text-align: center !important; }
-  #rates-list-table thead .col-select input,
-  #rates-list-table tbody .col-select input {
-    margin: 0 !important;
-    padding: 0 !important; }
-
-#rates-list-table tbody .col-select input[type=number] {
+#rates-list-table tbody input[type=text], #rates-list-table tbody input[type=number] {
   min-width: 180px !important;
   max-width: 100% !important;
-  width: 100%; }
+  width: 100% !important; }
 
-#rates-list-table tbody .selected input[type=number] {
+#rates-list-table tbody .selected input[type=text], #rates-list-table tbody .selected input[type=number] {
   background-color: #fefbcc; }
+
+#rates-list-table .button {
+  float: none !important; }
+
+#rates-list-table .col-select {
+  padding: 8px 16px !important;
+  text-align: center !important;
+  width: 115px; }
+  #rates-list-table .col-select input {
+    margin: 0 !important;
+    padding: 0 !important; }
 
 .wcsdm-map-wrapper {
   position: relative; }

@@ -4,27 +4,28 @@
         text-align: center;
         font-weight: bold;
     }
-    thead .col-select,
-    tbody .col-select {
+    tbody {
+        input[type=text], input[type=number] {
+            min-width: 180px !important;
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+        .selected {
+            input[type=text], input[type=number]{
+                background-color: #fefbcc;
+            }
+        }
+    }
+    .button {
+        float: none !important;
+    }
+    .col-select {
         padding: 8px 16px !important;
         text-align: center !important;
+        width: 115px;
         input {
             margin: 0 !important;
             padding: 0 !important;
-        }
-    }
-    tbody {
-        .col-select {
-            input {
-                &[type=number] {
-                    min-width: 180px !important;
-                    max-width: 100% !important;
-                    width: 100%;
-                }
-            }
-        }
-        .selected input[type=number] {
-            background-color: #fefbcc;
         }
     }
 }
