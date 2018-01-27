@@ -1,215 +1,196 @@
-#, fuzzy
+# Copyright (C) 2018 WooCommerce Shipping Distance Matrix
+# This file is distributed under the same license as the WooCommerce Shipping Distance Matrix package.
 msgid ""
 msgstr ""
-"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
-"Project-Id-Version: WooCommerce Shipping Distance Matrix\n"
-"POT-Creation-Date: 2018-01-10 18:48+0700\n"
-"PO-Revision-Date: 2018-01-10 18:48+0700\n"
-"Last-Translator: \n"
-"Language-Team: \n"
+"Project-Id-Version: WooCommerce Shipping Distance Matrix 1.2.3\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wcsdm\n"
+"POT-Creation-Date: 2018-01-27 21:39:05+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.0.5\n"
-"X-Poedit-Basepath: ..\n"
-"X-Poedit-Flags-xgettext: --add-comments=translators:\n"
-"X-Poedit-WPHeader: wcsdm.php\n"
-"X-Poedit-SourceCharset: UTF-8\n"
-"X-Poedit-KeywordsList: __;_e;_n:1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;esc_attr__;"
-"esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c;_n_noop:1,2;"
-"_nx_noop:3c,1,2;__ngettext_noop:1,2\n"
-"X-Poedit-SearchPath-0: .\n"
-"X-Poedit-SearchPathExcluded-0: *.js\n"
+"PO-Revision-Date: 2018-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
 
-#: includes/class-wcsdm.php:49
-msgid "Shipping Distance Matrix"
+#: includes/class-wcsdm.php:53
+msgid "Shipping rates calculator based on products shipping class and route distances."
 msgstr ""
 
-#: includes/class-wcsdm.php:52
-msgid ""
-"Shipping rates calculator based on distance matrix and product shipping "
-"class."
-msgstr ""
-
-#: includes/class-wcsdm.php:106
+#: includes/class-wcsdm.php:107
 msgid "Title"
 msgstr ""
 
-#: includes/class-wcsdm.php:108
+#: includes/class-wcsdm.php:109
 msgid "This controls the title which the user sees during checkout."
 msgstr ""
 
-#: includes/class-wcsdm.php:113
+#: includes/class-wcsdm.php:114
 msgid "API Key"
 msgstr ""
 
-#: includes/class-wcsdm.php:115
-msgid ""
-"<a href=\"https://developers.google.com/maps/documentation/distance-matrix/"
-"get-api-key\" target=\"_blank\">Click here</a> to get a Google Maps Distance "
-"Matrix API Key."
+#: includes/class-wcsdm.php:116
+msgid "<a href=\"https://developers.google.com/maps/documentation/distance-matrix/get-api-key\" target=\"_blank\">Click here</a> to get a Google Maps Distance Matrix API Key."
 msgstr ""
 
-#: includes/class-wcsdm.php:119
-msgid "Store Location Latitude"
+#: includes/class-wcsdm.php:120
+msgid "Store Location"
 msgstr ""
 
-#: includes/class-wcsdm.php:121 includes/class-wcsdm.php:127
-msgid ""
-"<a href=\"http://www.latlong.net/\" target=\"_blank\">Click here</a> to get "
-"your store location coordinates info."
-msgstr ""
-
-#: includes/class-wcsdm.php:125
-msgid "Store Location Longitude"
-msgstr ""
-
-#: includes/class-wcsdm.php:131
+#: includes/class-wcsdm.php:132
 msgid "Distance Units"
 msgstr ""
 
-#: includes/class-wcsdm.php:133
+#: includes/class-wcsdm.php:134
 msgid "Google Maps Distance Matrix API distance units parameter."
 msgstr ""
 
-#: includes/class-wcsdm.php:137
+#: includes/class-wcsdm.php:138
 msgid "Kilometers"
 msgstr ""
 
-#: includes/class-wcsdm.php:138
+#: includes/class-wcsdm.php:139
 msgid "Miles"
 msgstr ""
 
-#: includes/class-wcsdm.php:142
+#: includes/class-wcsdm.php:143
 msgid "Travel Mode"
 msgstr ""
 
-#: includes/class-wcsdm.php:144
+#: includes/class-wcsdm.php:145
 msgid "Google Maps Distance Matrix API travel mode parameter."
 msgstr ""
 
-#: includes/class-wcsdm.php:148
+#: includes/class-wcsdm.php:149
 msgid "Driving"
 msgstr ""
 
-#: includes/class-wcsdm.php:149
+#: includes/class-wcsdm.php:150
 msgid "Walking"
 msgstr ""
 
-#: includes/class-wcsdm.php:150
+#: includes/class-wcsdm.php:151
 msgid "Bicycling"
 msgstr ""
 
-#: includes/class-wcsdm.php:154
+#: includes/class-wcsdm.php:155
 msgid "Restrictions"
 msgstr ""
 
-#: includes/class-wcsdm.php:156
+#: includes/class-wcsdm.php:157
 msgid "Google Maps Distance Matrix API restrictions parameter."
 msgstr ""
 
-#: includes/class-wcsdm.php:160
+#: includes/class-wcsdm.php:161
 msgid "Avoid Tolls"
 msgstr ""
 
-#: includes/class-wcsdm.php:161
+#: includes/class-wcsdm.php:162
 msgid "Avoid Highways"
 msgstr ""
 
-#: includes/class-wcsdm.php:162
+#: includes/class-wcsdm.php:163
 msgid "Avoid Ferries"
 msgstr ""
 
-#: includes/class-wcsdm.php:163
+#: includes/class-wcsdm.php:164
 msgid "Avoid Indoor"
 msgstr ""
 
-#: includes/class-wcsdm.php:167
+#: includes/class-wcsdm.php:168
 msgid "Calculation type"
 msgstr ""
 
-#: includes/class-wcsdm.php:172
+#: includes/class-wcsdm.php:173
 msgid "Per item: Charge shipping for each items individually"
 msgstr ""
 
-#: includes/class-wcsdm.php:173
+#: includes/class-wcsdm.php:174
 msgid "Per order: Charge shipping for the most expensive shipping cost"
 msgstr ""
 
-#: includes/class-wcsdm.php:177
+#: includes/class-wcsdm.php:178
 msgid "Show distance"
 msgstr ""
 
-#: includes/class-wcsdm.php:178
+#: includes/class-wcsdm.php:179
 msgid "Yes"
 msgstr ""
 
-#: includes/class-wcsdm.php:180
+#: includes/class-wcsdm.php:181
 msgid "Show the distance info to customer during checkout."
 msgstr ""
 
-#: includes/class-wcsdm.php:184
+#: includes/class-wcsdm.php:185
 msgid "Tax status"
 msgstr ""
 
-#: includes/class-wcsdm.php:189
+#: includes/class-wcsdm.php:190
 msgid "Taxable"
 msgstr ""
 
-#: includes/class-wcsdm.php:190
+#: includes/class-wcsdm.php:191
 msgid "None"
 msgstr ""
 
-#: includes/class-wcsdm.php:194
+#: includes/class-wcsdm.php:195
 msgid "Shipping Rates"
 msgstr ""
 
-#: includes/class-wcsdm.php:196
-msgid ""
-"Table rates for each shipping class and maximum distances. Leave blank to "
-"disable. Fill 0 (zero) to set as free shipping."
+#: includes/class-wcsdm.php:197
+msgid "Table rates for each shipping class and maximum distances. Leave blank to disable. Fill 0 (zero) to set as free shipping."
 msgstr ""
 
-#: includes/class-wcsdm.php:221
+#: includes/class-wcsdm.php:239
+msgid "Search your store location"
+msgstr ""
+
+#: includes/class-wcsdm.php:283
+msgid "Add Row"
+msgstr ""
+
+#: includes/class-wcsdm.php:283
+msgid "Remove Row"
+msgstr ""
+
+#: includes/class-wcsdm.php:285
 msgid "Cost by Shipping Class"
 msgstr ""
 
-#: includes/class-wcsdm.php:225
+#: includes/class-wcsdm.php:289
 msgid "Maximum Distances"
 msgstr ""
 
-#: includes/class-wcsdm.php:226
-msgid "Undefined"
+#: includes/class-wcsdm.php:290
+msgid "Default"
 msgstr ""
 
-#: includes/class-wcsdm.php:248
-msgid "+ Add row"
-msgstr ""
-
-#: includes/class-wcsdm.php:248
-msgid "Remove selected row(s)"
-msgstr ""
-
-#: includes/class-wcsdm.php:282
+#: includes/class-wcsdm.php:347
 msgid "API Key is required"
 msgstr ""
 
-#: includes/class-wcsdm.php:303
+#: includes/class-wcsdm.php:368
 msgid "Store Location Latitude is required"
 msgstr ""
 
-#: includes/class-wcsdm.php:324
+#: includes/class-wcsdm.php:389
 msgid "Store Location Longitude is required"
 msgstr ""
 
-#: includes/class-wcsdm.php:372
+#: includes/class-wcsdm.php:443
 msgid "Shipping Rates is required"
 msgstr ""
 
-#: includes/class-wcsdm.php:483
+#: includes/class-wcsdm.php:554
 msgid "No rates data availbale."
 msgstr ""
 
+#: wcsdm.php:86
+msgid "Settings"
+msgstr ""
+
+#: wcsdm.php:152
+msgid "Drag this marker or search your address at the input above."
+msgstr ""
 #. Plugin Name of the plugin/theme
 msgid "WooCommerce Shipping Distance Matrix"
 msgstr ""
@@ -219,9 +200,7 @@ msgid "https://github.com/sofyansitorus/WooCommerce-Shipping-Distance-Matrix"
 msgstr ""
 
 #. Description of the plugin/theme
-msgid ""
-"WooCommerce shipping rates calculator based on products shipping class and "
-"distances that calculated using Google Maps Distance Matrix API."
+msgid "WooCommerce shipping rates calculator based on products shipping class and route distances that calculated using Google Maps Distance Matrix API."
 msgstr ""
 
 #. Author of the plugin/theme
