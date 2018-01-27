@@ -17,6 +17,7 @@ WooCommerce shipping rates calculator based on products shipping class and route
 
 This plugin perfect for online store that use local shipping or private shipping such as selling flower, food & beverage but not limited to.
 ### Features ###
+* Set shipping cost with flate rate or based on per km/mi schema.
 * Set shipping cost by product shipping class.
 * Set unlimited distances ranges.
 * Set shipping origin info by coordinates using "Map Address Picker".
@@ -87,6 +88,9 @@ You can either create ticket at plugin support forum or GitHub repository:
 
 ## Changelog ##
 
+### 1.2.5 ###
+* Improvemnets - Add option to charge shipping per distance unit.
+
 ### 1.2.4 ###
 * Improvemnets - Add "Map Location Picker" for store location setting.
 * Improvemnets - Setting panel UI/UX improved more user friendly.
@@ -124,7 +128,7 @@ You can either create ticket at plugin support forum or GitHub repository:
 * Feature - Set travel mode: Driving, Walking, Bicycling.
 * Feature - Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
 
-### 1.2.4 ###
+### 1.2.5 ###
 This version include some improvements. Upgrade immediately.
 
 
