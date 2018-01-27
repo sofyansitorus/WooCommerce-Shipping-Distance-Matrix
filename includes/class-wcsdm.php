@@ -27,6 +27,7 @@
  * @author     Sofyan Sitorus <sofyansitorus@gmail.com>
  */
 class Wcsdm extends WC_Shipping_Method {
+
 	/**
 	 * URL of Google Maps Distance Matrix API
 	 *
@@ -300,7 +301,11 @@ class Wcsdm extends WC_Shipping_Method {
 						<tr>
 						<td class="col-select"><input class="select-item" type="checkbox"></td>
 						<?php foreach ( $table_rate as $key => $value ) : ?>
+						<?php if ( 'distance' === $key ) : ?>
 						<td class="col-<?php echo esc_attr( $key ); ?>"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $key ); ?>[]" type="number" value="<?php echo esc_attr( $value ); ?>" min="0"></td>
+						<?php else : ?>
+						<td class="col-<?php echo esc_attr( $key ); ?>"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $key ); ?>[]" class="wc_input_price input-text regular-input" type="text" value="<?php echo esc_attr( $value ); ?>" min="0"></td>
+						<?php endif; ?>
 						<?php endforeach; ?>
 						</tr>
 						<?php endforeach; ?>
@@ -316,10 +321,10 @@ class Wcsdm extends WC_Shipping_Method {
 				<tr>
 					<td class="col-select"><input class="select-item" type="checkbox"></td>
 					<td class="col-distance"><input name="{{{ data.field_key }}}_distance[]" type="number" value="" min="0"></td>
-					<td class="col-no-class"><input name="{{{ data.field_key }}}_class_0[]" type="number" value="" min="0"></td>
+					<td class="col-no-class"><input name="{{{ data.field_key }}}_class_0[]" class="wc_input_price input-text regular-input" type="text" value="" min="0"></td>
 					<?php if ( $shipping_classes ) : ?>
 					<?php foreach ( $shipping_classes as $shipping_class ) : ?>
-					<td class="col-has-class col-class<?php echo esc_attr( $shipping_class->term_id ); ?>"><input name="{{{ data.field_key }}}_class_<?php echo esc_attr( $shipping_class->term_id ); ?>[]" type="number" value="" min="0"></td>
+					<td class="col-has-class col-class<?php echo esc_attr( $shipping_class->term_id ); ?>"><input name="{{{ data.field_key }}}_class_<?php echo esc_attr( $shipping_class->term_id ); ?>[]" class="wc_input_price input-text regular-input" type="text" value="" min="0"></td>
 					<?php endforeach; ?>
 					<?php endif; ?>
 				</tr>
