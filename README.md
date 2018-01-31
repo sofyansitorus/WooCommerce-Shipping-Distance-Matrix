@@ -6,7 +6,7 @@ WooCommerce shipping rates calculator based on products shipping class and route
 **Contributors:** [sofyansitorus](https://profiles.wordpress.org/sofyansitorus)<br>
 **Tags:** [woocommerce shipping](https://wordpress.org/plugins/tags/woocommerce shipping), [local shipping](https://wordpress.org/plugins/tags/local shipping), [private shipping](https://wordpress.org/plugins/tags/private shipping)<br>
 **Requires at least:** 4.8<br>
-**Tested up to:** 4.9.1<br>
+**Tested up to:** 4.9.2<br>
 **Stable tag:** trunk (master)<br>
 **License:** [GPL-2.0+](http://www.gnu.org/licenses/gpl-2.0.txt)<br>
 **Requires PHP:** 5.6<br>
@@ -16,8 +16,10 @@ WooCommerce shipping rates calculator based on products shipping class and route
 WooCommerce shipping rates calculator based on products shipping class and route distances that calculated using Google Maps Distance Matrix API.
 
 This plugin perfect for online store that use local shipping or private shipping such as selling flower, food & beverage but not limited to.
+
+This plugin require Google Maps Distance Matrix API Services enabled in your Google Console. [Click here](https://developers.google.com/maps/documentation/distance-matrix/get-api-key) to get API Key and to enable the services.
 ### Features ###
-* Set shipping cost with flate rate or based on per km/mi schema.
+* Set shipping cost with flat rate or based on per km/mi schema.
 * Set shipping cost by product shipping class.
 * Set unlimited distances ranges.
 * Set shipping origin info by coordinates using "Map Address Picker".
@@ -58,21 +60,19 @@ You can setup the plugin setting from the Shipping Zones settings. Please check 
 [Video](https://www.youtube.com/watch?v=eThWmrnBP38) by [InMotion Hosting](https://www.inmotionhosting.com)
 
 ### Where can I get support? ###
-You can either create ticket at plugin support forum or GitHub repository:
+You can either support ticket at plugin support forum :
 
 * [Plugin Support Forum](https://wordpress.org/support/plugin/wcsdm)
-* [Plugin GitHub Repository](https://github.com/sofyansitorus/WooCommerce-Shipping-Distance-Matrix)
 
 ### Where can I report bugs? ###
-You can either create ticket at plugin support forum or GitHub repository:
+You can report bugs at the plugin GitHub repository:
 
 * [Plugin Support Forum](https://wordpress.org/support/plugin/wcsdm)
 * [Plugin GitHub Repository](https://github.com/sofyansitorus/WooCommerce-Shipping-Distance-Matrix)
 
-### Where can I request a feature? ###
-You can either create ticket at plugin support forum or GitHub repository:
+### Can I contribute to develop this plugin? ###
+I always welcome and encourage contributions to this plugin. Please visit the plugin GitHub repository:
 
-* [Plugin Support Forum](https://wordpress.org/support/plugin/wcsdm)
 * [Plugin GitHub Repository](https://github.com/sofyansitorus/WooCommerce-Shipping-Distance-Matrix)
 
 
@@ -87,6 +87,9 @@ You can either create ticket at plugin support forum or GitHub repository:
 ![Settings panel bottom area](assets/screenshot-2.jpg)
 
 ## Changelog ##
+
+### 1.2.6 ###
+* Fix - Maps picker.
 
 ### 1.2.5 ###
 * Improvemnets - Add option to charge shipping per distance unit.
@@ -128,7 +131,10 @@ You can either create ticket at plugin support forum or GitHub repository:
 * Feature - Set travel mode: Driving, Walking, Bicycling.
 * Feature - Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
 
-### 1.2.5 ###
-This version include some improvements. Upgrade immediately.
+
+## Upgrade Notice ##
+
+### 1.2.6 ###
+This version include bug fix Maps Picker. Upgrade immediately.
 
 
