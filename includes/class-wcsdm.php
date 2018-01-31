@@ -131,7 +131,7 @@ class Wcsdm extends WC_Shipping_Method {
 			'gmaps_api_key'            => array(
 				'title'       => __( 'API Key', 'wcsdm' ),
 				'type'        => 'text',
-				'description' => __( '<a href="https://developers.google.com/maps/documentation/distance-matrix/get-api-key" target="_blank">Click here</a> to get a Google Maps Distance Matrix API Key.', 'wcsdm' ),
+				'description' => __( 'This plugin require Google Maps Distance Matrix API Services enabled in your Google Console. <a href="https://developers.google.com/maps/documentation/distance-matrix/get-api-key" target="_blank">Click here</a> to get API Key and enable the services. It is FREE!', 'wcsdm' ),
 				'default'     => '',
 			),
 			'gmaps_address_picker'     => array(
