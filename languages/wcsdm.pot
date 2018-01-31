@@ -2,9 +2,9 @@
 # This file is distributed under the same license as the WooCommerce Shipping Distance Matrix package.
 msgid ""
 msgstr ""
-"Project-Id-Version: WooCommerce Shipping Distance Matrix 1.2.3\n"
+"Project-Id-Version: WooCommerce Shipping Distance Matrix 1.2.5\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wcsdm\n"
-"POT-Creation-Date: 2018-01-27 21:39:05+00:00\n"
+"POT-Creation-Date: 2018-01-31 04:10:32+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -16,171 +16,179 @@ msgstr ""
 msgid "Shipping rates calculator based on products shipping class and route distances."
 msgstr ""
 
-#: includes/class-wcsdm.php:107
+#: includes/class-wcsdm.php:108
 msgid "Title"
 msgstr ""
 
-#: includes/class-wcsdm.php:109
+#: includes/class-wcsdm.php:110
 msgid "This controls the title which the user sees during checkout."
 msgstr ""
 
-#: includes/class-wcsdm.php:114
-msgid "API Key"
-msgstr ""
-
-#: includes/class-wcsdm.php:116
-msgid "<a href=\"https://developers.google.com/maps/documentation/distance-matrix/get-api-key\" target=\"_blank\">Click here</a> to get a Google Maps Distance Matrix API Key."
-msgstr ""
-
-#: includes/class-wcsdm.php:120
-msgid "Store Location"
-msgstr ""
-
-#: includes/class-wcsdm.php:132
-msgid "Distance Units"
-msgstr ""
-
-#: includes/class-wcsdm.php:134
-msgid "Google Maps Distance Matrix API distance units parameter."
-msgstr ""
-
-#: includes/class-wcsdm.php:138
-msgid "Kilometers"
-msgstr ""
-
-#: includes/class-wcsdm.php:139
-msgid "Miles"
-msgstr ""
-
-#: includes/class-wcsdm.php:143
-msgid "Travel Mode"
-msgstr ""
-
-#: includes/class-wcsdm.php:145
-msgid "Google Maps Distance Matrix API travel mode parameter."
-msgstr ""
-
-#: includes/class-wcsdm.php:149
-msgid "Driving"
-msgstr ""
-
-#: includes/class-wcsdm.php:150
-msgid "Walking"
-msgstr ""
-
-#: includes/class-wcsdm.php:151
-msgid "Bicycling"
-msgstr ""
-
-#: includes/class-wcsdm.php:155
-msgid "Restrictions"
-msgstr ""
-
-#: includes/class-wcsdm.php:157
-msgid "Google Maps Distance Matrix API restrictions parameter."
-msgstr ""
-
-#: includes/class-wcsdm.php:161
-msgid "Avoid Tolls"
-msgstr ""
-
-#: includes/class-wcsdm.php:162
-msgid "Avoid Highways"
-msgstr ""
-
-#: includes/class-wcsdm.php:163
-msgid "Avoid Ferries"
-msgstr ""
-
-#: includes/class-wcsdm.php:164
-msgid "Avoid Indoor"
-msgstr ""
-
-#: includes/class-wcsdm.php:168
-msgid "Calculation type"
-msgstr ""
-
-#: includes/class-wcsdm.php:173
-msgid "Per item: Charge shipping for each items individually"
-msgstr ""
-
-#: includes/class-wcsdm.php:174
-msgid "Per order: Charge shipping for the most expensive shipping cost"
-msgstr ""
-
-#: includes/class-wcsdm.php:178
-msgid "Show distance"
-msgstr ""
-
-#: includes/class-wcsdm.php:179
-msgid "Yes"
-msgstr ""
-
-#: includes/class-wcsdm.php:181
-msgid "Show the distance info to customer during checkout."
-msgstr ""
-
-#: includes/class-wcsdm.php:185
+#: includes/class-wcsdm.php:115
 msgid "Tax status"
 msgstr ""
 
-#: includes/class-wcsdm.php:190
+#: includes/class-wcsdm.php:120
 msgid "Taxable"
 msgstr ""
 
-#: includes/class-wcsdm.php:191
+#: includes/class-wcsdm.php:121
 msgid "None"
 msgstr ""
 
-#: includes/class-wcsdm.php:195
+#: includes/class-wcsdm.php:125
+msgid "Show distance"
+msgstr ""
+
+#: includes/class-wcsdm.php:126 includes/class-wcsdm.php:197
+msgid "Yes"
+msgstr ""
+
+#: includes/class-wcsdm.php:128
+msgid "Show the distance info to customer during checkout."
+msgstr ""
+
+#: includes/class-wcsdm.php:132
+msgid "API Key"
+msgstr ""
+
+#: includes/class-wcsdm.php:134
+msgid "This plugin require Google Maps Distance Matrix API Services enabled in your Google Console. <a href=\"https://developers.google.com/maps/documentation/distance-matrix/get-api-key\" target=\"_blank\">Click here</a> to get API Key and to enable the services."
+msgstr ""
+
+#: includes/class-wcsdm.php:138
+msgid "Store Location"
+msgstr ""
+
+#: includes/class-wcsdm.php:150
+msgid "Travel Mode"
+msgstr ""
+
+#: includes/class-wcsdm.php:152
+msgid "Google Maps Distance Matrix API travel mode parameter."
+msgstr ""
+
+#: includes/class-wcsdm.php:156
+msgid "Driving"
+msgstr ""
+
+#: includes/class-wcsdm.php:157
+msgid "Walking"
+msgstr ""
+
+#: includes/class-wcsdm.php:158
+msgid "Bicycling"
+msgstr ""
+
+#: includes/class-wcsdm.php:162
+msgid "Restrictions"
+msgstr ""
+
+#: includes/class-wcsdm.php:164
+msgid "Google Maps Distance Matrix API restrictions parameter."
+msgstr ""
+
+#: includes/class-wcsdm.php:168
+msgid "Avoid Tolls"
+msgstr ""
+
+#: includes/class-wcsdm.php:169
+msgid "Avoid Highways"
+msgstr ""
+
+#: includes/class-wcsdm.php:170
+msgid "Avoid Ferries"
+msgstr ""
+
+#: includes/class-wcsdm.php:171
+msgid "Avoid Indoor"
+msgstr ""
+
+#: includes/class-wcsdm.php:175
+msgid "Distance Units"
+msgstr ""
+
+#: includes/class-wcsdm.php:177
+msgid "Google Maps Distance Matrix API distance units parameter."
+msgstr ""
+
+#: includes/class-wcsdm.php:181
+msgid "Kilometers"
+msgstr ""
+
+#: includes/class-wcsdm.php:182
+msgid "Miles"
+msgstr ""
+
+#: includes/class-wcsdm.php:186
+msgid "Calculation type"
+msgstr ""
+
+#: includes/class-wcsdm.php:191
+msgid "Per item: Charge shipping for each items individually"
+msgstr ""
+
+#: includes/class-wcsdm.php:192
+msgid "Per order: Charge shipping for the most expensive shipping cost"
+msgstr ""
+
+#: includes/class-wcsdm.php:196
+msgid "Charge per "
+msgstr ""
+
+#: includes/class-wcsdm.php:199
+msgid "Charge customer based on shipping distance multiplied with shipping class rate defined. Example: If the rate defined is $4 and the shipping distance is 7 miles, the shipping cost will be $28."
+msgstr ""
+
+#: includes/class-wcsdm.php:203
 msgid "Shipping Rates"
 msgstr ""
 
-#: includes/class-wcsdm.php:197
+#: includes/class-wcsdm.php:205
 msgid "Table rates for each shipping class and maximum distances. Leave blank to disable. Fill 0 (zero) to set as free shipping."
 msgstr ""
 
-#: includes/class-wcsdm.php:239
+#: includes/class-wcsdm.php:247
 msgid "Search your store location"
 msgstr ""
 
-#: includes/class-wcsdm.php:283
+#: includes/class-wcsdm.php:291
 msgid "Add Row"
 msgstr ""
 
-#: includes/class-wcsdm.php:283
+#: includes/class-wcsdm.php:291
 msgid "Remove Row"
 msgstr ""
 
-#: includes/class-wcsdm.php:285
+#: includes/class-wcsdm.php:293
 msgid "Cost by Shipping Class"
 msgstr ""
 
-#: includes/class-wcsdm.php:289
+#: includes/class-wcsdm.php:297
 msgid "Maximum Distances"
 msgstr ""
 
-#: includes/class-wcsdm.php:290
+#: includes/class-wcsdm.php:298
 msgid "Default"
 msgstr ""
 
-#: includes/class-wcsdm.php:347
+#: includes/class-wcsdm.php:355
 msgid "API Key is required"
 msgstr ""
 
-#: includes/class-wcsdm.php:368
+#: includes/class-wcsdm.php:376
 msgid "Store Location Latitude is required"
 msgstr ""
 
-#: includes/class-wcsdm.php:389
+#: includes/class-wcsdm.php:397
 msgid "Store Location Longitude is required"
 msgstr ""
 
-#: includes/class-wcsdm.php:443
+#: includes/class-wcsdm.php:451
 msgid "Shipping Rates is required"
 msgstr ""
 
-#: includes/class-wcsdm.php:554
+#: includes/class-wcsdm.php:565
 msgid "No rates data availbale."
 msgstr ""
 
