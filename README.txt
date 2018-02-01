@@ -22,7 +22,7 @@ This plugin require Google Maps Distance Matrix API Services enabled in your Goo
 * Set shipping cost with flat rate or based on per km/mi schema.
 * Set shipping cost by product shipping class.
 * Set unlimited distances ranges.
-* Set shipping origin info by coordinates using "Map Address Picker".
+* Set shipping origin info by location coordinates.
 * Set distances unit: Mile, Kilometre.
 * Set travel mode: Driving, Walking, Bicycling.
 * Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
@@ -80,6 +80,10 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 
 == Changelog ==
 
+= 1.2.7 =
+
+* Fix - Remove Maps Place Picker.
+
 = 1.2.6 =
 
 * Fix - Maps picker.
@@ -134,6 +138,6 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 * Feature - Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
 
 == Upgrade Notice ==
-= 1.2.6 =
+= 1.2.7 =
 
 This version include bug fix Maps Picker. Upgrade immediately.
