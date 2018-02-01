@@ -129,22 +129,22 @@ class Wcsdm extends WC_Shipping_Method {
 				'desc_tip'    => true,
 			),
 			'gmaps_api_key'            => array(
-				'title'       => __( 'API Key', 'wcsdm' ),
+				'title'       => __( 'Google Maps Distance Matrix API', 'wcsdm' ),
 				'type'        => 'text',
 				'description' => __( 'This plugin require Google Maps Distance Matrix API Services enabled in your Google Console. <a href="https://developers.google.com/maps/documentation/distance-matrix/get-api-key" target="_blank">Click here</a> to get API Key and to enable the services.', 'wcsdm' ),
 				'default'     => '',
 			),
-			'gmaps_address_picker'     => array(
-				'title' => __( 'Store Location', 'wcsdm' ),
-				'type'  => 'address_picker',
-			),
 			'origin_lat'               => array(
-				'type'    => 'hidden',
-				'default' => '',
+				'title'       => __( 'Store Location Latitude', 'wcsdm' ),
+				'type'        => 'decimal',
+				'description' => __( '<a href="http://www.latlong.net/" target="_blank">Click here</a> to get your store location coordinates info.', 'wcsdm' ),
+				'default'     => '',
 			),
 			'origin_lng'               => array(
-				'type'    => 'hidden',
-				'default' => '',
+				'title'       => __( 'Store Location Longitude', 'wcsdm' ),
+				'type'        => 'decimal',
+				'description' => __( '<a href="http://www.latlong.net/" target="_blank">Click here</a> to get your store location coordinates info.', 'wcsdm' ),
+				'default'     => '',
 			),
 			'gmaps_api_mode'           => array(
 				'title'       => __( 'Travel Mode', 'wcsdm' ),
@@ -209,69 +209,6 @@ class Wcsdm extends WC_Shipping_Method {
 			),
 		);
 	}
-
-	/**
-	 * Generate origin settings field.
-	 *
-	 * @since 1.2.4
-	 * @param string $key Settings field key.
-	 * @param array  $data Settings field data.
-	 */
-	public function generate_address_picker_html( $key, $data ) {
-		$field_key = $this->get_field_key( $key );
-
-		$defaults = array(
-			'title'             => '',
-			'disabled'          => false,
-			'class'             => '',
-			'css'               => '',
-			'placeholder'       => '',
-			'type'              => 'text',
-			'desc_tip'          => false,
-			'description'       => '',
-			'custom_attributes' => array(),
-			'options'           => array(),
-		);
-
-		$data = wp_parse_args( $data, $defaults );
-
-		ob_start(); ?>
-		<tr valign="top">
-			<th scope="row" class="titledesc">
-				<?php echo esc_html( $this->get_tooltip_html( $data ) ); ?>
-				<label for="<?php echo esc_attr( $field_key ); ?>"><?php echo wp_kses_post( $data['title'] ); ?></label>
-			</th>
-			<td class="forminp">
-				<div id="wcsdm-map-wrapper" class="wcsdm-map-wrapper"></div>
-				<script type="text/html" id="tmpl-wcsdm-map-search">
-					<input id="{{data.map_search_id}}" class="wcsdm-map-search controls" type="text" placeholder="<?php echo esc_attr( __( 'Search your store location', 'wcsdm' ) ); ?>" autocomplete="off" />
-				</script>
-				<script type="text/html" id="tmpl-wcsdm-map-canvas">
-					<div id="{{data.map_canvas_id}}" class="wcsdm-map-canvas"></div>
-				</script>
-			</td>
-		</tr>
-		<?php
-		return ob_get_clean();
-	}
-
-	/**
-	 * Generate hidden settings field.
-	 *
-	 * @since 1.2.4
-	 * @param string $key Settings field key.
-	 * @param array  $data Settings field data.
-	 */
-	public function generate_hidden_html( $key, $data ) {
-		$field_key = $this->get_field_key( $key );
-
-		ob_start();
-		?>
-		<input type="hidden" name="<?php echo esc_attr( $field_key ); ?>" id="<?php echo esc_attr( $field_key ); ?>" value="<?php echo esc_attr( $this->get_option( $key ) ); ?>">
-		<?php
-		return ob_get_clean();
-	}
-
 	/**
 	 * Generate table rates HTML form.
 	 *
