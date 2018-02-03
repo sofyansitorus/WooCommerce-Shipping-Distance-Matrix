@@ -250,7 +250,7 @@ class Wcsdm extends WC_Shipping_Method {
 								<?php if ( 'distance' === $key ) : ?>
 								<span class="input-group-distance"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $key ); ?>[]" class="input-text regular-input" type="number" value="<?php echo esc_attr( $value ); ?>" min="0"></span>
 								<?php else : ?>
-								<span class="input-group-price"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $key ); ?>[]" class="wc_input_price input-text regular-input" type="text" value="<?php echo esc_attr( $value ); ?>" min="0"></span>
+								<span class="input-group-price"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $key ); ?>[]" class="wc_input_price input-text regular-input" type="text" value="<?php echo esc_attr( $this->fomat_price( $value ) ); ?>" min="0"></span>
 								<?php endif; ?>
 								</td>
 								<?php endforeach; ?>
@@ -275,6 +275,39 @@ class Wcsdm extends WC_Shipping_Method {
 		</tr>
 		<?php
 		return ob_get_clean();
+	}
+
+	/**
+	 * Format the price based on WooCommerce currency settings.
+	 *
+	 * @since    1.0.0
+	 *
+	 * @param  float $price Raw price.
+	 * @param  array $args  Arguments to format a price {
+	 *     Array of arguments.
+	 *     Defaults to empty array.
+	 *
+	 *     @type string $decimal_separator  Decimal separator.
+	 *                                      Defaults the result of wc_get_price_decimal_separator().
+	 *     @type string $thousand_separator Thousand separator.
+	 *                                      Defaults the result of wc_get_price_thousand_separator().
+	 *     @type string $decimals           Number of decimals.
+	 *                                      Defaults the result of wc_get_price_decimals().
+	 * }
+	 * @return string
+	 */
+	private function fomat_price( $price, $args = array() ) {
+		$args = apply_filters(
+			'wc_price_args', wp_parse_args(
+				$args, array(
+					'decimal_separator'  => wc_get_price_decimal_separator(),
+					'thousand_separator' => wc_get_price_thousand_separator(),
+					'decimals'           => wc_get_price_decimals(),
+				)
+			)
+		);
+
+		return apply_filters( 'formatted_woocommerce_price', number_format( $price, $args['decimals'], $args['decimal_separator'], $args['thousand_separator'] ), $price, $args['decimals'], $args['decimal_separator'], $args['thousand_separator'] );
 	}
 
 	/**
@@ -366,7 +399,7 @@ class Wcsdm extends WC_Shipping_Method {
 				$field_key_short = str_replace( $field_key . '_', '', $post_data_key );
 
 				foreach ( $post_data_value as $index => $row_value ) {
-					$rates[ $index ][ $field_key_short ] = $row_value;
+					$rates[ $index ][ $field_key_short ] = wc_format_decimal( $row_value );
 				}
 			}
 
@@ -451,7 +484,7 @@ class Wcsdm extends WC_Shipping_Method {
 
 		$rate = array(
 			'id'        => $this->get_rate_id(),
-			'label'     => ( 'yes' === $this->show_distance ) ? sprintf( '%s (%s)', $this->title, $api_request['distance_text'] ) : $this->title,
+			'label'     => ( 'yes' === $this->show_distance && ! empty( $api_request['distance_text'] ) ) ? sprintf( '%s (%s)', $this->title, $api_request['distance_text'] ) : $this->title,
 			'cost'      => $shipping_cost_total,
 			'meta_data' => $api_request,
 		);
@@ -492,8 +525,8 @@ class Wcsdm extends WC_Shipping_Method {
 		if ( $this->table_rates ) {
 			$offset = 0;
 			foreach ( $this->table_rates as $rate ) {
-				if ( $distance > $offset && $distance <= $rate['distance'] && isset( $rate[ 'class_' . $class_id ] ) && is_numeric( $rate[ 'class_' . $class_id ] ) ) {
-					return $rate[ 'class_' . $class_id ];
+				if ( $distance > $offset && $distance <= $rate['distance'] && isset( $rate[ 'class_' . $class_id ] ) ) {
+					return wc_format_decimal( $rate[ 'class_' . $class_id ] );
 				}
 				$offset = $rate['distance'];
 			}
@@ -541,6 +574,8 @@ class Wcsdm extends WC_Shipping_Method {
 		}
 
 		$cache_key = implode( '_', $cache_keys );
+
+		$this->show_debug($cache_key);
 
 		// Check if the data already chached and return it.
 		$cached_data = wp_cache_get( $cache_key, $this->id );
@@ -599,7 +634,9 @@ class Wcsdm extends WC_Shipping_Method {
 			return false;
 		}
 
-		$distance = 0;
+		$distance      = 0;
+		$distance_text = '';
+		$error_message = '';
 
 		$element_lvl_errors = array(
 			'NOT_FOUND'                 => __( 'Origin and/or destination of this pairing could not be geocoded', 'wcsdm' ),
@@ -615,8 +652,9 @@ class Wcsdm extends WC_Shipping_Method {
 					case 'OK':
 						$pieces = explode( ' ', $element['distance']['text'] );
 						if ( 2 === count( $pieces ) ) {
-							if ( $pieces[0] > $distance ) { // Try to get the longest route distance.
-								$distance      = $pieces[0];
+							$element_distance = wc_format_decimal( $pieces[0] );
+							if ( $element_distance > $distance ) { // Try to get the longest route distance.
+								$distance      = $element_distance;
 								$distance_text = $element['distance']['text'];
 							}
 						}
@@ -626,10 +664,14 @@ class Wcsdm extends WC_Shipping_Method {
 						if ( isset( $element_lvl_errors[ $element_status ] ) ) {
 							$error_message .= ' - ' . $element_lvl_errors[ $element_status ];
 						}
-						$this->show_debug( $error_message, 'error' );
 						break;
 				}
 			}
+		}
+
+		if ( ! $distance && $error_message ) {
+			$this->show_debug( $error_message, 'error' );
+			return;
 		}
 
 		if ( $distance ) {
