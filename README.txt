@@ -80,6 +80,10 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 
 == Changelog ==
 
+= 1.2.9 =
+
+* Fix - Fix issue when comma as decimal separator.
+
 = 1.2.8 =
 
 * Improvements - More info in debugging mode.
@@ -143,6 +147,6 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 * Feature - Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
 
 == Upgrade Notice ==
-= 1.2.8 =
+= 1.2.9 =
 
-This version include fix and improvements. Upgrade immediately.
+This version include fix. Upgrade immediately.

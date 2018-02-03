@@ -88,6 +88,9 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 
 ## Changelog ##
 
+### 1.2.9 ###
+* Fix - Fix issue when comma as decimal separator.
+
 ### 1.2.8 ###
 * Improvements - More info in debugging mode.
 * Fix - Table rates input fields styling.
@@ -141,7 +144,7 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 
 ## Upgrade Notice ##
 
-### 1.2.8 ###
-This version include fix and improvements. Upgrade immediately.
+### 1.2.9 ###
+This version include fix. Upgrade immediately.
 
 
