@@ -280,7 +280,7 @@ class Wcsdm extends WC_Shipping_Method {
 	/**
 	 * Format the price based on WooCommerce currency settings.
 	 *
-	 * @since    1.0.0
+	 * @since    1.2.9
 	 *
 	 * @param  float $price Raw price.
 	 * @param  array $args  Arguments to format a price {
@@ -575,8 +575,6 @@ class Wcsdm extends WC_Shipping_Method {
 
 		$cache_key = implode( '_', $cache_keys );
 
-		$this->show_debug($cache_key);
-
 		// Check if the data already chached and return it.
 		$cached_data = wp_cache_get( $cache_key, $this->id );
 
@@ -602,7 +600,7 @@ class Wcsdm extends WC_Shipping_Method {
 
 		// Check if HTTP request is error.
 		if ( is_wp_error( $raw_response ) ) {
-			$this->show_debug( $raw_response->get_error_message(), 'error' );
+			$this->show_debug( $raw_response->get_error_message(), 'notice' );
 			return false;
 		}
 
@@ -610,7 +608,7 @@ class Wcsdm extends WC_Shipping_Method {
 
 		// Check if API response is empty.
 		if ( empty( $response_body ) ) {
-			$this->show_debug( __( 'API response is empty', 'wcsdm' ), 'error' );
+			$this->show_debug( __( 'API response is empty', 'wcsdm' ), 'notice' );
 		}
 
 		$response_data = json_decode( $response_body, true );
@@ -618,7 +616,7 @@ class Wcsdm extends WC_Shipping_Method {
 		// Check if JSON data is valid.
 		if ( json_last_error() !== JSON_ERROR_NONE ) {
 			if ( function_exists( 'json_last_error_msg' ) ) {
-				$this->show_debug( __( 'Error while decoding API response', 'wcsdm' ) . ': ' . json_last_error_msg(), 'error' );
+				$this->show_debug( __( 'Error while decoding API response', 'wcsdm' ) . ': ' . json_last_error_msg(), 'notice' );
 			}
 			return false;
 		}
@@ -630,7 +628,7 @@ class Wcsdm extends WC_Shipping_Method {
 			if ( isset( $response_data['error_message'] ) ) {
 				$error_message .= ' - ' . $response_data['error_message'];
 			}
-			$this->show_debug( $error_message, 'error' );
+			$this->show_debug( $error_message, 'notice' );
 			return false;
 		}
 
@@ -670,7 +668,7 @@ class Wcsdm extends WC_Shipping_Method {
 		}
 
 		if ( ! $distance && $error_message ) {
-			$this->show_debug( $error_message, 'error' );
+			$this->show_debug( $error_message, 'notice' );
 			return;
 		}
 
@@ -790,6 +788,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 *
 	 * @since    1.0.0
 	 * @param string $message The text to display in the notice.
+	 * @param string $type The type of notice.
 	 * @return void
 	 */
 	private function show_debug( $message, $type = 'success' ) {
