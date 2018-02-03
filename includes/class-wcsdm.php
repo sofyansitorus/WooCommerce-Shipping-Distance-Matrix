@@ -561,7 +561,7 @@ class Wcsdm extends WC_Shipping_Method {
 			),
 			$this->google_api_url
 		);
-		$this->show_debug( __( 'API request URL', 'wcsdm' ) . ': ' . $request_url, 'notice' );
+		$this->show_debug( __( 'API Request URL', 'wcsdm' ) . ': ' . str_replace( rawurlencode( $this->gmaps_api_key ), '**********', $request_url ), 'notice' );
 
 		$raw_response = wp_remote_get( esc_url_raw( $request_url ) );
 
