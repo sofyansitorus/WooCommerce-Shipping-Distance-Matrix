@@ -519,22 +519,22 @@ class Wcsdm extends WC_Shipping_Method {
 			return false;
 		}
 
-		$origins = $this->get_origin_info();
-		if ( empty( $origins ) ) {
+		$origin = $this->get_origin_info();
+		if ( empty( $origin ) ) {
 			return false;
 		}
 
 		$cache_keys = array(
 			$this->gmaps_api_key,
-			$destination,
-			$origins,
+			str_replace( ',', '_', $origin ),
 			$this->gmaps_api_mode,
 			$this->gmaps_api_units,
+			strtolower( preg_replace( '/[^\da-z]/i', '-', $destination ) ),
 		);
 
 		$route_avoid = $this->gmaps_api_avoid;
 		if ( is_array( $route_avoid ) ) {
-			$route_avoid = implode( ',', $route_avoid );
+			$route_avoid = implode( '-', $route_avoid );
 		}
 		if ( $route_avoid ) {
 			array_push( $cache_keys, $route_avoid );
@@ -544,9 +544,9 @@ class Wcsdm extends WC_Shipping_Method {
 
 		// Check if the data already chached and return it.
 		$cached_data = wp_cache_get( $cache_key, $this->id );
+
 		if ( false !== $cached_data ) {
-			$this->show_debug( 'Google Maps Distance Matrix API cache key: ' . $cache_key );
-			$this->show_debug( 'Cached Google Maps Distance Matrix API response: ' . wp_json_encode( $cached_data ) );
+			$this->show_debug( __( 'Cached data', 'wcsdm' ) . ': ' . wp_json_encode( $cached_data ) );
 			return $cached_data;
 		}
 
@@ -557,44 +557,77 @@ class Wcsdm extends WC_Shipping_Method {
 				'mode'         => rawurlencode( $this->gmaps_api_mode ),
 				'avoid'        => rawurlencode( $route_avoid ),
 				'destinations' => rawurlencode( $destination ),
-				'origins'      => rawurlencode( $origins ),
+				'origins'      => rawurlencode( $origin ),
 			),
 			$this->google_api_url
 		);
-		$this->show_debug( 'Google Maps Distance Matrix API request URL: ' . $request_url );
+		$this->show_debug( __( 'API request URL', 'wcsdm' ) . ': ' . $request_url, 'notice' );
 
-		$response = wp_remote_retrieve_body( wp_remote_get( esc_url_raw( $request_url ) ) );
-		$this->show_debug( 'Google Maps Distance Matrix API response: ' . $response );
+		$raw_response = wp_remote_get( esc_url_raw( $request_url ) );
 
-		$response = json_decode( $response, true );
-
-		if ( json_last_error() !== JSON_ERROR_NONE || empty( $response['rows'] ) ) {
+		// Check if HTTP request is error.
+		if ( is_wp_error( $raw_response ) ) {
+			$this->show_debug( $raw_response->get_error_message(), 'error' );
 			return false;
 		}
 
-		if ( empty( $response['destination_addresses'] ) || empty( $response['origin_addresses'] ) ) {
+		$response_body = wp_remote_retrieve_body( $raw_response );
+
+		// Check if API response is empty.
+		if ( empty( $response_body ) ) {
+			$this->show_debug( __( 'API response is empty', 'wcsdm' ), 'error' );
+		}
+
+		$response_data = json_decode( $response_body, true );
+
+		// Check if JSON data is valid.
+		if ( json_last_error() !== JSON_ERROR_NONE ) {
+			if ( function_exists( 'json_last_error_msg' ) ) {
+				$this->show_debug( __( 'Error while decoding API response', 'wcsdm' ) . ': ' . json_last_error_msg(), 'error' );
+			}
+			return false;
+		}
+
+		// Check API response is OK.
+		$status = isset( $response_data['status'] ) ? $response_data['status'] : '';
+		if ( 'OK' !== $status ) {
+			$error_message = __( 'API Response Error', 'wcsdm' ) . ': ' . $status;
+			if ( isset( $response_data['error_message'] ) ) {
+				$error_message .= ' - ' . $response_data['error_message'];
+			}
+			$this->show_debug( $error_message, 'error' );
 			return false;
 		}
 
 		$distance = 0;
 
-		foreach ( $response['rows'] as $rows ) {
-			foreach ( $rows['elements'] as $element ) {
-				if ( 'OK' === $element['status'] ) {
-					if ( 'metric' === $this->gmaps_api_units ) {
-						$element_distance = ceil( str_replace( ' km', '', $element['distance']['text'] ) );
-						if ( $element_distance > $distance ) {
-							$distance      = $element_distance;
-							$distance_text = $distance . ' km';
+		$element_lvl_errors = array(
+			'NOT_FOUND'                 => __( 'Origin and/or destination of this pairing could not be geocoded', 'wcsdm' ),
+			'ZERO_RESULTS'              => __( 'No route could be found between the origin and destination', 'wcsdm' ),
+			'MAX_ROUTE_LENGTH_EXCEEDED' => __( 'Requested route is too long and cannot be processed', 'wcsdm' ),
+		);
+
+		// Get the shipping distance.
+		foreach ( $response_data['rows'] as $row ) {
+			foreach ( $row['elements'] as $element ) {
+				$element_status = $element['status'];
+				switch ( $element_status ) {
+					case 'OK':
+						$pieces = explode( ' ', $element['distance']['text'] );
+						if ( 2 === count( $pieces ) ) {
+							if ( $pieces[0] > $distance ) { // Try to get the longest route distance.
+								$distance      = $pieces[0];
+								$distance_text = $element['distance']['text'];
+							}
 						}
-					}
-					if ( 'imperial' === $this->gmaps_api_units ) {
-						$element_distance = ceil( str_replace( ' mi', '', $element['distance']['text'] ) );
-						if ( $element_distance > $distance ) {
-							$distance      = $element_distance;
-							$distance_text = $distance . ' mi';
+						break;
+					default:
+						$error_message = __( 'API Response Error', 'wcsdm' ) . ': ' . $element_status;
+						if ( isset( $element_lvl_errors[ $element_status ] ) ) {
+							$error_message .= ' - ' . $element_lvl_errors[ $element_status ];
 						}
-					}
+						$this->show_debug( $error_message, 'error' );
+						break;
 				}
 			}
 		}
@@ -603,7 +636,7 @@ class Wcsdm extends WC_Shipping_Method {
 			$data = array(
 				'distance'      => $distance,
 				'distance_text' => $distance_text,
-				'response'      => $response,
+				'response'      => $response_data,
 			);
 
 			wp_cache_set( $cache_key, $data, $this->id ); // Store the data to WP Object Cache for later use.
@@ -717,11 +750,11 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @param string $message The text to display in the notice.
 	 * @return void
 	 */
-	private function show_debug( $message ) {
+	private function show_debug( $message, $type = 'success' ) {
 		$debug_mode = 'yes' === get_option( 'woocommerce_shipping_debug_mode', 'no' );
 
 		if ( $debug_mode && ! defined( 'WOOCOMMERCE_CHECKOUT' ) && ! defined( 'WC_DOING_AJAX' ) && ! wc_has_notice( $message ) ) {
-			wc_add_notice( $message );
+			wc_add_notice( $message, $type );
 		}
 	}
 }
