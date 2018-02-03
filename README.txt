@@ -80,6 +80,11 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 
 == Changelog ==
 
+= 1.2.8 =
+
+* Improvements - More info in debugging mode.
+* Fix - Table rates input fields styling.
+
 = 1.2.7 =
 
 * Fix - Remove Maps Place Picker.
@@ -90,12 +95,12 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 
 = 1.2.5 =
 
-* Improvemnets - Add option to charge shipping per distance unit.
+* Improvements - Add option to charge shipping per distance unit.
 
 = 1.2.4 =
 
-* Improvemnets - Add "Map Location Picker" for store location setting.
-* Improvemnets - Setting panel UI/UX improved more user friendly.
+* Improvements - Add "Map Location Picker" for store location setting.
+* Improvements - Setting panel UI/UX improved more user friendly.
 
 = 1.2.3 =
 
@@ -138,6 +143,6 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 * Feature - Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
 
 == Upgrade Notice ==
-= 1.2.7 =
+= 1.2.8 =
 
-This version include bug fix Maps Picker. Upgrade immediately.
+This version include fix and improvements. Upgrade immediately.
