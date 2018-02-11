@@ -2,3 +2,4 @@ node_modules
 package-lock.json
 /.wpt.yml
 /build
+.DS_Store
