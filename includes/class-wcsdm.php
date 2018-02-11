@@ -622,43 +622,46 @@ class Wcsdm extends WC_Shipping_Method {
 			return false;
 		}
 
-		$cache_keys = array(
-			$this->gmaps_api_key,
+		$transient_keys = array(
+			strtolower( preg_replace( '/[^\da-z]/i', '-', $this->gmaps_api_key ) ),
 			str_replace( ',', '_', $origin ),
 			$this->gmaps_api_mode,
 			$this->gmaps_api_units,
-			strtolower( preg_replace( '/[^\da-z]/i', '-', $destination ) ),
 		);
 
 		$route_avoid = $this->gmaps_api_avoid;
-		if ( is_array( $route_avoid ) ) {
+		if ( $route_avoid && is_array( $route_avoid ) ) {
 			$route_avoid = implode( '-', $route_avoid );
 		}
 		if ( $route_avoid ) {
-			array_push( $cache_keys, $route_avoid );
+			array_push( $transient_keys, $route_avoid );
 		}
 
-		$cache_key = implode( '_', $cache_keys );
+		$transient_key = md5( implode( '_', $transient_keys ) ) . md5( strtolower( preg_replace( '/[^\da-z]/i', '-', $destination ) ) );
 
 		// Check if the data already chached and return it.
-		$cached_data = wp_cache_get( $cache_key, $this->id );
+		$cached_data = get_transient( $transient_key );
 
 		if ( false !== $cached_data ) {
+			$this->show_debug( __( 'Cached key', 'wcsdm' ) . ': ' . $transient_key );
 			$this->show_debug( __( 'Cached data', 'wcsdm' ) . ': ' . wp_json_encode( $cached_data ) );
 			return $cached_data;
 		}
 
-		$request_url = add_query_arg(
-			array(
-				'key'          => rawurlencode( $this->gmaps_api_key ),
-				'units'        => rawurlencode( $this->gmaps_api_units ),
-				'mode'         => rawurlencode( $this->gmaps_api_mode ),
-				'avoid'        => rawurlencode( $route_avoid ),
-				'destinations' => rawurlencode( $destination ),
-				'origins'      => rawurlencode( $origin ),
-			),
-			$this->google_api_url
+		$request_url_args = array(
+			'key'          => rawurlencode( $this->gmaps_api_key ),
+			'units'        => rawurlencode( $this->gmaps_api_units ),
+			'mode'         => rawurlencode( $this->gmaps_api_mode ),
+			'origins'      => rawurlencode( $origin ),
+			'destinations' => rawurlencode( $destination ),
 		);
+
+		if ( $this->gmaps_api_avoid ) {
+			$request_url_args['avoid'] = is_array( $this->gmaps_api_avoid ) ? implode( ',', $this->gmaps_api_avoid ) : $this->gmaps_api_avoid;
+		}
+
+		$request_url = add_query_arg( $request_url_args, $this->google_api_url );
+
 		$this->show_debug( __( 'API Request URL', 'wcsdm' ) . ': ' . str_replace( rawurlencode( $this->gmaps_api_key ), '**********', $request_url ), 'notice' );
 
 		$raw_response = wp_remote_get( esc_url_raw( $request_url ) );
@@ -744,7 +747,8 @@ class Wcsdm extends WC_Shipping_Method {
 				'response'      => $response_data,
 			);
 
-			wp_cache_set( $cache_key, $data, $this->id ); // Store the data to WP Object Cache for later use.
+			delete_transient( $transient_key ); // To make sure the data re-created, delete ot first.
+			set_transient( $transient_key, $data, HOUR_IN_SECONDS ); // Store the data to transient with expiration in 1 hour for later use.
 
 			return $data;
 		}
