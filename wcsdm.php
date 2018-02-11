@@ -145,7 +145,7 @@ function wcsdm_admin_enqueue_scripts( $hook ) {
 			'wcsdm-admin',
 			'wcsdm_params',
 			array(
-				'show_settings' => ( isset( $_GET['wcsdm_nonce'] ) && wp_verify_nonce( $_GET['wcsdm_nonce'], 'wcsdm_settings' ) && is_admin() ),
+				'show_settings' => ( isset( $_GET['wcsdm_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['wcsdm_nonce'] ) ), 'wcsdm_settings' ) && is_admin() ),
 				'method_id'     => WCSDM_METHOD_ID,
 				'method_title'  => WCSDM_METHOD_TITLE,
 				'txt'           => array(
