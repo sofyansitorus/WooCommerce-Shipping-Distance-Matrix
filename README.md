@@ -6,7 +6,7 @@ WooCommerce shipping rates calculator based on products shipping class and route
 **Contributors:** [sofyansitorus](https://profiles.wordpress.org/sofyansitorus)<br>
 **Tags:** [woocommerce shipping](https://wordpress.org/plugins/tags/woocommerce shipping), [local shipping](https://wordpress.org/plugins/tags/local shipping), [private shipping](https://wordpress.org/plugins/tags/private shipping)<br>
 **Requires at least:** 4.8<br>
-**Tested up to:** 4.9.2<br>
+**Tested up to:** 4.9.4<br>
 **Stable tag:** trunk (master)<br>
 **License:** [GPL-2.0+](http://www.gnu.org/licenses/gpl-2.0.txt)<br>
 **Requires PHP:** 5.6<br>
@@ -22,7 +22,7 @@ This plugin require Google Maps Distance Matrix API Services enabled in your Goo
 * Set shipping cost with flat rate or based on per km/mi schema.
 * Set shipping cost by product shipping class.
 * Set unlimited distances ranges.
-* Set shipping origin info by location coordinates.
+* Set shipping origin location coordinates using Maps Picker.
 * Set distances unit: Mile, Kilometre.
 * Set travel mode: Driving, Walking, Bicycling.
 * Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
@@ -88,6 +88,9 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 
 ## Changelog ##
 
+### 1.3.0 ###
+* Improvements - Add Google Maps Picker.
+
 ### 1.2.9 ###
 * Fix - Fix issue when comma as decimal separator.
 
@@ -144,7 +147,7 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 
 ## Upgrade Notice ##
 
-### 1.2.9 ###
-This version include fix. Upgrade immediately.
+### 1.3.0 ###
+This version include improvements. Upgrade immediately.
 
 

@@ -15,7 +15,7 @@
  * Plugin Name:       WooCommerce Shipping Distance Matrix
  * Plugin URI:        https://github.com/sofyansitorus/WooCommerce-Shipping-Distance-Matrix
  * Description:       WooCommerce shipping rates calculator based on products shipping class and route distances that calculated using Google Maps Distance Matrix API.
- * Version:           1.2.9
+ * Version:           1.3.0
  * Author:            Sofyan Sitorus
  * Author URI:        https://github.com/sofyansitorus
  * License:           GPL-2.0+
@@ -42,9 +42,10 @@ if ( ! in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins',
 // Defines plugin named constants.
 define( 'WCSDM_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WCSDM_URL', plugin_dir_url( __FILE__ ) );
-define( 'WCSDM_VERSION', '1.2.9' );
+define( 'WCSDM_VERSION', '1.3.0' );
 define( 'WCSDM_METHOD_ID', 'wcsdm' );
 define( 'WCSDM_METHOD_TITLE', 'Shipping Distance Matrix' );
+define( 'WCSDM_MAP_SECRET_KEY', 'QUl6YVN5Qk82MVFJUm52Zkc5c2tKTW1HV1JVbWhsSU5lcUZXaTdV' );
 
 /**
  * Load plugin textdomain.
@@ -145,7 +146,7 @@ function wcsdm_admin_enqueue_scripts( $hook ) {
 			'wcsdm-admin',
 			'wcsdm_params',
 			array(
-				'show_settings' => ( isset( $_GET['wcsdm_nonce'] ) && wp_verify_nonce( $_GET['wcsdm_nonce'], 'wcsdm_settings' ) && is_admin() ),
+				'show_settings' => ( isset( $_GET['wcsdm_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['wcsdm_nonce'] ) ), 'wcsdm_settings' ) && is_admin() ),
 				'method_id'     => WCSDM_METHOD_ID,
 				'method_title'  => WCSDM_METHOD_TITLE,
 				'txt'           => array(

@@ -2,7 +2,7 @@
 Contributors: sofyansitorus
 Tags: woocommerce shipping,local shipping,private shipping
 Requires at least: 4.8
-Tested up to: 4.9.2
+Tested up to: 4.9.4
 Requires PHP: 5.6
 Stable tag: trunk
 License: GPL-2.0+
@@ -22,7 +22,7 @@ This plugin require Google Maps Distance Matrix API Services enabled in your Goo
 * Set shipping cost with flat rate or based on per km/mi schema.
 * Set shipping cost by product shipping class.
 * Set unlimited distances ranges.
-* Set shipping origin info by location coordinates.
+* Set shipping origin location coordinates using Maps Picker.
 * Set distances unit: Mile, Kilometre.
 * Set travel mode: Driving, Walking, Bicycling.
 * Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
@@ -79,6 +79,10 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 2. Settings panel bottom area
 
 == Changelog ==
+
+= 1.3.0 =
+
+* Improvements - Add Google Maps Picker.
 
 = 1.2.9 =
 
@@ -147,6 +151,6 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 * Feature - Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
 
 == Upgrade Notice ==
-= 1.2.9 =
+= 1.3.0 =
 
-This version include fix. Upgrade immediately.
+This version include improvements. Upgrade immediately.
