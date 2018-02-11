@@ -80,6 +80,11 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 
 == Changelog ==
 
+= 1.3.1 =
+
+* Fix - Fix API request URL.
+* Improvements - Switched from WP Cache Object to Transient.
+
 = 1.3.0 =
 
 * Improvements - Add Google Maps Picker.
@@ -151,6 +156,6 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 * Feature - Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
 
 == Upgrade Notice ==
-= 1.3.0 =
+= 1.3.1 =
 
-This version include improvements. Upgrade immediately.
+This version include fixes. Upgrade immediately.
