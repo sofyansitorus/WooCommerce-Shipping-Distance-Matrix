@@ -45,6 +45,7 @@ define( 'WCSDM_URL', plugin_dir_url( __FILE__ ) );
 define( 'WCSDM_VERSION', '1.2.9' );
 define( 'WCSDM_METHOD_ID', 'wcsdm' );
 define( 'WCSDM_METHOD_TITLE', 'Shipping Distance Matrix' );
+define( 'WCSDM_MAP_SECRET_KEY', 'QUl6YVN5Qk82MVFJUm52Zkc5c2tKTW1HV1JVbWhsSU5lcUZXaTdV' );
 
 /**
  * Load plugin textdomain.
