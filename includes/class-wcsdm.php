@@ -86,6 +86,7 @@ class Wcsdm extends WC_Shipping_Method {
 		$this->gmaps_api_avoid          = $this->get_option( 'gmaps_api_avoid' );
 		$this->calc_type                = $this->get_option( 'calc_type', 'per_item' );
 		$this->charge_per_distance_unit = $this->get_option( 'charge_per_distance_unit', 'no' );
+		$this->enable_fallback_request  = $this->get_option( 'enable_fallback_request', 'no' );
 		$this->show_distance            = $this->get_option( 'show_distance' );
 		$this->table_rates              = $this->get_option( 'table_rates' );
 		$this->tax_status               = $this->get_option( 'tax_status' );
@@ -201,6 +202,13 @@ class Wcsdm extends WC_Shipping_Method {
 				'label'       => __( 'Yes', 'wcsdm' ),
 				'type'        => 'checkbox',
 				'description' => __( 'Charge customer based on shipping distance multiplied with shipping class rate defined. Example: If the rate defined is $4 and the shipping distance is 7 miles, the shipping cost will be $28.', 'wcsdm' ),
+				'desc_tip'    => true,
+			),
+			'enable_fallback_request'  => array(
+				'title'       => __( 'Enable Fallback Request', 'wcsdm' ),
+				'label'       => __( 'Yes', 'wcsdm' ),
+				'type'        => 'checkbox',
+				'description' => __( 'If there is no results for API request using full address, the system will attempt to make another API request to the Google API server without "Address Line 1" parameter. The fallback request will only using "Address Line 2", "City", "State/Province", "Postal Code" and "Country" parameters.', 'wcsdm' ),
 				'desc_tip'    => true,
 			),
 			'shipping_rates'           => array(
@@ -504,7 +512,7 @@ class Wcsdm extends WC_Shipping_Method {
 	public function calculate_shipping( $package = array() ) {
 		$shipping_cost_total = 0;
 
-		$api_request = $this->api_request( $package['destination'] );
+		$api_request = $this->api_request( $package );
 
 		if ( ! $api_request ) {
 			return;
@@ -591,21 +599,21 @@ class Wcsdm extends WC_Shipping_Method {
 	 * Making HTTP request to Google Maps Distance Matrix API
 	 *
 	 * @since    1.0.0
-	 * @param array $destination Destination info in assciative array: address, address_2, city, state, postcode, country.
+	 * @param array $package The cart content data.
 	 * @return array
 	 */
-	private function api_request( $destination ) {
+	private function api_request( $package ) {
 		if ( empty( $this->gmaps_api_key ) ) {
 			return false;
 		}
 
-		$destination = $this->get_destination_info( $destination );
-		if ( empty( $destination ) ) {
+		$destination_info = $this->get_destination_info( $package['destination'] );
+		if ( empty( $destination_info ) ) {
 			return false;
 		}
 
-		$origin = $this->get_origin_info();
-		if ( empty( $origin ) ) {
+		$origin_info = $this->get_origin_info();
+		if ( empty( $origin_info ) ) {
 			return false;
 		}
 
@@ -615,8 +623,8 @@ class Wcsdm extends WC_Shipping_Method {
 			'avoid'        => is_string( $this->gmaps_api_avoid ) ? rawurlencode( $this->gmaps_api_avoid ) : '',
 			'units'        => rawurlencode( $this->gmaps_api_units ),
 			'language'     => rawurlencode( get_locale() ),
-			'origins'      => rawurlencode( $origin ),
-			'destinations' => rawurlencode( $destination ),
+			'origins'      => rawurlencode( $origin_info ),
+			'destinations' => rawurlencode( implode( $destination_info ) ),
 		);
 
 		$transient_key = $this->id . '_api_request_' . md5( wp_json_encode( $request_url_args ) );
@@ -634,7 +642,42 @@ class Wcsdm extends WC_Shipping_Method {
 
 		$this->show_debug( __( 'API Request URL', 'wcsdm' ) . ': ' . str_replace( rawurlencode( $this->gmaps_api_key ), '**********', $request_url ), 'notice' );
 
-		$raw_response = wp_remote_get( esc_url_raw( $request_url ) );
+		$data = $this->process_api_response( wp_remote_get( esc_url_raw( $request_url ) ) );
+
+		// Try to make fallback request if no results found.
+		if ( ! $data && 'yes' === $this->enable_fallback_request && ! empty( $destination_info['address_2'] ) ) {
+			unset( $destination_info['address'] );
+			$request_url_args['destinations'] = rawurlencode( implode( $destination_info ) );
+
+			$request_url = add_query_arg( $request_url_args, $this->google_api_url );
+
+			$this->show_debug( __( 'API Fallback Request URL', 'wcsdm' ) . ': ' . str_replace( rawurlencode( $this->gmaps_api_key ), '**********', $request_url ), 'notice' );
+
+			$data = $this->process_api_response( wp_remote_get( esc_url_raw( $request_url ) ) );
+		}
+
+		if ( $data ) {
+
+			delete_transient( $transient_key ); // To make sure the transient data re-created, delete it first.
+			set_transient( $transient_key, $data, HOUR_IN_SECONDS ); // Store the data to transient with expiration in 1 hour for later use.
+
+			return $data;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Process API Response.
+	 *
+	 * @param array $raw_response HTTP API response.
+	 * @return array|bool Formatted response data, false on failure.
+	 */
+	private function process_api_response( $raw_response ) {
+
+		$distance      = 0;
+		$distance_text = '';
+		$error_message = '';
 
 		// Check if HTTP request is error.
 		if ( is_wp_error( $raw_response ) ) {
@@ -647,6 +690,7 @@ class Wcsdm extends WC_Shipping_Method {
 		// Check if API response is empty.
 		if ( empty( $response_body ) ) {
 			$this->show_debug( __( 'API response is empty', 'wcsdm' ), 'notice' );
+			return false;
 		}
 
 		$response_data = json_decode( $response_body, true );
@@ -670,10 +714,6 @@ class Wcsdm extends WC_Shipping_Method {
 			return false;
 		}
 
-		$distance      = 0;
-		$distance_text = '';
-		$error_message = '';
-
 		$element_lvl_errors = array(
 			'NOT_FOUND'                 => __( 'Origin and/or destination of this pairing could not be geocoded', 'wcsdm' ),
 			'ZERO_RESULTS'              => __( 'No route could be found between the origin and destination', 'wcsdm' ),
@@ -682,9 +722,20 @@ class Wcsdm extends WC_Shipping_Method {
 
 		// Get the shipping distance.
 		foreach ( $response_data['rows'] as $row ) {
+
+			// Berak the loop is distance is defined.
+			if ( $distance ) {
+				break;
+			}
+
 			foreach ( $row['elements'] as $element ) {
-				$element_status = $element['status'];
-				switch ( $element_status ) {
+
+				// Berak the loop is distance is defined.
+				if ( $distance ) {
+					break;
+				}
+
+				switch ( $element['status'] ) {
 					case 'OK':
 						if ( isset( $element['distance']['value'] ) && ! empty( $element['distance']['value'] ) ) {
 							$distance      = $this->convert_m( $element['distance']['value'] );
@@ -692,34 +743,27 @@ class Wcsdm extends WC_Shipping_Method {
 						}
 						break;
 					default:
-						$error_message = __( 'API Response Error', 'wcsdm' ) . ': ' . $element_status;
-						if ( isset( $element_lvl_errors[ $element_status ] ) ) {
-							$error_message .= ' - ' . $element_lvl_errors[ $element_status ];
+						$error_message = __( 'API Response Error', 'wcsdm' ) . ': ' . $element['status'];
+						if ( isset( $element_lvl_errors[ $element['status'] ] ) ) {
+							$error_message .= ' - ' . $element_lvl_errors[ $element['status'] ];
 						}
 						break;
 				}
 			}
 		}
 
-		if ( ! $distance && $error_message ) {
-			$this->show_debug( $error_message, 'notice' );
-			return;
+		if ( ! $distance ) {
+			if ( $error_message ) {
+				$this->show_debug( $error_message, 'notice' );
+			}
+			return false;
 		}
 
-		if ( $distance ) {
-			$data = array(
-				'distance'      => $distance,
-				'distance_text' => $distance_text,
-				'response'      => $response_data,
-			);
-
-			delete_transient( $transient_key ); // To make sure the data re-created, delete ot first.
-			set_transient( $transient_key, $data, HOUR_IN_SECONDS ); // Store the data to transient with expiration in 1 hour for later use.
-
-			return $data;
-		}
-
-		return false;
+		return array(
+			'distance'      => $distance,
+			'distance_text' => $distance_text,
+			'response'      => $response_data,
+		);
 	}
 
 	/**
@@ -786,18 +830,18 @@ class Wcsdm extends WC_Shipping_Method {
 					if ( empty( $country_code ) ) {
 						$country_code = $data[ $key ];
 					}
-					$full_country       = isset( WC()->countries->countries[ $country_code ] ) ? WC()->countries->countries[ $country_code ] : $country_code;
-					$destination_info[] = trim( $full_country );
+					$full_country             = isset( WC()->countries->countries[ $country_code ] ) ? WC()->countries->countries[ $country_code ] : $country_code;
+					$destination_info[ $key ] = trim( $full_country );
 					break;
 				case 'state':
 					if ( empty( $country_code ) ) {
 						$country_code = $data['country'];
 					}
-					$full_state         = isset( WC()->countries->states[ $country_code ][ $data[ $key ] ] ) ? WC()->countries->states[ $country_code ][ $data[ $key ] ] : $data[ $key ];
-					$destination_info[] = trim( $full_state );
+					$full_state               = isset( WC()->countries->states[ $country_code ][ $data[ $key ] ] ) ? WC()->countries->states[ $country_code ][ $data[ $key ] ] : $data[ $key ];
+					$destination_info[ $key ] = trim( $full_state );
 					break;
 				default:
-					$destination_info[] = trim( $data[ $key ] );
+					$destination_info[ $key ] = trim( $data[ $key ] );
 					break;
 			}
 		}
@@ -811,11 +855,11 @@ class Wcsdm extends WC_Shipping_Method {
 		 *
 		 *      add_action( 'woocommerce_wcsdm_shipping_destination_info', 'modify_shipping_destination_info', 10, 2 );
 		 *
-		 *      function modify_shipping_destination_info( $destination_info, $method ) {
+		 *      function modify_shipping_destination_info( $destination_info, $destination_info_arr ) {
 		 *          return '1600 Amphitheatre Parkway,Mountain View,CA,94043';
 		 *      }
 		 */
-		return apply_filters( 'woocommerce_' . $this->id . '_shipping_destination_info', implode( ',', $destination_info ), $this );
+		return apply_filters( 'woocommerce_' . $this->id . '_shipping_destination_info', $destination_info, $this );
 	}
 
 	/**
