@@ -92,7 +92,7 @@ function wcsdm_plugin_action_links( $links ) {
 						'page'               => 'wc-settings',
 						'tab'                => 'shipping',
 						'zone_id'            => $zone_id,
-						'woogosend_settings' => true,
+						'wcsdm_settings' => true,
 					), admin_url( 'admin.php' )
 				)
 			) . '">' . __( 'Settings', 'wcsdm' ) . '</a>',
@@ -157,7 +157,7 @@ function wcsdm_admin_enqueue_scripts( $hook ) {
 			'wcsdm-admin',
 			'wcsdm_params',
 			array(
-				'show_settings' => ( isset( $_GET['woogosend_settings'] ) && is_admin() ) ? true : false,
+				'show_settings' => ( isset( $_GET['wcsdm_settings'] ) && is_admin() ) ? true : false,
 				'method_id'     => WCSDM_METHOD_ID,
 				'method_title'  => WCSDM_METHOD_TITLE,
 				'txt'           => array(
