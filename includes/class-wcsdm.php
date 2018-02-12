@@ -716,13 +716,9 @@ class Wcsdm extends WC_Shipping_Method {
 				$element_status = $element['status'];
 				switch ( $element_status ) {
 					case 'OK':
-						$pieces = explode( ' ', $element['distance']['text'] );
-						if ( 2 === count( $pieces ) ) {
-							$element_distance = wc_format_decimal( $pieces[0] );
-							if ( $element_distance > $distance ) { // Try to get the longest route distance.
-								$distance      = $element_distance;
-								$distance_text = $element['distance']['text'];
-							}
+						if ( isset( $element['distance']['value'] ) && ! empty( $element['distance']['value'] ) ) {
+							$distance      = $this->convert_m( $element['distance']['value'] );
+							$distance_text = $element['distance']['text'];
 						}
 						break;
 					default:
@@ -850,6 +846,39 @@ class Wcsdm extends WC_Shipping_Method {
 		 *      }
 		 */
 		return apply_filters( 'woocommerce_' . $this->id . '_shipping_destination_info', implode( ',', $destination_info ), $this );
+	}
+
+	/**
+	 * Convert Meters to Distance Unit
+	 *
+	 * @since    1.2.4
+	 * @param int $meters Number of meters to convert.
+	 * @return int
+	 */
+	private function convert_m( $meters ) {
+		return ( 'metric' === $this->gmaps_api_units ) ? $this->convert_m_to_km( $meters ) : $this->convert_m_to_mi( $meters );
+	}
+
+	/**
+	 * Convert Meters to Miles
+	 *
+	 * @since    1.2.4
+	 * @param int $meters Number of meters to convert.
+	 * @return int
+	 */
+	private function convert_m_to_mi( $meters ) {
+		return $meters * 0.000621371;
+	}
+
+	/**
+	 * Convert Meters to Kilometres
+	 *
+	 * @since    1.2.4
+	 * @param int $meters Number of meters to convert.
+	 * @return int
+	 */
+	private function convert_m_to_km( $meters ) {
+		return $meters * 0.001;
 	}
 
 	/**
