@@ -279,7 +279,7 @@ class Wcsdm extends WC_Shipping_Method {
 						<tr>
 							<td class="col-select"><a href="#" class="add button" data-key="<?php echo esc_attr( $field_key ); ?>"><?php esc_html_e( 'Add Row', 'wcsdm' ); ?><a href="#" class="remove_rows button" style="display: none"><?php esc_html_e( 'Remove Row', 'wcsdm' ); ?></a></a></td>
 							<td class="col-distance"></td>
-							<td colspan="<?php echo count( $shipping_classes ) + 1; ?>"><?php esc_html_e( 'Cost by Shipping Class', 'wcsdm' ); ?></td>
+							<td colspan="<?php echo count( $shipping_classes ) + 1; ?>"><?php esc_html_e( 'Cost by Product Shipping Class', 'wcsdm' ); ?></td>
 						</tr>
 						<tr>
 							<td class="col-select"><input class="select-item" type="checkbox"></td>
