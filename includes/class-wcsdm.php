@@ -622,47 +622,30 @@ class Wcsdm extends WC_Shipping_Method {
 			return false;
 		}
 
-		$transient_keys = array(
-			strtolower( preg_replace( '/[^\da-z]/i', '-', $this->gmaps_api_key ) ),
-			str_replace( ',', '_', $origin ),
-			$this->gmaps_api_mode,
-			$this->gmaps_api_units,
+		$request_url_args = array(
+			'key'          => rawurlencode( $this->gmaps_api_key ),
+			'mode'         => rawurlencode( $this->gmaps_api_mode ),
+			'avoid'        => is_string( $this->gmaps_api_avoid ) ? rawurlencode( $this->gmaps_api_avoid ) : '',
+			'units'        => rawurlencode( $this->gmaps_api_units ),
+			'language'     => rawurlencode( get_locale() ),
+			'origins'      => rawurlencode( $origin ),
+			'destinations' => rawurlencode( $destination ),
 		);
 
-		$route_avoid = $this->gmaps_api_avoid;
-		if ( $route_avoid && is_array( $route_avoid ) ) {
-			$route_avoid = implode( '-', $route_avoid );
-		}
-		if ( $route_avoid ) {
-			array_push( $transient_keys, $route_avoid );
-		}
-
-		$transient_key = md5( implode( '_', $transient_keys ) ) . md5( strtolower( preg_replace( '/[^\da-z]/i', '-', $destination ) ) );
+		$transient_key = $this->id . '_api_request_' . md5( wp_json_encode( $request_url_args ) );
 
 		// Check if the data already chached and return it.
 		$cached_data = get_transient( $transient_key );
 
 		if ( false !== $cached_data ) {
-			$this->show_debug( __( 'Cached key', 'wcsdm' ) . ': ' . $transient_key );
-			$this->show_debug( __( 'Cached data', 'wcsdm' ) . ': ' . wp_json_encode( $cached_data ) );
+			$this->show_debug( __( 'Cached key', 'woogosend' ) . ': ' . $transient_key );
+			$this->show_debug( __( 'Cached data', 'woogosend' ) . ': ' . wp_json_encode( $cached_data ) );
 			return $cached_data;
-		}
-
-		$request_url_args = array(
-			'key'          => rawurlencode( $this->gmaps_api_key ),
-			'units'        => rawurlencode( $this->gmaps_api_units ),
-			'mode'         => rawurlencode( $this->gmaps_api_mode ),
-			'origins'      => rawurlencode( $origin ),
-			'destinations' => rawurlencode( $destination ),
-		);
-
-		if ( $this->gmaps_api_avoid ) {
-			$request_url_args['avoid'] = is_array( $this->gmaps_api_avoid ) ? implode( ',', $this->gmaps_api_avoid ) : $this->gmaps_api_avoid;
 		}
 
 		$request_url = add_query_arg( $request_url_args, $this->google_api_url );
 
-		$this->show_debug( __( 'API Request URL', 'wcsdm' ) . ': ' . str_replace( rawurlencode( $this->gmaps_api_key ), '**********', $request_url ), 'notice' );
+		$this->show_debug( __( 'API Request URL', 'woogosend' ) . ': ' . str_replace( rawurlencode( $this->gmaps_api_key ), '**********', $request_url ), 'notice' );
 
 		$raw_response = wp_remote_get( esc_url_raw( $request_url ) );
 
@@ -676,7 +659,7 @@ class Wcsdm extends WC_Shipping_Method {
 
 		// Check if API response is empty.
 		if ( empty( $response_body ) ) {
-			$this->show_debug( __( 'API response is empty', 'wcsdm' ), 'notice' );
+			$this->show_debug( __( 'API response is empty', 'woogosend' ), 'notice' );
 		}
 
 		$response_data = json_decode( $response_body, true );
@@ -684,7 +667,7 @@ class Wcsdm extends WC_Shipping_Method {
 		// Check if JSON data is valid.
 		if ( json_last_error() !== JSON_ERROR_NONE ) {
 			if ( function_exists( 'json_last_error_msg' ) ) {
-				$this->show_debug( __( 'Error while decoding API response', 'wcsdm' ) . ': ' . json_last_error_msg(), 'notice' );
+				$this->show_debug( __( 'Error while decoding API response', 'woogosend' ) . ': ' . json_last_error_msg(), 'notice' );
 			}
 			return false;
 		}
@@ -692,7 +675,7 @@ class Wcsdm extends WC_Shipping_Method {
 		// Check API response is OK.
 		$status = isset( $response_data['status'] ) ? $response_data['status'] : '';
 		if ( 'OK' !== $status ) {
-			$error_message = __( 'API Response Error', 'wcsdm' ) . ': ' . $status;
+			$error_message = __( 'API Response Error', 'woogosend' ) . ': ' . $status;
 			if ( isset( $response_data['error_message'] ) ) {
 				$error_message .= ' - ' . $response_data['error_message'];
 			}
@@ -705,9 +688,9 @@ class Wcsdm extends WC_Shipping_Method {
 		$error_message = '';
 
 		$element_lvl_errors = array(
-			'NOT_FOUND'                 => __( 'Origin and/or destination of this pairing could not be geocoded', 'wcsdm' ),
-			'ZERO_RESULTS'              => __( 'No route could be found between the origin and destination', 'wcsdm' ),
-			'MAX_ROUTE_LENGTH_EXCEEDED' => __( 'Requested route is too long and cannot be processed', 'wcsdm' ),
+			'NOT_FOUND'                 => __( 'Origin and/or destination of this pairing could not be geocoded', 'woogosend' ),
+			'ZERO_RESULTS'              => __( 'No route could be found between the origin and destination', 'woogosend' ),
+			'MAX_ROUTE_LENGTH_EXCEEDED' => __( 'Requested route is too long and cannot be processed', 'woogosend' ),
 		);
 
 		// Get the shipping distance.
@@ -716,17 +699,13 @@ class Wcsdm extends WC_Shipping_Method {
 				$element_status = $element['status'];
 				switch ( $element_status ) {
 					case 'OK':
-						$pieces = explode( ' ', $element['distance']['text'] );
-						if ( 2 === count( $pieces ) ) {
-							$element_distance = wc_format_decimal( $pieces[0] );
-							if ( $element_distance > $distance ) { // Try to get the longest route distance.
-								$distance      = $element_distance;
-								$distance_text = $element['distance']['text'];
-							}
+						if ( isset( $element['distance']['value'] ) && ! empty( $element['distance']['value'] ) ) {
+							$distance      = $this->convert_m( $element['distance']['value'] );
+							$distance_text = $element['distance']['text'];
 						}
 						break;
 					default:
-						$error_message = __( 'API Response Error', 'wcsdm' ) . ': ' . $element_status;
+						$error_message = __( 'API Response Error', 'woogosend' ) . ': ' . $element_status;
 						if ( isset( $element_lvl_errors[ $element_status ] ) ) {
 							$error_message .= ' - ' . $element_lvl_errors[ $element_status ];
 						}
@@ -850,6 +829,39 @@ class Wcsdm extends WC_Shipping_Method {
 		 *      }
 		 */
 		return apply_filters( 'woocommerce_' . $this->id . '_shipping_destination_info', implode( ',', $destination_info ), $this );
+	}
+
+	/**
+	 * Convert Meters to Distance Unit
+	 *
+	 * @since    1.3.2
+	 * @param int $meters Number of meters to convert.
+	 * @return int
+	 */
+	private function convert_m( $meters ) {
+		return ( 'metric' === $this->gmaps_api_units ) ? $this->convert_m_to_km( $meters ) : $this->convert_m_to_mi( $meters );
+	}
+
+	/**
+	 * Convert Meters to Miles
+	 *
+	 * @since    1.3.2
+	 * @param int $meters Number of meters to convert.
+	 * @return int
+	 */
+	private function convert_m_to_mi( $meters ) {
+		return $meters * 0.000621371;
+	}
+
+	/**
+	 * Convert Meters to Kilometres
+	 *
+	 * @since    1.3.2
+	 * @param int $meters Number of meters to convert.
+	 * @return int
+	 */
+	private function convert_m_to_km( $meters ) {
+		return $meters * 0.001;
 	}
 
 	/**

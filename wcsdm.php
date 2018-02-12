@@ -15,7 +15,7 @@
  * Plugin Name:       WooCommerce Shipping Distance Matrix
  * Plugin URI:        https://github.com/sofyansitorus/WooCommerce-Shipping-Distance-Matrix
  * Description:       WooCommerce shipping rates calculator based on products shipping class and route distances that calculated using Google Maps Distance Matrix API.
- * Version:           1.3.1
+ * Version:           1.3.2
  * Author:            Sofyan Sitorus
  * Author URI:        https://github.com/sofyansitorus
  * License:           GPL-2.0+
@@ -42,7 +42,7 @@ if ( ! in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins',
 // Defines plugin named constants.
 define( 'WCSDM_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WCSDM_URL', plugin_dir_url( __FILE__ ) );
-define( 'WCSDM_VERSION', '1.3.1' );
+define( 'WCSDM_VERSION', '1.3.2' );
 define( 'WCSDM_METHOD_ID', 'wcsdm' );
 define( 'WCSDM_METHOD_TITLE', 'Shipping Distance Matrix' );
 define( 'WCSDM_MAP_SECRET_KEY', 'QUl6YVN5Qk82MVFJUm52Zkc5c2tKTW1HV1JVbWhsSU5lcUZXaTdV' );
@@ -69,22 +69,33 @@ add_action( 'plugins_loaded', 'wcsdm_load_textdomain' );
  */
 function wcsdm_plugin_action_links( $links ) {
 	$zone_id = 0;
-	$zones   = WC_Shipping_Zones::get_zones();
-	foreach ( $zones as $zone ) {
+	foreach ( WC_Shipping_Zones::get_zones() as $zone ) {
 		if ( empty( $zone['shipping_methods'] ) || empty( $zone['zone_id'] ) ) {
 			continue;
 		}
 		foreach ( $zone['shipping_methods'] as $zone_shipping_method ) {
-			if ( $zone_shipping_method instanceof Wcsdm ) {
+			if ( $zone_shipping_method instanceof WooGoSend ) {
 				$zone_id = $zone['zone_id'];
 				break;
 			}
+		}
+		if ( $zone_id ) {
+			break;
 		}
 	}
 
 	$links = array_merge(
 		array(
-			'<a href="' . esc_url( wp_nonce_url( admin_url( 'admin.php?page=wc-settings&tab=shipping&zone_id=' . $zone_id ), 'wcsdm_settings', 'wcsdm_nonce' ) ) . '">' . __( 'Settings', 'wcsdm' ) . '</a>',
+			'<a href="' . esc_url(
+				add_query_arg(
+					array(
+						'page'               => 'wc-settings',
+						'tab'                => 'shipping',
+						'zone_id'            => $zone_id,
+						'woogosend_settings' => true,
+					), admin_url( 'admin.php' )
+				)
+			) . '">' . __( 'Settings', 'woogosend' ) . '</a>',
 		),
 		$links
 	);
@@ -146,13 +157,14 @@ function wcsdm_admin_enqueue_scripts( $hook ) {
 			'wcsdm-admin',
 			'wcsdm_params',
 			array(
-				'show_settings' => ( isset( $_GET['wcsdm_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['wcsdm_nonce'] ) ), 'wcsdm_settings' ) && is_admin() ),
+				'show_settings' => ( isset( $_GET['woogosend_settings'] ) && is_admin() ) ? true : false,
 				'method_id'     => WCSDM_METHOD_ID,
 				'method_title'  => WCSDM_METHOD_TITLE,
 				'txt'           => array(
 					'drag_marker' => __( 'Drag this marker or search your address at the input above.', 'wcsdm' ),
 				),
 				'marker'        => WCSDM_URL . 'assets/img/marker.png',
+				'language'      => get_locale(),
 			)
 		);
 	}

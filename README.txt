@@ -80,6 +80,11 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 
 == Changelog ==
 
+= 1.3.2 =
+
+* Fix - Fix issue with localization decimal delimeter.
+* Improvements - Added language parameter for Maps API request.
+
 = 1.3.1 =
 
 * Fix - Fix API request URL.
@@ -156,6 +161,6 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 * Feature - Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
 
 == Upgrade Notice ==
-= 1.3.1 =
+= 1.3.2 =
 
-This version include fixes. Upgrade immediately.
+This version include fixes and improvements. Upgrade immediately.

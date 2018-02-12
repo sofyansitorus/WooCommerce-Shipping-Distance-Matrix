@@ -88,6 +88,10 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 
 ## Changelog ##
 
+### 1.3.2 ###
+* Fix - Fix issue with localization decimal delimeter.
+* Improvements - Added language parameter for Maps API request.
+
 ### 1.3.1 ###
 * Fix - Fix API request URL.
 * Improvements - Switched from WP Cache Object to Transient.
@@ -151,7 +155,7 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 
 ## Upgrade Notice ##
 
-### 1.3.1 ###
-This version include fixes. Upgrade immediately.
+### 1.3.2 ###
+This version include fixes and improvements. Upgrade immediately.
 
 

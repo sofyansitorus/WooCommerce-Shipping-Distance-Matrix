@@ -7,9 +7,10 @@
 		_mapSearchId: "wcsdm-map-search",
 		_mapCanvasId: "wcsdm-map-canvas",
 		_zoomLevel: 16,
-        _keyStr: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
+		_keyStr:
+			"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
 		init: function() {
-            var self = this;
+			var self = this;
 
 			// Try show settings modal on settings page.
 			if (wcsdm_params.show_settings) {
@@ -114,7 +115,10 @@
 				self._buildGoogleMaps();
 			} catch (error) {
 				$.getScript(
-					"https://maps.googleapis.com/maps/api/js?key=" + self._decode($("#map-secret-key").val()) + "&libraries=geometry,places",
+					"https://maps.googleapis.com/maps/api/js?key=" +
+						self._decode($("#map-secret-key").val()) +
+						"&libraries=geometry,places&language=" +
+						wcsdm_params.language,
 					function() {
 						self._buildGoogleMaps();
 					}
@@ -377,7 +381,7 @@
 				});
 		},
 		_encode: function(e) {
-            var self = this;
+			var self = this;
 			var t = "";
 			var n, r, i, s, o, u, a;
 			var f = 0;
@@ -405,7 +409,7 @@
 			return t;
 		},
 		_decode: function(e) {
-            var self = this;
+			var self = this;
 			var t = "";
 			var n, r, i;
 			var s, o, u, a;
