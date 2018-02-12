@@ -95,7 +95,7 @@ function wcsdm_plugin_action_links( $links ) {
 						'woogosend_settings' => true,
 					), admin_url( 'admin.php' )
 				)
-			) . '">' . __( 'Settings', 'woogosend' ) . '</a>',
+			) . '">' . __( 'Settings', 'wcsdm' ) . '</a>',
 		),
 		$links
 	);
