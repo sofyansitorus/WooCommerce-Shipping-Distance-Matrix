@@ -104,6 +104,8 @@
 		},
 		_initGoogleMaps: function(e) {
 			var self = this;
+			$("#" + self._inputLatId).closest("tr").hide();
+			$("#" + self._inputLngId).closest("tr").hide();
 			try {
 				if (
 					typeof google === "undefined" ||
@@ -111,7 +113,6 @@
 				) {
 					throw "google is not defined";
 				}
-
 				self._buildGoogleMaps();
 			} catch (error) {
 				$.getScript(
@@ -127,10 +128,12 @@
 		},
 		_buildGoogleMaps: function() {
 			var self = this;
+			var defaultLat = -6.175392;
+			var defaultLng = 106.827153;
 			var curLat = $("#" + self._inputLatId).val();
 			var curLng = $("#" + self._inputLngId).val();
-			curLat = curLat.length ? parseFloat(curLat) : -6.175392;
-			curLng = curLng.length ? parseFloat(curLng) : 106.827153;
+			curLat = curLat.length ? parseFloat(curLat) : defaultLat;
+			curLng = curLng.length ? parseFloat(curLng) : defaultLng;
 			var curLatLng = {
 				lat: curLat,
 				lng: curLng
@@ -159,18 +162,28 @@
 				draggable: true,
 				icon: wcsdm_params.marker
 			});
+
 			var infowindow = new google.maps.InfoWindow({
-				maxWidth: 350,
-				content: wcsdm_params.txt.drag_marker
+				maxWidth: 350
 			});
-			infowindow.open(map, marker);
+
+			if (curLat == defaultLat && curLng == defaultLng) {
+				infowindow.setContent(wcsdm_params.txt.drag_marker);
+				infowindow.open(map, marker);
+			} else {
+				self._setLatLng(marker.position, marker, map, infowindow);
+			}
+
 			google.maps.event.addListener(marker, "dragstart", function(event) {
 				infowindow.close();
 			});
+
 			google.maps.event.addListener(marker, "dragend", function(event) {
 				self._setLatLng(event.latLng, marker, map, infowindow);
 			});
+
 			markers.push(marker);
+
 			if (!$("#" + self._mapSearchId).length) {
 				$("#" + self._mapWrapperId).append(
 					tmplMapSearch({
@@ -229,6 +242,21 @@
 				map.setZoom(self._zoomLevel);
 				map.fitBounds(bounds);
 			});
+
+			setTimeout(function() {
+				if ($(".gm-err-content").length) {
+					$("#" + self._mapCanvasId)
+						.closest("tr")
+						.hide();
+					$("#" + self._inputLatId)
+						.closest("tr")
+						.show();
+					$("#" + self._inputLngId)
+						.closest("tr")
+						.show();
+					google = undefined;
+				}
+			}, 900);
 		},
 		_setLatLng: function(location, marker, map, infowindow) {
 			var self = this;

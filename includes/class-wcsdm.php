@@ -139,12 +139,16 @@ class Wcsdm extends WC_Shipping_Method {
 				'type'  => 'address_picker',
 			),
 			'origin_lat'               => array(
-				'type'    => 'hidden',
-				'default' => '',
+				'title'       => __( 'Store Location Latitude', 'wcsdm' ),
+				'type'        => 'text',
+				'default'     => '',
+				'description' => __( '<a href="http://www.latlong.net/" target="_blank">Click here</a> to get your store location coordinates info.', 'wcsdm' ),
 			),
 			'origin_lng'               => array(
-				'type'    => 'hidden',
-				'default' => '',
+				'title'       => __( 'Store Location Logitude', 'wcsdm' ),
+				'type'        => 'text',
+				'default'     => '',
+				'description' => __( '<a href="http://www.latlong.net/" target="_blank">Click here</a> to get your store location coordinates info.', 'wcsdm' ),
 			),
 			'gmaps_api_mode'           => array(
 				'title'       => __( 'Travel Mode', 'wcsdm' ),
@@ -253,23 +257,6 @@ class Wcsdm extends WC_Shipping_Method {
 				</script>
 			</td>
 		</tr>
-		<?php
-		return ob_get_clean();
-	}
-
-	/**
-	 * Generate hidden settings field.
-	 *
-	 * @since 1.2.4
-	 * @param string $key Settings field key.
-	 * @param array  $data Settings field data.
-	 */
-	public function generate_hidden_html( $key, $data ) {
-		$field_key = $this->get_field_key( $key );
-
-		ob_start();
-		?>
-		<input type="hidden" name="<?php echo esc_attr( $field_key ); ?>" id="<?php echo esc_attr( $field_key ); ?>" value="<?php echo esc_attr( $this->get_option( $key ) ); ?>">
 		<?php
 		return ob_get_clean();
 	}
