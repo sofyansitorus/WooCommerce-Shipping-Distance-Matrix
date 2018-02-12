@@ -80,6 +80,11 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 
 == Changelog ==
 
+= 1.3.3 =
+
+* Fix - Change route restriction to single select.
+* Improvements - Added fallback to input store location manually on google map error.
+
 = 1.3.2 =
 
 * Fix - Fix issue with localization decimal delimeter.
@@ -161,6 +166,6 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 * Feature - Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
 
 == Upgrade Notice ==
-= 1.3.2 =
+= 1.3.3 =
 
 This version include fixes and improvements. Upgrade immediately.
