@@ -160,7 +160,7 @@ class Wcsdm extends WC_Shipping_Method {
 			),
 			'gmaps_api_avoid'          => array(
 				'title'       => __( 'Restrictions', 'wcsdm' ),
-				'type'        => 'multiselect',
+				'type'        => 'select',
 				'description' => __( 'Google Maps Distance Matrix API restrictions parameter.', 'wcsdm' ),
 				'desc_tip'    => true,
 				'default'     => 'driving',
