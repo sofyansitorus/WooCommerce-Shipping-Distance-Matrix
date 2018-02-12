@@ -627,6 +627,7 @@ class Wcsdm extends WC_Shipping_Method {
 			'mode'         => rawurlencode( $this->gmaps_api_mode ),
 			'avoid'        => is_string( $this->gmaps_api_avoid ) ? rawurlencode( $this->gmaps_api_avoid ) : '',
 			'units'        => rawurlencode( $this->gmaps_api_units ),
+			'language'     => rawurlencode( get_locale() ),
 			'origins'      => rawurlencode( $origin ),
 			'destinations' => rawurlencode( $destination ),
 		);

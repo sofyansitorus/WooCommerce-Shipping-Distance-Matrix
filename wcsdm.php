@@ -164,6 +164,7 @@ function wcsdm_admin_enqueue_scripts( $hook ) {
 					'drag_marker' => __( 'Drag this marker or search your address at the input above.', 'wcsdm' ),
 				),
 				'marker'        => WCSDM_URL . 'assets/img/marker.png',
+				'language'      => get_locale(),
 			)
 		);
 	}
