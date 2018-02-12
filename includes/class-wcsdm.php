@@ -612,7 +612,7 @@ class Wcsdm extends WC_Shipping_Method {
 			return false;
 		}
 
-		$origin_info = $this->get_origin_info();
+		$origin_info = $this->get_origin_info( $package );
 		if ( empty( $origin_info ) ) {
 			return false;
 		}
@@ -623,8 +623,8 @@ class Wcsdm extends WC_Shipping_Method {
 			'avoid'        => is_string( $this->gmaps_api_avoid ) ? rawurlencode( $this->gmaps_api_avoid ) : '',
 			'units'        => rawurlencode( $this->gmaps_api_units ),
 			'language'     => rawurlencode( get_locale() ),
-			'origins'      => rawurlencode( $origin_info ),
-			'destinations' => rawurlencode( implode( $destination_info ) ),
+			'origins'      => rawurlencode( implode( ',', $origin_info ) ),
+			'destinations' => rawurlencode( implode( ',', $destination_info ) ),
 		);
 
 		$transient_key = $this->id . '_api_request_' . md5( wp_json_encode( $request_url_args ) );
@@ -647,7 +647,7 @@ class Wcsdm extends WC_Shipping_Method {
 		// Try to make fallback request if no results found.
 		if ( ! $data && 'yes' === $this->enable_fallback_request && ! empty( $destination_info['address_2'] ) ) {
 			unset( $destination_info['address'] );
-			$request_url_args['destinations'] = rawurlencode( implode( $destination_info ) );
+			$request_url_args['destinations'] = rawurlencode( implode( ',', $destination_info ) );
 
 			$request_url = add_query_arg( $request_url_args, $this->google_api_url );
 
@@ -770,13 +770,15 @@ class Wcsdm extends WC_Shipping_Method {
 	 * Get shipping origin info
 	 *
 	 * @since    1.0.0
-	 * @return string
+	 * @param array $package The cart content data.
+	 * @return array
 	 */
-	private function get_origin_info() {
+	private function get_origin_info( $package ) {
 		$origin_info = array();
 
 		if ( ! empty( $this->origin_lat ) && ! empty( $this->origin_lng ) ) {
-			array_push( $origin_info, $this->origin_lat, $this->origin_lng );
+			$origin_info['lat'] = $this->origin_lat;
+			$origin_info['lng'] = $this->origin_lng;
 		}
 
 		/**
@@ -788,11 +790,11 @@ class Wcsdm extends WC_Shipping_Method {
 		 *
 		 *      add_action( 'woocommerce_wcsdm_shipping_origin_info', 'modify_shipping_origin_info', 10, 2 );
 		 *
-		 *      function modify_shipping_origin_info( $origin_info, $method ) {
+		 *      function modify_shipping_origin_info( $origin_info, $$package ) {
 		 *          return '1600 Amphitheatre Parkway,Mountain View,CA,94043';
 		 *      }
 		 */
-		return apply_filters( 'woocommerce_' . $this->id . '_shipping_origin_info', implode( ',', $origin_info ), $this );
+		return apply_filters( 'woocommerce_' . $this->id . '_shipping_origin_info', $origin_info, $$package );
 	}
 
 	/**
