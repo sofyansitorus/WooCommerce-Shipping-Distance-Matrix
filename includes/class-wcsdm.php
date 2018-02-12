@@ -139,12 +139,16 @@ class Wcsdm extends WC_Shipping_Method {
 				'type'  => 'address_picker',
 			),
 			'origin_lat'               => array(
-				'type'    => 'hidden',
-				'default' => '',
+				'title'       => __( 'Store Location Latitude', 'wcsdm' ),
+				'type'        => 'text',
+				'default'     => '',
+				'description' => __( '<a href="http://www.latlong.net/" target="_blank">Click here</a> to get your store location coordinates info.', 'wcsdm' ),
 			),
 			'origin_lng'               => array(
-				'type'    => 'hidden',
-				'default' => '',
+				'title'       => __( 'Store Location Logitude', 'wcsdm' ),
+				'type'        => 'text',
+				'default'     => '',
+				'description' => __( '<a href="http://www.latlong.net/" target="_blank">Click here</a> to get your store location coordinates info.', 'wcsdm' ),
 			),
 			'gmaps_api_mode'           => array(
 				'title'       => __( 'Travel Mode', 'wcsdm' ),
@@ -160,7 +164,7 @@ class Wcsdm extends WC_Shipping_Method {
 			),
 			'gmaps_api_avoid'          => array(
 				'title'       => __( 'Restrictions', 'wcsdm' ),
-				'type'        => 'multiselect',
+				'type'        => 'select',
 				'description' => __( 'Google Maps Distance Matrix API restrictions parameter.', 'wcsdm' ),
 				'desc_tip'    => true,
 				'default'     => 'driving',
@@ -258,23 +262,6 @@ class Wcsdm extends WC_Shipping_Method {
 	}
 
 	/**
-	 * Generate hidden settings field.
-	 *
-	 * @since 1.2.4
-	 * @param string $key Settings field key.
-	 * @param array  $data Settings field data.
-	 */
-	public function generate_hidden_html( $key, $data ) {
-		$field_key = $this->get_field_key( $key );
-
-		ob_start();
-		?>
-		<input type="hidden" name="<?php echo esc_attr( $field_key ); ?>" id="<?php echo esc_attr( $field_key ); ?>" value="<?php echo esc_attr( $this->get_option( $key ) ); ?>">
-		<?php
-		return ob_get_clean();
-	}
-
-	/**
 	 * Generate table rates HTML form.
 	 *
 	 * @since    1.0.0
@@ -292,7 +279,7 @@ class Wcsdm extends WC_Shipping_Method {
 						<tr>
 							<td class="col-select"><a href="#" class="add button" data-key="<?php echo esc_attr( $field_key ); ?>"><?php esc_html_e( 'Add Row', 'wcsdm' ); ?><a href="#" class="remove_rows button" style="display: none"><?php esc_html_e( 'Remove Row', 'wcsdm' ); ?></a></a></td>
 							<td class="col-distance"></td>
-							<td colspan="<?php echo count( $shipping_classes ) + 1; ?>"><?php esc_html_e( 'Cost by Shipping Class', 'wcsdm' ); ?></td>
+							<td colspan="<?php echo count( $shipping_classes ) + 1; ?>"><?php esc_html_e( 'Cost by Product Shipping Class', 'wcsdm' ); ?></td>
 						</tr>
 						<tr>
 							<td class="col-select"><input class="select-item" type="checkbox"></td>
@@ -638,14 +625,14 @@ class Wcsdm extends WC_Shipping_Method {
 		$cached_data = get_transient( $transient_key );
 
 		if ( false !== $cached_data ) {
-			$this->show_debug( __( 'Cached key', 'woogosend' ) . ': ' . $transient_key );
-			$this->show_debug( __( 'Cached data', 'woogosend' ) . ': ' . wp_json_encode( $cached_data ) );
+			$this->show_debug( __( 'Cached key', 'wcsdm' ) . ': ' . $transient_key );
+			$this->show_debug( __( 'Cached data', 'wcsdm' ) . ': ' . wp_json_encode( $cached_data ) );
 			return $cached_data;
 		}
 
 		$request_url = add_query_arg( $request_url_args, $this->google_api_url );
 
-		$this->show_debug( __( 'API Request URL', 'woogosend' ) . ': ' . str_replace( rawurlencode( $this->gmaps_api_key ), '**********', $request_url ), 'notice' );
+		$this->show_debug( __( 'API Request URL', 'wcsdm' ) . ': ' . str_replace( rawurlencode( $this->gmaps_api_key ), '**********', $request_url ), 'notice' );
 
 		$raw_response = wp_remote_get( esc_url_raw( $request_url ) );
 
@@ -659,7 +646,7 @@ class Wcsdm extends WC_Shipping_Method {
 
 		// Check if API response is empty.
 		if ( empty( $response_body ) ) {
-			$this->show_debug( __( 'API response is empty', 'woogosend' ), 'notice' );
+			$this->show_debug( __( 'API response is empty', 'wcsdm' ), 'notice' );
 		}
 
 		$response_data = json_decode( $response_body, true );
@@ -667,7 +654,7 @@ class Wcsdm extends WC_Shipping_Method {
 		// Check if JSON data is valid.
 		if ( json_last_error() !== JSON_ERROR_NONE ) {
 			if ( function_exists( 'json_last_error_msg' ) ) {
-				$this->show_debug( __( 'Error while decoding API response', 'woogosend' ) . ': ' . json_last_error_msg(), 'notice' );
+				$this->show_debug( __( 'Error while decoding API response', 'wcsdm' ) . ': ' . json_last_error_msg(), 'notice' );
 			}
 			return false;
 		}
@@ -675,7 +662,7 @@ class Wcsdm extends WC_Shipping_Method {
 		// Check API response is OK.
 		$status = isset( $response_data['status'] ) ? $response_data['status'] : '';
 		if ( 'OK' !== $status ) {
-			$error_message = __( 'API Response Error', 'woogosend' ) . ': ' . $status;
+			$error_message = __( 'API Response Error', 'wcsdm' ) . ': ' . $status;
 			if ( isset( $response_data['error_message'] ) ) {
 				$error_message .= ' - ' . $response_data['error_message'];
 			}
@@ -688,9 +675,9 @@ class Wcsdm extends WC_Shipping_Method {
 		$error_message = '';
 
 		$element_lvl_errors = array(
-			'NOT_FOUND'                 => __( 'Origin and/or destination of this pairing could not be geocoded', 'woogosend' ),
-			'ZERO_RESULTS'              => __( 'No route could be found between the origin and destination', 'woogosend' ),
-			'MAX_ROUTE_LENGTH_EXCEEDED' => __( 'Requested route is too long and cannot be processed', 'woogosend' ),
+			'NOT_FOUND'                 => __( 'Origin and/or destination of this pairing could not be geocoded', 'wcsdm' ),
+			'ZERO_RESULTS'              => __( 'No route could be found between the origin and destination', 'wcsdm' ),
+			'MAX_ROUTE_LENGTH_EXCEEDED' => __( 'Requested route is too long and cannot be processed', 'wcsdm' ),
 		);
 
 		// Get the shipping distance.
@@ -705,7 +692,7 @@ class Wcsdm extends WC_Shipping_Method {
 						}
 						break;
 					default:
-						$error_message = __( 'API Response Error', 'woogosend' ) . ': ' . $element_status;
+						$error_message = __( 'API Response Error', 'wcsdm' ) . ': ' . $element_status;
 						if ( isset( $element_lvl_errors[ $element_status ] ) ) {
 							$error_message .= ' - ' . $element_lvl_errors[ $element_status ];
 						}
