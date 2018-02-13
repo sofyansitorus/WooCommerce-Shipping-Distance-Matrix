@@ -15,7 +15,7 @@
  * Plugin Name:       WooCommerce Shipping Distance Matrix
  * Plugin URI:        https://github.com/sofyansitorus/WooCommerce-Shipping-Distance-Matrix
  * Description:       WooCommerce shipping rates calculator based on products shipping class and route distances that calculated using Google Maps Distance Matrix API.
- * Version:           1.3.5
+ * Version:           1.3.6
  * Author:            Sofyan Sitorus
  * Author URI:        https://github.com/sofyansitorus
  * License:           GPL-2.0+
@@ -42,7 +42,7 @@ if ( ! in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins',
 // Defines plugin named constants.
 define( 'WCSDM_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WCSDM_URL', plugin_dir_url( __FILE__ ) );
-define( 'WCSDM_VERSION', '1.3.5' );
+define( 'WCSDM_VERSION', '1.3.6' );
 define( 'WCSDM_METHOD_ID', 'wcsdm' );
 define( 'WCSDM_METHOD_TITLE', 'Shipping Distance Matrix' );
 define( 'WCSDM_MAP_SECRET_KEY', 'QUl6YVN5Qk82MVFJUm52Zkc5c2tKTW1HV1JVbWhsSU5lcUZXaTdV' );
@@ -74,7 +74,7 @@ function wcsdm_plugin_action_links( $links ) {
 			continue;
 		}
 		foreach ( $zone['shipping_methods'] as $zone_shipping_method ) {
-			if ( $zone_shipping_method instanceof WooGoSend ) {
+			if ( $zone_shipping_method instanceof Wcsdm ) {
 				$zone_id = $zone['zone_id'];
 				break;
 			}

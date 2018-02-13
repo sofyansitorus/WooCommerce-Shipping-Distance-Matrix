@@ -80,6 +80,12 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 
 == Changelog ==
 
+= 1.3.6 =
+
+* Improvements - Add new calculation type option: Per product - Charge shipping grouped by product ID.
+* Improvements - Add new calculation type option: Per shipping class - Charge shipping grouped by product shipping class.
+* Fix - Fix table rates input value issue.
+
 = 1.3.5 =
 
 * Improvements - Add new option: Enable Fallback Request.
@@ -137,8 +143,8 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 
 * Improvements - Add new filter hooks: woocommerce_wcsdm_shipping_destination_info.
 * Improvements - Add new filter hooks: woocommerce_wcsdm_shipping_origin_info.
-* Improvement - Tweak settings panel UI and default value.
-* Improvement - Add validation for settings field: gmaps_api_key, origin_lat, origin_lng, table_rates.
+* Improvements - Tweak settings panel UI and default value.
+* Improvements - Add validation for settings field: gmaps_api_key, origin_lat, origin_lng, table_rates.
 
 = 1.2.2 =
 
@@ -146,7 +152,7 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 
 = 1.2.1 =
 
-* Improvement - Add filter to enable city field in shipping calculator form.
+* Improvements - Add filter to enable city field in shipping calculator form.
 * Fix - Filter destination address, address_2, city, postcode fields for shipping calculator request.
 * Fix - Change wrong API request param from mode to avoid.
 
@@ -174,6 +180,6 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 * Feature - Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
 
 == Upgrade Notice ==
-= 1.3.5 =
+= 1.3.6 =
 
-This version include fixes. Upgrade immediately.
+This version include fixes and improvements. Upgrade immediately.

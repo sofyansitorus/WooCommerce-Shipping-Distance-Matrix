@@ -188,14 +188,17 @@ class Wcsdm extends WC_Shipping_Method {
 				),
 			),
 			'calc_type'                => array(
-				'title'   => __( 'Calculation type', 'wcsdm' ),
-				'type'    => 'select',
-				'class'   => 'wc-enhanced-select',
-				'default' => 'per_item',
-				'options' => array(
-					'per_item'  => __( 'Per item: Charge shipping for each items individually', 'wcsdm' ),
-					'per_order' => __( 'Per order: Charge shipping for the most expensive item shipping cost', 'wcsdm' ),
+				'title'       => __( 'Calculation type', 'wcsdm' ),
+				'type'        => 'select',
+				'class'       => 'wc-enhanced-select',
+				'default'     => 'per_item',
+				'options'     => array(
+					'per_item'           => __( 'Per item', 'wcsdm' ),
+					'per_product'        => __( 'Per product', 'wcsdm' ),
+					'per_shipping_class' => __( 'Per shipping class', 'wcsdm' ),
+					'per_order'          => __( 'Per order', 'wcsdm' ),
 				),
+				'description' => __( '<strong>Per item</strong>: Charge shipping for each items multiplied with quantity.<br><strong>Per product</strong>: Charge shipping grouped by product.<br><strong>Per shipping class</strong>: Charge shipping grouped by product shipping class.<br><strong>Per order</strong>: Charge shipping for the most expensive item shipping cost.', 'wcsdm' ),
 			),
 			'charge_per_distance_unit' => array(
 				'title'       => __( 'Charge per ', 'wcsdm' ) . '<span id="per_distance_unit_selected"></span>',
@@ -278,7 +281,11 @@ class Wcsdm extends WC_Shipping_Method {
 	public function generate_table_rates_html( $key ) {
 		ob_start();
 		$field_key        = $this->get_field_key( $key );
-		$shipping_classes = WC()->shipping->get_shipping_classes();
+		$shipping_classes = array();
+		foreach ( WC()->shipping->get_shipping_classes() as $shipping_classes_key => $shipping_classes_value ) {
+			$shipping_classes[ $shipping_classes_value->term_id ] = $shipping_classes_value;
+		}
+		ksort( $shipping_classes );
 		?>
 		<tr valign="top">
 			<td>
@@ -310,7 +317,7 @@ class Wcsdm extends WC_Shipping_Method {
 								<?php if ( 'distance' === $key ) : ?>
 								<span class="input-group-distance"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $key ); ?>[]" class="input-text regular-input" type="number" value="<?php echo esc_attr( $value ); ?>" min="0"></span>
 								<?php else : ?>
-								<span class="input-group-price"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $key ); ?>[]" class="wc_input_price input-text regular-input" type="text" value="<?php echo esc_attr( $this->fomat_price( $value ) ); ?>" min="0"></span>
+								<span class="input-group-price"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $key ); ?>[]" class="wc_input_price input-text regular-input" type="text" value="<?php echo esc_attr( $value ); ?>" min="0"></span>
 								<?php endif; ?>
 								</td>
 								<?php endforeach; ?>
@@ -335,39 +342,6 @@ class Wcsdm extends WC_Shipping_Method {
 		</tr>
 		<?php
 		return ob_get_clean();
-	}
-
-	/**
-	 * Format the price based on WooCommerce currency settings.
-	 *
-	 * @since    1.2.9
-	 *
-	 * @param  float $price Raw price.
-	 * @param  array $args  Arguments to format a price {
-	 *     Array of arguments.
-	 *     Defaults to empty array.
-	 *
-	 *     @type string $decimal_separator  Decimal separator.
-	 *                                      Defaults the result of wc_get_price_decimal_separator().
-	 *     @type string $thousand_separator Thousand separator.
-	 *                                      Defaults the result of wc_get_price_thousand_separator().
-	 *     @type string $decimals           Number of decimals.
-	 *                                      Defaults the result of wc_get_price_decimals().
-	 * }
-	 * @return string
-	 */
-	private function fomat_price( $price, $args = array() ) {
-		$args = apply_filters(
-			'wc_price_args', wp_parse_args(
-				$args, array(
-					'decimal_separator'  => wc_get_price_decimal_separator(),
-					'thousand_separator' => wc_get_price_thousand_separator(),
-					'decimals'           => wc_get_price_decimals(),
-				)
-			)
-		);
-
-		return apply_filters( 'formatted_woocommerce_price', number_format( $price, $args['decimals'], $args['decimal_separator'], $args['thousand_separator'] ), $price, $args['decimals'], $args['decimal_separator'], $args['thousand_separator'] );
 	}
 
 	/**
@@ -510,7 +484,6 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @param array $package Package data array.
 	 */
 	public function calculate_shipping( $package = array() ) {
-		$shipping_cost_total = 0;
 
 		$api_request = $this->api_request( $package );
 
@@ -518,8 +491,16 @@ class Wcsdm extends WC_Shipping_Method {
 			return;
 		}
 
+		$shipping_cost_total              = 0;
+		$shipping_cost_per_order          = 0;
+		$shipping_cost_per_shipping_class = array();
+		$shipping_cost_per_product        = array();
+		$shipping_cost_per_item           = 0;
+
 		foreach ( $package['contents'] as $hash => $item ) {
-			$shipping_cost = $this->calculate_cost( $api_request['distance'], $item['data']->get_shipping_class_id() );
+			$product_shipping_class_id = $item['data']->get_shipping_class_id();
+			$product_id                = $item['data']->get_id();
+			$shipping_cost             = $this->calculate_cost( $api_request['distance'], $product_shipping_class_id );
 			if ( is_wp_error( $shipping_cost ) ) {
 				return;
 			}
@@ -528,18 +509,47 @@ class Wcsdm extends WC_Shipping_Method {
 			}
 			switch ( $this->calc_type ) {
 				case 'per_order':
-					if ( $shipping_cost > $shipping_cost_total ) {
-						$shipping_cost_total = $shipping_cost;
+					if ( $shipping_cost > $shipping_cost_per_order ) {
+						$shipping_cost_per_order = $shipping_cost;
+					}
+					break;
+				case 'per_shipping_class':
+					if ( isset( $shipping_cost_per_shipping_class[ $product_shipping_class_id ] ) ) {
+						if ( $shipping_cost > $shipping_cost_per_shipping_class[ $product_shipping_class_id ] ) {
+							$shipping_cost_per_shipping_class[ $product_shipping_class_id ] = $shipping_cost;
+						}
+					} else {
+						$shipping_cost_per_shipping_class[ $product_shipping_class_id ] = $shipping_cost;
+					}
+					break;
+				case 'per_product':
+					if ( isset( $shipping_cost_per_product[ $product_id ] ) ) {
+						if ( $shipping_cost > $shipping_cost_per_product[ $product_id ] ) {
+							$shipping_cost_per_product[ $product_id ] = $shipping_cost;
+						}
+					} else {
+						$shipping_cost_per_product[ $product_id ] = $shipping_cost;
 					}
 					break;
 				default:
-					$shipping_cost_total += $shipping_cost * $item['quantity'];
-					$api_request[ $hash ] = array(
-						'quantity'      => $item['quantity'],
-						'shipping_cost' => $shipping_cost,
-					);
+					$shipping_cost_per_item += $shipping_cost * $item['quantity'];
 					break;
 			}
+		}
+
+		switch ( $this->calc_type ) {
+			case 'per_order':
+				$shipping_cost_total = $shipping_cost_per_order;
+				break;
+			case 'per_shipping_class':
+				$shipping_cost_total = array_sum( $shipping_cost_per_shipping_class );
+				break;
+			case 'per_product':
+				$shipping_cost_total = array_sum( $shipping_cost_per_product );
+				break;
+			default:
+				$shipping_cost_total = $shipping_cost_per_item;
+				break;
 		}
 
 		$rate = array(
@@ -586,13 +596,32 @@ class Wcsdm extends WC_Shipping_Method {
 			$offset = 0;
 			foreach ( $this->table_rates as $rate ) {
 				if ( $distance > $offset && $distance <= $rate['distance'] && isset( $rate[ 'class_' . $class_id ] ) ) {
-					return wc_format_decimal( $rate[ 'class_' . $class_id ] );
+					return $this->normalize_price( $rate[ 'class_' . $class_id ] );
 				}
 				$offset = $rate['distance'];
 			}
 		}
 
 		return new WP_Error( 'no_rates', __( 'No rates data availbale.', 'wcsdm' ) );
+	}
+
+	/**
+	 * Normalize price format to standard format for math procedure.
+	 *
+	 * @since    1.3.6
+	 *
+	 * @param  float $price Raw price data.
+	 * @return string
+	 */
+	private function normalize_price( $price ) {
+
+		$price = str_replace( ',', '', $price );
+
+		if ( 1 < substr_count( $price, '.' ) ) {
+			$price = preg_replace( '/\./', '', $price, ( substr_count( $price, '.' ) - 1 ) );
+		}
+
+		return $price;
 	}
 
 	/**
@@ -912,5 +941,22 @@ class Wcsdm extends WC_Shipping_Method {
 		if ( $debug_mode && ! defined( 'WOOCOMMERCE_CHECKOUT' ) && ! defined( 'WC_DOING_AJAX' ) && ! wc_has_notice( $message ) ) {
 			wc_add_notice( $message, $type );
 		}
+	}
+
+	/**
+	 * Sort product shipping class by ID
+	 *
+	 * @since    1.3.5
+	 * @param array $a First index of the array.
+	 * @param array $b Compared array.
+	 * @return integer
+	 */
+	private function sort_product_shipping_class( $a, $b ) {
+		$a = isset( $a['term_id'] ) ? (int) $a['term_id'] : 10;
+		$b = isset( $b['term_id'] ) ? (int) $b['term_id'] : 10;
+		if ( $a === $b ) {
+			return 0;
+		}
+		return ( $a < $b ) ? -1 : 1;
 	}
 }
