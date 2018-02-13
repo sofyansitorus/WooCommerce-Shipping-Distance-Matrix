@@ -243,7 +243,7 @@
 				map.fitBounds(bounds);
 			});
 
-			setTimeout(function() {
+			setInterval(function() {
 				if ($(".gm-err-content").length) {
 					$("#" + self._mapCanvasId)
 						.closest("tr")
@@ -256,7 +256,7 @@
 						.show();
 					google = undefined;
 				}
-			}, 900);
+			}, 1000);
 		},
 		_setLatLng: function(location, marker, map, infowindow) {
 			var self = this;

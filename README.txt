@@ -28,7 +28,7 @@ This plugin require Google Maps Distance Matrix API Services enabled in your Goo
 * Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
 * Set cost calculation type per order or per item.
 * Set visibility distance info to customer.
-* Translation ready.
+* Set fallback request if there is no results for API request using full address.
 
 == Installation ==
 = Minimum Requirements =
@@ -79,6 +79,10 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 2. Settings panel bottom area
 
 == Changelog ==
+
+= 1.3.4 =
+
+* Improvements - Add new option: Enable Fallback Request.
 
 = 1.3.3 =
 
@@ -166,6 +170,6 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 * Feature - Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
 
 == Upgrade Notice ==
-= 1.3.3 =
+= 1.3.4 =
 
 This version include fixes and improvements. Upgrade immediately.
