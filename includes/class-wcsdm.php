@@ -670,6 +670,7 @@ class Wcsdm extends WC_Shipping_Method {
 	/**
 	 * Process API Response.
 	 *
+	 * @since 1.3.4
 	 * @param array $raw_response HTTP API response.
 	 * @return array|bool Formatted response data, false on failure.
 	 */
