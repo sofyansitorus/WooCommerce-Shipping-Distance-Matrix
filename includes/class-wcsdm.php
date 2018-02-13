@@ -188,16 +188,16 @@ class Wcsdm extends WC_Shipping_Method {
 				),
 			),
 			'calc_type'                => array(
-				'title'   => __( 'Calculation type', 'wcsdm' ),
-				'type'    => 'select',
-				'class'   => 'wc-enhanced-select',
-				'default' => 'per_item',
-				'options' => array(
+				'title'       => __( 'Calculation type', 'wcsdm' ),
+				'type'        => 'select',
+				'class'       => 'wc-enhanced-select',
+				'default'     => 'per_item',
+				'options'     => array(
 					'per_item'           => __( 'Per item', 'wcsdm' ),
 					'per_shipping_class' => __( 'Per shipping class', 'wcsdm' ),
 					'per_order'          => __( 'Per order', 'wcsdm' ),
 				),
-				'description' => __( '<strong>Per item</strong>: Charge shipping for each items individually.<br><strong>Per shipping class</strong>: Charge shipping grouped by product shipping class.<br><strong>Per order</strong>: Charge shipping for the most expensive item shipping cost.', 'wcsdm' ),
+				'description' => __( '<strong>Per item</strong>: Charge shipping for each items multiplied with quantity.<br><strong>Per shipping class</strong>: Charge shipping grouped by product shipping class.<br><strong>Per order</strong>: Charge shipping for the most expensive item shipping cost.', 'wcsdm' ),
 			),
 			'charge_per_distance_unit' => array(
 				'title'       => __( 'Charge per ', 'wcsdm' ) . '<span id="per_distance_unit_selected"></span>',
@@ -512,7 +512,6 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @param array $package Package data array.
 	 */
 	public function calculate_shipping( $package = array() ) {
-		$shipping_cost_total = 0;
 
 		$api_request = $this->api_request( $package );
 
@@ -520,8 +519,14 @@ class Wcsdm extends WC_Shipping_Method {
 			return;
 		}
 
+		$shipping_cost_total              = 0;
+		$shipping_cost_per_order          = 0;
+		$shipping_cost_per_shipping_class = array();
+		$shipping_cost_per_item           = 0;
+
 		foreach ( $package['contents'] as $hash => $item ) {
-			$shipping_cost = $this->calculate_cost( $api_request['distance'], $item['data']->get_shipping_class_id() );
+			$shipping_class_id = $item['data']->get_shipping_class_id();
+			$shipping_cost     = $this->calculate_cost( $api_request['distance'], $shipping_class_id );
 			if ( is_wp_error( $shipping_cost ) ) {
 				return;
 			}
@@ -530,18 +535,35 @@ class Wcsdm extends WC_Shipping_Method {
 			}
 			switch ( $this->calc_type ) {
 				case 'per_order':
-					if ( $shipping_cost > $shipping_cost_total ) {
-						$shipping_cost_total = $shipping_cost;
+					if ( $shipping_cost > $shipping_cost_per_order ) {
+						$shipping_cost_per_order = $shipping_cost;
+					}
+					break;
+				case 'per_shipping_class':
+					if ( isset( $shipping_cost_per_shipping_class[ $shipping_class_id ] ) ) {
+						if ( $shipping_cost > $shipping_cost_per_shipping_class[ $shipping_class_id ] ) {
+							$shipping_cost_per_shipping_class[ $shipping_class_id ] = $shipping_cost;
+						}
+					} else {
+						$shipping_cost_per_shipping_class[ $shipping_class_id ] = $shipping_cost;
 					}
 					break;
 				default:
-					$shipping_cost_total += $shipping_cost * $item['quantity'];
-					$api_request[ $hash ] = array(
-						'quantity'      => $item['quantity'],
-						'shipping_cost' => $shipping_cost,
-					);
+					$shipping_cost_per_item += $shipping_cost * $item['quantity'];
 					break;
 			}
+		}
+
+		switch ( $this->calc_type ) {
+			case 'per_order':
+				$shipping_cost_total = $shipping_cost_per_order;
+				break;
+			case 'per_shipping_class':
+				$shipping_cost_total = array_sum( $shipping_cost_per_shipping_class );
+				break;
+			default:
+				$shipping_cost_total = $shipping_cost_per_item;
+				break;
 		}
 
 		$rate = array(
