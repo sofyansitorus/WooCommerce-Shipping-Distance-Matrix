@@ -194,10 +194,11 @@ class Wcsdm extends WC_Shipping_Method {
 				'default'     => 'per_item',
 				'options'     => array(
 					'per_item'           => __( 'Per item', 'wcsdm' ),
+					'per_product'        => __( 'Per product', 'wcsdm' ),
 					'per_shipping_class' => __( 'Per shipping class', 'wcsdm' ),
 					'per_order'          => __( 'Per order', 'wcsdm' ),
 				),
-				'description' => __( '<strong>Per item</strong>: Charge shipping for each items multiplied with quantity.<br><strong>Per shipping class</strong>: Charge shipping grouped by product shipping class.<br><strong>Per order</strong>: Charge shipping for the most expensive item shipping cost.', 'wcsdm' ),
+				'description' => __( '<strong>Per item</strong>: Charge shipping for each items multiplied with quantity.<br><strong>Per product</strong>: Charge shipping grouped by product.<br><strong>Per shipping class</strong>: Charge shipping grouped by product shipping class.<br><strong>Per order</strong>: Charge shipping for the most expensive item shipping cost.', 'wcsdm' ),
 			),
 			'charge_per_distance_unit' => array(
 				'title'       => __( 'Charge per ', 'wcsdm' ) . '<span id="per_distance_unit_selected"></span>',
@@ -280,7 +281,11 @@ class Wcsdm extends WC_Shipping_Method {
 	public function generate_table_rates_html( $key ) {
 		ob_start();
 		$field_key        = $this->get_field_key( $key );
-		$shipping_classes = WC()->shipping->get_shipping_classes();
+		$shipping_classes = array();
+		foreach ( WC()->shipping->get_shipping_classes() as $shipping_classes_key => $shipping_classes_value ) {
+			$shipping_classes[ $shipping_classes_value->term_id ] = $shipping_classes_value;
+		}
+		ksort( $shipping_classes );
 		?>
 		<tr valign="top">
 			<td>
@@ -522,11 +527,13 @@ class Wcsdm extends WC_Shipping_Method {
 		$shipping_cost_total              = 0;
 		$shipping_cost_per_order          = 0;
 		$shipping_cost_per_shipping_class = array();
+		$shipping_cost_per_product        = array();
 		$shipping_cost_per_item           = 0;
 
 		foreach ( $package['contents'] as $hash => $item ) {
-			$shipping_class_id = $item['data']->get_shipping_class_id();
-			$shipping_cost     = $this->calculate_cost( $api_request['distance'], $shipping_class_id );
+			$product_shipping_class_id = $item['data']->get_shipping_class_id();
+			$product_id                = $item['data']->get_id();
+			$shipping_cost             = $this->calculate_cost( $api_request['distance'], $product_shipping_class_id );
 			if ( is_wp_error( $shipping_cost ) ) {
 				return;
 			}
@@ -540,12 +547,21 @@ class Wcsdm extends WC_Shipping_Method {
 					}
 					break;
 				case 'per_shipping_class':
-					if ( isset( $shipping_cost_per_shipping_class[ $shipping_class_id ] ) ) {
-						if ( $shipping_cost > $shipping_cost_per_shipping_class[ $shipping_class_id ] ) {
-							$shipping_cost_per_shipping_class[ $shipping_class_id ] = $shipping_cost;
+					if ( isset( $shipping_cost_per_shipping_class[ $product_shipping_class_id ] ) ) {
+						if ( $shipping_cost > $shipping_cost_per_shipping_class[ $product_shipping_class_id ] ) {
+							$shipping_cost_per_shipping_class[ $product_shipping_class_id ] = $shipping_cost;
 						}
 					} else {
-						$shipping_cost_per_shipping_class[ $shipping_class_id ] = $shipping_cost;
+						$shipping_cost_per_shipping_class[ $product_shipping_class_id ] = $shipping_cost;
+					}
+					break;
+				case 'per_product':
+					if ( isset( $shipping_cost_per_product[ $product_id ] ) ) {
+						if ( $shipping_cost > $shipping_cost_per_product[ $product_id ] ) {
+							$shipping_cost_per_product[ $product_id ] = $shipping_cost;
+						}
+					} else {
+						$shipping_cost_per_product[ $product_id ] = $shipping_cost;
 					}
 					break;
 				default:
@@ -560,6 +576,9 @@ class Wcsdm extends WC_Shipping_Method {
 				break;
 			case 'per_shipping_class':
 				$shipping_cost_total = array_sum( $shipping_cost_per_shipping_class );
+				break;
+			case 'per_product':
+				$shipping_cost_total = array_sum( $shipping_cost_per_product );
 				break;
 			default:
 				$shipping_cost_total = $shipping_cost_per_item;
@@ -936,5 +955,22 @@ class Wcsdm extends WC_Shipping_Method {
 		if ( $debug_mode && ! defined( 'WOOCOMMERCE_CHECKOUT' ) && ! defined( 'WC_DOING_AJAX' ) && ! wc_has_notice( $message ) ) {
 			wc_add_notice( $message, $type );
 		}
+	}
+
+	/**
+	 * Sort product shipping class by ID
+	 *
+	 * @since    1.3.5
+	 * @param array $a First index of the array.
+	 * @param array $b Compared array.
+	 * @return integer
+	 */
+	private function sort_product_shipping_class( $a, $b ) {
+		$a = isset( $a['term_id'] ) ? (int) $a['term_id'] : 10;
+		$b = isset( $b['term_id'] ) ? (int) $b['term_id'] : 10;
+		if ( $a === $b ) {
+			return 0;
+		}
+		return ( $a < $b ) ? -1 : 1;
 	}
 }
