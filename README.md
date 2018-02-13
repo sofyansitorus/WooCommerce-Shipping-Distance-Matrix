@@ -88,6 +88,9 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 
 ## Changelog ##
 
+### 1.3.5 ###
+* Improvements - Add new option: Enable Fallback Request.
+
 ### 1.3.4 ###
 * Improvements - Add new option: Enable Fallback Request.
 
@@ -162,7 +165,7 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 
 ## Upgrade Notice ##
 
-### 1.3.4 ###
-This version include fixes and improvements. Upgrade immediately.
+### 1.3.5 ###
+This version include fixes. Upgrade immediately.
 
 
