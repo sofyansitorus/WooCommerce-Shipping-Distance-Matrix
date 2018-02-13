@@ -791,11 +791,11 @@ class Wcsdm extends WC_Shipping_Method {
 		 *
 		 *      add_action( 'woocommerce_wcsdm_shipping_origin_info', 'modify_shipping_origin_info', 10, 2 );
 		 *
-		 *      function modify_shipping_origin_info( $origin_info, $$package ) {
+		 *      function modify_shipping_origin_info( $origin_info, $package ) {
 		 *          return '1600 Amphitheatre Parkway,Mountain View,CA,94043';
 		 *      }
 		 */
-		return apply_filters( 'woocommerce_' . $this->id . '_shipping_origin_info', $origin_info, $$package );
+		return apply_filters( 'woocommerce_' . $this->id . '_shipping_origin_info', $origin_info, $package );
 	}
 
 	/**
