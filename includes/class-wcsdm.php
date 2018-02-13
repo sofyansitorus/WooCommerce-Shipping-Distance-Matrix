@@ -193,9 +193,11 @@ class Wcsdm extends WC_Shipping_Method {
 				'class'   => 'wc-enhanced-select',
 				'default' => 'per_item',
 				'options' => array(
-					'per_item'  => __( 'Per item: Charge shipping for each items individually', 'wcsdm' ),
-					'per_order' => __( 'Per order: Charge shipping for the most expensive item shipping cost', 'wcsdm' ),
+					'per_item'           => __( 'Per item', 'wcsdm' ),
+					'per_shipping_class' => __( 'Per shipping class', 'wcsdm' ),
+					'per_order'          => __( 'Per order', 'wcsdm' ),
 				),
+				'description' => __( '<strong>Per item</strong>: Charge shipping for each items individually.<br><strong>Per shipping class</strong>: Charge shipping grouped by product shipping class.<br><strong>Per order</strong>: Charge shipping for the most expensive item shipping cost.', 'wcsdm' ),
 			),
 			'charge_per_distance_unit' => array(
 				'title'       => __( 'Charge per ', 'wcsdm' ) . '<span id="per_distance_unit_selected"></span>',
