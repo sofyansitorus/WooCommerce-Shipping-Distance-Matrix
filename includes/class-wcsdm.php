@@ -345,39 +345,6 @@ class Wcsdm extends WC_Shipping_Method {
 	}
 
 	/**
-	 * Format the price based on WooCommerce currency settings.
-	 *
-	 * @since    1.2.9
-	 *
-	 * @param  float $price Raw price.
-	 * @param  array $args  Arguments to format a price {
-	 *     Array of arguments.
-	 *     Defaults to empty array.
-	 *
-	 *     @type string $decimal_separator  Decimal separator.
-	 *                                      Defaults the result of wc_get_price_decimal_separator().
-	 *     @type string $thousand_separator Thousand separator.
-	 *                                      Defaults the result of wc_get_price_thousand_separator().
-	 *     @type string $decimals           Number of decimals.
-	 *                                      Defaults the result of wc_get_price_decimals().
-	 * }
-	 * @return string
-	 */
-	private function fomat_price( $price, $args = array() ) {
-		$args = apply_filters(
-			'wc_price_args', wp_parse_args(
-				$args, array(
-					'decimal_separator'  => wc_get_price_decimal_separator(),
-					'thousand_separator' => wc_get_price_thousand_separator(),
-					'decimals'           => wc_get_price_decimals(),
-				)
-			)
-		);
-
-		return apply_filters( 'formatted_woocommerce_price', number_format( $price, $args['decimals'], $args['decimal_separator'], $args['thousand_separator'] ), $price, $args['decimals'], $args['decimal_separator'], $args['thousand_separator'] );
-	}
-
-	/**
 	 * Validate gmaps_api_key settings field.
 	 *
 	 * @since    1.0.0
@@ -629,7 +596,7 @@ class Wcsdm extends WC_Shipping_Method {
 			$offset = 0;
 			foreach ( $this->table_rates as $rate ) {
 				if ( $distance > $offset && $distance <= $rate['distance'] && isset( $rate[ 'class_' . $class_id ] ) ) {
-					return wc_format_decimal( $rate[ 'class_' . $class_id ] );
+					return $rate[ 'class_' . $class_id ];
 				}
 				$offset = $rate['distance'];
 			}
