@@ -596,13 +596,32 @@ class Wcsdm extends WC_Shipping_Method {
 			$offset = 0;
 			foreach ( $this->table_rates as $rate ) {
 				if ( $distance > $offset && $distance <= $rate['distance'] && isset( $rate[ 'class_' . $class_id ] ) ) {
-					return $rate[ 'class_' . $class_id ];
+					return $this->normalize_price( $rate[ 'class_' . $class_id ] );
 				}
 				$offset = $rate['distance'];
 			}
 		}
 
 		return new WP_Error( 'no_rates', __( 'No rates data availbale.', 'wcsdm' ) );
+	}
+
+	/**
+	 * Normalize price format to standard format for math procedure.
+	 *
+	 * @since    1.3.6
+	 *
+	 * @param  float $price Raw price data.
+	 * @return string
+	 */
+	private function normalize_price( $price ) {
+
+		$price = str_replace( ',', '', $price );
+
+		if ( 1 < substr_count( $price, '.' ) ) {
+			$price = preg_replace( '/\./', '', $price, ( substr_count( $price, '.' ) - 1 ) );
+		}
+
+		return $price;
 	}
 
 	/**
