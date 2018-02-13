@@ -317,7 +317,7 @@ class Wcsdm extends WC_Shipping_Method {
 								<?php if ( 'distance' === $key ) : ?>
 								<span class="input-group-distance"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $key ); ?>[]" class="input-text regular-input" type="number" value="<?php echo esc_attr( $value ); ?>" min="0"></span>
 								<?php else : ?>
-								<span class="input-group-price"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $key ); ?>[]" class="wc_input_price input-text regular-input" type="text" value="<?php echo esc_attr( $this->fomat_price( $value ) ); ?>" min="0"></span>
+								<span class="input-group-price"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $key ); ?>[]" class="wc_input_price input-text regular-input" type="text" value="<?php echo esc_attr( $value ); ?>" min="0"></span>
 								<?php endif; ?>
 								</td>
 								<?php endforeach; ?>
