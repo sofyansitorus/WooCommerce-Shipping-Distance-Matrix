@@ -74,7 +74,7 @@ function wcsdm_plugin_action_links( $links ) {
 			continue;
 		}
 		foreach ( $zone['shipping_methods'] as $zone_shipping_method ) {
-			if ( $zone_shipping_method instanceof WooGoSend ) {
+			if ( $zone_shipping_method instanceof Wcsdm ) {
 				$zone_id = $zone['zone_id'];
 				break;
 			}
