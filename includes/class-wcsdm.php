@@ -185,6 +185,13 @@ class Wcsdm extends WC_Shipping_Method {
 					'imperial' => __( 'Miles', 'wcsdm' ),
 				),
 			),
+			'enable_fallback_request'  => array(
+				'title'       => __( 'Enable Fallback Request', 'wcsdm' ),
+				'label'       => __( 'Yes', 'wcsdm' ),
+				'type'        => 'checkbox',
+				'description' => __( 'If there is no results for API request using full address, the system will attempt to make another API request to the Google API server without "Address Line 1" parameter. The fallback request will only using "Address Line 2", "City", "State/Province", "Postal Code" and "Country" parameters.', 'wcsdm' ),
+				'desc_tip'    => true,
+			),
 			'calc_type'                => array(
 				'title'       => __( 'Calculation type', 'wcsdm' ),
 				'type'        => 'select',
@@ -203,13 +210,6 @@ class Wcsdm extends WC_Shipping_Method {
 				'label'       => __( 'Yes', 'wcsdm' ),
 				'type'        => 'checkbox',
 				'description' => __( 'Charge customer based on shipping distance multiplied with shipping class rate defined. Example: If the rate defined is $4 and the shipping distance is 7 miles, the shipping cost will be $28.', 'wcsdm' ),
-				'desc_tip'    => true,
-			),
-			'enable_fallback_request'  => array(
-				'title'       => __( 'Enable Fallback Request', 'wcsdm' ),
-				'label'       => __( 'Yes', 'wcsdm' ),
-				'type'        => 'checkbox',
-				'description' => __( 'If there is no results for API request using full address, the system will attempt to make another API request to the Google API server without "Address Line 1" parameter. The fallback request will only using "Address Line 2", "City", "State/Province", "Postal Code" and "Country" parameters.', 'wcsdm' ),
 				'desc_tip'    => true,
 			),
 			'table_rates'              => array(
