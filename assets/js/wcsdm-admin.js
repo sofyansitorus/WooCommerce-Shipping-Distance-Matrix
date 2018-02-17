@@ -56,7 +56,7 @@
 						.text() === self._params.method_title
 				) {
 					self._initGoogleMaps();
-					$("#woocommerce_" + self._params.method_id + "_gmaps_api_units").trigger("change");
+					$("#woocommerce_wcsdm_gmaps_api_units").trigger("change");
 				}
 			});
 			$(document).on(
@@ -71,7 +71,7 @@
 			// Handle setting distance units changed.
 			$(document).on(
 				"change",
-				"#woocommerce_" + self._params.method_id + "_gmaps_api_units",
+				"#woocommerce_wcsdm_gmaps_api_units",
 				function() {
 					$(".input-group-distance")
 						.removeClass("metric imperial")
@@ -82,7 +82,7 @@
 							.text()
 					);
 					$(".input-group-price").removeClass("metric imperial");
-					if ($("#woocommerce_" + self._params.method_id + "_charge_per_distance_unit").is(":checked")) {
+					if ($("#woocommerce_wcsdm_charge_per_distance_unit").is(":checked")) {
 						$(".input-group-price").addClass($(this).val());
 					}
 				}
@@ -90,12 +90,12 @@
 			// Handle setting charge_per_distance_unit changed.
 			$(document).on(
 				"change",
-				"#woocommerce_" + self._params.method_id + "_charge_per_distance_unit",
+				"#woocommerce_wcsdm_charge_per_distance_unit",
 				function() {
 					$(".input-group-price").removeClass("metric imperial");
 					if ($(this).is(":checked")) {
 						$(".input-group-price").addClass(
-							$("#woocommerce_" + self._params.method_id + "_gmaps_api_units").val()
+							$("#woocommerce_wcsdm_gmaps_api_units").val()
 						);
 					}
 				}
@@ -385,11 +385,11 @@
 			// Set the template data vars.
 			var tmplData = {
 				field_key: $(e.currentTarget).data("key"),
-				distance_unit: $("#woocommerce_" + self._params.method_id + "_gmaps_api_units").val(),
+				distance_unit: $("#woocommerce_wcsdm_gmaps_api_units").val(),
 				charge_per_distance_unit: $(
-					"#woocommerce_" + self._params.method_id + "_charge_per_distance_unit"
+					"#woocommerce_wcsdm_charge_per_distance_unit"
 				).is(":checked")
-					? $("#woocommerce_" + self._params.method_id + "_gmaps_api_units").val()
+					? $("#woocommerce_wcsdm_gmaps_api_units").val()
 					: ""
 			};
 			$("#rates-list-table tbody").append(template(tmplData));
