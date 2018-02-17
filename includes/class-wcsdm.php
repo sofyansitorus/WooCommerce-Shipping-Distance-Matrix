@@ -135,21 +135,18 @@ class Wcsdm extends WC_Shipping_Method {
 				'description' => __( 'This plugin require Google Maps Distance Matrix API Services enabled in your Google API Console. <a href="https://developers.google.com/maps/documentation/distance-matrix/get-api-key" target="_blank">Click here</a> to get API Key and to enable the services.', 'wcsdm' ),
 				'default'     => '',
 			),
-			'gmaps_address_picker'     => array(
-				'title' => __( 'Store Location', 'wcsdm' ),
-				'type'  => 'address_picker',
+			'origin'                   => array(
+				'title'       => __( 'Store Location', 'wcsdm' ),
+				'type'        => 'address_picker',
+				'description' => __( '<a href="http://www.latlong.net/" target="_blank">Click here</a> to get your store location coordinates info.', 'wcsdm' ),
 			),
 			'origin_lat'               => array(
-				'title'       => __( 'Store Location Latitude', 'wcsdm' ),
-				'type'        => 'text',
-				'default'     => '',
-				'description' => __( '<a href="http://www.latlong.net/" target="_blank">Click here</a> to get your store location coordinates info.', 'wcsdm' ),
+				'title' => __( 'Store Location Latitude', 'wcsdm' ),
+				'type'  => 'coordinates',
 			),
 			'origin_lng'               => array(
-				'title'       => __( 'Store Location Logitude', 'wcsdm' ),
-				'type'        => 'text',
-				'default'     => '',
-				'description' => __( '<a href="http://www.latlong.net/" target="_blank">Click here</a> to get your store location coordinates info.', 'wcsdm' ),
+				'title' => __( 'Store Location Logitude', 'wcsdm' ),
+				'type'  => 'coordinates',
 			),
 			'gmaps_api_mode'           => array(
 				'title'       => __( 'Travel Mode', 'wcsdm' ),
@@ -170,6 +167,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'desc_tip'    => true,
 				'default'     => 'driving',
 				'options'     => array(
+					''         => __( 'None', 'wcsdm' ),
 					'tolls'    => __( 'Avoid Tolls', 'wcsdm' ),
 					'highways' => __( 'Avoid Highways', 'wcsdm' ),
 					'ferries'  => __( 'Avoid Ferries', 'wcsdm' ),
@@ -259,18 +257,32 @@ class Wcsdm extends WC_Shipping_Method {
 			</th>
 			<td class="forminp">
 				<input type="hidden" id="map-secret-key" value="<?php echo esc_attr( WCSDM_MAP_SECRET_KEY ); ?>">
-				<div id="wcsdm-map-wrapper" class="wcsdm-map-wrapper"></div>
-				<script type="text/html" id="tmpl-wcsdm-map-search">
-					<input id="{{data.map_search_id}}" class="wcsdm-map-search controls" type="text" placeholder="<?php echo esc_attr( __( 'Search your store location', 'wcsdm' ) ); ?>" autocomplete="off" />
+				<div id="<?php echo esc_attr( $this->id ); ?>-map-wrapper" class="<?php echo esc_attr( $this->id ); ?>-map-wrapper"></div>
+				<div id="<?php echo esc_attr( $this->id ); ?>-lat-lng-wrap">
+					<div><label for="<?php echo esc_attr( $field_key ); ?>_lat"><?php echo esc_html( 'Latitude', 'wcsdm' ); ?></label><input type="text" id="<?php echo esc_attr( $field_key ); ?>_lat" name="<?php echo esc_attr( $field_key ); ?>_lat" value="<?php echo esc_attr( $this->get_option( $key . '_lat' ) ); ?>" class="origin-coordinates"></div>
+					<div><label for="<?php echo esc_attr( $field_key ); ?>_lng"><?php echo esc_html( 'Longitude', 'wcsdm' ); ?></label><input type="text" id="<?php echo esc_attr( $field_key ); ?>_lng" name="<?php echo esc_attr( $field_key ); ?>_lng" value="<?php echo esc_attr( $this->get_option( $key . '_lng' ) ); ?>" class="origin-coordinates"></div>
+				</div>
+				<?php echo wp_kses( $this->get_description_html( $data ), wp_kses_allowed_html( 'post' ) ); ?>
+				<script type="text/html" id="tmpl-<?php echo esc_attr( $this->id ); ?>-map-search">
+					<input id="{{data.map_search_id}}" class="<?php echo esc_attr( $this->id ); ?>-map-search controls" type="text" placeholder="<?php echo esc_attr( __( 'Search your store location', 'wcsdm' ) ); ?>" autocomplete="off" />
 				</script>
-				<script type="text/html" id="tmpl-wcsdm-map-canvas">
-					<div id="{{data.map_canvas_id}}" class="wcsdm-map-canvas"></div>
+				<script type="text/html" id="tmpl-<?php echo esc_attr( $this->id ); ?>-map-canvas">
+					<div id="{{data.map_canvas_id}}" class="<?php echo esc_attr( $this->id ); ?>-map-canvas"></div>
 				</script>
 			</td>
 		</tr>
 		<?php
 		return ob_get_clean();
 	}
+
+	/**
+	 * Generate coordinates settings field.
+	 *
+	 * @since 1.2.4
+	 * @param string $key Settings field key.
+	 * @param array  $data Settings field data.
+	 */
+	public function generate_coordinates_html( $key, $data ) {}
 
 	/**
 	 * Generate table rates HTML form.

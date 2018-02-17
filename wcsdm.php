@@ -89,9 +89,9 @@ function wcsdm_plugin_action_links( $links ) {
 			'<a href="' . esc_url(
 				add_query_arg(
 					array(
-						'page'               => 'wc-settings',
-						'tab'                => 'shipping',
-						'zone_id'            => $zone_id,
+						'page'           => 'wc-settings',
+						'tab'            => 'shipping',
+						'zone_id'        => $zone_id,
 						'wcsdm_settings' => true,
 					), admin_url( 'admin.php' )
 				)
@@ -157,7 +157,7 @@ function wcsdm_admin_enqueue_scripts( $hook ) {
 			'wcsdm-admin',
 			'wcsdm_params',
 			array(
-				'show_settings' => ( isset( $_GET['wcsdm_settings'] ) && is_admin() ) ? true : false,
+				'show_settings' => isset( $_GET['wcsdm_settings'] ) && is_admin(),
 				'method_id'     => WCSDM_METHOD_ID,
 				'method_title'  => WCSDM_METHOD_TITLE,
 				'txt'           => array(
