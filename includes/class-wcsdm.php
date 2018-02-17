@@ -663,13 +663,20 @@ class Wcsdm extends WC_Shipping_Method {
 			'destinations' => rawurlencode( implode( ',', $destination_info ) ),
 		);
 
-		$transient_key = $this->id . '_api_request_' . md5( wp_json_encode( $request_url_args ) );
+		$cache_key = $this->id . '_api_request_' . md5(
+			wp_json_encode(
+				array(
+					'request_url_args' => $request_url_args,
+					'table_rates'      => $this->table_rates,
+				)
+			)
+		);
 
 		// Check if the data already chached and return it.
-		$cached_data = get_transient( $transient_key );
+		$cached_data = get_transient( $cache_key );
 
 		if ( false !== $cached_data ) {
-			$this->show_debug( __( 'Cached key', 'wcsdm' ) . ': ' . $transient_key );
+			$this->show_debug( __( 'Cache key', 'wcsdm' ) . ': ' . $cache_key );
 			$this->show_debug( __( 'Cached data', 'wcsdm' ) . ': ' . wp_json_encode( $cached_data ) );
 			return $cached_data;
 		}
@@ -694,8 +701,8 @@ class Wcsdm extends WC_Shipping_Method {
 
 		if ( $data ) {
 
-			delete_transient( $transient_key ); // To make sure the transient data re-created, delete it first.
-			set_transient( $transient_key, $data, HOUR_IN_SECONDS ); // Store the data to transient with expiration in 1 hour for later use.
+			delete_transient( $cache_key ); // To make sure the transient data re-created, delete it first.
+			set_transient( $cache_key, $data, HOUR_IN_SECONDS ); // Store the data to transient with expiration in 1 hour for later use.
 
 			return $data;
 		}
