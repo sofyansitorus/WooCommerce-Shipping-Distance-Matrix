@@ -122,17 +122,10 @@ class Wcsdm extends WC_Shipping_Method {
 					'none'    => __( 'None', 'wcsdm' ),
 				),
 			),
-			'show_distance'            => array(
-				'title'       => __( 'Show distance', 'wcsdm' ),
-				'label'       => __( 'Yes', 'wcsdm' ),
-				'type'        => 'checkbox',
-				'description' => __( 'Show the distance info to customer during checkout.', 'wcsdm' ),
-				'desc_tip'    => true,
-			),
 			'gmaps_api_key'            => array(
-				'title'       => __( 'Google Maps Distance Matrix API', 'wcsdm' ),
+				'title'       => __( 'API Key', 'wcsdm' ),
 				'type'        => 'text',
-				'description' => __( 'This plugin require Google Maps Distance Matrix API Services enabled in your Google API Console. <a href="https://developers.google.com/maps/documentation/distance-matrix/get-api-key" target="_blank">Click here</a> to get API Key and to enable the services.', 'wcsdm' ),
+				'description' => __( 'This plugin require Google Maps Distance Matrix API Key and service is enabled. <a href="https://developers.google.com/maps/documentation/distance-matrix/get-api-key" target="_blank">Click here</a> to go to Google API Console to get API Key and to enable the service.', 'wcsdm' ),
 				'default'     => '',
 			),
 			'origin'                   => array(
@@ -184,6 +177,13 @@ class Wcsdm extends WC_Shipping_Method {
 					'metric'   => __( 'Kilometers', 'wcsdm' ),
 					'imperial' => __( 'Miles', 'wcsdm' ),
 				),
+			),
+			'show_distance'            => array(
+				'title'       => __( 'Show distance', 'wcsdm' ),
+				'label'       => __( 'Yes', 'wcsdm' ),
+				'type'        => 'checkbox',
+				'description' => __( 'Show the distance info to customer during checkout.', 'wcsdm' ),
+				'desc_tip'    => true,
 			),
 			'enable_fallback_request'  => array(
 				'title'       => __( 'Enable Fallback Request', 'wcsdm' ),
