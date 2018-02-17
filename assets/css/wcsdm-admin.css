@@ -20,6 +20,9 @@
 #rates-list-table tbody .selected th {
   background-color: #fefbcc; }
 
+#rates-list-table .cols-shipping-class {
+  font-weight: normal; }
+
 #rates-list-table .button {
   float: none !important; }
 
