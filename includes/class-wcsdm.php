@@ -212,11 +212,6 @@ class Wcsdm extends WC_Shipping_Method {
 				'description' => __( 'If there is no results for API request using full address, the system will attempt to make another API request to the Google API server without "Address Line 1" parameter. The fallback request will only using "Address Line 2", "City", "State/Province", "Postal Code" and "Country" parameters.', 'wcsdm' ),
 				'desc_tip'    => true,
 			),
-			'shipping_rates'           => array(
-				'title'       => __( 'Shipping Rates', 'wcsdm' ),
-				'type'        => 'title',
-				'description' => __( 'Table rates for each shipping class and maximum distances. Leave blank to disable. Fill 0 (zero) to set as free shipping.', 'wcsdm' ),
-			),
 			'table_rates'              => array(
 				'type' => 'table_rates',
 			),
@@ -300,18 +295,18 @@ class Wcsdm extends WC_Shipping_Method {
 		ksort( $shipping_classes );
 		?>
 		<tr valign="top">
-			<td>
+			<td colspan="2">
 				<table id="rates-list-table" class="widefat wc_input_table" cellspacing="0">
 					<thead>
 						<tr>
-							<td class="col-select"><a href="#" class="add button" data-key="<?php echo esc_attr( $field_key ); ?>"><?php esc_html_e( 'Add Row', 'wcsdm' ); ?><a href="#" class="remove_rows button" style="display: none"><?php esc_html_e( 'Remove Row', 'wcsdm' ); ?></a></a></td>
+							<td class="col-select"><a href="#" class="add button" data-key="<?php echo esc_attr( $field_key ); ?>"><?php esc_html_e( 'Add Rate', 'wcsdm' ); ?><a href="#" class="remove_rows button" style="display: none"><?php esc_html_e( 'Remove Rate', 'wcsdm' ); ?></a></a></td>
 							<td class="col-distance"></td>
-							<td colspan="<?php echo count( $shipping_classes ) + 1; ?>"><?php esc_html_e( 'Cost by Product Shipping Class', 'wcsdm' ); ?></td>
+							<td colspan="<?php echo count( $shipping_classes ) + 1; ?>" class="cols-shipping-class"><strong><?php esc_html_e( 'Shipping Rate by Product Shipping Class', 'wcsdm' ); ?></strong><br><?php esc_html_e( 'Fill with 0 (zero) to set as free shipping. Leave blank to disable.', 'wcsdm' ); ?></td>
 						</tr>
 						<tr>
 							<td class="col-select"><input class="select-item" type="checkbox"></td>
 							<td><?php esc_html_e( 'Maximum Distances', 'wcsdm' ); ?></td>
-							<td><?php esc_html_e( 'Default', 'wcsdm' ); ?></td>
+							<td><?php esc_html_e( 'Unspecified', 'wcsdm' ); ?></td>
 							<?php if ( $shipping_classes ) : ?>
 							<?php foreach ( $shipping_classes as $shipping_class ) : ?>
 							<td><?php echo esc_html( $shipping_class->name ); ?></td>
@@ -327,9 +322,9 @@ class Wcsdm extends WC_Shipping_Method {
 								<?php foreach ( $table_rate as $key => $value ) : ?>
 								<td class="col-<?php echo esc_attr( $key ); ?>">
 								<?php if ( 'distance' === $key ) : ?>
-								<span class="input-group-distance"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $key ); ?>[]" class="input-text regular-input" type="number" value="<?php echo esc_attr( $value ); ?>" min="0"></span>
+								<span class="input-group-distance"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $key ); ?>[]" class="input-text regular-input" type="number" value="<?php echo esc_attr( $value ); ?>" min="1" step="1" onkeypress="return event.charCode >= 48 && event.charCode <= 57"></span>
 								<?php else : ?>
-								<span class="input-group-price"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $key ); ?>[]" class="wc_input_price input-text regular-input" type="text" value="<?php echo esc_attr( $value ); ?>" min="0"></span>
+								<span class="input-group-price"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $key ); ?>[]" class="wc_input_price input-text regular-input" type="text" value="<?php echo esc_attr( $value ); ?>"></span>
 								<?php endif; ?>
 								</td>
 								<?php endforeach; ?>
@@ -341,11 +336,11 @@ class Wcsdm extends WC_Shipping_Method {
 				<script type="text/template" id="tmpl-rates-list-input-table-row">
 				<tr>
 					<td class="col-select"><input class="select-item" type="checkbox"></td>
-					<td class="col-distance"><span class="input-group-distance {{ data.distance_unit }}"><input name="{{{ data.field_key }}}_distance[]" type="number" value="" min="0"></span></td>
-					<td class="col-no-class"><span class="input-group-price {{ data.charge_per_distance_unit }}"><input name="{{{ data.field_key }}}_class_0[]" class="wc_input_price input-text regular-input" type="text" value="" min="0"></span></td>
+					<td class="col-distance"><span class="input-group-distance {{ data.distance_unit }}"><input name="{{{ data.field_key }}}_distance[]" type="number" value="" min="1" step="1" onkeypress="return event.charCode >= 48 && event.charCode <= 57"></span></td>
+					<td class="col-no-class"><span class="input-group-price {{ data.charge_per_distance_unit }}"><input name="{{{ data.field_key }}}_class_0[]" class="wc_input_price input-text regular-input" type="text" value=""></span></td>
 					<?php if ( $shipping_classes ) : ?>
 					<?php foreach ( $shipping_classes as $shipping_class ) : ?>
-					<td class="col-has-class col-class<?php echo esc_attr( $shipping_class->term_id ); ?>"><span class="input-group-price {{ data.charge_per_distance_unit }}"><input name="{{{ data.field_key }}}_class_<?php echo esc_attr( $shipping_class->term_id ); ?>[]" class="wc_input_price input-text regular-input" type="text" value="" min="0"></span></td>
+					<td class="col-has-class col-class<?php echo esc_attr( $shipping_class->term_id ); ?>"><span class="input-group-price {{ data.charge_per_distance_unit }}"><input name="{{{ data.field_key }}}_class_<?php echo esc_attr( $shipping_class->term_id ); ?>[]" class="wc_input_price input-text regular-input" type="text" value=""></span></td>
 					<?php endforeach; ?>
 					<?php endif; ?>
 				</tr>
