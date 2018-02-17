@@ -122,17 +122,10 @@ class Wcsdm extends WC_Shipping_Method {
 					'none'    => __( 'None', 'wcsdm' ),
 				),
 			),
-			'show_distance'            => array(
-				'title'       => __( 'Show distance', 'wcsdm' ),
-				'label'       => __( 'Yes', 'wcsdm' ),
-				'type'        => 'checkbox',
-				'description' => __( 'Show the distance info to customer during checkout.', 'wcsdm' ),
-				'desc_tip'    => true,
-			),
 			'gmaps_api_key'            => array(
-				'title'       => __( 'Google Maps Distance Matrix API', 'wcsdm' ),
+				'title'       => __( 'API Key', 'wcsdm' ),
 				'type'        => 'text',
-				'description' => __( 'This plugin require Google Maps Distance Matrix API Services enabled in your Google API Console. <a href="https://developers.google.com/maps/documentation/distance-matrix/get-api-key" target="_blank">Click here</a> to get API Key and to enable the services.', 'wcsdm' ),
+				'description' => __( 'This plugin require Google Maps Distance Matrix API Key and service is enabled. <a href="https://developers.google.com/maps/documentation/distance-matrix/get-api-key" target="_blank">Click here</a> to go to Google API Console to get API Key and to enable the service.', 'wcsdm' ),
 				'default'     => '',
 			),
 			'origin'                   => array(
@@ -184,6 +177,13 @@ class Wcsdm extends WC_Shipping_Method {
 					'metric'   => __( 'Kilometers', 'wcsdm' ),
 					'imperial' => __( 'Miles', 'wcsdm' ),
 				),
+			),
+			'show_distance'            => array(
+				'title'       => __( 'Show distance', 'wcsdm' ),
+				'label'       => __( 'Yes', 'wcsdm' ),
+				'type'        => 'checkbox',
+				'description' => __( 'Show the distance info to customer during checkout.', 'wcsdm' ),
+				'desc_tip'    => true,
 			),
 			'enable_fallback_request'  => array(
 				'title'       => __( 'Enable Fallback Request', 'wcsdm' ),
@@ -663,13 +663,20 @@ class Wcsdm extends WC_Shipping_Method {
 			'destinations' => rawurlencode( implode( ',', $destination_info ) ),
 		);
 
-		$transient_key = $this->id . '_api_request_' . md5( wp_json_encode( $request_url_args ) );
+		$cache_key = $this->id . '_api_request_' . md5(
+			wp_json_encode(
+				array(
+					'request_url_args' => $request_url_args,
+					'table_rates'      => $this->table_rates,
+				)
+			)
+		);
 
 		// Check if the data already chached and return it.
-		$cached_data = get_transient( $transient_key );
+		$cached_data = get_transient( $cache_key );
 
 		if ( false !== $cached_data ) {
-			$this->show_debug( __( 'Cached key', 'wcsdm' ) . ': ' . $transient_key );
+			$this->show_debug( __( 'Cache key', 'wcsdm' ) . ': ' . $cache_key );
 			$this->show_debug( __( 'Cached data', 'wcsdm' ) . ': ' . wp_json_encode( $cached_data ) );
 			return $cached_data;
 		}
@@ -694,8 +701,8 @@ class Wcsdm extends WC_Shipping_Method {
 
 		if ( $data ) {
 
-			delete_transient( $transient_key ); // To make sure the transient data re-created, delete it first.
-			set_transient( $transient_key, $data, HOUR_IN_SECONDS ); // Store the data to transient with expiration in 1 hour for later use.
+			delete_transient( $cache_key ); // To make sure the transient data re-created, delete it first.
+			set_transient( $cache_key, $data, HOUR_IN_SECONDS ); // Store the data to transient with expiration in 1 hour for later use.
 
 			return $data;
 		}
