@@ -550,12 +550,18 @@ class Wcsdm extends WC_Shipping_Method {
 			$shipping_class_id = $item['data']->get_shipping_class_id();
 			$product_id        = $item['data']->get_id();
 			$calculated_cost   = $this->calculate_cost( $api_request['distance'], $shipping_class_id );
+
+			// Bail early if there is no rate found.
 			if ( is_wp_error( $calculated_cost ) ) {
 				return;
 			}
+
+			// Multiply shipping cost with distance.
 			if ( 'yes' === $this->charge_per_distance_unit ) {
 				$calculated_cost = $calculated_cost * $api_request['distance'];
 			}
+
+			// Calculate cost by calculation type setting.
 			switch ( $this->calc_type ) {
 				case 'per_order':
 					if ( $calculated_cost > $cost_per_order ) {
