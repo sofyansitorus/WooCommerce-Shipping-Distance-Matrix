@@ -644,7 +644,7 @@ class Wcsdm extends WC_Shipping_Method {
 		if ( $this->table_rates ) {
 			$offset = 0;
 			foreach ( $this->table_rates as $rate ) {
-				if ( $distance > $offset && $distance <= $rate['distance'] && isset( $rate[ 'class_' . $class_id ] ) ) {
+				if ( $distance > $offset && $distance <= $rate['distance'] && isset( $rate[ 'class_' . $class_id ] ) && strlen( $rate[ 'class_' . $class_id ] ) ) {
 					return $this->normalize_price( $rate[ 'class_' . $class_id ] );
 				}
 				$offset = $rate['distance'];
