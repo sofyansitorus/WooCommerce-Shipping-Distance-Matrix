@@ -540,71 +540,71 @@ class Wcsdm extends WC_Shipping_Method {
 			return;
 		}
 
-		$shipping_cost_total              = 0;
-		$shipping_cost_per_order          = 0;
-		$shipping_cost_per_shipping_class = array();
-		$shipping_cost_per_product        = array();
-		$shipping_cost_per_item           = 0;
+		$cost_total              = 0;
+		$cost_per_order          = 0;
+		$cost_per_shipping_class = array();
+		$cost_per_product        = array();
+		$cost_per_item           = 0;
 
 		foreach ( $package['contents'] as $hash => $item ) {
-			$product_shipping_class_id = $item['data']->get_shipping_class_id();
-			$product_id                = $item['data']->get_id();
-			$shipping_cost             = $this->calculate_cost( $api_request['distance'], $product_shipping_class_id );
-			if ( is_wp_error( $shipping_cost ) ) {
+			$shipping_class_id = $item['data']->get_shipping_class_id();
+			$product_id        = $item['data']->get_id();
+			$calculated_cost   = $this->calculate_cost( $api_request['distance'], $shipping_class_id );
+			if ( is_wp_error( $calculated_cost ) ) {
 				return;
 			}
 			if ( 'yes' === $this->charge_per_distance_unit ) {
-				$shipping_cost = $shipping_cost * $api_request['distance'];
+				$calculated_cost = $calculated_cost * $api_request['distance'];
 			}
 			switch ( $this->calc_type ) {
 				case 'per_order':
-					if ( $shipping_cost > $shipping_cost_per_order ) {
-						$shipping_cost_per_order = $shipping_cost;
+					if ( $calculated_cost > $cost_per_order ) {
+						$cost_per_order = $calculated_cost;
 					}
 					break;
 				case 'per_shipping_class':
-					if ( isset( $shipping_cost_per_shipping_class[ $product_shipping_class_id ] ) ) {
-						if ( $shipping_cost > $shipping_cost_per_shipping_class[ $product_shipping_class_id ] ) {
-							$shipping_cost_per_shipping_class[ $product_shipping_class_id ] = $shipping_cost;
+					if ( isset( $cost_per_shipping_class[ $shipping_class_id ] ) ) {
+						if ( $calculated_cost > $cost_per_shipping_class[ $shipping_class_id ] ) {
+							$cost_per_shipping_class[ $shipping_class_id ] = $calculated_cost;
 						}
 					} else {
-						$shipping_cost_per_shipping_class[ $product_shipping_class_id ] = $shipping_cost;
+						$cost_per_shipping_class[ $shipping_class_id ] = $calculated_cost;
 					}
 					break;
 				case 'per_product':
-					if ( isset( $shipping_cost_per_product[ $product_id ] ) ) {
-						if ( $shipping_cost > $shipping_cost_per_product[ $product_id ] ) {
-							$shipping_cost_per_product[ $product_id ] = $shipping_cost;
+					if ( isset( $cost_per_product[ $product_id ] ) ) {
+						if ( $calculated_cost > $cost_per_product[ $product_id ] ) {
+							$cost_per_product[ $product_id ] = $calculated_cost;
 						}
 					} else {
-						$shipping_cost_per_product[ $product_id ] = $shipping_cost;
+						$cost_per_product[ $product_id ] = $calculated_cost;
 					}
 					break;
 				default:
-					$shipping_cost_per_item += $shipping_cost * $item['quantity'];
+					$cost_per_item += $calculated_cost * $item['quantity'];
 					break;
 			}
 		}
 
 		switch ( $this->calc_type ) {
 			case 'per_order':
-				$shipping_cost_total = $shipping_cost_per_order;
+				$cost_total = $cost_per_order;
 				break;
 			case 'per_shipping_class':
-				$shipping_cost_total = array_sum( $shipping_cost_per_shipping_class );
+				$cost_total = array_sum( $cost_per_shipping_class );
 				break;
 			case 'per_product':
-				$shipping_cost_total = array_sum( $shipping_cost_per_product );
+				$cost_total = array_sum( $cost_per_product );
 				break;
 			default:
-				$shipping_cost_total = $shipping_cost_per_item;
+				$cost_total = $cost_per_item;
 				break;
 		}
 
 		$rate = array(
 			'id'        => $this->get_rate_id(),
 			'label'     => ( 'yes' === $this->show_distance && ! empty( $api_request['distance_text'] ) ) ? sprintf( '%s (%s)', $this->title, $api_request['distance_text'] ) : $this->title,
-			'cost'      => $shipping_cost_total,
+			'cost'      => $cost_total,
 			'meta_data' => $api_request,
 		);
 
