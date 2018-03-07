@@ -823,14 +823,14 @@ class Wcsdm extends WC_Shipping_Method {
 		// Get the shipping distance.
 		foreach ( $response_data['rows'] as $row ) {
 
-			// Berak the loop is distance is defined.
+			// Break the loop if distance is defined.
 			if ( $distance ) {
 				break;
 			}
 
 			foreach ( $row['elements'] as $element ) {
 
-				// Berak the loop is distance is defined.
+				// Break the loop if distance is defined.
 				if ( $distance ) {
 					break;
 				}
