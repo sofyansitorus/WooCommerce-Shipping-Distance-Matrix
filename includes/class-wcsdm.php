@@ -768,94 +768,85 @@ class Wcsdm extends WC_Shipping_Method {
 	 * Process API Response.
 	 *
 	 * @since 1.3.4
+	 * @throws Exception If API response data is invalid.
 	 * @param array $raw_response HTTP API response.
 	 * @return array|bool Formatted response data, false on failure.
 	 */
 	private function process_api_response( $raw_response ) {
 
 		$distance      = 0;
-		$distance_text = '';
-		$error_message = '';
+		$distance_text = null;
+		$response_data = null;
 
-		// Check if HTTP request is error.
-		if ( is_wp_error( $raw_response ) ) {
-			$this->show_debug( $raw_response->get_error_message(), 'notice' );
-			return false;
-		}
-
-		$response_body = wp_remote_retrieve_body( $raw_response );
-
-		// Check if API response is empty.
-		if ( empty( $response_body ) ) {
-			$this->show_debug( __( 'API response is empty', 'wcsdm' ), 'notice' );
-			return false;
-		}
-
-		$response_data = json_decode( $response_body, true );
-
-		// Check if JSON data is valid.
-		if ( json_last_error() !== JSON_ERROR_NONE ) {
-			$error_message = __( 'Error occured while decoding API response', 'wcsdm' );
-			if ( function_exists( 'json_last_error_msg' ) ) {
-				$error_message .= ': ' . json_last_error_msg();
-			}
-			$this->show_debug( $error_message, 'notice' );
-			return false;
-		}
-
-		// Check API response is OK.
-		$status = isset( $response_data['status'] ) ? $response_data['status'] : '';
-		if ( 'OK' !== $status ) {
-			$error_message = __( 'API Response Error', 'wcsdm' ) . ': ' . $status;
-			if ( isset( $response_data['error_message'] ) ) {
-				$error_message .= ' - ' . $response_data['error_message'];
-			}
-			$this->show_debug( $error_message, 'notice' );
-			return false;
-		}
-
-		$element_lvl_errors = array(
-			'NOT_FOUND'                 => __( 'Origin and/or destination of this pairing could not be geocoded', 'wcsdm' ),
-			'ZERO_RESULTS'              => __( 'No route could be found between the origin and destination', 'wcsdm' ),
-			'MAX_ROUTE_LENGTH_EXCEEDED' => __( 'Requested route is too long and cannot be processed', 'wcsdm' ),
-		);
-
-		// Get the shipping distance.
-		foreach ( $response_data['rows'] as $row ) {
-
-			// Break the loop if distance is defined.
-			if ( $distance ) {
-				break;
+		try {
+			// Check if HTTP request is error.
+			if ( is_wp_error( $raw_response ) ) {
+				throw new Exception( $raw_response->get_error_message() );
 			}
 
-			foreach ( $row['elements'] as $element ) {
+			$response_body = wp_remote_retrieve_body( $raw_response );
+
+			// Check if API response is empty.
+			if ( empty( $response_body ) ) {
+				throw new Exception( __( 'API response is empty', 'wcsdm' ) );
+			}
+
+			// Decode API response body.
+			$response_data = json_decode( $response_body, true );
+
+			// Check if JSON data is valid.
+			if ( json_last_error() !== JSON_ERROR_NONE ) {
+				$error_message = __( 'Error occured while decoding API response', 'wcsdm' );
+				if ( function_exists( 'json_last_error_msg' ) ) {
+					$error_message .= ': ' . json_last_error_msg();
+				}
+				throw new Exception( $error_message );
+			}
+
+			// Check API response is OK.
+			$status = isset( $response_data['status'] ) ? $response_data['status'] : '';
+			if ( 'OK' !== $status ) {
+				$error_message = __( 'API Response Error', 'wcsdm' ) . ': ' . $status;
+				if ( isset( $response_data['error_message'] ) ) {
+					$error_message .= ' - ' . $response_data['error_message'];
+				}
+				throw new Exception( $error_message );
+			}
+
+			$element_lvl_errors = array(
+				'NOT_FOUND'                 => __( 'Origin and/or destination of this pairing could not be geocoded', 'wcsdm' ),
+				'ZERO_RESULTS'              => __( 'No route could be found between the origin and destination', 'wcsdm' ),
+				'MAX_ROUTE_LENGTH_EXCEEDED' => __( 'Requested route is too long and cannot be processed', 'wcsdm' ),
+			);
+
+			// Get the shipping distance.
+			foreach ( $response_data['rows'] as $row ) {
 
 				// Break the loop if distance is defined.
-				if ( $distance ) {
+				if ( $distance && $distance_text ) {
 					break;
 				}
 
-				switch ( $element['status'] ) {
-					case 'OK':
-						if ( isset( $element['distance']['value'] ) && ! empty( $element['distance']['value'] ) ) {
-							$distance      = $this->convert_m( $element['distance']['value'] );
-							$distance_text = $element['distance']['text'];
-						}
-						break;
-					default:
+				foreach ( $row['elements'] as $element ) {
+					if ( 'OK' !== $element['status'] ) {
 						$error_message = __( 'API Response Error', 'wcsdm' ) . ': ' . $element['status'];
 						if ( isset( $element_lvl_errors[ $element['status'] ] ) ) {
 							$error_message .= ' - ' . $element_lvl_errors[ $element['status'] ];
 						}
-						break;
+						throw new Exception( $error_message );
+					}
+					if ( ! empty( $element['distance']['value'] ) && $distance < $element['distance']['value'] ) {
+						$distance      = $this->convert_m( $element['distance']['value'] );
+						$distance_text = $element['distance']['text'];
+					}
 				}
 			}
-		}
 
-		if ( ! $distance ) {
-			if ( $error_message ) {
-				$this->show_debug( $error_message, 'notice' );
+			if ( ! $distance || ! $distance_text ) {
+				throw new Exception( __( 'Unknown error', 'wcsdm' ) );
 			}
+		} catch ( Exception $e ) {
+			$this->show_debug( $e->getMessage(), 'notice' );
 			return false;
 		}
 
