@@ -795,9 +795,11 @@ class Wcsdm extends WC_Shipping_Method {
 
 		// Check if JSON data is valid.
 		if ( json_last_error() !== JSON_ERROR_NONE ) {
+			$error_message = __( 'Error occured while decoding API response', 'wcsdm' );
 			if ( function_exists( 'json_last_error_msg' ) ) {
-				$this->show_debug( __( 'Error while decoding API response', 'wcsdm' ) . ': ' . json_last_error_msg(), 'notice' );
+				$error_message .= ': ' . json_last_error_msg();
 			}
+			$this->show_debug( $error_message, 'notice' );
 			return false;
 		}
 
