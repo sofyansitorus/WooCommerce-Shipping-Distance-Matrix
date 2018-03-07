@@ -295,7 +295,7 @@ class Wcsdm extends WC_Shipping_Method {
 		ksort( $shipping_classes );
 		$cols = array(
 			'distance' => __( 'Maximum Distances', 'wcsdm' ),
-			'handling' => __( 'Handling Fee', 'wcsdm' ),
+			'base'     => __( 'Base Fee', 'wcsdm' ),
 			'class_0'  => __( 'Unspecified', 'wcsdm' ),
 		);
 		foreach ( $shipping_classes as $shipping_class_id => $shipping_class ) {
@@ -312,7 +312,7 @@ class Wcsdm extends WC_Shipping_Method {
 								<a href="#" class="remove_rows button" style="display: none"><?php esc_html_e( 'Remove Rate', 'wcsdm' ); ?></a>
 							</td>
 							<td class="col-distance"></td>
-							<td class="col-handling"></td>
+							<td class="col-base"></td>
 							<td colspan="<?php echo count( $shipping_classes ) + 1; ?>" class="cols-shipping-class">
 								<strong><?php esc_html_e( 'Shipping Rate by Product Shipping Class', 'wcsdm' ); ?></strong>
 								<div><?php esc_html_e( 'Fill with 0 (zero) to set as free shipping. Leave blank to disable.', 'wcsdm' ); ?></div>
@@ -340,7 +340,7 @@ class Wcsdm extends WC_Shipping_Method {
 												<span class="input-group distance"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="input-text regular-input" type="number" value="<?php echo esc_attr( $value ); ?>" min="1" step="1" onkeypress="return event.charCode >= 48 && event.charCode <= 57"></span>
 												<?php
 												break;
-											case 'handling':
+											case 'base':
 												?>
 												<span class="input-group currency"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="wc_input_price input-text regular-input" type="text" value="<?php echo esc_attr( $value ); ?>"></span>
 												<?php
@@ -371,7 +371,7 @@ class Wcsdm extends WC_Shipping_Method {
 								<span class="input-group distance"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="input-text regular-input" type="number" value="" min="1" step="1" onkeypress="return event.charCode >= 48 && event.charCode <= 57"></span>
 								<?php
 								break;
-							case 'handling':
+							case 'base':
 								?>
 								<span class="input-group currency"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="wc_input_price input-text regular-input" type="text" value=""></span>
 								<?php
@@ -607,9 +607,15 @@ class Wcsdm extends WC_Shipping_Method {
 				break;
 		}
 
+		// Set shipping courier label.
+		$label = $cost_total ? $this->title : __( 'Free Shipping', 'wcsdm' );
+		if ( $cost_total && 'yes' === $this->show_distance && ! empty( $api_request['distance_text'] ) ) {
+			$label = sprintf( '%s (%s)', $label, $api_request['distance_text'] );
+		}
+
 		$rate = array(
 			'id'        => $this->get_rate_id(),
-			'label'     => ( 'yes' === $this->show_distance && ! empty( $api_request['distance_text'] ) ) ? sprintf( '%s (%s)', $this->title, $api_request['distance_text'] ) : $this->title,
+			'label'     => $label,
 			'cost'      => $cost_total,
 			'meta_data' => $api_request,
 		);
