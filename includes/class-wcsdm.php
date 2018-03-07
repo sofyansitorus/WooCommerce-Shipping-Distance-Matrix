@@ -915,7 +915,7 @@ class Wcsdm extends WC_Shipping_Method {
 		$country_code = false;
 
 		foreach ( $keys as $key ) {
-			if ( ! isset( $data[ $key ] ) || empty( $data[ $key ] ) ) {
+			if ( empty( $data[ $key ] ) ) {
 				continue;
 			}
 			switch ( $key ) {
