@@ -615,6 +615,11 @@ class Wcsdm extends WC_Shipping_Method {
 				break;
 		}
 
+		// Apply shipping base fee.
+		if ( 'yes' === $this->charge_per_distance_unit ) {
+			$cost_total += $this->calculate_base_fee( $api_request['distance'] );
+		}
+
 		// Set shipping courier label.
 		$label = $cost_total ? $this->title : __( 'Free Shipping', 'wcsdm' );
 		if ( $cost_total && 'yes' === $this->show_distance && ! empty( $api_request['distance_text'] ) ) {
@@ -672,6 +677,28 @@ class Wcsdm extends WC_Shipping_Method {
 		}
 
 		return new WP_Error( 'no_rates', __( 'No rates data availbale.', 'wcsdm' ) );
+	}
+
+	/**
+	 * Calculate base fee.
+	 *
+	 * @since    1.0.0
+	 * @param int $distance Distance of shipping destination.
+	 */
+	private function calculate_base_fee( $distance ) {
+		$base_fee = 0;
+
+		if ( $this->table_rates ) {
+			$offset = 0;
+			foreach ( $this->table_rates as $rate ) {
+				if ( $distance > $offset && $distance <= $rate['distance'] && isset( $rate['base'] ) && strlen( $rate['base'] ) ) {
+					return $this->normalize_price( $rate['base'] );
+				}
+				$offset = $rate['distance'];
+			}
+		}
+
+		return $base_fee;
 	}
 
 	/**
