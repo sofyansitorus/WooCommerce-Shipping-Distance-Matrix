@@ -17,9 +17,10 @@ This plugin perfect for online store that use local shipping or private shipping
 
 This plugin require Google Maps Distance Matrix API Key and service is enabled. [Click here](https://developers.google.com/maps/documentation/distance-matrix/get-api-key) to go to Google API Console to get API Key and to enable the service.
 
-= Features =
+= Key Features =
 
 * Set shipping cost as flat rate or per km/mi schema.
+* Set base fee for per km/mi shipping cost schema.
 * Set different shipping cost for each product shipping class.
 * Set unlimited distances ranges.
 * Set shipping origin location coordinates using Maps Picker.
@@ -73,6 +74,11 @@ I always welcome and encourage contributions to this plugin. Please fork and cre
 2. Settings panel bottom area
 
 == Changelog ==
+
+= 1.3.8 =
+
+* Improvements - Add new option for base fee.
+* Improvements - Add new option for round up distance.
 
 = 1.3.7 =
 
@@ -180,6 +186,6 @@ I always welcome and encourage contributions to this plugin. Please fork and cre
 * Feature - Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
 
 == Upgrade Notice ==
-= 1.3.7 =
+= 1.3.8 =
 
-This version include improvements. Upgrade immediately.
+This version include improvements and bug fixes. Upgrade immediately.

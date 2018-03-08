@@ -18,8 +18,9 @@ WooCommerce shipping rates calculator based on products shipping class and route
 This plugin perfect for online store that use local shipping or private shipping such as selling flower, food & beverage but not limited to.
 
 This plugin require Google Maps Distance Matrix API Key and service is enabled. [Click here](https://developers.google.com/maps/documentation/distance-matrix/get-api-key) to go to Google API Console to get API Key and to enable the service.
-### Features ###
+### Key Features ###
 * Set shipping cost as flat rate or per km/mi schema.
+* Set base fee for per km/mi shipping cost schema.
 * Set different shipping cost for each product shipping class.
 * Set unlimited distances ranges.
 * Set shipping origin location coordinates using Maps Picker.
@@ -81,6 +82,10 @@ I always welcome and encourage contributions to this plugin. Please fork and cre
 ![Settings panel bottom area](assets/screenshot-2.jpg)
 
 ## Changelog ##
+
+### 1.3.8 ###
+* Improvements - Add new option for base fee.
+* Improvements - Add new option for round up distance.
 
 ### 1.3.7 ###
 * Improvements - Enhance store location map picker.
@@ -169,7 +174,7 @@ I always welcome and encourage contributions to this plugin. Please fork and cre
 
 ## Upgrade Notice ##
 
-### 1.3.7 ###
-This version include improvements. Upgrade immediately.
+### 1.3.8 ###
+This version include improvements and bug fixes. Upgrade immediately.
 
 
