@@ -85,10 +85,8 @@
 				function () {
 					if ($(this).is(":checked")) {
 						$("#rates-list-table").addClass("charge-per-distance");
-						$("#woocommerce_wcsdm_ceil_distance").closest("tr").show();
 					} else {
 						$("#rates-list-table").removeClass("charge-per-distance");
-						$("#woocommerce_wcsdm_ceil_distance").closest("tr").hide();
 					}
 				}
 			);

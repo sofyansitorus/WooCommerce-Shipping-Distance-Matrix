@@ -88,6 +88,7 @@ class Wcsdm extends WC_Shipping_Method {
 		$this->charge_per_distance_unit = $this->get_option( 'charge_per_distance_unit', 'no' );
 		$this->enable_fallback_request  = $this->get_option( 'enable_fallback_request', 'no' );
 		$this->show_distance            = $this->get_option( 'show_distance' );
+		$this->ceil_distance            = $this->get_option( 'ceil_distance', 'no' );
 		$this->table_rates              = $this->get_option( 'table_rates' );
 		$this->tax_status               = $this->get_option( 'tax_status' );
 
@@ -185,6 +186,13 @@ class Wcsdm extends WC_Shipping_Method {
 				'description' => __( 'Show the distance info to customer during checkout.', 'wcsdm' ),
 				'desc_tip'    => true,
 			),
+			'ceil_distance'            => array(
+				'title'       => __( 'Round Distance', 'wcsdm' ),
+				'label'       => __( 'Yes', 'wcsdm' ),
+				'type'        => 'checkbox',
+				'description' => __( 'Round distance UP to the nearest integer.', 'wcsdm' ),
+				'desc_tip'    => true,
+			),
 			'enable_fallback_request'  => array(
 				'title'       => __( 'Enable Fallback Request', 'wcsdm' ),
 				'label'       => __( 'Yes', 'wcsdm' ),
@@ -210,13 +218,6 @@ class Wcsdm extends WC_Shipping_Method {
 				'label'       => __( 'Yes', 'wcsdm' ),
 				'type'        => 'checkbox',
 				'description' => __( 'Charge customer based on shipping distance multiplied with shipping class rate defined. Example: If the rate defined is $4 and the shipping distance is 7 miles, the shipping cost will be $28.', 'wcsdm' ),
-				'desc_tip'    => true,
-			),
-			'ceil_distance' => array(
-				'title'       => __( 'Round Distance', 'wcsdm' ),
-				'label'       => __( 'Yes', 'wcsdm' ),
-				'type'        => 'checkbox',
-				'description' => __( 'Round distance UP to the nearest integer.', 'wcsdm' ),
 				'desc_tip'    => true,
 			),
 			'table_rates'              => array(
@@ -890,6 +891,11 @@ class Wcsdm extends WC_Shipping_Method {
 		} catch ( Exception $e ) {
 			$this->show_debug( $e->getMessage(), 'notice' );
 			return false;
+		}
+
+		// Rounds distance UP to the nearest integer.
+		if ( 'yes' === $this->ceil_distance ) {
+			$distance = ceil( $distance );
 		}
 
 		return array(
