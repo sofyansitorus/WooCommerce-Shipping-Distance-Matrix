@@ -690,7 +690,7 @@ class Wcsdm extends WC_Shipping_Method {
 	/**
 	 * Calculate base fee.
 	 *
-	 * @since    1.0.0
+	 * @since    1.3.8
 	 * @param int $distance Distance of shipping destination.
 	 */
 	private function calculate_base_fee( $distance ) {
