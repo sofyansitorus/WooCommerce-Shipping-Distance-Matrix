@@ -212,6 +212,13 @@ class Wcsdm extends WC_Shipping_Method {
 				'description' => __( 'Charge customer based on shipping distance multiplied with shipping class rate defined. Example: If the rate defined is $4 and the shipping distance is 7 miles, the shipping cost will be $28.', 'wcsdm' ),
 				'desc_tip'    => true,
 			),
+			'ceil_distance' => array(
+				'title'       => __( 'Round Distance', 'wcsdm' ),
+				'label'       => __( 'Yes', 'wcsdm' ),
+				'type'        => 'checkbox',
+				'description' => __( 'Round distance UP to the nearest integer.', 'wcsdm' ),
+				'desc_tip'    => true,
+			),
 			'table_rates'              => array(
 				'type' => 'table_rates',
 			),
