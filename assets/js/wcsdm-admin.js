@@ -1,4 +1,4 @@
-(function($) {
+(function ($) {
 	"use strict";
 	var wcsdmSetting = {
 		_inputLatId: "",
@@ -9,7 +9,7 @@
 		_zoomLevel: 16,
 		_keyStr:
 			"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
-		init: function(params) {
+		init: function (params) {
 			var self = this;
 
 			self._params = params;
@@ -24,7 +24,7 @@
 
 			// Try show settings modal on settings page.
 			if (self._params.show_settings) {
-				setTimeout(function() {
+				setTimeout(function () {
 					var isMethodAdded = false;
 					var methods = $(document).find(".wc-shipping-zone-method-type");
 					for (var i = 0; i < methods.length; i++) {
@@ -48,7 +48,7 @@
 				}, 200);
 			}
 			// Handle setting link clicked.
-			$(document).on("click", ".wc-shipping-zone-method-settings", function() {
+			$(document).on("click", ".wc-shipping-zone-method-settings", function () {
 				if (
 					$(this)
 						.closest("tr")
@@ -57,46 +57,36 @@
 				) {
 					self._initGoogleMaps();
 					$("#woocommerce_wcsdm_gmaps_api_units").trigger("change");
+					$("#woocommerce_wcsdm_charge_per_distance_unit").trigger("change");
 				}
 			});
 			$(document).on(
 				"change",
 				"#" + self._inputLatSel + ", #" + self._inputLngSel,
-				function() {
+				function () {
 					if (!$(".gm-err-content").length) {
 						self._initGoogleMaps();
 					}
 				}
 			);
-			// Handle setting distance units changed.
+			// Handle setting woocommerce_wcsdm_gmaps_api_units changed.
 			$(document).on(
 				"change",
 				"#woocommerce_wcsdm_gmaps_api_units",
-				function() {
-					$(".input-group-distance")
-						.removeClass("metric imperial")
-						.addClass($(this).val());
-					$("#per_distance_unit_selected").text(
-						$(this)
-							.find("option:selected")
-							.text()
-					);
-					$(".input-group-price").removeClass("metric imperial");
-					if ($("#woocommerce_wcsdm_charge_per_distance_unit").is(":checked")) {
-						$(".input-group-price").addClass($(this).val());
-					}
+				function () {
+					$("#rates-list-table").removeClass("metric imperial").addClass($(this).val());
+					$("#per_distance_unit_selected").text($(this).find("option:selected").text());
 				}
 			);
-			// Handle setting charge_per_distance_unit changed.
+			// Handle setting woocommerce_wcsdm_charge_per_distance_unit changed.
 			$(document).on(
 				"change",
 				"#woocommerce_wcsdm_charge_per_distance_unit",
-				function() {
-					$(".input-group-price").removeClass("metric imperial");
+				function () {
 					if ($(this).is(":checked")) {
-						$(".input-group-price").addClass(
-							$("#woocommerce_wcsdm_gmaps_api_units").val()
-						);
+						$("#rates-list-table").addClass("charge-per-distance");
+					} else {
+						$("#rates-list-table").removeClass("charge-per-distance")
 					}
 				}
 			);
@@ -121,7 +111,7 @@
 				self._removeRateRows
 			);
 		},
-		_initGoogleMaps: function(e) {
+		_initGoogleMaps: function (e) {
 			var self = this;
 			$("#" + self._mapWrapperSel)
 				.show()
@@ -138,16 +128,16 @@
 			} catch (error) {
 				$.getScript(
 					"https://maps.googleapis.com/maps/api/js?key=" +
-						self._decode($("#map-secret-key").val()) +
-						"&libraries=geometry,places&&language=" +
-						self._params.language,
-					function() {
+					self._decode($("#map-secret-key").val()) +
+					"&libraries=geometry,places&&language=" +
+					self._params.language,
+					function () {
 						self._buildGoogleMaps();
 					}
 				);
 			}
 		},
-		_buildGoogleMaps: function() {
+		_buildGoogleMaps: function () {
 			var self = this;
 			var defaultLat = -6.175392;
 			var defaultLng = 106.827153;
@@ -190,11 +180,11 @@
 				self._setLatLng(marker.position, marker, map, infowindow);
 			}
 
-			google.maps.event.addListener(marker, "dragstart", function(event) {
+			google.maps.event.addListener(marker, "dragstart", function (event) {
 				infowindow.close();
 			});
 
-			google.maps.event.addListener(marker, "dragend", function(event) {
+			google.maps.event.addListener(marker, "dragend", function (event) {
 				self._setLatLng(event.latLng, marker, map, infowindow);
 			});
 
@@ -212,23 +202,23 @@
 			var searchBox = new google.maps.places.SearchBox(inputAddress);
 			map.controls[google.maps.ControlPosition.TOP_LEFT].push(inputAddress);
 			// Bias the SearchBox results towards current map's viewport.
-			map.addListener("bounds_changed", function() {
+			map.addListener("bounds_changed", function () {
 				searchBox.setBounds(map.getBounds());
 			});
 			// Listen for the event fired when the user selects a prediction and retrieve more details for that place.
-			searchBox.addListener("places_changed", function() {
+			searchBox.addListener("places_changed", function () {
 				var places = searchBox.getPlaces();
 				if (places.length === 0) {
 					return;
 				}
 				// Clear out the old markers.
-				markers.forEach(function(marker) {
+				markers.forEach(function (marker) {
 					marker.setMap(null);
 				});
 				markers = [];
 				// For each place, get the icon, name and location.
 				var bounds = new google.maps.LatLngBounds();
-				places.forEach(function(place) {
+				places.forEach(function (place) {
 					if (!place.geometry) {
 						console.log("Returned place contains no geometry");
 						return;
@@ -240,10 +230,10 @@
 						icon: self._params.marker
 					});
 					self._setLatLng(place.geometry.location, marker, map, infowindow);
-					google.maps.event.addListener(marker, "dragstart", function(event) {
+					google.maps.event.addListener(marker, "dragstart", function (event) {
 						infowindow.close();
 					});
-					google.maps.event.addListener(marker, "dragend", function(event) {
+					google.maps.event.addListener(marker, "dragend", function (event) {
 						self._setLatLng(event.latLng, marker, map, infowindow);
 					});
 					// Create a marker for each place.
@@ -258,7 +248,7 @@
 				map.fitBounds(bounds);
 			});
 
-			setInterval(function() {
+			setInterval(function () {
 				if ($(".gm-err-content").length) {
 					$("#" + self._mapWrapperSel)
 						.hide()
@@ -269,18 +259,18 @@
 				}
 			}, 1000);
 		},
-		_setLatLng: function(location, marker, map, infowindow) {
+		_setLatLng: function (location, marker, map, infowindow) {
 			var self = this;
 			var geocoder = new google.maps.Geocoder();
 			geocoder.geocode(
 				{
 					latLng: location
 				},
-				function(results, status) {
+				function (results, status) {
 					if (status == google.maps.GeocoderStatus.OK && results[0]) {
 						infowindow.setContent(results[0].formatted_address);
 						infowindow.open(map, marker);
-						marker.addListener("click", function() {
+						marker.addListener("click", function () {
 							infowindow.open(map, marker);
 						});
 					}
@@ -290,7 +280,7 @@
 			$("#" + self._inputLatSel).val(location.lat());
 			$("#" + self._inputLngSel).val(location.lng());
 		},
-		_selectRateRows: function(e) {
+		_selectRateRows: function (e) {
 			var elem = $(e.currentTarget);
 			var checkboxes_all = elem.closest("tbody").find("input[type=checkbox]");
 			var checkboxes_checked = elem
@@ -329,7 +319,7 @@
 					.find(".button.add")
 					.show();
 			}
-			checkboxes_all.each(function(index, checkbox) {
+			checkboxes_all.each(function (index, checkbox) {
 				if ($(checkbox).is(":checked")) {
 					$(checkbox)
 						.closest("tr")
@@ -341,7 +331,7 @@
 				}
 			});
 		},
-		_toggleRateRows: function(e) {
+		_toggleRateRows: function (e) {
 			var elem = $(e.currentTarget);
 			if (elem.is(":checked")) {
 				elem
@@ -379,7 +369,7 @@
 				}
 			}
 		},
-		_addRateRows: function(e) {
+		_addRateRows: function (e) {
 			e.preventDefault();
 			var template = wp.template("rates-list-input-table-row");
 			// Set the template data vars.
@@ -394,7 +384,7 @@
 			};
 			$("#rates-list-table tbody").append(template(tmplData));
 		},
-		_removeRateRows: function(e) {
+		_removeRateRows: function (e) {
 			e.preventDefault();
 			var elem = $(e.currentTarget);
 			elem.hide();
@@ -409,7 +399,7 @@
 			elem
 				.closest("table")
 				.find("tbody input[type=checkbox]")
-				.each(function(index, checkbox) {
+				.each(function (index, checkbox) {
 					if ($(checkbox).is(":checked")) {
 						$(checkbox)
 							.closest("tr")
@@ -417,7 +407,7 @@
 					}
 				});
 		},
-		_encode: function(e) {
+		_encode: function (e) {
 			var self = this;
 			var t = "";
 			var n, r, i, s, o, u, a;
@@ -445,7 +435,7 @@
 			}
 			return t;
 		},
-		_decode: function(e) {
+		_decode: function (e) {
 			var self = this;
 			var t = "";
 			var n, r, i;
@@ -471,7 +461,7 @@
 			t = self._utf8_decode(t);
 			return t;
 		},
-		_utf8_encode: function(e) {
+		_utf8_encode: function (e) {
 			e = e.replace(/rn/g, "n");
 			var t = "";
 			for (var n = 0; n < e.length; n++) {
@@ -489,7 +479,7 @@
 			}
 			return t;
 		},
-		_utf8_decode: function(e) {
+		_utf8_decode: function (e) {
 			var t = "";
 			var n = 0;
 			var r = 0;
@@ -516,7 +506,7 @@
 			return t;
 		}
 	};
-	$(document).ready(function() {
+	$(document).ready(function () {
 		wcsdmSetting.init(wcsdm_params);
 	});
 })(jQuery);
