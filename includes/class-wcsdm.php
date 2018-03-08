@@ -307,10 +307,7 @@ class Wcsdm extends WC_Shipping_Method {
 				<table id="rates-list-table" class="widefat wc_input_table" cellspacing="0">
 					<thead>
 						<tr>
-							<td class="col-select">
-								<a href="#" class="add button" data-key="<?php echo esc_attr( $field_key ); ?>"><?php esc_html_e( 'Add Rate', 'wcsdm' ); ?></a>
-								<a href="#" class="remove_rows button" style="display: none"><?php esc_html_e( 'Remove Rate', 'wcsdm' ); ?></a>
-							</td>
+							<td class="col-select"></td>
 							<td class="col-distance"></td>
 							<td class="col-base"></td>
 							<td colspan="<?php echo count( $shipping_classes ) + 1; ?>" class="cols-shipping-class">
@@ -358,6 +355,17 @@ class Wcsdm extends WC_Shipping_Method {
 							<?php endforeach; ?>
 						<?php endif; ?>
 					</tbody>
+					<thead>
+						<tr>
+							<td class="col-select">
+								<a href="#" class="add button" data-key="<?php echo esc_attr( $field_key ); ?>"><?php esc_html_e( 'Add Rate', 'wcsdm' ); ?></a>
+								<a href="#" class="remove_rows button" style="display: none"><?php esc_html_e( 'Remove Rate', 'wcsdm' ); ?></a>
+							</td>
+							<?php foreach ( $cols as $col_key => $col_label ) : ?>
+								<td class="col-data col-<?php echo esc_html( $col_key ); ?>"><?php echo esc_html( $col_label ); ?></td>
+							<?php endforeach; ?>
+						</tr>
+					</thead>
 				</table>
 				<script type="text/template" id="tmpl-rates-list-input-table-row">
 				<tr>
