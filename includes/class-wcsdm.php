@@ -73,7 +73,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 */
 	public function init() {
 		// Load the settings API.
-		$this->init_form_fields(); // This is part of the settings API. Override the method to add your own settings
+		$this->init_form_fields(); // This is part of the settings API. Override the method to add your own settings.
 		$this->init_settings(); // This is part of the settings API. Loads settings you previously init.
 
 		// Define user set variables.
@@ -88,6 +88,7 @@ class Wcsdm extends WC_Shipping_Method {
 		$this->charge_per_distance_unit = $this->get_option( 'charge_per_distance_unit', 'no' );
 		$this->enable_fallback_request  = $this->get_option( 'enable_fallback_request', 'no' );
 		$this->show_distance            = $this->get_option( 'show_distance' );
+		$this->ceil_distance            = $this->get_option( 'ceil_distance', 'no' );
 		$this->table_rates              = $this->get_option( 'table_rates' );
 		$this->tax_status               = $this->get_option( 'tax_status' );
 
@@ -183,6 +184,13 @@ class Wcsdm extends WC_Shipping_Method {
 				'label'       => __( 'Yes', 'wcsdm' ),
 				'type'        => 'checkbox',
 				'description' => __( 'Show the distance info to customer during checkout.', 'wcsdm' ),
+				'desc_tip'    => true,
+			),
+			'ceil_distance'            => array(
+				'title'       => __( 'Round Distance', 'wcsdm' ),
+				'label'       => __( 'Yes', 'wcsdm' ),
+				'type'        => 'checkbox',
+				'description' => __( 'Round distance UP to the nearest integer.', 'wcsdm' ),
 				'desc_tip'    => true,
 			),
 			'enable_fallback_request'  => array(
@@ -293,25 +301,33 @@ class Wcsdm extends WC_Shipping_Method {
 			$shipping_classes[ $shipping_classes_value->term_id ] = $shipping_classes_value;
 		}
 		ksort( $shipping_classes );
+		$cols = array(
+			'distance' => __( 'Maximum Distances', 'wcsdm' ),
+			'base'     => __( 'Base Fee', 'wcsdm' ),
+			'class_0'  => __( 'Unspecified', 'wcsdm' ),
+		);
+		foreach ( $shipping_classes as $shipping_class_id => $shipping_class ) {
+			$cols[ 'class_' . $shipping_class_id ] = $shipping_class->name;
+		}
 		?>
 		<tr valign="top">
 			<td colspan="2">
 				<table id="rates-list-table" class="widefat wc_input_table" cellspacing="0">
 					<thead>
 						<tr>
-							<td class="col-select"><a href="#" class="add button" data-key="<?php echo esc_attr( $field_key ); ?>"><?php esc_html_e( 'Add Rate', 'wcsdm' ); ?><a href="#" class="remove_rows button" style="display: none"><?php esc_html_e( 'Remove Rate', 'wcsdm' ); ?></a></a></td>
+							<td class="col-select"></td>
 							<td class="col-distance"></td>
-							<td colspan="<?php echo count( $shipping_classes ) + 1; ?>" class="cols-shipping-class"><strong><?php esc_html_e( 'Shipping Rate by Product Shipping Class', 'wcsdm' ); ?></strong><br><?php esc_html_e( 'Fill with 0 (zero) to set as free shipping. Leave blank to disable.', 'wcsdm' ); ?></td>
+							<td class="col-base"></td>
+							<td colspan="<?php echo count( $shipping_classes ) + 1; ?>" class="cols-shipping-class">
+								<strong><?php esc_html_e( 'Shipping Rate by Product Shipping Class', 'wcsdm' ); ?></strong>
+								<div><?php esc_html_e( 'Fill with 0 (zero) to set as free shipping. Leave blank to disable.', 'wcsdm' ); ?></div>
+							</td>
 						</tr>
 						<tr>
 							<td class="col-select"><input class="select-item" type="checkbox"></td>
-							<td><?php esc_html_e( 'Maximum Distances', 'wcsdm' ); ?></td>
-							<td><?php esc_html_e( 'Unspecified', 'wcsdm' ); ?></td>
-							<?php if ( $shipping_classes ) : ?>
-							<?php foreach ( $shipping_classes as $shipping_class ) : ?>
-							<td><?php echo esc_html( $shipping_class->name ); ?></td>
+							<?php foreach ( $cols as $col_key => $col_label ) : ?>
+								<td class="col-data col-<?php echo esc_html( $col_key ); ?>"><?php echo esc_html( $col_label ); ?></td>
 							<?php endforeach; ?>
-							<?php endif; ?>
 						</tr>
 					</thead>
 					<tbody>
@@ -319,30 +335,72 @@ class Wcsdm extends WC_Shipping_Method {
 							<?php foreach ( $this->table_rates as $table_rate ) : ?>
 							<tr>
 								<td class="col-select"><input class="select-item" type="checkbox"></td>
-								<?php foreach ( $table_rate as $key => $value ) : ?>
-								<td class="col-<?php echo esc_attr( $key ); ?>">
-								<?php if ( 'distance' === $key ) : ?>
-								<span class="input-group-distance"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $key ); ?>[]" class="input-text regular-input" type="number" value="<?php echo esc_attr( $value ); ?>" min="1" step="1" onkeypress="return event.charCode >= 48 && event.charCode <= 57"></span>
-								<?php else : ?>
-								<span class="input-group-price"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $key ); ?>[]" class="wc_input_price input-text regular-input" type="text" value="<?php echo esc_attr( $value ); ?>"></span>
-								<?php endif; ?>
-								</td>
+								<?php foreach ( $cols as $col_key => $col_label ) : ?>
+									<td class="col-data col-<?php echo esc_html( $col_key ); ?>">
+										<?php
+										$value = isset( $table_rate[ $col_key ] ) ? $table_rate[ $col_key ] : '';
+										switch ( $col_key ) {
+											case 'distance':
+												?>
+												<span class="input-group-distance"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="input-text regular-input" type="number" value="<?php echo esc_attr( $value ); ?>" min="1" step="1" onkeypress="return event.charCode >= 48 && event.charCode <= 57"></span>
+												<?php
+												break;
+											case 'base':
+												?>
+												<span class="input-group-currency" data-currency="<?php echo esc_attr( get_woocommerce_currency() ); ?>"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="wc_input_price input-text regular-input" type="text" value="<?php echo esc_attr( $value ); ?>"></span>
+												<?php
+												break;
+											default:
+												?>
+												<span class="input-group-shipping-class" data-currency="<?php echo esc_attr( get_woocommerce_currency() ); ?>"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="wc_input_price input-text regular-input" type="text" value="<?php echo esc_attr( $value ); ?>"></span>
+												<?php
+												break;
+										}
+										?>
+									</td>
 								<?php endforeach; ?>
 							</tr>
 							<?php endforeach; ?>
 						<?php endif; ?>
 					</tbody>
+					<thead>
+						<tr>
+							<td class="col-select">
+								<a href="#" class="add button" data-key="<?php echo esc_attr( $field_key ); ?>"><?php esc_html_e( 'Add Rate', 'wcsdm' ); ?></a>
+								<a href="#" class="remove_rows button" style="display: none"><?php esc_html_e( 'Remove Rate', 'wcsdm' ); ?></a>
+							</td>
+							<?php foreach ( $cols as $col_key => $col_label ) : ?>
+								<td class="col-data col-<?php echo esc_html( $col_key ); ?>"><?php echo esc_html( $col_label ); ?></td>
+							<?php endforeach; ?>
+						</tr>
+					</thead>
 				</table>
 				<script type="text/template" id="tmpl-rates-list-input-table-row">
 				<tr>
 					<td class="col-select"><input class="select-item" type="checkbox"></td>
-					<td class="col-distance"><span class="input-group-distance {{ data.distance_unit }}"><input name="{{{ data.field_key }}}_distance[]" type="number" value="" min="1" step="1" onkeypress="return event.charCode >= 48 && event.charCode <= 57"></span></td>
-					<td class="col-no-class"><span class="input-group-price {{ data.charge_per_distance_unit }}"><input name="{{{ data.field_key }}}_class_0[]" class="wc_input_price input-text regular-input" type="text" value=""></span></td>
-					<?php if ( $shipping_classes ) : ?>
-					<?php foreach ( $shipping_classes as $shipping_class ) : ?>
-					<td class="col-has-class col-class<?php echo esc_attr( $shipping_class->term_id ); ?>"><span class="input-group-price {{ data.charge_per_distance_unit }}"><input name="{{{ data.field_key }}}_class_<?php echo esc_attr( $shipping_class->term_id ); ?>[]" class="wc_input_price input-text regular-input" type="text" value=""></span></td>
+					<?php foreach ( $cols as $col_key => $col_label ) : ?>
+					<td class="col-data col-<?php echo esc_html( $col_key ); ?>">
+						<?php
+						switch ( $col_key ) {
+							case 'distance':
+								?>
+								<span class="input-group-distance"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="input-text regular-input" type="number" value="" min="1" step="1" onkeypress="return event.charCode >= 48 && event.charCode <= 57"></span>
+								<?php
+								break;
+							case 'base':
+								?>
+								<span class="input-group-currency" data-currency="<?php echo esc_attr( get_woocommerce_currency() ); ?>"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="wc_input_price input-text regular-input" type="text" value=""></span>
+								<?php
+								break;
+							default:
+								?>
+								<span class="input-group-shipping-class" data-currency="<?php echo esc_attr( get_woocommerce_currency() ); ?>"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="wc_input_price input-text regular-input" type="text" value=""></span>
+								<?php
+								break;
+						}
+						?>
+					</td>
 					<?php endforeach; ?>
-					<?php endif; ?>
 				</tr>
 				</script>
 			</td>
@@ -498,71 +556,88 @@ class Wcsdm extends WC_Shipping_Method {
 			return;
 		}
 
-		$shipping_cost_total              = 0;
-		$shipping_cost_per_order          = 0;
-		$shipping_cost_per_shipping_class = array();
-		$shipping_cost_per_product        = array();
-		$shipping_cost_per_item           = 0;
+		$cost_total              = 0;
+		$cost_per_order          = 0;
+		$cost_per_shipping_class = array();
+		$cost_per_product        = array();
+		$cost_per_item           = 0;
 
 		foreach ( $package['contents'] as $hash => $item ) {
-			$product_shipping_class_id = $item['data']->get_shipping_class_id();
-			$product_id                = $item['data']->get_id();
-			$shipping_cost             = $this->calculate_cost( $api_request['distance'], $product_shipping_class_id );
-			if ( is_wp_error( $shipping_cost ) ) {
+			$shipping_class_id = $item['data']->get_shipping_class_id();
+			$product_id        = $item['data']->get_id();
+			$calculated_cost   = $this->calculate_cost( $api_request['distance'], $shipping_class_id );
+
+			// Bail early if there is no rate found.
+			if ( is_wp_error( $calculated_cost ) ) {
 				return;
 			}
+
+			// Multiply shipping cost with distance.
 			if ( 'yes' === $this->charge_per_distance_unit ) {
-				$shipping_cost = $shipping_cost * $api_request['distance'];
+				$calculated_cost = $calculated_cost * $api_request['distance'];
 			}
+
+			// Calculate cost by calculation type setting.
 			switch ( $this->calc_type ) {
 				case 'per_order':
-					if ( $shipping_cost > $shipping_cost_per_order ) {
-						$shipping_cost_per_order = $shipping_cost;
+					if ( $calculated_cost > $cost_per_order ) {
+						$cost_per_order = $calculated_cost;
 					}
 					break;
 				case 'per_shipping_class':
-					if ( isset( $shipping_cost_per_shipping_class[ $product_shipping_class_id ] ) ) {
-						if ( $shipping_cost > $shipping_cost_per_shipping_class[ $product_shipping_class_id ] ) {
-							$shipping_cost_per_shipping_class[ $product_shipping_class_id ] = $shipping_cost;
+					if ( isset( $cost_per_shipping_class[ $shipping_class_id ] ) ) {
+						if ( $calculated_cost > $cost_per_shipping_class[ $shipping_class_id ] ) {
+							$cost_per_shipping_class[ $shipping_class_id ] = $calculated_cost;
 						}
 					} else {
-						$shipping_cost_per_shipping_class[ $product_shipping_class_id ] = $shipping_cost;
+						$cost_per_shipping_class[ $shipping_class_id ] = $calculated_cost;
 					}
 					break;
 				case 'per_product':
-					if ( isset( $shipping_cost_per_product[ $product_id ] ) ) {
-						if ( $shipping_cost > $shipping_cost_per_product[ $product_id ] ) {
-							$shipping_cost_per_product[ $product_id ] = $shipping_cost;
+					if ( isset( $cost_per_product[ $product_id ] ) ) {
+						if ( $calculated_cost > $cost_per_product[ $product_id ] ) {
+							$cost_per_product[ $product_id ] = $calculated_cost;
 						}
 					} else {
-						$shipping_cost_per_product[ $product_id ] = $shipping_cost;
+						$cost_per_product[ $product_id ] = $calculated_cost;
 					}
 					break;
 				default:
-					$shipping_cost_per_item += $shipping_cost * $item['quantity'];
+					$cost_per_item += $calculated_cost * $item['quantity'];
 					break;
 			}
 		}
 
 		switch ( $this->calc_type ) {
 			case 'per_order':
-				$shipping_cost_total = $shipping_cost_per_order;
+				$cost_total = $cost_per_order;
 				break;
 			case 'per_shipping_class':
-				$shipping_cost_total = array_sum( $shipping_cost_per_shipping_class );
+				$cost_total = array_sum( $cost_per_shipping_class );
 				break;
 			case 'per_product':
-				$shipping_cost_total = array_sum( $shipping_cost_per_product );
+				$cost_total = array_sum( $cost_per_product );
 				break;
 			default:
-				$shipping_cost_total = $shipping_cost_per_item;
+				$cost_total = $cost_per_item;
 				break;
+		}
+
+		// Apply shipping base fee.
+		if ( 'yes' === $this->charge_per_distance_unit ) {
+			$cost_total += $this->calculate_base_fee( $api_request['distance'] );
+		}
+
+		// Set shipping courier label.
+		$label = $cost_total ? $this->title : __( 'Free Shipping', 'wcsdm' );
+		if ( $cost_total && 'yes' === $this->show_distance && ! empty( $api_request['distance_text'] ) ) {
+			$label = sprintf( '%s (%s)', $label, $api_request['distance_text'] );
 		}
 
 		$rate = array(
 			'id'        => $this->get_rate_id(),
-			'label'     => ( 'yes' === $this->show_distance && ! empty( $api_request['distance_text'] ) ) ? sprintf( '%s (%s)', $this->title, $api_request['distance_text'] ) : $this->title,
-			'cost'      => $shipping_cost_total,
+			'label'     => $label,
+			'cost'      => $cost_total,
 			'meta_data' => $api_request,
 		);
 
@@ -602,7 +677,7 @@ class Wcsdm extends WC_Shipping_Method {
 		if ( $this->table_rates ) {
 			$offset = 0;
 			foreach ( $this->table_rates as $rate ) {
-				if ( $distance > $offset && $distance <= $rate['distance'] && isset( $rate[ 'class_' . $class_id ] ) ) {
+				if ( $distance > $offset && $distance <= $rate['distance'] && isset( $rate[ 'class_' . $class_id ] ) && strlen( $rate[ 'class_' . $class_id ] ) ) {
 					return $this->normalize_price( $rate[ 'class_' . $class_id ] );
 				}
 				$offset = $rate['distance'];
@@ -610,6 +685,28 @@ class Wcsdm extends WC_Shipping_Method {
 		}
 
 		return new WP_Error( 'no_rates', __( 'No rates data availbale.', 'wcsdm' ) );
+	}
+
+	/**
+	 * Calculate base fee.
+	 *
+	 * @since    1.0.0
+	 * @param int $distance Distance of shipping destination.
+	 */
+	private function calculate_base_fee( $distance ) {
+		$base_fee = 0;
+
+		if ( $this->table_rates ) {
+			$offset = 0;
+			foreach ( $this->table_rates as $rate ) {
+				if ( $distance > $offset && $distance <= $rate['distance'] && isset( $rate['base'] ) && strlen( $rate['base'] ) ) {
+					return $this->normalize_price( $rate['base'] );
+				}
+				$offset = $rate['distance'];
+			}
+		}
+
+		return $base_fee;
 	}
 
 	/**
@@ -714,93 +811,91 @@ class Wcsdm extends WC_Shipping_Method {
 	 * Process API Response.
 	 *
 	 * @since 1.3.4
+	 * @throws Exception If API response data is invalid.
 	 * @param array $raw_response HTTP API response.
 	 * @return array|bool Formatted response data, false on failure.
 	 */
 	private function process_api_response( $raw_response ) {
 
 		$distance      = 0;
-		$distance_text = '';
-		$error_message = '';
+		$distance_text = null;
+		$response_data = null;
 
-		// Check if HTTP request is error.
-		if ( is_wp_error( $raw_response ) ) {
-			$this->show_debug( $raw_response->get_error_message(), 'notice' );
-			return false;
-		}
-
-		$response_body = wp_remote_retrieve_body( $raw_response );
-
-		// Check if API response is empty.
-		if ( empty( $response_body ) ) {
-			$this->show_debug( __( 'API response is empty', 'wcsdm' ), 'notice' );
-			return false;
-		}
-
-		$response_data = json_decode( $response_body, true );
-
-		// Check if JSON data is valid.
-		if ( json_last_error() !== JSON_ERROR_NONE ) {
-			if ( function_exists( 'json_last_error_msg' ) ) {
-				$this->show_debug( __( 'Error while decoding API response', 'wcsdm' ) . ': ' . json_last_error_msg(), 'notice' );
-			}
-			return false;
-		}
-
-		// Check API response is OK.
-		$status = isset( $response_data['status'] ) ? $response_data['status'] : '';
-		if ( 'OK' !== $status ) {
-			$error_message = __( 'API Response Error', 'wcsdm' ) . ': ' . $status;
-			if ( isset( $response_data['error_message'] ) ) {
-				$error_message .= ' - ' . $response_data['error_message'];
-			}
-			$this->show_debug( $error_message, 'notice' );
-			return false;
-		}
-
-		$element_lvl_errors = array(
-			'NOT_FOUND'                 => __( 'Origin and/or destination of this pairing could not be geocoded', 'wcsdm' ),
-			'ZERO_RESULTS'              => __( 'No route could be found between the origin and destination', 'wcsdm' ),
-			'MAX_ROUTE_LENGTH_EXCEEDED' => __( 'Requested route is too long and cannot be processed', 'wcsdm' ),
-		);
-
-		// Get the shipping distance.
-		foreach ( $response_data['rows'] as $row ) {
-
-			// Berak the loop is distance is defined.
-			if ( $distance ) {
-				break;
+		try {
+			// Check if HTTP request is error.
+			if ( is_wp_error( $raw_response ) ) {
+				throw new Exception( $raw_response->get_error_message() );
 			}
 
-			foreach ( $row['elements'] as $element ) {
+			$response_body = wp_remote_retrieve_body( $raw_response );
 
-				// Berak the loop is distance is defined.
-				if ( $distance ) {
+			// Check if API response is empty.
+			if ( empty( $response_body ) ) {
+				throw new Exception( __( 'API response is empty', 'wcsdm' ) );
+			}
+
+			// Decode API response body.
+			$response_data = json_decode( $response_body, true );
+
+			// Check if JSON data is valid.
+			if ( json_last_error() !== JSON_ERROR_NONE ) {
+				$error_message = __( 'Error occured while decoding API response', 'wcsdm' );
+				if ( function_exists( 'json_last_error_msg' ) ) {
+					$error_message .= ': ' . json_last_error_msg();
+				}
+				throw new Exception( $error_message );
+			}
+
+			// Check API response is OK.
+			$status = isset( $response_data['status'] ) ? $response_data['status'] : '';
+			if ( 'OK' !== $status ) {
+				$error_message = __( 'API Response Error', 'wcsdm' ) . ': ' . $status;
+				if ( isset( $response_data['error_message'] ) ) {
+					$error_message .= ' - ' . $response_data['error_message'];
+				}
+				throw new Exception( $error_message );
+			}
+
+			$element_lvl_errors = array(
+				'NOT_FOUND'                 => __( 'Origin and/or destination of this pairing could not be geocoded', 'wcsdm' ),
+				'ZERO_RESULTS'              => __( 'No route could be found between the origin and destination', 'wcsdm' ),
+				'MAX_ROUTE_LENGTH_EXCEEDED' => __( 'Requested route is too long and cannot be processed', 'wcsdm' ),
+			);
+
+			// Get the shipping distance.
+			foreach ( $response_data['rows'] as $row ) {
+
+				// Break the loop if distance is defined.
+				if ( $distance && $distance_text ) {
 					break;
 				}
 
-				switch ( $element['status'] ) {
-					case 'OK':
-						if ( isset( $element['distance']['value'] ) && ! empty( $element['distance']['value'] ) ) {
-							$distance      = $this->convert_m( $element['distance']['value'] );
-							$distance_text = $element['distance']['text'];
-						}
-						break;
-					default:
+				foreach ( $row['elements'] as $element ) {
+					if ( 'OK' !== $element['status'] ) {
 						$error_message = __( 'API Response Error', 'wcsdm' ) . ': ' . $element['status'];
 						if ( isset( $element_lvl_errors[ $element['status'] ] ) ) {
 							$error_message .= ' - ' . $element_lvl_errors[ $element['status'] ];
 						}
-						break;
+						throw new Exception( $error_message );
+					}
+					if ( ! empty( $element['distance']['value'] ) && $distance < $element['distance']['value'] ) {
+						$distance      = $this->convert_m( $element['distance']['value'] );
+						$distance_text = $element['distance']['text'];
+					}
 				}
 			}
+
+			if ( ! $distance || ! $distance_text ) {
+				throw new Exception( __( 'Unknown error', 'wcsdm' ) );
+			}
+		} catch ( Exception $e ) {
+			$this->show_debug( $e->getMessage(), 'notice' );
+			return false;
 		}
 
-		if ( ! $distance ) {
-			if ( $error_message ) {
-				$this->show_debug( $error_message, 'notice' );
-			}
-			return false;
+		// Rounds distance UP to the nearest integer.
+		if ( 'yes' === $this->ceil_distance ) {
+			$distance = ceil( $distance );
 		}
 
 		return array(
@@ -868,7 +963,7 @@ class Wcsdm extends WC_Shipping_Method {
 		$country_code = false;
 
 		foreach ( $keys as $key ) {
-			if ( ! isset( $data[ $key ] ) || empty( $data[ $key ] ) ) {
+			if ( empty( $data[ $key ] ) ) {
 				continue;
 			}
 			switch ( $key ) {
