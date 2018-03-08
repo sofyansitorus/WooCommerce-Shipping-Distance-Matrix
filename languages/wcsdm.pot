@@ -2,9 +2,9 @@
 # This file is distributed under the same license as the WooCommerce Shipping Distance Matrix package.
 msgid ""
 msgstr ""
-"Project-Id-Version: WooCommerce Shipping Distance Matrix 1.3.6\n"
+"Project-Id-Version: WooCommerce Shipping Distance Matrix 1.3.8\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wcsdm\n"
-"POT-Creation-Date: 2018-02-17 21:22:47+00:00\n"
+"POT-Creation-Date: 2018-03-08 09:06:42+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -16,249 +16,269 @@ msgstr ""
 msgid "Shipping rates calculator based on products shipping class and route distances."
 msgstr ""
 
-#: includes/class-wcsdm.php:109
+#: includes/class-wcsdm.php:110
 msgid "Title"
 msgstr ""
 
-#: includes/class-wcsdm.php:111
+#: includes/class-wcsdm.php:112
 msgid "This controls the title which the user sees during checkout."
 msgstr ""
 
-#: includes/class-wcsdm.php:116
+#: includes/class-wcsdm.php:117
 msgid "Tax status"
 msgstr ""
 
-#: includes/class-wcsdm.php:121
+#: includes/class-wcsdm.php:122
 msgid "Taxable"
 msgstr ""
 
-#: includes/class-wcsdm.php:122 includes/class-wcsdm.php:163
+#: includes/class-wcsdm.php:123 includes/class-wcsdm.php:164
 msgid "None"
 msgstr ""
 
-#: includes/class-wcsdm.php:126
+#: includes/class-wcsdm.php:127
 msgid "API Key"
 msgstr ""
 
-#: includes/class-wcsdm.php:128
+#: includes/class-wcsdm.php:129
 msgid "This plugin require Google Maps Distance Matrix API Key and service is enabled. <a href=\"https://developers.google.com/maps/documentation/distance-matrix/get-api-key\" target=\"_blank\">Click here</a> to go to Google API Console to get API Key and to enable the service."
 msgstr ""
 
-#: includes/class-wcsdm.php:132
+#: includes/class-wcsdm.php:133
 msgid "Store Location"
 msgstr ""
 
-#: includes/class-wcsdm.php:134
+#: includes/class-wcsdm.php:135
 msgid "<a href=\"http://www.latlong.net/\" target=\"_blank\">Click here</a> to get your store location coordinates info."
 msgstr ""
 
-#: includes/class-wcsdm.php:137
+#: includes/class-wcsdm.php:138
 msgid "Store Location Latitude"
 msgstr ""
 
-#: includes/class-wcsdm.php:141
+#: includes/class-wcsdm.php:142
 msgid "Store Location Logitude"
 msgstr ""
 
-#: includes/class-wcsdm.php:145
+#: includes/class-wcsdm.php:146
 msgid "Travel Mode"
 msgstr ""
 
-#: includes/class-wcsdm.php:147
+#: includes/class-wcsdm.php:148
 msgid "Google Maps Distance Matrix API travel mode parameter."
 msgstr ""
 
-#: includes/class-wcsdm.php:151
+#: includes/class-wcsdm.php:152
 msgid "Driving"
 msgstr ""
 
-#: includes/class-wcsdm.php:152
+#: includes/class-wcsdm.php:153
 msgid "Walking"
 msgstr ""
 
-#: includes/class-wcsdm.php:153
+#: includes/class-wcsdm.php:154
 msgid "Bicycling"
 msgstr ""
 
-#: includes/class-wcsdm.php:157
+#: includes/class-wcsdm.php:158
 msgid "Restrictions"
 msgstr ""
 
-#: includes/class-wcsdm.php:159
+#: includes/class-wcsdm.php:160
 msgid "Google Maps Distance Matrix API restrictions parameter."
 msgstr ""
 
-#: includes/class-wcsdm.php:164
+#: includes/class-wcsdm.php:165
 msgid "Avoid Tolls"
 msgstr ""
 
-#: includes/class-wcsdm.php:165
+#: includes/class-wcsdm.php:166
 msgid "Avoid Highways"
 msgstr ""
 
-#: includes/class-wcsdm.php:166
+#: includes/class-wcsdm.php:167
 msgid "Avoid Ferries"
 msgstr ""
 
-#: includes/class-wcsdm.php:167
+#: includes/class-wcsdm.php:168
 msgid "Avoid Indoor"
 msgstr ""
 
-#: includes/class-wcsdm.php:171
+#: includes/class-wcsdm.php:172
 msgid "Distance Units"
 msgstr ""
 
-#: includes/class-wcsdm.php:173
+#: includes/class-wcsdm.php:174
 msgid "Google Maps Distance Matrix API distance units parameter."
 msgstr ""
 
-#: includes/class-wcsdm.php:177
+#: includes/class-wcsdm.php:178
 msgid "Kilometers"
 msgstr ""
 
-#: includes/class-wcsdm.php:178
+#: includes/class-wcsdm.php:179
 msgid "Miles"
 msgstr ""
 
-#: includes/class-wcsdm.php:182
+#: includes/class-wcsdm.php:183
 msgid "Show distance"
 msgstr ""
 
-#: includes/class-wcsdm.php:183 includes/class-wcsdm.php:190
-#: includes/class-wcsdm.php:210
+#: includes/class-wcsdm.php:184 includes/class-wcsdm.php:191
+#: includes/class-wcsdm.php:198 includes/class-wcsdm.php:218
 msgid "Yes"
 msgstr ""
 
-#: includes/class-wcsdm.php:185
+#: includes/class-wcsdm.php:186
 msgid "Show the distance info to customer during checkout."
 msgstr ""
 
-#: includes/class-wcsdm.php:189
+#: includes/class-wcsdm.php:190
+msgid "Round Distance"
+msgstr ""
+
+#: includes/class-wcsdm.php:193
+msgid "Round distance UP to the nearest integer."
+msgstr ""
+
+#: includes/class-wcsdm.php:197
 msgid "Enable Fallback Request"
 msgstr ""
 
-#: includes/class-wcsdm.php:192
+#: includes/class-wcsdm.php:200
 msgid "If there is no results for API request using full address, the system will attempt to make another API request to the Google API server without \"Address Line 1\" parameter. The fallback request will only using \"Address Line 2\", \"City\", \"State/Province\", \"Postal Code\" and \"Country\" parameters."
 msgstr ""
 
-#: includes/class-wcsdm.php:196
+#: includes/class-wcsdm.php:204
 msgid "Calculation type"
 msgstr ""
 
-#: includes/class-wcsdm.php:201
+#: includes/class-wcsdm.php:209
 msgid "Per item"
 msgstr ""
 
-#: includes/class-wcsdm.php:202
+#: includes/class-wcsdm.php:210
 msgid "Per product"
 msgstr ""
 
-#: includes/class-wcsdm.php:203
+#: includes/class-wcsdm.php:211
 msgid "Per shipping class"
 msgstr ""
 
-#: includes/class-wcsdm.php:204
+#: includes/class-wcsdm.php:212
 msgid "Per order"
 msgstr ""
 
-#: includes/class-wcsdm.php:206
+#: includes/class-wcsdm.php:214
 msgid "<strong>Per item</strong>: Charge shipping for each items multiplied with quantity.<br><strong>Per product</strong>: Charge shipping grouped by product.<br><strong>Per shipping class</strong>: Charge shipping grouped by product shipping class.<br><strong>Per order</strong>: Charge shipping for the most expensive item shipping cost."
 msgstr ""
 
-#: includes/class-wcsdm.php:209
+#: includes/class-wcsdm.php:217
 msgid "Charge per "
 msgstr ""
 
-#: includes/class-wcsdm.php:212
+#: includes/class-wcsdm.php:220
 msgid "Charge customer based on shipping distance multiplied with shipping class rate defined. Example: If the rate defined is $4 and the shipping distance is 7 miles, the shipping cost will be $28."
 msgstr ""
 
-#: includes/class-wcsdm.php:262
+#: includes/class-wcsdm.php:270
 msgid "Search your store location"
 msgstr ""
 
-#: includes/class-wcsdm.php:302
-msgid "Add Rate"
-msgstr ""
-
-#: includes/class-wcsdm.php:302
-msgid "Remove Rate"
-msgstr ""
-
-#: includes/class-wcsdm.php:304
-msgid "Shipping Rate by Product Shipping Class"
-msgstr ""
-
-#: includes/class-wcsdm.php:304
-msgid "Fill with 0 (zero) to set as free shipping. Leave blank to disable."
-msgstr ""
-
-#: includes/class-wcsdm.php:308
+#: includes/class-wcsdm.php:305
 msgid "Maximum Distances"
 msgstr ""
 
-#: includes/class-wcsdm.php:309
+#: includes/class-wcsdm.php:306
+msgid "Base Fee"
+msgstr ""
+
+#: includes/class-wcsdm.php:307
 msgid "Unspecified"
 msgstr ""
 
-#: includes/class-wcsdm.php:366
+#: includes/class-wcsdm.php:322
+msgid "Shipping Rate by Product Shipping Class"
+msgstr ""
+
+#: includes/class-wcsdm.php:323
+msgid "Fill with 0 (zero) to set as free shipping. Leave blank to disable."
+msgstr ""
+
+#: includes/class-wcsdm.php:369
+msgid "Add Rate"
+msgstr ""
+
+#: includes/class-wcsdm.php:370
+msgid "Remove Rate"
+msgstr ""
+
+#: includes/class-wcsdm.php:424
 msgid "API Key is required"
 msgstr ""
 
-#: includes/class-wcsdm.php:387
+#: includes/class-wcsdm.php:445
 msgid "Store Location Latitude is required"
 msgstr ""
 
-#: includes/class-wcsdm.php:408
+#: includes/class-wcsdm.php:466
 msgid "Store Location Longitude is required"
 msgstr ""
 
-#: includes/class-wcsdm.php:462
+#: includes/class-wcsdm.php:520
 msgid "Shipping Rates is required"
 msgstr ""
 
-#: includes/class-wcsdm.php:612
+#: includes/class-wcsdm.php:632
+msgid "Free Shipping"
+msgstr ""
+
+#: includes/class-wcsdm.php:687
 msgid "No rates data availbale."
 msgstr ""
 
-#: includes/class-wcsdm.php:679
+#: includes/class-wcsdm.php:776
 msgid "Cache key"
 msgstr ""
 
-#: includes/class-wcsdm.php:680
+#: includes/class-wcsdm.php:777
 msgid "Cached data"
 msgstr ""
 
-#: includes/class-wcsdm.php:686
+#: includes/class-wcsdm.php:783
 msgid "API Request URL"
 msgstr ""
 
-#: includes/class-wcsdm.php:697
+#: includes/class-wcsdm.php:794
 msgid "API Fallback Request URL"
 msgstr ""
 
-#: includes/class-wcsdm.php:736
+#: includes/class-wcsdm.php:834
 msgid "API response is empty"
 msgstr ""
 
-#: includes/class-wcsdm.php:745
-msgid "Error while decoding API response"
+#: includes/class-wcsdm.php:842
+msgid "Error occured while decoding API response"
 msgstr ""
 
-#: includes/class-wcsdm.php:753 includes/class-wcsdm.php:790
+#: includes/class-wcsdm.php:852 includes/class-wcsdm.php:875
 msgid "API Response Error"
 msgstr ""
 
-#: includes/class-wcsdm.php:762
+#: includes/class-wcsdm.php:860
 msgid "Origin and/or destination of this pairing could not be geocoded"
 msgstr ""
 
-#: includes/class-wcsdm.php:763
+#: includes/class-wcsdm.php:861
 msgid "No route could be found between the origin and destination"
 msgstr ""
 
-#: includes/class-wcsdm.php:764
+#: includes/class-wcsdm.php:862
 msgid "Requested route is too long and cannot be processed"
+msgstr ""
+
+#: includes/class-wcsdm.php:889
+msgid "Unknown error"
 msgstr ""
 
 #: wcsdm.php:98
