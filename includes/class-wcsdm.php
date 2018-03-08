@@ -337,17 +337,17 @@ class Wcsdm extends WC_Shipping_Method {
 										switch ( $col_key ) {
 											case 'distance':
 												?>
-												<span class="input-group distance"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="input-text regular-input" type="number" value="<?php echo esc_attr( $value ); ?>" min="1" step="1" onkeypress="return event.charCode >= 48 && event.charCode <= 57"></span>
+												<span class="input-group-distance"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="input-text regular-input" type="number" value="<?php echo esc_attr( $value ); ?>" min="1" step="1" onkeypress="return event.charCode >= 48 && event.charCode <= 57"></span>
 												<?php
 												break;
 											case 'base':
 												?>
-												<span class="input-group currency"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="wc_input_price input-text regular-input" type="text" value="<?php echo esc_attr( $value ); ?>"></span>
+												<span class="input-group-currency" data-currency="<?php echo esc_attr( get_woocommerce_currency() ); ?>"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="wc_input_price input-text regular-input" type="text" value="<?php echo esc_attr( $value ); ?>"></span>
 												<?php
 												break;
 											default:
 												?>
-												<span class="input-group shipping-class"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="wc_input_price input-text regular-input" type="text" value="<?php echo esc_attr( $value ); ?>"></span>
+												<span class="input-group-shipping-class" data-currency="<?php echo esc_attr( get_woocommerce_currency() ); ?>"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="wc_input_price input-text regular-input" type="text" value="<?php echo esc_attr( $value ); ?>"></span>
 												<?php
 												break;
 										}
@@ -368,17 +368,17 @@ class Wcsdm extends WC_Shipping_Method {
 						switch ( $col_key ) {
 							case 'distance':
 								?>
-								<span class="input-group distance"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="input-text regular-input" type="number" value="" min="1" step="1" onkeypress="return event.charCode >= 48 && event.charCode <= 57"></span>
+								<span class="input-group-distance"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="input-text regular-input" type="number" value="" min="1" step="1" onkeypress="return event.charCode >= 48 && event.charCode <= 57"></span>
 								<?php
 								break;
 							case 'base':
 								?>
-								<span class="input-group currency"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="wc_input_price input-text regular-input" type="text" value=""></span>
+								<span class="input-group-currency" data-currency="<?php echo esc_attr( get_woocommerce_currency() ); ?>"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="wc_input_price input-text regular-input" type="text" value=""></span>
 								<?php
 								break;
 							default:
 								?>
-								<span class="input-group shipping-class"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="wc_input_price input-text regular-input" type="text" value=""></span>
+								<span class="input-group-shipping-class" data-currency="<?php echo esc_attr( get_woocommerce_currency() ); ?>"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="wc_input_price input-text regular-input" type="text" value=""></span>
 								<?php
 								break;
 						}
