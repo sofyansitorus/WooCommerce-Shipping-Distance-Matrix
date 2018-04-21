@@ -33,11 +33,27 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 /**
- * Check if WooCommerce is active
+ * Check if plugin is active
+ *
+ * @param string $plugin_file Plugin file name.
  */
-if ( ! in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ), true ) ) {
+function wcsdm_is_plugin_active( $plugin_file ) {
+
+	$active_plugins = (array) apply_filters( 'active_plugins', get_option( 'active_plugins', array() ) );
+
+	if ( is_multisite() ) {
+		$active_plugins = array_merge( $active_plugins, (array) get_site_option( 'active_sitewide_plugins', array() ) );
+	}
+
+	return in_array( $plugin_file, $active_plugins, true ) || array_key_exists( $plugin_file, $active_plugins );
+}
+
+/**
+ * Check if WooCommerce plugin is active
+ */
+if ( ! wcsdm_is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
 	return;
-}// End if().
+}
 
 // Defines plugin named constants.
 define( 'WCSDM_PATH', plugin_dir_path( __FILE__ ) );
