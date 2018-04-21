@@ -1,55 +1,85 @@
 var gulp = require('gulp');
+var rename = require('gulp-rename');
+var uglify = require('gulp-uglify');
+var iife = require('gulp-iife');
 var sass = require('gulp-sass');
 var cleanCSS = require('gulp-clean-css');
-var rename = require("gulp-rename");
-var uglify = require('gulp-uglify');
+var plumber = require('gulp-plumber');
+var notify = require('gulp-notify');
 
-var scssSrc = 'assets/scss/*.scss';
-var scssDest = 'assets/css';
+var scriptsSrc = ['assets/src/js/*.js'];
+var scriptsDest = 'assets/js';
 
-var cssSrc = 'assets/css/*.css';
-var cssSrcExclude = '!assets/css/*.min.css';
-var cssDest = 'assets/css';
+var minifyScriptsSrc = ['assets/js/*.js', '!assets/js/*.min.js'];
+var minifyScriptsDest = 'assets/js';
 
-var jsSrc = 'assets/js/*.js';
-var jsSrcExclude = '!assets/js/*.min.js';
-var jsDest = 'assets/js';
+var sassSrc = ['assets/src/scss/*.scss'];
+var sassDest = 'assets/css';
 
-// Compiles SCSS files from /scss into /css
-gulp.task('sass', function () {
-    return gulp.src(scssSrc)
-        .pipe(sass())
-        .pipe(gulp.dest(scssDest));
+var minifyCssSrc = ['assets/css/*.css', '!assets/css/*.min.css'];
+var minifyCssDest = 'assets/css';
+
+// Custom error handler
+var errorHandler = function () {
+    return plumber(function (err) {
+        notify.onError({
+            title: 'Gulp error in ' + err.plugin,
+            message: err.toString()
+        })(err);
+    });
+};
+
+// Scripts
+gulp.task('scripts', function () {
+    return gulp.src(scriptsSrc)
+        .pipe(errorHandler())
+        .pipe(iife({
+            useStrict: true,
+            trimCode: true,
+            prependSemicolon: true,
+            params: ['$'],
+            args: ['jQuery']
+        }))
+        .pipe(gulp.dest(scriptsDest));
 });
 
-// Minify compiled CSS
-gulp.task('minify-css', ['sass'], function () {
-    return gulp.src([cssSrc, cssSrcExclude])
-        .pipe(cleanCSS({
-            compatibility: 'ie8'
-        }))
+// Minify scripts
+gulp.task('minify-scripts', function () {
+    return gulp.src(minifyScriptsSrc)
+        .pipe(errorHandler())
         .pipe(rename({
             suffix: '.min'
         }))
-        .pipe(gulp.dest(cssDest));
-});
-
-// Minify custom JS
-gulp.task('minify-js', function () {
-    return gulp.src([jsSrc, jsSrcExclude])
         .pipe(uglify())
+        .pipe(gulp.dest(minifyScriptsDest));
+});
+
+// SASS
+gulp.task('sass', function () {
+    return gulp.src(sassSrc)
+        .pipe(errorHandler())
+        .pipe(sass().on('error', sass.logError))
+        .pipe(gulp.dest(sassDest));
+});
+
+// Minify CSS
+gulp.task('minify-css', () => {
+    return gulp.src(minifyCssSrc)
+        .pipe(errorHandler())
         .pipe(rename({
             suffix: '.min'
         }))
-        .pipe(gulp.dest(jsDest));
+        .pipe(cleanCSS({ compatibility: 'ie8' }))
+        .pipe(gulp.dest(minifyCssDest));
 });
 
 // Default task
-gulp.task('default', ['sass', 'minify-css', 'minify-js']);
+gulp.task('default', ['scripts', 'minify-scripts']);
 
 // Dev task with watch
-gulp.task('watch', ['sass', 'minify-css', 'minify-js'], function () {
-    gulp.watch(scssSrc, ['sass']);
-    gulp.watch([cssSrc, cssSrcExclude], ['minify-css']);
-    gulp.watch([jsSrc, jsSrcExclude], ['minify-js']);
+gulp.task('watch', ['scripts', 'minify-scripts', 'sass', 'minify-css'], function () {
+    gulp.watch([scriptsSrc], ['scripts']);
+    gulp.watch([minifyScriptsSrc], ['minify-scripts']);
+    gulp.watch([sassSrc], ['sass']);
+    gulp.watch([minifyCssSrc], ['minify-css']);
 });
