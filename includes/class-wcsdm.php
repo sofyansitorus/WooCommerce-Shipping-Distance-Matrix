@@ -295,118 +295,163 @@ class Wcsdm extends WC_Shipping_Method {
 	 */
 	public function generate_table_rates_html( $key ) {
 		ob_start();
-		$field_key        = $this->get_field_key( $key );
 		$shipping_classes = array();
 		foreach ( WC()->shipping->get_shipping_classes() as $shipping_classes_key => $shipping_classes_value ) {
 			$shipping_classes[ $shipping_classes_value->term_id ] = $shipping_classes_value;
 		}
 		ksort( $shipping_classes );
 		$cols = array(
-			'distance' => __( 'Maximum Distances', 'wcsdm' ),
-			'base'     => __( 'Base Fee', 'wcsdm' ),
-			'class_0'  => __( 'Unspecified', 'wcsdm' ),
+			'distance'  => __( 'Max. Distances', 'wcsdm' ),
+			'cost_type' => __( 'Calculation Type', 'wcsdm' ),
+			'class_0'   => __( 'Unspecified', 'wcsdm' ),
 		);
 		foreach ( $shipping_classes as $shipping_class_id => $shipping_class ) {
 			$cols[ 'class_' . $shipping_class_id ] = $shipping_class->name;
 		}
+		$cols['base']            = __( 'Additional Cost', 'wcsdm' );
+		$cols['free_min_amount'] = __( 'Min. Amount', 'wcsdm' );
+		$cols['free_min_qty']    = __( 'Min. Quantity', 'wcsdm' );
 		?>
 		<tr valign="top">
 			<td colspan="2">
 				<table id="rates-list-table" class="widefat wc_input_table" cellspacing="0">
 					<thead>
 						<tr>
-							<td class="col-select"></td>
+							<td class="col-checkbox"><div></div></td>
 							<td class="col-distance"></td>
-							<td class="col-base"></td>
+							<td class="col-cost-type"></td>
 							<td colspan="<?php echo count( $shipping_classes ) + 1; ?>" class="cols-shipping-class">
-								<strong><?php esc_html_e( 'Shipping Rate by Product Shipping Class', 'wcsdm' ); ?></strong>
-								<div><?php esc_html_e( 'Fill with 0 (zero) to set as free shipping. Leave blank to disable.', 'wcsdm' ); ?></div>
+								<strong><?php esc_html_e( 'Shipping Rate by Product Shipping Class', 'wcsdm' ); ?></strong><span class="tooltip" data-tooltip="<?php esc_attr_e( 'Enter 0 to disable shipping rate calculation for specified shipping class below.', 'wcsdm' ); ?>"></span>
+							</td>
+							<td class="col-base"></td>
+							<td class="col-free-shipping" colspan="2">
+								<strong><?php esc_html_e( 'Free Shipping', 'wcsdm' ); ?></strong><span class="tooltip" data-tooltip="<?php esc_attr_e( 'The shipping will be defined as FREE if any of conditionals below met. Enter 0 to disable free shipping.', 'wcsdm' ); ?>"></span>
 							</td>
 						</tr>
-						<tr>
-							<td class="col-select"><input class="select-item" type="checkbox"></td>
+						<tr class="font-bold">
+							<td class="col-checkbox"><div><input class="select-item" type="checkbox"></div></td>
 							<?php foreach ( $cols as $col_key => $col_label ) : ?>
 								<td class="col-data col-<?php echo esc_html( $col_key ); ?>"><?php echo esc_html( $col_label ); ?></td>
 							<?php endforeach; ?>
 						</tr>
 					</thead>
 					<tbody>
-						<?php if ( $this->table_rates ) : ?>
-							<?php foreach ( $this->table_rates as $table_rate ) : ?>
-							<tr>
-								<td class="col-select"><input class="select-item" type="checkbox"></td>
-								<?php foreach ( $cols as $col_key => $col_label ) : ?>
-									<td class="col-data col-<?php echo esc_html( $col_key ); ?>">
-										<?php
-										$value = isset( $table_rate[ $col_key ] ) ? $table_rate[ $col_key ] : '';
-										switch ( $col_key ) {
-											case 'distance':
-												?>
-												<span class="input-group-distance"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="input-text regular-input" type="number" value="<?php echo esc_attr( $value ); ?>" min="1" step="1" onkeypress="return event.charCode >= 48 && event.charCode <= 57"></span>
-												<?php
-												break;
-											case 'base':
-												?>
-												<span class="input-group-currency" data-currency="<?php echo esc_attr( get_woocommerce_currency() ); ?>"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="wc_input_price input-text regular-input" type="text" value="<?php echo esc_attr( $value ); ?>"></span>
-												<?php
-												break;
-											default:
-												?>
-												<span class="input-group-shipping-class" data-currency="<?php echo esc_attr( get_woocommerce_currency() ); ?>"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="wc_input_price input-text regular-input" type="text" value="<?php echo esc_attr( $value ); ?>"></span>
-												<?php
-												break;
-										}
-										?>
-									</td>
-								<?php endforeach; ?>
-							</tr>
-							<?php endforeach; ?>
-						<?php endif; ?>
+						<?php
+						if ( $this->table_rates ) :
+							foreach ( $this->table_rates as $table_rate ) :
+								$this->generate_rate_row( $cols, $this->get_field_key( $key ), $table_rate );
+							endforeach;
+						endif;
+						?>
 					</tbody>
-					<thead>
-						<tr>
-							<td class="col-select">
-								<a href="#" class="add button" data-key="<?php echo esc_attr( $field_key ); ?>"><?php esc_html_e( 'Add Rate', 'wcsdm' ); ?></a>
-								<a href="#" class="remove_rows button" style="display: none"><?php esc_html_e( 'Remove Rate', 'wcsdm' ); ?></a>
+					<tfoot>
+						<tr class="font-bold">
+							<td class="col-checkbox">
+								<div>
+									<a href="#" class="add button" data-key="<?php echo esc_attr( $this->get_field_key( $key ) ); ?>"><?php esc_html_e( 'Add Rate', 'wcsdm' ); ?></a>
+									<a href="#" class="remove_rows button" style="display: none"><?php esc_html_e( 'Remove Rate', 'wcsdm' ); ?></a>
+								</div>
 							</td>
 							<?php foreach ( $cols as $col_key => $col_label ) : ?>
 								<td class="col-data col-<?php echo esc_html( $col_key ); ?>"><?php echo esc_html( $col_label ); ?></td>
 							<?php endforeach; ?>
 						</tr>
-					</thead>
+					</tfoot>
 				</table>
 				<script type="text/template" id="tmpl-rates-list-input-table-row">
 				<tr>
-					<td class="col-select"><input class="select-item" type="checkbox"></td>
-					<?php foreach ( $cols as $col_key => $col_label ) : ?>
-					<td class="col-data col-<?php echo esc_html( $col_key ); ?>">
-						<?php
-						switch ( $col_key ) {
-							case 'distance':
-								?>
-								<span class="input-group-distance"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="input-text regular-input" type="number" value="" min="1" step="1" onkeypress="return event.charCode >= 48 && event.charCode <= 57"></span>
-								<?php
-								break;
-							case 'base':
-								?>
-								<span class="input-group-currency" data-currency="<?php echo esc_attr( get_woocommerce_currency() ); ?>"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="wc_input_price input-text regular-input" type="text" value=""></span>
-								<?php
-								break;
-							default:
-								?>
-								<span class="input-group-shipping-class" data-currency="<?php echo esc_attr( get_woocommerce_currency() ); ?>"><input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="wc_input_price input-text regular-input" type="text" value=""></span>
-								<?php
-								break;
-						}
-						?>
-					</td>
-					<?php endforeach; ?>
+					<?php
+					$this->generate_rate_row( $cols, $this->get_field_key( $key ) );
+					?>
 				</tr>
 				</script>
 			</td>
 		</tr>
 		<?php
 		return ob_get_clean();
+	}
+
+	/**
+	 * Generate table rate columns
+	 *
+	 * @param array  $cols Table rate columns.
+	 * @param string $field_key Table rate column key.
+	 * @param array  $rate Table rate data.
+	 * @return void
+	 */
+	private function generate_rate_row( $cols, $field_key, $rate = array() ) {
+		?>
+		<tr>
+			<td class="col-checkbox"><div><input class="select-item" type="checkbox"></div></td>
+			<?php foreach ( $cols as $col_key => $col_label ) : ?>
+				<td class="col-data col-<?php echo esc_html( $col_key ); ?>">
+					<?php
+					$value = isset( $rate[ $col_key ] ) ? $rate[ $col_key ] : '';
+					switch ( $col_key ) {
+						case 'distance':
+							?>
+							<div class="field-group <?php echo esc_attr( $col_key ); ?>" data-unit-metric="KM" data-unit-imperial="MI">
+								<div class="field-group-input">
+									<input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="input-text regular-input no-decimal field-<?php echo esc_attr( $col_key ); ?>" type="number" value="<?php echo esc_attr( $value ); ?>" min="0" step="5">
+								</div>
+								<div class="field-group-icon"></div>
+							</div>
+							<?php
+							break;
+						case 'cost_type':
+							?>
+							<select class="select cost-type" name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]">
+								<option value="flat" <?php selected( $value, 'flat' ); ?>><?php esc_html_e( 'Flat', 'wcsdm' ); ?></option>
+								<option value="per_unit" <?php selected( $value, 'per_unit' ); ?>></option>
+							</select>
+							<?php
+							break;
+						case 'base':
+							?>
+							<div class="field-group <?php echo esc_attr( $col_key ); ?>">
+								<div class="field-group-icon"><?php echo esc_attr( get_woocommerce_currency() ); ?></div>
+								<div class="field-group-input">
+									<input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="input-text regular-input field-<?php echo esc_attr( $col_key ); ?>" type="number" value="<?php echo esc_attr( $value ); ?>" min="0" step="any">
+								</div>
+							</div>
+							<?php
+							break;
+						case 'free_min_qty':
+							?>
+							<div class="field-group <?php echo esc_attr( $col_key ); ?>">
+								<div class="field-group-input">
+									<input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="input-text regular-input no-decimal field-<?php echo esc_attr( $col_key ); ?>" type="number" value="<?php echo esc_attr( $value ); ?>" min="0" step="1">
+								</div>
+								<div class="field-group-icon">PCS</div>
+							</div>
+							<?php
+							break;
+						case 'free_min_amount':
+							?>
+							<div class="field-group <?php echo esc_attr( $col_key ); ?>">
+								<div class="field-group-icon"><?php echo esc_attr( get_woocommerce_currency() ); ?></div>
+								<div class="field-group-input">
+									<input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="input-text regular-input field-<?php echo esc_attr( $col_key ); ?>" type="number" value="<?php echo esc_attr( $value ); ?>" min="0" step="any">
+								</div>
+							</div>
+							<?php
+							break;
+						default:
+							?>
+							<div class="field-group field-group-cost <?php echo esc_attr( $col_key ); ?>">
+								<div class="field-group-icon"><?php echo esc_attr( get_woocommerce_currency() ); ?></div>
+								<div class="field-group-input">
+									<input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="input-text regular-input field-cost field-<?php echo esc_attr( $col_key ); ?>" type="number" value="<?php echo esc_attr( $value ); ?>" min="0" step="any">
+								</div>
+							</div>
+							<?php
+							break;
+					}
+					?>
+				</td>
+			<?php endforeach; ?>
+		</tr>
+		<?php
 	}
 
 	/**
@@ -498,14 +543,29 @@ class Wcsdm extends WC_Shipping_Method {
 				$field_key_short = str_replace( $field_key . '_', '', $post_data_key );
 
 				foreach ( $post_data_value as $index => $row_value ) {
-					$rates[ $index ][ $field_key_short ] = wc_format_decimal( $row_value );
+					switch ( $field_key_short ) {
+						case 'cost_type':
+							$value = $row_value;
+							break;
+						case 'distance':
+						case 'free_min_qty':
+							$value = intval( $row_value );
+							break;
+
+						default:
+							$value = wc_format_decimal( $row_value );
+							if ( empty( $value ) ) {
+								$value = 0;
+							}
+							break;
+					}
+					$rates[ $index ][ $field_key_short ] = $value;
 				}
 			}
 
 			$rates_filtered = array();
 
 			foreach ( $rates as $key => $value ) {
-				$value['distance'] = intval( $value['distance'] );
 				if ( empty( $value['distance'] ) ) {
 					continue;
 				}
