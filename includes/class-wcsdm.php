@@ -385,7 +385,7 @@ class Wcsdm extends WC_Shipping_Method {
 					switch ( $col_key ) {
 						case 'distance':
 							?>
-							<div class="field-group <?php echo esc_attr( $col_key ); ?>" data-unit-metric="KM" data-unit-imperial="MI">
+							<div class="field-group <?php echo esc_attr( $col_key ); ?>" data-unit-metric="<?php esc_attr_e( 'KM', 'wcsdm' ); ?>" data-unit-imperial="<?php esc_attr_e( 'MI', 'wcsdm' ); ?>">
 								<div class="field-group-input">
 									<input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="input-text regular-input no-decimal field-<?php echo esc_attr( $col_key ); ?>" type="number" value="<?php echo esc_attr( $value ); ?>" min="0" step="5">
 								</div>
@@ -417,7 +417,7 @@ class Wcsdm extends WC_Shipping_Method {
 								<div class="field-group-input">
 									<input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="input-text regular-input no-decimal field-<?php echo esc_attr( $col_key ); ?>" type="number" value="<?php echo esc_attr( $value ); ?>" min="0" step="1">
 								</div>
-								<div class="field-group-icon">PCS</div>
+								<div class="field-group-icon"><?php esc_attr_e( 'PCS', 'wcsdm' ); ?></div>
 							</div>
 							<?php
 							break;
