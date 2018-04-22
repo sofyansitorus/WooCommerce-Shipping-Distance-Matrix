@@ -101,11 +101,11 @@ var wcsdmSetting = {
 			self._toggleRateRows
 		);
 		// Handle add rate rows.
-		$(document).on('click', '#rates-list-table a.add', self._addRateRows);
+		$(document).on('click', '#rates-list-table .button.add', self._addRateRows);
 		// Handle remove rate rows.
 		$(document).on(
 			'click',
-			'#rates-list-table a.remove_rows',
+			'#rates-list-table .button.remove_rows',
 			self._removeRateRows
 		);
 	},
@@ -305,7 +305,7 @@ var wcsdmSetting = {
 				.show();
 			elem
 				.closest('table')
-				.find('.button.add')
+				.find('.button.add_row')
 				.hide();
 		} else {
 			elem
@@ -314,7 +314,7 @@ var wcsdmSetting = {
 				.hide();
 			elem
 				.closest('table')
-				.find('.button.add')
+				.find('.button.add_row')
 				.show();
 		}
 		checkboxes_all.each(function (index, checkbox) {
@@ -345,7 +345,7 @@ var wcsdmSetting = {
 					.show();
 				elem
 					.closest('table')
-					.find('.button.add')
+					.find('.button.add_row')
 					.hide();
 			}
 		} else {
@@ -362,7 +362,7 @@ var wcsdmSetting = {
 					.hide();
 				elem
 					.closest('table')
-					.find('.button.add')
+					.find('.button.add_row')
 					.show();
 			}
 		}
@@ -378,7 +378,7 @@ var wcsdmSetting = {
 		elem.hide();
 		elem
 			.closest('table')
-			.find('.button.add')
+			.find('.button.add_row')
 			.show();
 		elem
 			.closest('table')
