@@ -77,20 +77,19 @@ class Wcsdm extends WC_Shipping_Method {
 		$this->init_settings(); // This is part of the settings API. Loads settings you previously init.
 
 		// Define user set variables.
-		$this->title                    = $this->get_option( 'title' );
-		$this->gmaps_api_key            = $this->get_option( 'gmaps_api_key' );
-		$this->origin_lat               = $this->get_option( 'origin_lat' );
-		$this->origin_lng               = $this->get_option( 'origin_lng' );
-		$this->gmaps_api_units          = $this->get_option( 'gmaps_api_units', 'metric' );
-		$this->gmaps_api_mode           = $this->get_option( 'gmaps_api_mode', 'driving' );
-		$this->gmaps_api_avoid          = $this->get_option( 'gmaps_api_avoid' );
-		$this->calc_type                = $this->get_option( 'calc_type', 'per_item' );
-		$this->charge_per_distance_unit = $this->get_option( 'charge_per_distance_unit', 'no' );
-		$this->enable_fallback_request  = $this->get_option( 'enable_fallback_request', 'no' );
-		$this->show_distance            = $this->get_option( 'show_distance' );
-		$this->ceil_distance            = $this->get_option( 'ceil_distance', 'no' );
-		$this->table_rates              = $this->get_option( 'table_rates' );
-		$this->tax_status               = $this->get_option( 'tax_status' );
+		$this->title                   = $this->get_option( 'title' );
+		$this->gmaps_api_key           = $this->get_option( 'gmaps_api_key' );
+		$this->origin_lat              = $this->get_option( 'origin_lat' );
+		$this->origin_lng              = $this->get_option( 'origin_lng' );
+		$this->gmaps_api_units         = $this->get_option( 'gmaps_api_units', 'metric' );
+		$this->gmaps_api_mode          = $this->get_option( 'gmaps_api_mode', 'driving' );
+		$this->gmaps_api_avoid         = $this->get_option( 'gmaps_api_avoid' );
+		$this->calc_type               = $this->get_option( 'calc_type', 'per_item' );
+		$this->enable_fallback_request = $this->get_option( 'enable_fallback_request', 'no' );
+		$this->show_distance           = $this->get_option( 'show_distance' );
+		$this->ceil_distance           = $this->get_option( 'ceil_distance', 'no' );
+		$this->table_rates             = $this->get_option( 'table_rates' );
+		$this->tax_status              = $this->get_option( 'tax_status' );
 
 		// Save settings in admin if you have any defined.
 		add_action( 'woocommerce_update_options_shipping_' . $this->id, array( $this, 'process_admin_options' ) );
@@ -106,14 +105,14 @@ class Wcsdm extends WC_Shipping_Method {
 	 */
 	public function init_form_fields() {
 		$this->instance_form_fields = array(
-			'title'                    => array(
+			'title'                   => array(
 				'title'       => __( 'Title', 'wcsdm' ),
 				'type'        => 'text',
 				'description' => __( 'This controls the title which the user sees during checkout.', 'wcsdm' ),
 				'default'     => $this->method_title,
 				'desc_tip'    => true,
 			),
-			'tax_status'               => array(
+			'tax_status'              => array(
 				'title'   => __( 'Tax status', 'wcsdm' ),
 				'type'    => 'select',
 				'class'   => 'wc-enhanced-select',
@@ -123,26 +122,26 @@ class Wcsdm extends WC_Shipping_Method {
 					'none'    => __( 'None', 'wcsdm' ),
 				),
 			),
-			'gmaps_api_key'            => array(
+			'gmaps_api_key'           => array(
 				'title'       => __( 'API Key', 'wcsdm' ),
 				'type'        => 'text',
 				'description' => __( 'This plugin require Google Maps Distance Matrix API Key and service is enabled. <a href="https://developers.google.com/maps/documentation/distance-matrix/get-api-key" target="_blank">Click here</a> to go to Google API Console to get API Key and to enable the service.', 'wcsdm' ),
 				'default'     => '',
 			),
-			'origin'                   => array(
+			'origin'                  => array(
 				'title'       => __( 'Store Location', 'wcsdm' ),
 				'type'        => 'address_picker',
 				'description' => __( '<a href="http://www.latlong.net/" target="_blank">Click here</a> to get your store location coordinates info.', 'wcsdm' ),
 			),
-			'origin_lat'               => array(
+			'origin_lat'              => array(
 				'title' => __( 'Store Location Latitude', 'wcsdm' ),
 				'type'  => 'coordinates',
 			),
-			'origin_lng'               => array(
+			'origin_lng'              => array(
 				'title' => __( 'Store Location Logitude', 'wcsdm' ),
 				'type'  => 'coordinates',
 			),
-			'gmaps_api_mode'           => array(
+			'gmaps_api_mode'          => array(
 				'title'       => __( 'Travel Mode', 'wcsdm' ),
 				'type'        => 'select',
 				'description' => __( 'Google Maps Distance Matrix API travel mode parameter.', 'wcsdm' ),
@@ -154,7 +153,7 @@ class Wcsdm extends WC_Shipping_Method {
 					'bicycling' => __( 'Bicycling', 'wcsdm' ),
 				),
 			),
-			'gmaps_api_avoid'          => array(
+			'gmaps_api_avoid'         => array(
 				'title'       => __( 'Restrictions', 'wcsdm' ),
 				'type'        => 'select',
 				'description' => __( 'Google Maps Distance Matrix API restrictions parameter.', 'wcsdm' ),
@@ -168,7 +167,7 @@ class Wcsdm extends WC_Shipping_Method {
 					'indoor'   => __( 'Avoid Indoor', 'wcsdm' ),
 				),
 			),
-			'gmaps_api_units'          => array(
+			'gmaps_api_units'         => array(
 				'title'       => __( 'Distance Units', 'wcsdm' ),
 				'type'        => 'select',
 				'description' => __( 'Google Maps Distance Matrix API distance units parameter.', 'wcsdm' ),
@@ -179,28 +178,28 @@ class Wcsdm extends WC_Shipping_Method {
 					'imperial' => __( 'Miles', 'wcsdm' ),
 				),
 			),
-			'show_distance'            => array(
+			'show_distance'           => array(
 				'title'       => __( 'Show distance', 'wcsdm' ),
 				'label'       => __( 'Yes', 'wcsdm' ),
 				'type'        => 'checkbox',
 				'description' => __( 'Show the distance info to customer during checkout.', 'wcsdm' ),
 				'desc_tip'    => true,
 			),
-			'ceil_distance'            => array(
+			'ceil_distance'           => array(
 				'title'       => __( 'Round Distance', 'wcsdm' ),
 				'label'       => __( 'Yes', 'wcsdm' ),
 				'type'        => 'checkbox',
 				'description' => __( 'Round distance UP to the nearest integer.', 'wcsdm' ),
 				'desc_tip'    => true,
 			),
-			'enable_fallback_request'  => array(
+			'enable_fallback_request' => array(
 				'title'       => __( 'Enable Fallback Request', 'wcsdm' ),
 				'label'       => __( 'Yes', 'wcsdm' ),
 				'type'        => 'checkbox',
 				'description' => __( 'If there is no results for API request using full address, the system will attempt to make another API request to the Google API server without "Address Line 1" parameter. The fallback request will only using "Address Line 2", "City", "State/Province", "Postal Code" and "Country" parameters.', 'wcsdm' ),
 				'desc_tip'    => true,
 			),
-			'calc_type'                => array(
+			'calc_type'               => array(
 				'title'       => __( 'Calculation type', 'wcsdm' ),
 				'type'        => 'select',
 				'class'       => 'wc-enhanced-select',
@@ -213,14 +212,7 @@ class Wcsdm extends WC_Shipping_Method {
 				),
 				'description' => __( '<strong>Per item</strong>: Charge shipping for each items multiplied with quantity.<br><strong>Per product</strong>: Charge shipping grouped by product.<br><strong>Per shipping class</strong>: Charge shipping grouped by product shipping class.<br><strong>Per order</strong>: Charge shipping for the most expensive item shipping cost.', 'wcsdm' ),
 			),
-			'charge_per_distance_unit' => array(
-				'title'       => __( 'Charge per ', 'wcsdm' ) . '<span id="per_distance_unit_selected"></span>',
-				'label'       => __( 'Yes', 'wcsdm' ),
-				'type'        => 'checkbox',
-				'description' => __( 'Charge customer based on shipping distance multiplied with shipping class rate defined. Example: If the rate defined is $4 and the shipping distance is 7 miles, the shipping cost will be $28.', 'wcsdm' ),
-				'desc_tip'    => true,
-			),
-			'table_rates'              => array(
+			'table_rates'             => array(
 				'type' => 'table_rates',
 			),
 		);
