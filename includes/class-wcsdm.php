@@ -532,26 +532,34 @@ class Wcsdm extends WC_Shipping_Method {
 					continue;
 				}
 
-				$field_key_short = str_replace( $field_key . '_', '', $post_data_key );
+				$data_key = str_replace( $field_key . '_', '', $post_data_key );
 
 				foreach ( $post_data_value as $index => $row_value ) {
-					switch ( $field_key_short ) {
+					switch ( $data_key ) {
 						case 'cost_type':
 							$value = $row_value;
 							break;
+
 						case 'distance':
-						case 'free_min_qty':
 							$value = intval( $row_value );
 							break;
 
-						default:
-							$value = wc_format_decimal( $row_value );
+						case 'free_min_qty':
+							$value = strlen( $row_value ) ? intval( $row_value ) : '';
+							break;
+
+						case 'base':
+							$value = strlen( $row_value ) ? wc_format_decimal( $row_value ) : '';
 							if ( empty( $value ) ) {
 								$value = 0;
 							}
 							break;
+
+						default:
+							$value = strlen( $row_value ) ? wc_format_decimal( $row_value ) : '';
+							break;
 					}
-					$rates[ $index ][ $field_key_short ] = $value;
+					$rates[ $index ][ $data_key ] = $value;
 				}
 			}
 
@@ -564,14 +572,13 @@ class Wcsdm extends WC_Shipping_Method {
 				$rates_filtered[ $value['distance'] ] = $value;
 			}
 
-			ksort( $rates_filtered );
-
-			$value = array_values( $rates_filtered );
-
-			if ( empty( $value ) ) {
+			if ( empty( $rates_filtered ) ) {
 				throw new Exception( __( 'Shipping Rates is required', 'wcsdm' ) );
 			}
-			return $value;
+
+			ksort( $rates_filtered );
+
+			return array_values( $rates_filtered );
 		} catch ( Exception $e ) {
 			$this->add_error( $e->getMessage() );
 			return $this->table_rates;
