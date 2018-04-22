@@ -11,9 +11,7 @@ var wcsdmSetting = {
 	_keyStr: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=',
 	init: function (params) {
 		var self = this;
-
 		self._params = params;
-
 		self._inputLatSel = 'woocommerce_wcsdm_origin_lat';
 		self._inputLngSel = 'woocommerce_wcsdm_origin_lng';
 		self._mapWrapperSel = 'wcsdm-map-wrapper';
@@ -45,73 +43,57 @@ var wcsdmSetting = {
 				}
 			}, 200);
 		}
+
 		// Handle setting link clicked.
 		$(document).on('click', '.wc-shipping-zone-method-settings', function () {
-			if (
-				$(this)
-					.closest('tr')
-					.find('.wc-shipping-zone-method-type')
-					.text() === self._params.method_title
-			) {
-				self._initGoogleMaps();
-				$('#woocommerce_wcsdm_gmaps_api_units').trigger('change');
+			var method_title = $(this).closest('tr').find('.wc-shipping-zone-method-type').text();
+			if (method_title !== self._params.method_title) {
+				return false;
+			}
+			$('#woocommerce_wcsdm_gmaps_api_units').trigger('change');
+			self._initGoogleMaps();
+		});
+
+		// Handle on distnace unit field setting changed.
+		$(document).on('change', '#woocommerce_wcsdm_gmaps_api_units', function () {
+			switch ($(this).val()) {
+				case 'metric':
+					$('.field-group.distance .field-group-icon').text('KM');
+					$('option[value="per_unit"]').text(self._params.txt.per_unit_km);
+					break;
+
+				default:
+					$('.field-group.distance .field-group-icon').text('MI');
+					$('option[value="per_unit"]').text(self._params.txt.per_unit_mi);
+					break;
 			}
 		});
-		$(document).on(
-			'change',
-			'#' + self._inputLatSel + ', #' + self._inputLngSel,
-			function () {
-				if (!$('.gm-err-content').length) {
-					self._initGoogleMaps();
-				}
-			}
-		);
-		// Handle setting woocommerce_wcsdm_gmaps_api_units changed.
-		$(document).on(
-			'change',
-			'#woocommerce_wcsdm_gmaps_api_units',
-			function () {
-				switch ($(this).val()) {
-					case 'metric':
-						$('.field-group.distance .field-group-icon').text('KM');
-						$('option[value="per_unit"]').text(self._params.txt.per_unit_km);
-						break;
 
-					default:
-						$('.field-group.distance .field-group-icon').text('MI');
-						$('option[value="per_unit"]').text(self._params.txt.per_unit_mi);
-						break;
-				}
-
+		// Handle on latitude and longitude field setting changed.
+		$(document).on('change', '#' + self._inputLatSel + ', #' + self._inputLngSel, function () {
+			if ($('.gm-err-content').length) {
+				return false;
 			}
-		);
-		// Handle select rate row.
-		$(document).on(
-			'click',
-			'#rates-list-table tbody .select-item',
-			self._selectRateRows
-		);
-		// Handle toggle rate row.
-		$(document).on(
-			'click',
-			'#rates-list-table thead .select-item',
-			self._toggleRateRows
-		);
+			self._initGoogleMaps();
+		});
+
+		// Handle toggle rate rows in bulk.
+		$(document).on('change', '#rates-list-table thead .select-item', self._toggleRateRowsBulk);
+
+		// Handle toggle rate rows in individually.
+		$(document).on('change', '#rates-list-table tbody .select-item', self._toggleRateRows);
+
 		// Handle add rate rows.
 		$(document).on('click', '#rates-list-table .button.add_row', self._addRateRows);
+
 		// Handle remove rate rows.
-		$(document).on(
-			'click',
-			'#rates-list-table .button.remove_rows',
-			self._removeRateRows
-		);
+		$(document).on('click', '#rates-list-table .button.remove_rows', self._removeRateRows);
 	},
 	_initGoogleMaps: function () {
 		var self = this;
-		$('#' + self._mapWrapperSel)
-			.show()
-			.siblings('.description')
-			.hide();
+
+		$('#' + self._mapWrapperSel).show().siblings('.description').hide();
+
 		try {
 			if (
 				typeof google === 'undefined' ||
@@ -121,15 +103,10 @@ var wcsdmSetting = {
 			}
 			self._buildGoogleMaps();
 		} catch (error) {
-			$.getScript(
-				'https://maps.googleapis.com/maps/api/js?key=' +
-				self._decode($('#map-secret-key').val()) +
-				'&libraries=geometry,places&&language=' +
-				self._params.language,
-				function () {
-					self._buildGoogleMaps();
-				}
-			);
+			var mapScriptUrl = 'https://maps.googleapis.com/maps/api/js?key=' + self._decode($('#map-secret-key').val()) + '&libraries=geometry,places&&language=' + self._params.language;
+			$.getScript(mapScriptUrl, function () {
+				self._buildGoogleMaps();
+			});
 		}
 	},
 	_buildGoogleMaps: function () {
@@ -275,123 +252,54 @@ var wcsdmSetting = {
 		$('#' + self._inputLatSel).val(location.lat());
 		$('#' + self._inputLngSel).val(location.lng());
 	},
-	_selectRateRows: function (e) {
-		var elem = $(e.currentTarget);
-		var checkboxes_all = elem.closest('tbody').find('input[type=checkbox]');
-		var checkboxes_checked = elem
-			.closest('tbody')
-			.find('input[type=checkbox]:checked');
-		if (
-			checkboxes_checked.length &&
-			checkboxes_checked.length === checkboxes_all.length
-		) {
-			elem
-				.closest('table')
-				.find('thead input[type=checkbox]')
-				.prop('checked', true);
-		} else {
-			elem
-				.closest('table')
-				.find('thead input[type=checkbox]')
-				.prop('checked', false);
+	_toggleRateRowsBulk: function (e) {
+		var $this = $(e.currentTarget);
+		var $checkbox = $this.closest('table').find('tbody input[type=checkbox]');
+		if (!$checkbox.length) {
+			$this.prop('checked', !$this.is(':checked'));
+			return;
 		}
-		if (checkboxes_checked.length) {
-			elem
-				.closest('table')
-				.find('.button.remove_rows')
-				.show();
-			elem
-				.closest('table')
-				.find('.button.add_row')
-				.hide();
-		} else {
-			elem
-				.closest('table')
-				.find('.button.remove_rows')
-				.hide();
-			elem
-				.closest('table')
-				.find('.button.add_row')
-				.show();
-		}
-		checkboxes_all.each(function (index, checkbox) {
-			if ($(checkbox).is(':checked')) {
-				$(checkbox)
-					.closest('tr')
-					.addClass('selected');
-			} else {
-				$(checkbox)
-					.closest('tr')
-					.removeClass('selected');
-			}
-		});
+		$checkbox.prop('checked', $this.is(':checked')).trigger('change');
 	},
 	_toggleRateRows: function (e) {
-		var elem = $(e.currentTarget);
-		if (elem.is(':checked')) {
-			elem
-				.closest('table')
-				.find('tr')
-				.addClass('selected')
-				.find('input[type=checkbox]')
-				.prop('checked', true);
-			if (elem.closest('table').find('tbody input[type=checkbox]').length) {
-				elem
-					.closest('table')
-					.find('.button.remove_rows')
-					.show();
-				elem
-					.closest('table')
-					.find('.button.add_row')
-					.hide();
-			}
+		var $this = $(e.currentTarget);
+		var $table = $this.closest('table');
+		var $thead = $table.find('thead');
+		var $tbody = $table.find('tbody');
+		var $tfoot = $table.find('tfoot');
+
+		if ($tbody.find('[type=checkbox]:checked').length) {
+			$tfoot.find('.add_row').hide('fast', function () {
+				$(this).siblings('.remove_rows').show();
+			});
 		} else {
-			elem
-				.closest('table')
-				.find('tr')
-				.removeClass('selected')
-				.find('input[type=checkbox]')
-				.prop('checked', false);
-			if (elem.closest('table').find('tbody input[type=checkbox]').length) {
-				elem
-					.closest('table')
-					.find('.button.remove_rows')
-					.hide();
-				elem
-					.closest('table')
-					.find('.button.add_row')
-					.show();
-			}
+			$tfoot.find('.remove_rows').hide('fast', function () {
+				$(this).siblings('.add_row').show();
+			});
+		}
+
+		if ($tbody.find('[type=checkbox]:checked').length === $tbody.find('[type=checkbox]').length) {
+			$thead.find('input[type=checkbox]').prop('checked', true);
+		} else {
+			$thead.find('input[type=checkbox]').prop('checked', false);
 		}
 	},
 	_addRateRows: function (e) {
 		e.preventDefault();
-		$('#rates-list-table tbody').append(wp.template('rates-list-input-table-row'));
-		$('#rates-list-table tbody tr:last-child .field-distance').focus();
+		$('#rates-list-table tbody').append(wp.template('rates-list-input-table-row')).find('tr:last-child .field-distance').focus();
 		$('#woocommerce_wcsdm_gmaps_api_units').trigger('change');
 	},
 	_removeRateRows: function (e) {
 		e.preventDefault();
-		var elem = $(e.currentTarget);
-		elem.hide();
-		elem
-			.closest('table')
-			.find('.button.add_row')
-			.show();
-		elem
-			.closest('table')
-			.find('thead input[type=checkbox]')
-			.prop('checked', false);
-		elem
-			.closest('table')
-			.find('tbody input[type=checkbox]')
-			.each(function (index, checkbox) {
-				if ($(checkbox).is(':checked')) {
-					$(checkbox)
-						.closest('tr')
-						.remove();
-				}
-			});
+		var $this = $(e.currentTarget);
+		var $table = $this.closest('table');
+		$this.hide('fast', function () {
+			$(this).siblings('.add_row').show();
+		});
+		$table.find('thead [type=checkbox]').prop('checked', false);
+		$table.find('tbody [type=checkbox]:checked').each(function (index, checkbox) {
+			$(checkbox).closest('tr').remove();
+		});
 	},
 	_encode: function (e) {
 		var self = this;
