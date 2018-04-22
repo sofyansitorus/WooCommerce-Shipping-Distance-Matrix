@@ -559,6 +559,9 @@ class Wcsdm extends WC_Shipping_Method {
 							$value = strlen( $row_value ) ? wc_format_decimal( $row_value ) : '';
 							break;
 					}
+					if ( is_numeric( $value ) && $value < 0 ) {
+						$value = 0;
+					}
 					$rates[ $index ][ $data_key ] = $value;
 				}
 			}
