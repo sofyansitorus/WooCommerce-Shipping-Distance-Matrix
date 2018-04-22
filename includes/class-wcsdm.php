@@ -630,7 +630,7 @@ class Wcsdm extends WC_Shipping_Method {
 		foreach ( $package['contents'] as $hash => $item ) {
 			$shipping_class_id = $item['data']->get_shipping_class_id();
 			$product_id        = $item['data']->get_id();
-			$calculated_cost   = $this->calculate_cost( $api_request['distance'], $shipping_class_id );
+			$calculated_cost   = $this->get_table_rate( $api_request['distance'], $shipping_class_id );
 
 			// Bail early if there is no rate found.
 			if ( is_wp_error( $calculated_cost ) ) {
@@ -730,20 +730,20 @@ class Wcsdm extends WC_Shipping_Method {
 	}
 
 	/**
-	 * Calculate cost by distance and shipping class
+	 * Get shipping table rate by distance and shipping class
 	 *
 	 * @since    1.0.0
 	 * @param int $distance Distance of shipping destination.
 	 * @param int $class_id Shipping class ID of selected product.
 	 */
-	private function calculate_cost( $distance, $class_id ) {
+	private function get_table_rate( $distance, $class_id ) {
 		$class_id = intval( $class_id );
 
 		if ( $this->table_rates ) {
 			$offset = 0;
 			foreach ( $this->table_rates as $rate ) {
 				if ( $distance > $offset && $distance <= $rate['distance'] && isset( $rate[ 'class_' . $class_id ] ) && strlen( $rate[ 'class_' . $class_id ] ) ) {
-					return $this->normalize_price( $rate[ 'class_' . $class_id ] );
+					return $rate;
 				}
 				$offset = $rate['distance'];
 			}
