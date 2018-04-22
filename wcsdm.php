@@ -151,9 +151,9 @@ add_filter( 'woocommerce_shipping_methods', 'wcsdm_shipping_methods' );
 function wcsdm_admin_enqueue_scripts( $hook ) {
 	if ( 'woocommerce_page_wc-settings' === $hook ) {
 		// Enqueue admin styles.
-		$wcsdm_admin_css = ( defined( 'WCSDM_DEV' ) && WCSDM_DEV ) ? add_query_arg( array( 't' => time() ), WCSDM_URL . 'assets/css/wcsdm-admin.css' ) : WCSDM_URL . 'assets/css/wcsdm-admin.min.css';
+		$wcsdm_admin_css = ( defined( 'WCSDM_DEV' ) && WCSDM_DEV ) ? add_query_arg( array( 't' => time() ), WCSDM_URL . 'assets/css/wcsdm.css' ) : WCSDM_URL . 'assets/css/wcsdm.min.css';
 		wp_enqueue_style(
-			'wcsdm-admin', // Give the script a unique ID.
+			'wcsdm', // Give the script a unique ID.
 			$wcsdm_admin_css, // Define the path to the JS file.
 			array(), // Define dependencies.
 			WCSDM_VERSION, // Define a version (optional).
@@ -161,16 +161,16 @@ function wcsdm_admin_enqueue_scripts( $hook ) {
 		);
 
 		// Enqueue admin scripts.
-		$wcsdm_admin_js = ( defined( 'WCSDM_DEV' ) && WCSDM_DEV ) ? add_query_arg( array( 't' => time() ), WCSDM_URL . 'assets/js/wcsdm-admin.js' ) : WCSDM_URL . 'assets/js/wcsdm-admin.min.js';
+		$wcsdm_admin_js = ( defined( 'WCSDM_DEV' ) && WCSDM_DEV ) ? add_query_arg( array( 't' => time() ), WCSDM_URL . 'assets/js/wcsdm.js' ) : WCSDM_URL . 'assets/js/wcsdm.min.js';
 		wp_enqueue_script(
-			'wcsdm-admin', // Give the script a unique ID.
+			'wcsdm', // Give the script a unique ID.
 			$wcsdm_admin_js, // Define the path to the JS file.
 			array( 'jquery' ), // Define dependencies.
 			WCSDM_VERSION, // Define a version (optional).
 			true // Specify whether to put in footer (leave this true).
 		);
 		wp_localize_script(
-			'wcsdm-admin',
+			'wcsdm',
 			'wcsdm_params',
 			array(
 				'show_settings' => isset( $_GET['wcsdm_settings'] ) && is_admin(),
@@ -178,6 +178,8 @@ function wcsdm_admin_enqueue_scripts( $hook ) {
 				'method_title'  => WCSDM_METHOD_TITLE,
 				'txt'           => array(
 					'drag_marker' => __( 'Drag this marker or search your address at the input above.', 'wcsdm' ),
+					'per_unit_km' => __( 'Per Kilometer', 'wcsdm' ),
+					'per_unit_mi' => __( 'Per Mile', 'wcsdm' ),
 				),
 				'marker'        => WCSDM_URL . 'assets/img/marker.png',
 				'language'      => get_locale(),
