@@ -1,144 +1,3 @@
-#rates-list-table {
-    * {
-        box-sizing: border-box;
-    }
-    thead th,
-    thead td {
-        text-align: center;
-        font-weight: bold;
-    }
-    tbody {
-        input[type="text"],
-        input[type="number"] {
-            min-width: 90px !important;
-            max-width: 100% !important;
-            width: 100% !important;
-            border: 1px solid #ddd;
-            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.07);
-            background-color: #fff;
-            color: #32373c;
-            outline: 0;
-            transition: 50ms border-color ease-in-out;
-            height: 35px;
-        }
-        .selected {
-            td,
-            th {
-                background-color: #fefbcc;
-            }
-        }
-    }
-    .cols-shipping-class {
-        font-weight: normal;
-    }
-    .button {
-        float: none !important;
-    }
-    .col-select {
-        padding: 8px 16px !important;
-        text-align: center !important;
-        width: 144px;
-        input {
-            margin: 0 !important;
-            padding: 0 !important;
-        }
-    }
-    .col-base {
-        display: none !important;
-    }
-    .input-group-distance {
-        input[type="number"] {
-            width: calc(100% - 38px) !important;
-            display: inline-block;
-        }
-        &:after {
-            border: 1px solid rgba(221, 221, 221, 0.9);
-            background-color: rgba(221, 221, 221, 0.6);
-            border-left-width: 0px;
-            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.07);
-            padding-top: 10px;
-            padding-bottom: 10px;
-            height: 13px;
-            width: 36px;
-            line-height: 1;
-            display: inline-block;
-            text-align: center;
-        }
-    }
-    .input-group-currency,
-    .input-group-shipping-class {
-        input[type="text"] {
-            width: calc(100% - 46px) !important;
-            display: inline-block;
-        }
-        &:before {
-            content: attr(data-currency);
-            border: 1px solid rgba(221, 221, 221, 0.9);
-            background-color: rgba(221, 221, 221, 0.6);
-            border-right-width: 0px;
-            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.07);
-            padding-top: 10px;
-            padding-bottom: 10px;
-            height: 13px;
-            width: 44px;
-            line-height: 1;
-            display: inline-block;
-            text-align: center;
-        }
-    }
-    &.charge-per-distance {
-        .col-base {
-            display: table-cell !important;
-        }
-        .input-group-shipping-class {
-            input[type="text"] {
-                width: calc(100% - 92px) !important;
-            }
-            &:after {
-                border: 1px solid rgba(221, 221, 221, 0.9);
-                background-color: rgba(221, 221, 221, 0.6);
-                border-left-width: 0px;
-                box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.07);
-                padding-top: 10px;
-                padding-bottom: 10px;
-                height: 13px;
-                width: 46px;
-                line-height: 1;
-                display: inline-block;
-                text-align: center;
-            }
-        }
-        &.metric {
-            .input-group-shipping-class {
-                &:after {
-                    content: "/ KM";
-                }
-            }
-        }
-        &.imperial {
-            .input-group-shipping-class {
-                &:after {
-                    content: "/ MI";
-                }
-            }
-        }
-    }
-    &.metric {
-        .input-group-distance {
-            &:after {
-                content: "KM";
-            }
-        }
-    }
-    &.imperial {
-        .input-group-distance {
-            &:after {
-                content: "MI";
-            }
-        }
-    }
-}
-
 .wcsdm-map-wrapper {
     position: relative;
     width: 100%;
@@ -223,5 +82,149 @@
     }
     #target {
         width: 345px;
+    }
+}
+
+#rates-list-table {
+    * {
+        box-sizing: border-box;
+    }
+    thead,
+    tfoot {
+        td,
+        th {
+            text-align: center;
+        }
+        .font-bold {
+            td,
+            th {
+                font-weight: bold;
+            }
+        }
+    }
+    thead td,
+    tfoot th,
+    tfoot td {
+        text-align: center;
+    }
+    tbody {
+        tr.selected {
+            td,
+            th {
+                background-color: #fefbcc;
+            }
+        }
+        input[type="text"],
+        input[type="number"] {
+            min-width: 90px !important;
+            max-width: 100% !important;
+            width: 100% !important;
+            border: 1px solid #ddd;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.07);
+            background-color: #fff;
+            color: #32373c;
+            outline: 0;
+            transition: 50ms border-color ease-in-out;
+            height: 34px;
+            line-height: 34px !important;
+        }
+        select.cost-type {
+            min-width: 130px !important;
+            width: 100% !important;
+            height: 36px !important;
+            line-height: 36px !important;
+        }
+    }
+    .col-checkbox {
+        padding: 0;
+        div {
+            padding: 8px 8px !important;
+            text-align: center !important;
+            width: 122px;
+        }
+        input {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+    }
+    .button {
+        float: none !important;
+    }
+    .field-group {
+        margin: 0;
+        box-sizing: border-box;
+        * {
+            margin: 0;
+            box-sizing: border-box;
+        }
+        >div {
+            display: table-cell;
+            border: 1px solid #ddd;
+            vertical-align: middle;
+            /* needed for Safari */
+        }
+        .field-group-icon {
+            background: #eee;
+            color: #777;
+            padding: 0 8px;
+            min-width: 46px;
+            text-align: center;
+        }
+        .field-group-input {
+            width: 100%;
+            input {
+                border: 0;
+                display: block;
+                width: 100%;
+            }
+        }
+    }
+    .descriptions {
+        font-size: 12px;
+        font-style: italic;
+        line-height: 12px;
+    }
+}
+
+[class^="tooltip"] {
+    position: relative;
+    &:after {
+        opacity: 0;
+        visibility: hidden;
+        position: absolute;
+        content: attr(data-tooltip);
+        padding: 6px 10px;
+        bottom: 1.4em;
+        left: 50%;
+        transform: translateX(-50%) translateY(-2px);
+        background: grey;
+        color: white;
+        z-index: 2;
+        border-radius: 2px;
+        transition: opacity 0.2s cubic-bezier(.64, .09, .08, 1), transform 0.2s cubic-bezier(.64, .09, .08, 1);
+        width: 200px;
+    }
+    &:hover {
+        &:after {
+            display: block;
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+    }
+    &:before {
+        content: "\f223";
+        display: inline;
+        font-size: 20px;
+        line-height: 1;
+        font-family: dashicons;
+        text-decoration: inherit;
+        font-weight: 400;
+        font-style: normal;
+        vertical-align: top;
+        text-align: center;
+        transition: color .1s ease-in 0;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
     }
 }
