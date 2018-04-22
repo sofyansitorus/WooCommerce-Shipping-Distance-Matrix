@@ -321,7 +321,7 @@ class Wcsdm extends WC_Shipping_Method {
 							<td class="col-distance"></td>
 							<td class="col-cost-type"></td>
 							<td colspan="<?php echo count( $shipping_classes ) + 1; ?>" class="cols-shipping-class">
-								<strong><?php esc_html_e( 'Shipping Rate by Product Shipping Class', 'wcsdm' ); ?></strong><span class="tooltip" data-tooltip="<?php esc_attr_e( 'Enter 0 to disable shipping rate calculation for specified shipping class below.', 'wcsdm' ); ?>"></span>
+								<strong><?php esc_html_e( 'Shipping Rate by Product Shipping Class', 'wcsdm' ); ?></strong><span class="tooltip" data-tooltip="<?php esc_attr_e( 'Enter 0 to disable shipping rate calculation.', 'wcsdm' ); ?>"></span>
 							</td>
 							<td class="col-base"></td>
 							<td class="col-free-shipping" colspan="2">
