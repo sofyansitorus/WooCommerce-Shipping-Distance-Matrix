@@ -8,20 +8,17 @@ var wcsdmSetting = {
 	_mapSearchId: '',
 	_mapCanvasId: '',
 	_zoomLevel: 16,
-	_keyStr:
-		'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=',
+	_keyStr: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=',
 	init: function (params) {
 		var self = this;
 
 		self._params = params;
 
-		self._inputLatSel =
-			'woocommerce_' + self._params.method_id + '_origin_lat';
-		self._inputLngSel =
-			'woocommerce_' + self._params.method_id + '_origin_lng';
-		self._mapWrapperSel = self._params.method_id + '-map-wrapper';
-		self._mapSearchSel = self._params.method_id + '-map-search';
-		self._mapCanvasSel = self._params.method_id + '-map-canvas';
+		self._inputLatSel = 'woocommerce_wcsdm_origin_lat';
+		self._inputLngSel = 'woocommerce_wcsdm_origin_lng';
+		self._mapWrapperSel = 'wcsdm-map-wrapper';
+		self._mapSearchSel = 'wcsdm-map-search';
+		self._mapCanvasSel = 'wcsdm-map-canvas';
 
 		// Try show settings modal on settings page.
 		if (self._params.show_settings) {
@@ -79,13 +76,13 @@ var wcsdmSetting = {
 						$('.field-group.distance .field-group-icon').text('KM');
 						$('option[value="per_unit"]').text(self._params.txt.per_unit_km);
 						break;
-				
+
 					default:
 						$('.field-group.distance .field-group-icon').text('MI');
 						$('option[value="per_unit"]').text(self._params.txt.per_unit_mi);
 						break;
 				}
-				
+
 			}
 		);
 		// Handle select rate row.
@@ -370,6 +367,7 @@ var wcsdmSetting = {
 	_addRateRows: function (e) {
 		e.preventDefault();
 		$('#rates-list-table tbody').append(wp.template('rates-list-input-table-row'));
+		$('#rates-list-table tbody tr:last-child .field-distance').focus();
 		$('#woocommerce_wcsdm_gmaps_api_units').trigger('change');
 	},
 	_removeRateRows: function (e) {
