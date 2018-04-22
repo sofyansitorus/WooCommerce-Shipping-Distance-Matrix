@@ -221,7 +221,6 @@ class Wcsdm extends WC_Shipping_Method {
 		);
 	}
 
-
 	/**
 	 * Generate origin settings field.
 	 *
@@ -600,10 +599,9 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @return bool
 	 */
 	public function check_is_available( $available, $package ) {
-		if ( ! $available || empty( $package['contents'] ) || empty( $package['destination'] ) ) {
+		if ( empty( $package['contents'] ) || empty( $package['destination'] ) ) {
 			return false;
 		}
-
 		return $available;
 	}
 
@@ -612,99 +610,151 @@ class Wcsdm extends WC_Shipping_Method {
 	 *
 	 * @since    1.0.0
 	 * @param array $package Package data array.
+	 * @throws Exception Throw error if validation not passed.
+	 * @return void
 	 */
 	public function calculate_shipping( $package = array() ) {
+		global $woocommerce;
 
-		$api_request = $this->api_request( $package );
+		try {
+			$api_request = $this->api_request( $package );
 
-		if ( ! $api_request ) {
-			return;
-		}
+			if ( ! $api_request ) {
+				throw new Exception( __( 'API response is empty', 'wcsdm' ) );
+			}
 
-		$cost_total              = 0;
-		$cost_per_order          = 0;
-		$cost_per_shipping_class = array();
-		$cost_per_product        = array();
-		$cost_per_item           = 0;
-
-		foreach ( $package['contents'] as $hash => $item ) {
-			$shipping_class_id = $item['data']->get_shipping_class_id();
-			$product_id        = $item['data']->get_id();
-			$calculated_cost   = $this->get_table_rate( $api_request['distance'], $shipping_class_id );
+			$rate_data = $this->get_rate_by_distance( $api_request['distance'] );
 
 			// Bail early if there is no rate found.
-			if ( is_wp_error( $calculated_cost ) ) {
+			if ( is_wp_error( $rate_data ) ) {
+				throw new Exception( $rate_data->get_error_message() );
+			}
+
+			// Check if free shipping by minimum order amount.
+			$is_free_shipping = false;
+			if ( strlen( $rate_data['free_min_amount'] ) && $woocommerce->cart->get_cart_contents_total() >= $rate_data['free_min_amount'] ) {
+				$is_free_shipping = true;
+			}
+
+			// Check if free shipping by minimum order quantity.
+			if ( strlen( $rate_data['free_min_qty'] ) && $woocommerce->cart->get_cart_contents_count() >= $rate_data['free_min_qty'] ) {
+				$is_free_shipping = true;
+			}
+
+			// Apply free shipping rate.
+			if ( $is_free_shipping ) {
+				// Register the rate.
+				$this->register_rate(
+					array(
+						'id'        => $this->get_rate_id(),
+						'label'     => __( 'Free Shipping', 'wcsdm' ),
+						'cost'      => 0,
+						'meta_data' => $api_request,
+					)
+				);
 				return;
 			}
 
-			// Multiply shipping cost with distance.
-			if ( 'yes' === $this->charge_per_distance_unit ) {
-				$calculated_cost = $calculated_cost * $api_request['distance'];
-			}
+			$cost_total              = 0;
+			$cost_per_order          = 0;
+			$cost_per_shipping_class = array();
+			$cost_per_product        = array();
+			$cost_per_item           = 0;
 
-			// Calculate cost by calculation type setting.
-			switch ( $this->calc_type ) {
-				case 'per_order':
-					if ( $calculated_cost > $cost_per_order ) {
-						$cost_per_order = $calculated_cost;
-					}
-					break;
-				case 'per_shipping_class':
-					if ( isset( $cost_per_shipping_class[ $shipping_class_id ] ) ) {
-						if ( $calculated_cost > $cost_per_shipping_class[ $shipping_class_id ] ) {
+			foreach ( $package['contents'] as $hash => $item ) {
+				$shipping_class_id = $item['data']->get_shipping_class_id();
+				$product_id        = $item['data']->get_id();
+
+				$calculated_cost = isset( $rate_data[ 'class_' . $shipping_class_id ] ) ? $rate_data[ 'class_' . $shipping_class_id ] : false;
+
+				if ( ! $calculated_cost && is_numeric( $calculated_cost ) ) {
+					throw new Exception( __( 'Product shipping class rate is not defined', 'wcsdm' ) );
+				}
+
+				// Multiply shipping cost with distance unit.
+				if ( 'per_unit' === $rate_data['cost_type'] ) {
+					$calculated_cost = $calculated_cost * $api_request['distance'];
+				}
+
+				// Calculate cost by calculation type setting.
+				switch ( $this->calc_type ) {
+					case 'per_order':
+						if ( $calculated_cost > $cost_per_order ) {
+							$cost_per_order = $calculated_cost;
+						}
+						break;
+					case 'per_shipping_class':
+						if ( isset( $cost_per_shipping_class[ $shipping_class_id ] ) ) {
+							if ( $calculated_cost > $cost_per_shipping_class[ $shipping_class_id ] ) {
+								$cost_per_shipping_class[ $shipping_class_id ] = $calculated_cost;
+							}
+						} else {
 							$cost_per_shipping_class[ $shipping_class_id ] = $calculated_cost;
 						}
-					} else {
-						$cost_per_shipping_class[ $shipping_class_id ] = $calculated_cost;
-					}
-					break;
-				case 'per_product':
-					if ( isset( $cost_per_product[ $product_id ] ) ) {
-						if ( $calculated_cost > $cost_per_product[ $product_id ] ) {
+						break;
+					case 'per_product':
+						if ( isset( $cost_per_product[ $product_id ] ) ) {
+							if ( $calculated_cost > $cost_per_product[ $product_id ] ) {
+								$cost_per_product[ $product_id ] = $calculated_cost;
+							}
+						} else {
 							$cost_per_product[ $product_id ] = $calculated_cost;
 						}
-					} else {
-						$cost_per_product[ $product_id ] = $calculated_cost;
-					}
+						break;
+					default:
+						$cost_per_item += $calculated_cost * $item['quantity'];
+						break;
+				}
+			}
+
+			switch ( $this->calc_type ) {
+				case 'per_order':
+					$cost_total = $cost_per_order;
+					break;
+				case 'per_shipping_class':
+					$cost_total = array_sum( $cost_per_shipping_class );
+					break;
+				case 'per_product':
+					$cost_total = array_sum( $cost_per_product );
 					break;
 				default:
-					$cost_per_item += $calculated_cost * $item['quantity'];
+					$cost_total = $cost_per_item;
 					break;
 			}
-		}
 
-		switch ( $this->calc_type ) {
-			case 'per_order':
-				$cost_total = $cost_per_order;
-				break;
-			case 'per_shipping_class':
-				$cost_total = array_sum( $cost_per_shipping_class );
-				break;
-			case 'per_product':
-				$cost_total = array_sum( $cost_per_product );
-				break;
-			default:
-				$cost_total = $cost_per_item;
-				break;
-		}
+			// Apply shipping base fee.
+			if ( ! empty( $rate_data['base'] ) ) {
+				$cost_total += $rate_data['base'];
+			}
 
-		// Apply shipping base fee.
-		if ( 'yes' === $this->charge_per_distance_unit ) {
-			$cost_total += $this->calculate_base_fee( $api_request['distance'] );
-		}
+			// Set shipping courier label.
+			$label = $this->title;
+			if ( 'yes' === $this->show_distance && ! empty( $api_request['distance_text'] ) ) {
+				$label = sprintf( '%s (%s)', $label, $api_request['distance_text'] );
+			}
 
-		// Set shipping courier label.
-		$label = $cost_total ? $this->title : __( 'Free Shipping', 'wcsdm' );
-		if ( $cost_total && 'yes' === $this->show_distance && ! empty( $api_request['distance_text'] ) ) {
-			$label = sprintf( '%s (%s)', $label, $api_request['distance_text'] );
-		}
+			$rate = array(
+				'id'        => $this->get_rate_id(),
+				'label'     => $label,
+				'cost'      => $cost_total,
+				'meta_data' => $api_request,
+			);
 
-		$rate = array(
-			'id'        => $this->get_rate_id(),
-			'label'     => $label,
-			'cost'      => $cost_total,
-			'meta_data' => $api_request,
-		);
+			// Register the rate.
+			$this->register_rate( $rate );
+		} catch ( Exception $e ) {
+			$this->show_debug( $e->getMessage() );
+		}
+	}
+
+	/**
+	 * Register shipping rate to cart.
+	 *
+	 * @since 1.4
+	 * @param array $rate Shipping rate date.
+	 * @return void
+	 */
+	private function register_rate( $rate ) {
 
 		// Register the rate.
 		$this->add_rate( $rate );
@@ -734,15 +784,12 @@ class Wcsdm extends WC_Shipping_Method {
 	 *
 	 * @since    1.0.0
 	 * @param int $distance Distance of shipping destination.
-	 * @param int $class_id Shipping class ID of selected product.
 	 */
-	private function get_table_rate( $distance, $class_id ) {
-		$class_id = intval( $class_id );
-
+	private function get_rate_by_distance( $distance ) {
 		if ( $this->table_rates ) {
 			$offset = 0;
 			foreach ( $this->table_rates as $rate ) {
-				if ( $distance > $offset && $distance <= $rate['distance'] && isset( $rate[ 'class_' . $class_id ] ) && strlen( $rate[ 'class_' . $class_id ] ) ) {
+				if ( $distance > $offset && $distance <= $rate['distance'] ) {
 					return $rate;
 				}
 				$offset = $rate['distance'];
@@ -750,47 +797,6 @@ class Wcsdm extends WC_Shipping_Method {
 		}
 
 		return new WP_Error( 'no_rates', __( 'No rates data availbale.', 'wcsdm' ) );
-	}
-
-	/**
-	 * Calculate base fee.
-	 *
-	 * @since    1.3.8
-	 * @param int $distance Distance of shipping destination.
-	 */
-	private function calculate_base_fee( $distance ) {
-		$base_fee = 0;
-
-		if ( $this->table_rates ) {
-			$offset = 0;
-			foreach ( $this->table_rates as $rate ) {
-				if ( $distance > $offset && $distance <= $rate['distance'] && isset( $rate['base'] ) && strlen( $rate['base'] ) ) {
-					return $this->normalize_price( $rate['base'] );
-				}
-				$offset = $rate['distance'];
-			}
-		}
-
-		return $base_fee;
-	}
-
-	/**
-	 * Normalize price format to standard format for math procedure.
-	 *
-	 * @since    1.3.6
-	 *
-	 * @param  float $price Raw price data.
-	 * @return string
-	 */
-	private function normalize_price( $price ) {
-
-		$price = str_replace( ',', '', $price );
-
-		if ( 1 < substr_count( $price, '.' ) ) {
-			$price = preg_replace( '/\./', '', $price, ( substr_count( $price, '.' ) - 1 ) );
-		}
-
-		return $price;
 	}
 
 	/**
@@ -1117,22 +1123,5 @@ class Wcsdm extends WC_Shipping_Method {
 		if ( $debug_mode && ! defined( 'WOOCOMMERCE_CHECKOUT' ) && ! defined( 'WC_DOING_AJAX' ) && ! wc_has_notice( $message ) ) {
 			wc_add_notice( $message, $type );
 		}
-	}
-
-	/**
-	 * Sort product shipping class by ID
-	 *
-	 * @since    1.3.5
-	 * @param array $a First index of the array.
-	 * @param array $b Compared array.
-	 * @return integer
-	 */
-	private function sort_product_shipping_class( $a, $b ) {
-		$a = isset( $a['term_id'] ) ? (int) $a['term_id'] : 10;
-		$b = isset( $b['term_id'] ) ? (int) $b['term_id'] : 10;
-		if ( $a === $b ) {
-			return 0;
-		}
-		return ( $a < $b ) ? -1 : 1;
 	}
 }
