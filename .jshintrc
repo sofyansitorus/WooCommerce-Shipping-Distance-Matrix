@@ -23,9 +23,9 @@
 		"export": false,
 		"module": false,
 		"require": false,
-		"WoongkirLocation": false,
-		"woongkir_params": false,
+		"wcsdm_params": false,
 		"$": false,
-		"Lockr": false
+		"google": false,
+		"console": false
 	}
 }
