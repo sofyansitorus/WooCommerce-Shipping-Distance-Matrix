@@ -960,7 +960,8 @@ class Wcsdm extends WC_Shipping_Method {
 
 		// Rounds distance UP to the nearest integer.
 		if ( 'yes' === $this->ceil_distance ) {
-			$distance = ceil( $distance );
+			$distance      = ceil( $distance );
+			$distance_text = $distance . preg_replace( '/[0-9\.,]/', '', $distance_text );
 		}
 
 		return array(
