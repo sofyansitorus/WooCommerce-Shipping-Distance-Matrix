@@ -98,7 +98,7 @@ var wcsdmSetting = {
 			self._toggleRateRows
 		);
 		// Handle add rate rows.
-		$(document).on('click', '#rates-list-table .button.add', self._addRateRows);
+		$(document).on('click', '#rates-list-table .button.add_row', self._addRateRows);
 		// Handle remove rate rows.
 		$(document).on(
 			'click',
