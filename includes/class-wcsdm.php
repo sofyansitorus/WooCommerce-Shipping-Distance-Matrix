@@ -348,7 +348,7 @@ class Wcsdm extends WC_Shipping_Method {
 						<tr class="font-bold">
 							<td class="col-checkbox">
 								<div>
-									<a href="#" class="add button" data-key="<?php echo esc_attr( $this->get_field_key( $key ) ); ?>"><?php esc_html_e( 'Add Rate', 'wcsdm' ); ?></a>
+									<a href="#" class="add_row button" data-key="<?php echo esc_attr( $this->get_field_key( $key ) ); ?>"><?php esc_html_e( 'Add Rate', 'wcsdm' ); ?></a>
 									<a href="#" class="remove_rows button" style="display: none"><?php esc_html_e( 'Remove Rate', 'wcsdm' ); ?></a>
 								</div>
 							</td>
