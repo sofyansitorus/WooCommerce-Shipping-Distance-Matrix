@@ -2,7 +2,7 @@
 Contributors: sofyansitorus
 Tags: woocommerce,woocommerce-shipping,local-shipping,private-shipping
 Requires at least: 4.8
-Tested up to: 4.9.4
+Tested up to: 4.9.5
 Requires PHP: 5.6
 Stable tag: trunk
 License: GPL-2.0+
@@ -52,20 +52,21 @@ In the search field type “WooCommerce Shipping Distance Matrix” and click Se
 1. After installation has finished, click the ‘activate plugin’ link
 
 == Frequently Asked Questions ==
+
 = How to set the plugin settings? =
-You can setup the plugin setting from the Shipping Zones settings. Please check the following video tutorial how to setup the WooCommerce Shipping Zones:
+You can setup the plugin setting from the WooCommerce Shipping Zones settings panel. Please check the following video tutorial how to setup the WooCommerce Shipping Zones:
 
 [youtube https://www.youtube.com/watch?v=eThWmrnBP38]
 
-[Video](https://www.youtube.com/watch?v=eThWmrnBP38) by [InMotion Hosting](https://www.inmotionhosting.com)
+Credits: [InMotion Hosting](https://www.inmotionhosting.com)
 
-= Where can I get support or report bugs? =
-You can create support ticket at plugin support forum:
+= Where can I get support or report bug? =
+You can create support ticket at plugin support forum :
 
 * [Plugin Support Forum](https://wordpress.org/support/plugin/wcsdm)
 
 = Can I contribute to develop this plugin? =
-I always welcome and encourage contributions to this plugin. Please fork and create pull request the plugin GitHub repository:
+I always welcome and encourage contributions to this plugin. Please visit the plugin GitHub repository:
 
 * [Plugin GitHub Repository](https://github.com/sofyansitorus/WooCommerce-Shipping-Distance-Matrix)
 
@@ -74,6 +75,12 @@ I always welcome and encourage contributions to this plugin. Please fork and cre
 2. Settings panel bottom area
 
 == Changelog ==
+
+= 1.3.8 =
+
+* Improvements - Added free shipping option.
+* Improvements - Added option dynamic cost calculation type for each distance range.
+* Fix - Plugin is undetected in WordPress multisite installtion when WooCommerce plugin is network activated.
 
 = 1.3.8 =
 
@@ -186,6 +193,6 @@ I always welcome and encourage contributions to this plugin. Please fork and cre
 * Feature - Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
 
 == Upgrade Notice ==
-= 1.3.8 =
+= 1.4 =
 
-This version include improvements and bug fixes. Upgrade immediately.
+This version include major changes for improvements and bug fixes. Updating plugin settings is required after update.

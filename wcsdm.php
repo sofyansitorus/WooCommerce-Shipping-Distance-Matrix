@@ -15,7 +15,7 @@
  * Plugin Name:       WooCommerce Shipping Distance Matrix
  * Plugin URI:        https://github.com/sofyansitorus/WooCommerce-Shipping-Distance-Matrix
  * Description:       WooCommerce shipping rates calculator based on products shipping class and route distances that calculated using Google Maps Distance Matrix API.
- * Version:           1.3.8
+ * Version:           1.4
  * Author:            Sofyan Sitorus
  * Author URI:        https://github.com/sofyansitorus
  * License:           GPL-2.0+
@@ -24,7 +24,7 @@
  * Domain Path:       /languages
  *
  * WC requires at least: 3.0.0
- * WC tested up to: 3.4.0
+ * WC tested up to: 3.3.5
  */
 
 // If this file is called directly, abort.
@@ -33,16 +33,32 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 /**
- * Check if WooCommerce is active
+ * Check if plugin is active
+ *
+ * @param string $plugin_file Plugin file name.
  */
-if ( ! in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ), true ) ) {
+function wcsdm_is_plugin_active( $plugin_file ) {
+
+	$active_plugins = (array) apply_filters( 'active_plugins', get_option( 'active_plugins', array() ) );
+
+	if ( is_multisite() ) {
+		$active_plugins = array_merge( $active_plugins, (array) get_site_option( 'active_sitewide_plugins', array() ) );
+	}
+
+	return in_array( $plugin_file, $active_plugins, true ) || array_key_exists( $plugin_file, $active_plugins );
+}
+
+/**
+ * Check if WooCommerce plugin is active
+ */
+if ( ! wcsdm_is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
 	return;
-}// End if().
+}
 
 // Defines plugin named constants.
 define( 'WCSDM_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WCSDM_URL', plugin_dir_url( __FILE__ ) );
-define( 'WCSDM_VERSION', '1.3.8' );
+define( 'WCSDM_VERSION', '1.4' );
 define( 'WCSDM_METHOD_ID', 'wcsdm' );
 define( 'WCSDM_METHOD_TITLE', 'Shipping Distance Matrix' );
 define( 'WCSDM_MAP_SECRET_KEY', 'QUl6YVN5Qk82MVFJUm52Zkc5c2tKTW1HV1JVbWhsSU5lcUZXaTdV' );
@@ -135,9 +151,9 @@ add_filter( 'woocommerce_shipping_methods', 'wcsdm_shipping_methods' );
 function wcsdm_admin_enqueue_scripts( $hook ) {
 	if ( 'woocommerce_page_wc-settings' === $hook ) {
 		// Enqueue admin styles.
-		$wcsdm_admin_css = ( defined( 'WCSDM_DEV' ) && WCSDM_DEV ) ? add_query_arg( array( 't' => time() ), WCSDM_URL . 'assets/css/wcsdm-admin.css' ) : WCSDM_URL . 'assets/css/wcsdm-admin.min.css';
+		$wcsdm_admin_css = ( defined( 'WCSDM_DEV' ) && WCSDM_DEV ) ? add_query_arg( array( 't' => time() ), WCSDM_URL . 'assets/css/wcsdm.css' ) : WCSDM_URL . 'assets/css/wcsdm.min.css';
 		wp_enqueue_style(
-			'wcsdm-admin', // Give the script a unique ID.
+			'wcsdm', // Give the script a unique ID.
 			$wcsdm_admin_css, // Define the path to the JS file.
 			array(), // Define dependencies.
 			WCSDM_VERSION, // Define a version (optional).
@@ -145,16 +161,16 @@ function wcsdm_admin_enqueue_scripts( $hook ) {
 		);
 
 		// Enqueue admin scripts.
-		$wcsdm_admin_js = ( defined( 'WCSDM_DEV' ) && WCSDM_DEV ) ? add_query_arg( array( 't' => time() ), WCSDM_URL . 'assets/js/wcsdm-admin.js' ) : WCSDM_URL . 'assets/js/wcsdm-admin.min.js';
+		$wcsdm_admin_js = ( defined( 'WCSDM_DEV' ) && WCSDM_DEV ) ? add_query_arg( array( 't' => time() ), WCSDM_URL . 'assets/js/wcsdm.js' ) : WCSDM_URL . 'assets/js/wcsdm.min.js';
 		wp_enqueue_script(
-			'wcsdm-admin', // Give the script a unique ID.
+			'wcsdm', // Give the script a unique ID.
 			$wcsdm_admin_js, // Define the path to the JS file.
 			array( 'jquery' ), // Define dependencies.
 			WCSDM_VERSION, // Define a version (optional).
 			true // Specify whether to put in footer (leave this true).
 		);
 		wp_localize_script(
-			'wcsdm-admin',
+			'wcsdm',
 			'wcsdm_params',
 			array(
 				'show_settings' => isset( $_GET['wcsdm_settings'] ) && is_admin(),
@@ -162,6 +178,8 @@ function wcsdm_admin_enqueue_scripts( $hook ) {
 				'method_title'  => WCSDM_METHOD_TITLE,
 				'txt'           => array(
 					'drag_marker' => __( 'Drag this marker or search your address at the input above.', 'wcsdm' ),
+					'per_unit_km' => __( 'Per Kilometer', 'wcsdm' ),
+					'per_unit_mi' => __( 'Per Mile', 'wcsdm' ),
 				),
 				'marker'        => WCSDM_URL . 'assets/img/marker.png',
 				'language'      => get_locale(),
@@ -170,6 +188,3 @@ function wcsdm_admin_enqueue_scripts( $hook ) {
 	}
 }
 add_action( 'admin_enqueue_scripts', 'wcsdm_admin_enqueue_scripts' );
-
-// Show city field on the cart shipping calculator.
-add_filter( 'woocommerce_shipping_calculator_enable_city', '__return_true' );
