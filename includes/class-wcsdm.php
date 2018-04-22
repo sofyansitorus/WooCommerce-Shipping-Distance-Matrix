@@ -830,6 +830,7 @@ class Wcsdm extends WC_Shipping_Method {
 				array(
 					'request_url_args' => $request_url_args,
 					'table_rates'      => $this->table_rates,
+					'package'          => $package,
 				)
 			)
 		);
