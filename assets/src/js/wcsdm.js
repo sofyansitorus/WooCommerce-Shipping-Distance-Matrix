@@ -100,7 +100,7 @@ var wcsdmSetting = {
 			}
 			self._buildGoogleMaps();
 		} catch (error) {
-			var mapScriptUrl = 'https://maps.googleapis.com/maps/api/js?key=' + self._decode($('#map-secret-key').val()) + '&libraries=geometry,places&&language=' + self._params.language;
+			var mapScriptUrl = 'https://maps.googleapis.com/maps/api/js?key=' + $('#woocommerce_wcsdm_gmaps_api_key').val() + '&libraries=geometry,places&&language=' + self._params.language;
 			$.getScript(mapScriptUrl, function () {
 				self._buildGoogleMaps();
 			});
