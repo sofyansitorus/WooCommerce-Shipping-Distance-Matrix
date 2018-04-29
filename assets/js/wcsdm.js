@@ -17,6 +17,7 @@ var wcsdmSetting = {
 		self._mapWrapperSel = 'wcsdm-map-wrapper';
 		self._mapSearchSel = 'wcsdm-map-search';
 		self._mapCanvasSel = 'wcsdm-map-canvas';
+		self._gmapsAPIKey = null;
 
 		// Try show settings modal on settings page.
 		if (self._params.show_settings) {
@@ -46,13 +47,195 @@ var wcsdmSetting = {
 
 		// Handle setting link clicked.
 		$(document).on('click', '.wc-shipping-zone-method-settings', function () {
-			var method_title = $(this).closest('tr').find('.wc-shipping-zone-method-type').text();
+			var method_title 		= $(this).closest('tr').find('.wc-shipping-zone-method-type').text();
+			var apiKeyActivator 	= $('#woocommerce_wcsdm_gmaps_api_key_activator');
+			var parentApiKeyActivator = apiKeyActivator.closest('tr');
+			var gmapsAPIKeyField 	= $('#woocommerce_wcsdm_gmaps_api_key');
+			var gmapsAPIKeyFieldSibling = gmapsAPIKeyField.prev();
+			var gmapsAPIKey 		= gmapsAPIKeyField.val();
+			var saveBtn 			= $('#btn-ok');
 			if (method_title !== self._params.method_title) {
 				return false;
 			}
+			
+
+			gmapsAPIKeyFieldSibling.after('<div id="plainApiKey"></div>');	
+			var plainApiKey = $('#plainApiKey');			
+			plainApiKey.hide();
+
 			$('#woocommerce_wcsdm_gmaps_api_units').trigger('change');
-			self._initGoogleMaps();
+
+			parentApiKeyActivator.find('fieldset').append( '<div style="float:left;visibility:visible;display:none;" class="spinner"></div><button style="display:none;" id="wcsdm-api-key-validator" class="button button-primary button-large">Validate API Key</button><button style="display:none;" id="wcsdm-api-key-modifier" class="button button-primary button-large">Change API Key</button>' )
+			var apiKeyActivatorBtn = $('#wcsdm-api-key-validator');
+			var apiKeyModifierBtn =$('#wcsdm-api-key-modifier');
+			apiKeyActivatorBtn.hide();
+			apiKeyModifierBtn.hide();
+
+
+			if ( gmapsAPIKey.length ) {
+
+				apiKeyModifierBtn.show();				
+				gmapsAPIKeyField.hide();
+				saveBtn.show();
+
+
+				self._gmapsAPIKey = gmapsAPIKey;
+
+				plainApiKey.text( gmapsAPIKey );
+				plainApiKey.show();
+
+				self._initGoogleMaps();
+
+			} else {
+
+
+				apiKeyActivatorBtn.show();
+				plainApiKey.hide();
+				plainApiKey.text('');
+
+				var lonelyElement = $('.wcsdm-hide-element');
+				var lonelyElementTr = lonelyElement.closest('tr');
+				var allTrElements = parentApiKeyActivator.nextAll( 'tr' );
+				
+				allTrElements.addClass( 'wcsdm-hide-element' );
+				lonelyElementTr.addClass( 'wcsdm-hide-element' );
+	
+				lonelyElementTr.hide();
+				allTrElements.hide();
+				saveBtn.hide();
+			}
 		});
+
+
+
+		$(document).on('click', '#wcsdm-api-key-validator', function (e) {
+			e.preventDefault();
+
+			var that = $(this);
+			that.prop('disabled', true);
+
+			var gmapsAPIKeyField 		= $('#woocommerce_wcsdm_gmaps_api_key');
+			var gmapsAPIKeyFieldSibling = gmapsAPIKeyField.prev();
+			var gmapsAPIKey 			= gmapsAPIKeyField.val();
+
+			var apiKeyActivator 		= $('#woocommerce_wcsdm_gmaps_api_key_activator');
+			var spinner 				= apiKeyActivator.closest('tr').find('.spinner');
+			var noticeError 			= $('.notice-error');
+			var hiddenSettings;
+			var validAPIKey;
+
+			var apiKeyActivatorBtn 		= $('#wcsdm-api-key-validator');
+			var apiKeyModifierBtn 		= $('#wcsdm-api-key-modifier');
+			var saveBtn 				= $('#btn-ok');
+
+			var plainApiKey = $('#plainApiKey');
+
+			
+			if ( noticeError.length ) {
+				noticeError.remove();
+			}
+
+			spinner.show();
+
+			if ( gmapsAPIKey.length ) {
+
+				new Promise( function(resolve, reject) {
+
+					if ( self._gmapsAPIKey === gmapsAPIKey ) {
+						resolve( gmapsAPIKey );
+					}
+
+					self._validateGmapAPIkey( gmapsAPIKey, resolve, reject );
+
+				}).then(function( validAPIKey ){
+
+					that.prop('disabled', false);
+					spinner.hide();
+
+					hiddenSettings = $('.wcsdm-hide-element');
+					
+					hiddenSettings.show();
+			
+					gmapsAPIKeyField.hide();
+					apiKeyActivatorBtn.hide();
+					apiKeyModifierBtn.show();
+
+					plainApiKey.text(gmapsAPIKey);
+					plainApiKey.show();
+
+					saveBtn.show();
+
+					if ( self._gmapsAPIKey !== gmapsAPIKey ) {
+						self._destroyGoogleMaps();
+						self._gmapsAPIKey = gmapsAPIKey;
+					}
+					self._initGoogleMaps();
+
+				}).catch(function( validAPIKey ){
+					if ( noticeError.length ) {
+						noticeError.remove();
+					}
+
+					that.prop('disabled', false);
+					spinner.hide();
+
+					plainApiKey.hide();
+					plainApiKey.text('');
+
+					apiKeyActivatorBtn.show();
+					apiKeyModifierBtn.hide();
+
+					if ( validAPIKey.err ) {
+						validAPIKey.err.forEach(function( err ){
+							apiKeyActivator.before('<div style="margin-left:0;margin-bottom:10px;" class="notice notice-error">'+ err +'</div>');
+						});
+					} else {
+						apiKeyActivator.before('<div style="margin-left:0;margin-bottom:10px;" class="notice notice-error">Your API key seems invalid.</div>');
+					}
+				});	
+
+			} else {
+				that.prop('disabled', false);
+				spinner.hide();
+				apiKeyActivator.before('<div style="margin-left:0;margin-bottom:10px;" class="notice notice-error">You must insert your API key first.</div>');
+			}
+		});
+
+
+
+		$(document).on('click', '#wcsdm-api-key-modifier', function (e) {
+			e.preventDefault();
+			var gmapsAPIKeyField 		= $('#woocommerce_wcsdm_gmaps_api_key');
+			var gmapsAPIKey 			= gmapsAPIKeyField.val();
+			var apiKeyActivator 		= $('#woocommerce_wcsdm_gmaps_api_key_activator');
+			var parentApiKeyActivator 	= apiKeyActivator.closest('tr');
+			var saveBtn 				= $('#btn-ok');
+			var lonelyElement 			= $('.wcsdm-hide-element');
+			var lonelyElementTr 		= lonelyElement.closest('tr');
+			var allTrElements 			= parentApiKeyActivator.nextAll( 'tr' );
+			var plainApiKey 			= $('#plainApiKey');
+
+
+			plainApiKey.text('');
+			plainApiKey.hide();
+
+			gmapsAPIKeyField.show();
+
+			$('#wcsdm-api-key-validator').show();
+			$('#wcsdm-api-key-modifier').hide();
+
+	
+			allTrElements.addClass( 'wcsdm-hide-element' );
+			lonelyElementTr.addClass( 'wcsdm-hide-element' );
+	
+			lonelyElementTr.hide();
+			allTrElements.hide();
+
+			saveBtn.hide();
+
+		});
+
+
 
 		// Handle on distnace unit field setting changed.
 		$(document).on('change', '#woocommerce_wcsdm_gmaps_api_units', function () {
@@ -103,10 +286,12 @@ var wcsdmSetting = {
 			}
 			self._buildGoogleMaps();
 		} catch (error) {
-			var mapScriptUrl = 'https://maps.googleapis.com/maps/api/js?key=' + $('#woocommerce_wcsdm_gmaps_api_key').val() + '&libraries=geometry,places&&language=' + self._params.language;
-			$.getScript(mapScriptUrl, function () {
-				self._buildGoogleMaps();
-			});
+			if ( self._gmapsAPIKey ) {
+				var mapScriptUrl = 'https://maps.googleapis.com/maps/api/js?key=' + self._gmapsAPIKey + '&libraries=geometry,places&&language=' + self._params.language;
+				$.getScript(mapScriptUrl, function () {
+					self._buildGoogleMaps();
+				});
+			}
 		}
 	},
 	_buildGoogleMaps: function () {
@@ -230,6 +415,15 @@ var wcsdmSetting = {
 				google = undefined;
 			}
 		}, 1000);
+	},
+	_destroyGoogleMaps: function() {
+			var mapCanvasSel = $('#wcsdm-map-canvas');
+			var mapSearchSel = $('#wcsdm-map-search');
+			if ( mapCanvasSel.length ) {
+				mapCanvasSel.remove();
+				mapSearchSel.remove();
+				google = undefined;
+			}
 	},
 	_setLatLng: function (location, marker, map, infowindow) {
 		var self = this;
@@ -398,7 +592,59 @@ var wcsdmSetting = {
 			}
 		}
 		return t;
-	}
+	},
+	/**
+	 * Creates an iframe to test the API key 
+	 * 
+	 * @param  string gmapsAPIKey Google maps API Key
+	 * @param  object resolve     Promise resolve function
+	 * @param  object reject      Promise reject function
+	 * @return object 	Resolve
+	 */
+	_validateGmapAPIkey: function ( gmapsAPIKey, resolve, reject) {
+
+		var gmapsAPIKey = gmapsAPIKey;
+		var error_msg=[];
+		var iframe = document.createElement('iframe');
+		var html = '<head><script src="https://maps.googleapis.com/maps/api/js?key='+gmapsAPIKey+'&libraries=geometry,places&&language=en_US&callback=initMap" async defer><\/script><script>var map;function initMap() { map = new google.maps.Map(document.getElementById(\'map\'), { center: {lat: -34.397, lng: 150.644}, zoom: 8 });}<\/script></head><body><div id="map"></div></body>';
+		
+		iframe.className="uk-hidden";
+		document.body.appendChild( iframe );
+
+		iframe.contentWindow.console.error = function(msg) { error_msg.push(msg);};
+		iframe.contentWindow.console.warning = function() {};
+		iframe.contentWindow.console.log = function() {};
+		
+		iframe.contentWindow.document.open();
+		iframe.contentWindow.document.write( html );
+		iframe.contentWindow.document.close();
+		
+		iframe.onload = function() {
+			function checkResults(){
+				document.body.removeChild(iframe);
+				/**
+				 * API Key is invalid
+				 */
+				if (error_msg.length){
+					reject({
+						success: false,
+						err: error_msg
+					});
+				}
+				/**
+				 * API Key is valid
+				 */
+				else{
+					resolve({
+						success: true,
+						msg: 'API KEY good' 
+					});
+				}
+			}
+			setTimeout( checkResults, 5000);
+		};
+
+	},
 };
 $(document).ready(function () {
 	wcsdmSetting.init(wcsdm_params);
