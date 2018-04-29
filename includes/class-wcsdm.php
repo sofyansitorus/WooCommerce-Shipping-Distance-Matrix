@@ -118,7 +118,7 @@ class Wcsdm extends WC_Shipping_Method {
 			'tax_status'              => array(
 				'title'   => __( 'Tax status', 'wcsdm' ),
 				'type'    => 'select',
-				'class'   => 'wc-enhanced-select',
+				'class'   => 'wc-enhanced-select wcsdm-hide-element',
 				'default' => 'taxable',
 				'options' => array(
 					'taxable' => __( 'Taxable', 'wcsdm' ),
@@ -127,6 +127,7 @@ class Wcsdm extends WC_Shipping_Method {
 			),
 			'gmaps_api_key'           => array(
 				'title'       => __( 'API Key', 'wcsdm' ),
+				'class'   		=> 'wcsdm-gmaps-api-key',
 				'type'        => 'text',
 				'description' => __( 'This plugin require Google Maps Distance Matrix API Key and service is enabled. <a href="https://developers.google.com/maps/documentation/distance-matrix/get-api-key" target="_blank">Click here</a> to go to Google API Console to get API Key and to enable the service.', 'wcsdm' ),
 				'default'     => '',
