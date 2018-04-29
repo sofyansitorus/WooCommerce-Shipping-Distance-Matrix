@@ -189,7 +189,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale; }
 
-#plainApiKey {
+#plain-apiKey {
   display: block;
   border: 1px solid;
   width: 50%;
@@ -199,3 +199,16 @@
   background-color: #fff;
   color: #32373c;
   padding: 2px 8px; }
+
+.wcsdm-error {
+  margin-left: 0;
+  margin-bottom: 10px; }
+
+#wcsdm-api-key-validator,
+#wcsdm-api-key-modifier {
+  display: none; }
+
+#wcsdm-spinner {
+  display: none;
+  float: left;
+  visibility: visible; }

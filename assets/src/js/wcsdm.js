@@ -9,12 +9,27 @@ var wcsdmSetting = {
 	init: function (params) {
 		var self = this;
 		self._params = params;
-		self._inputLatSel = 'woocommerce_wcsdm_origin_lat';
-		self._inputLngSel = 'woocommerce_wcsdm_origin_lng';
-		self._mapWrapperSel = 'wcsdm-map-wrapper';
-		self._mapSearchSel = 'wcsdm-map-search';
-		self._mapCanvasSel = 'wcsdm-map-canvas';
-		self._gmapsAPIKey = null;
+		self._inputLatSel 				= 'woocommerce_wcsdm_origin_lat';
+		self._inputLngSel 				= 'woocommerce_wcsdm_origin_lng';
+		self._mapWrapperSel 			= 'wcsdm-map-wrapper';
+		self._mapSearchSel 				= 'wcsdm-map-search';
+		self._mapCanvasSel 				= 'wcsdm-map-canvas';
+		
+		self._gmapsAPIKey 				= null;
+		self._gmapsAPIKeyInput 			= null;
+		self._gmapsAPIKeyFieldset 		= null;
+		self._parentApiKeyActivator 	= null;
+		self._gmapsAPIKeyField 			= null;
+		self._gmapsAPIKeyFieldSibling 	= null;
+		self._gmapsAPIKey 				= null;
+		self._saveBtn 					= null;
+		self._plainApiKey 				= null;
+		self._loaderSpinner 			= null;
+		self._validateApiBtn 			= null;
+		self._changeApiBtn 				= null;
+		self._tableRows 				= null;
+		self._invalidApiKeyMessage 		= null;
+
 
 		// Try show settings modal on settings page.
 		if (self._params.show_settings) {
@@ -44,62 +59,29 @@ var wcsdmSetting = {
 
 		// Handle setting link clicked.
 		$(document).on('click', '.wc-shipping-zone-method-settings', function () {
-			var method_title 		= $(this).closest('tr').find('.wc-shipping-zone-method-type').text();
-			var apiKeyActivator 	= $('#woocommerce_wcsdm_gmaps_api_key_activator');
-			var parentApiKeyActivator = apiKeyActivator.closest('tr');
-			var gmapsAPIKeyField 	= $('#woocommerce_wcsdm_gmaps_api_key');
-			var gmapsAPIKeyFieldSibling = gmapsAPIKeyField.prev();
-			var gmapsAPIKey 		= gmapsAPIKeyField.val();
-			var saveBtn 			= $('#btn-ok');
+			
+			var method_title 			= $(this).closest('tr').find('.wc-shipping-zone-method-type').text();			
 			if (method_title !== self._params.method_title) {
 				return false;
 			}
-			
-
-			gmapsAPIKeyFieldSibling.after('<div id="plainApiKey"></div>');	
-			var plainApiKey = $('#plainApiKey');			
-			plainApiKey.hide();
-
 			$('#woocommerce_wcsdm_gmaps_api_units').trigger('change');
 
-			parentApiKeyActivator.find('fieldset').append( '<div style="float:left;visibility:visible;display:none;" class="spinner"></div><button style="display:none;" id="wcsdm-api-key-validator" class="button button-primary button-large">Validate API Key</button><button style="display:none;" id="wcsdm-api-key-modifier" class="button button-primary button-large">Change API Key</button>' )
-			var apiKeyActivatorBtn = $('#wcsdm-api-key-validator');
-			var apiKeyModifierBtn =$('#wcsdm-api-key-modifier');
-			apiKeyActivatorBtn.hide();
-			apiKeyModifierBtn.hide();
+			self._initSettingElements();
 
-
-			if ( gmapsAPIKey.length ) {
-
-				apiKeyModifierBtn.show();				
-				gmapsAPIKeyField.hide();
-				saveBtn.show();
-
-
-				self._gmapsAPIKey = gmapsAPIKey;
-
-				plainApiKey.text( gmapsAPIKey );
-				plainApiKey.show();
-
+			if ( self._gmapsAPIKey.length ) {
+				self._changeApiBtn.show();
+				self._gmapsAPIKeyField.hide();
+				self._plainApiKey.text( self._gmapsAPIKey );
+				self._plainApiKey.show();
+				self._saveBtn.show();
+				self._gmapsAPIKey = self._gmapsAPIKey;
 				self._initGoogleMaps();
-
 			} else {
-
-
-				apiKeyActivatorBtn.show();
-				plainApiKey.hide();
-				plainApiKey.text('');
-
-				var lonelyElement = $('.wcsdm-hide-element');
-				var lonelyElementTr = lonelyElement.closest('tr');
-				var allTrElements = parentApiKeyActivator.nextAll( 'tr' );
-				
-				allTrElements.addClass( 'wcsdm-hide-element' );
-				lonelyElementTr.addClass( 'wcsdm-hide-element' );
-	
-				lonelyElementTr.hide();
-				allTrElements.hide();
-				saveBtn.hide();
+				self._validateApiBtn.show();
+				self._plainApiKey.text('');
+				self._plainApiKey.hide();
+				self._tableRows.hide();
+				self._saveBtn.hide();
 			}
 		});
 
@@ -107,94 +89,68 @@ var wcsdmSetting = {
 
 		$(document).on('click', '#wcsdm-api-key-validator', function (e) {
 			e.preventDefault();
+			var $that = $(this);
+			var currentGmapsAPIKey 			= $('#woocommerce_wcsdm_gmaps_api_key').val();
+			var noticeError 				= $('.notice-error');
 
-			var that = $(this);
-			that.prop('disabled', true);
+			$that.prop('disabled', true);
 
-			var gmapsAPIKeyField 		= $('#woocommerce_wcsdm_gmaps_api_key');
-			var gmapsAPIKeyFieldSibling = gmapsAPIKeyField.prev();
-			var gmapsAPIKey 			= gmapsAPIKeyField.val();
+			self._invalidApiKeyMessage.hide();
 
-			var apiKeyActivator 		= $('#woocommerce_wcsdm_gmaps_api_key_activator');
-			var spinner 				= apiKeyActivator.closest('tr').find('.spinner');
-			var noticeError 			= $('.notice-error');
-			var hiddenSettings;
-			var validAPIKey;
+			self._loaderSpinner.show();
 
-			var apiKeyActivatorBtn 		= $('#wcsdm-api-key-validator');
-			var apiKeyModifierBtn 		= $('#wcsdm-api-key-modifier');
-			var saveBtn 				= $('#btn-ok');
-
-			var plainApiKey = $('#plainApiKey');
-
-			
-			if ( noticeError.length ) {
-				noticeError.remove();
-			}
-
-			spinner.show();
-
-			if ( gmapsAPIKey.length ) {
+			if ( currentGmapsAPIKey.length ) {
 
 				new Promise( function(resolve, reject) {
-
-					if ( self._gmapsAPIKey === gmapsAPIKey ) {
-						resolve( gmapsAPIKey );
+					if ( self._gmapsAPIKey === currentGmapsAPIKey ) {
+						resolve( currentGmapsAPIKey );
 					}
-
-					self._validateGmapAPIkey( gmapsAPIKey, resolve, reject );
+					self._validateGmapAPIkey( currentGmapsAPIKey, resolve, reject );
 
 				}).then(function( validAPIKey ){
 
-					that.prop('disabled', false);
-					spinner.hide();
-
-					hiddenSettings = $('.wcsdm-hide-element');
+					$that.prop('disabled', false);
+					self._loaderSpinner.hide();
+					self._tableRows.hide();
+					self._gmapsAPIKeyInput.hide();
+					self._validateApiBtn.hide();
 					
-					hiddenSettings.show();
-			
-					gmapsAPIKeyField.hide();
-					apiKeyActivatorBtn.hide();
-					apiKeyModifierBtn.show();
+					self._plainApiKey.text(currentGmapsAPIKey);
+					self._plainApiKey.show();
+					self._changeApiBtn.show();
+					self._tableRows.show();
+					self._saveBtn.show();
 
-					plainApiKey.text(gmapsAPIKey);
-					plainApiKey.show();
-
-					saveBtn.show();
-
-					if ( self._gmapsAPIKey !== gmapsAPIKey ) {
+					if ( self._gmapsAPIKey !== currentGmapsAPIKey ) {
 						self._destroyGoogleMaps();
-						self._gmapsAPIKey = gmapsAPIKey;
+						self._gmapsAPIKey = currentGmapsAPIKey;
 					}
 					self._initGoogleMaps();
 
 				}).catch(function( validAPIKey ){
-					if ( noticeError.length ) {
-						noticeError.remove();
-					}
 
-					that.prop('disabled', false);
-					spinner.hide();
+					$that.prop('disabled', false);
+					self._loaderSpinner.hide();
+					self._changeApiBtn.hide();
+					self._plainApiKey.hide();
+					self._plainApiKey.text('');
+					self._invalidApiKeyMessage.hide();
 
-					plainApiKey.hide();
-					plainApiKey.text('');
-
-					apiKeyActivatorBtn.show();
-					apiKeyModifierBtn.hide();
+					self._validateApiBtn.show();
 
 					if ( validAPIKey.err ) {
 						validAPIKey.err.forEach(function( err ){
-							apiKeyActivator.before('<div style="margin-left:0;margin-bottom:10px;" class="notice notice-error">'+ err +'</div>');
+							self._invalidApiKeyMessage.text( err ).show();
 						});
 					} else {
-						apiKeyActivator.before('<div style="margin-left:0;margin-bottom:10px;" class="notice notice-error">Your API key seems invalid.</div>');
+						self._invalidApiKeyMessage.text( 'Your API key seems invalid.' ).show();
 					}
 				});	
 
 			} else {
-				that.prop('disabled', false);
-				spinner.hide();
-				apiKeyActivator.before('<div style="margin-left:0;margin-bottom:10px;" class="notice notice-error">You must insert your API key first.</div>');
+				$that.prop('disabled', false);
+				self._loaderSpinner.hide();
+				self._invalidApiKeyMessage.text( 'You must insert your API key first' ).show();
 			}
 		});
 
@@ -202,34 +158,15 @@ var wcsdmSetting = {
 
 		$(document).on('click', '#wcsdm-api-key-modifier', function (e) {
 			e.preventDefault();
-			var gmapsAPIKeyField 		= $('#woocommerce_wcsdm_gmaps_api_key');
-			var gmapsAPIKey 			= gmapsAPIKeyField.val();
-			var apiKeyActivator 		= $('#woocommerce_wcsdm_gmaps_api_key_activator');
-			var parentApiKeyActivator 	= apiKeyActivator.closest('tr');
-			var saveBtn 				= $('#btn-ok');
-			var lonelyElement 			= $('.wcsdm-hide-element');
-			var lonelyElementTr 		= lonelyElement.closest('tr');
-			var allTrElements 			= parentApiKeyActivator.nextAll( 'tr' );
-			var plainApiKey 			= $('#plainApiKey');
 
+			self._plainApiKey.text('');
+			self._plainApiKey.hide();
+			self._changeApiBtn.hide();
+			self._tableRows.hide();
+			self._saveBtn.hide();
 
-			plainApiKey.text('');
-			plainApiKey.hide();
-
-			gmapsAPIKeyField.show();
-
-			$('#wcsdm-api-key-validator').show();
-			$('#wcsdm-api-key-modifier').hide();
-
-	
-			allTrElements.addClass( 'wcsdm-hide-element' );
-			lonelyElementTr.addClass( 'wcsdm-hide-element' );
-	
-			lonelyElementTr.hide();
-			allTrElements.hide();
-
-			saveBtn.hide();
-
+			self._gmapsAPIKeyField.show();
+			self._validateApiBtn.show();
 		});
 
 
@@ -642,6 +579,109 @@ var wcsdmSetting = {
 		};
 
 	},
+	_initSettingElements: function() {
+			var self = this;
+			
+			self._gmapsAPIKeyInput 			= $('.wcsdm-gmaps-api-key');
+			self._gmapsAPIKeyFieldset		= self._gmapsAPIKeyInput.closest('fieldset');
+
+
+			self._parentApiKeyActivator 	= self._gmapsAPIKeyInput.closest('tr');
+			self._gmapsAPIKeyField 			= $('#woocommerce_wcsdm_gmaps_api_key');
+
+			self._gmapsAPIKeyFieldSibling 	= self._gmapsAPIKeyField.prev();
+			self._gmapsAPIKey 				= self._gmapsAPIKeyField.val();
+			self._saveBtn 					= $('#btn-ok');
+
+
+
+			self._plainApiKey = self._createElement({
+				id: 	'plain-apiKey'
+			});
+
+			self._loaderSpinner = self._createElement({
+				id: 	'wcsdm-spinner',
+				class: 	'spinner',
+			});
+			
+
+			self._validateApiBtn = self._createElement({
+				tag: 	'button',
+				id: 	'wcsdm-api-key-validator',
+				class: 	'button button-primary button-large',
+				text: 	'Validate API Key',
+				isHidden: true
+			});
+
+			self._changeApiBtn = self._createElement({
+				tag: 	'button',
+				id: 	'wcsdm-api-key-modifier',
+				class: 	'button button-primary button-large',
+				text: 	'Change API Key',
+				isHidden: true
+			});
+
+			self._invalidApiKeyMessage = self._createElement({
+				tag: 	'div',
+				class: 	'notice notice-error wcsdm-error',
+				isHidden: true
+			});
+
+			self._tableRows = self._getTableRowElements({
+				within: '.wc-modal-shipping-method-settings',
+				excludedRowsWithElement: [
+					'#woocommerce_wcsdm_title', 
+					'#woocommerce_wcsdm_gmaps_api_key'
+				]
+			});
+
+
+			self._gmapsAPIKeyFieldSibling.after( self._plainApiKey );		
+			self._gmapsAPIKeyFieldset.append( self._loaderSpinner );
+			self._gmapsAPIKeyFieldset.append( self._validateApiBtn );
+			self._gmapsAPIKeyFieldset.append( self._changeApiBtn );
+
+			self._validateApiBtn.before( self._invalidApiKeyMessage );
+
+	},
+	_createElement: function( options ) {
+	    var defaults = {
+	        tag: 	'div',
+	        id: 	'',
+	        class: 	'' ,
+	        text: 	'',
+	        isHidden: false
+	    };
+	    var options = $.extend({}, defaults, options || {});
+	    return $( '<'+ options.tag + ( options.isHidden ? ' style="display:none;"': '' ) + ( options.id ? ' id="'+ options.id +'"': '' ) + ( options.class ? ' class="'+ options.class +'"': '' ) +'>' + options.text + '</'+ options.tag +'>' );
+	},
+	_getTableRowElements: function( options ) {
+	    var defaults = {
+	    	within: '',
+	        excludedRowsWithElement: 	[],
+	    };
+	    var options = $.extend({}, defaults, options || {});
+	    if ( options.within === '' || ! options.within.length ) {
+	    	throw "within needs to be defined : _getTableRowElements";
+	    }
+	    if ( ! options.excludedRowsWithElement.length ) {
+	    	return $( options.within ).find('tr');
+	    }
+	    if ( Array.isArray( options.excludedRowsWithElement ) ) {
+
+	    	var tableRows =  $( options.within ).find('tbody').children('tr');
+
+	    	$.each( tableRows, function( index, tableRow ){
+	    		$.each( options.excludedRowsWithElement, function( index, value ){
+	    			var hasElement = $(tableRow).find( value ).length;
+	    			if ( hasElement ) {	
+	    				$(tableRow).addClass('wcsdm-excluded-table-row');
+	    			}
+	    		});
+	    	});
+	    }
+	    return tableRows.not('.wcsdm-excluded-table-row');
+	}
 };
 $(document).ready(function () {
 	wcsdmSetting.init(wcsdm_params);
