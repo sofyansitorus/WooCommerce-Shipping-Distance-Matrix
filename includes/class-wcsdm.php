@@ -296,12 +296,11 @@ class Wcsdm extends WC_Shipping_Method {
 		$cols = array(
 			'base'      => __( 'Base Cost', 'wcsdm' ),
 			'distance'  => __( 'Max. Distances', 'wcsdm' ),
-			'cost_type' => __( 'Rate Type', 'wcsdm' ),
-			'class_0'   => __( 'Unspecified Class', 'wcsdm' ),
+			'cost_type' => __( 'Cost Type', 'wcsdm' ),
+			'class_0'   => __( 'Unspecified', 'wcsdm' ),
 		);
 		foreach ( $shipping_classes as $shipping_class_id => $shipping_class ) {
-			// translators: %s = Shipping class name.
-			$cols[ 'class_' . $shipping_class_id ] = sprintf( __( '%s Class', 'wcsdm' ), $shipping_class->name );
+			$cols[ 'class_' . $shipping_class_id ] = $shipping_class->name;
 		}
 		$cols['free_min_amount'] = __( 'Min. Amount', 'wcsdm' );
 		$cols['free_min_qty']    = __( 'Min. Quantity', 'wcsdm' );
@@ -315,7 +314,7 @@ class Wcsdm extends WC_Shipping_Method {
 							<td class="col-base"></td>
 							<td class="col-distance"></td>
 							<td colspan="<?php echo count( $shipping_classes ) + 2; ?>" class="cols-shipping-class">
-								<strong><?php esc_html_e( 'Shipping Rate', 'wcsdm' ); ?></strong><span class="tooltip" data-tooltip="<?php esc_attr_e( 'Enter rate for each products shipping class below. Leave blank to disable shipping rate calculation.', 'wcsdm' ); ?>"></span>
+								<strong><?php esc_html_e( 'Rate by Shipping Class', 'wcsdm' ); ?></strong><span class="tooltip" data-tooltip="<?php esc_attr_e( 'Enter rate for each products shipping class below. Leave blank to disable shipping rate calculation.', 'wcsdm' ); ?>"></span>
 							</td>
 							<td class="col-free-shipping" colspan="2">
 								<strong><?php esc_html_e( 'Free Shipping', 'wcsdm' ); ?></strong><span class="tooltip" data-tooltip="<?php esc_attr_e( 'The shipping will be defined as FREE if any of conditions below are met. Leave blank to disable free shipping.', 'wcsdm' ); ?>"></span>
