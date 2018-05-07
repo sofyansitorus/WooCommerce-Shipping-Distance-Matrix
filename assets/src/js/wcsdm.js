@@ -1,32 +1,51 @@
+// Returns a function, that, as long as it continues to be invoked, will not
+// be triggered. The function will be called after it stops being called for
+// N milliseconds. If `immediate` is passed, trigger the function on the
+// leading edge, instead of the trailing.
+function debounce(func, wait, immediate) {
+	var timeout;
+	return function () {
+		var context = this, args = arguments;
+		var later = function () {
+			timeout = null;
+			if (!immediate) {
+				func.apply(context, args);
+			}
+		};
+		var callNow = immediate && !timeout;
+		clearTimeout(timeout);
+		timeout = setTimeout(later, wait);
+		if (callNow) {
+			func.apply(context, args);
+		}
+	};
+}
+
+// Taking Over window.console.error
+var windowConsoleError = window.console.error;
+window.console.error = function () {
+	var errMsg = arguments[0];
+	if (errMsg.indexOf('https://developers.google.com/maps/documentation/javascript/error-messages') !== 1) {
+		wcsdmSetting._showMapError(errMsg);
+	}
+	windowConsoleError.apply(windowConsoleError, arguments);
+};
+
 var wcsdmSetting = {
-	_inputLatId: '',
-	_inputLngId: '',
-	_mapWrapperId: '',
-	_mapSearchId: '',
-	_mapCanvasId: '',
 	_zoomLevel: 16,
-	_keyStr: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=',
 	init: function (params) {
 		var self = this;
-		self._params = params;
-		self._inputLatSel = 'woocommerce_wcsdm_origin_lat';
-		self._inputLngSel = 'woocommerce_wcsdm_origin_lng';
-		self._mapWrapperSel = 'wcsdm-map-wrapper';
-		self._mapSearchSel = 'wcsdm-map-search';
-		self._mapCanvasSel = 'wcsdm-map-canvas';
+		self.params = params;
 
 		// Try show settings modal on settings page.
-		if (self._params.show_settings) {
+		if (self.params.showSettings) {
 			setTimeout(function () {
 				var isMethodAdded = false;
 				var methods = $(document).find('.wc-shipping-zone-method-type');
 				for (var i = 0; i < methods.length; i++) {
 					var method = methods[i];
-					if ($(method).text() === self._params.method_title) {
-						$(method)
-							.closest('tr')
-							.find('.row-actions .wc-shipping-zone-method-settings')
-							.trigger('click');
+					if ($(method).text() === self.params.methodTitle) {
+						$(method).closest('tr').find('.row-actions .wc-shipping-zone-method-settings').trigger('click');
 						isMethodAdded = true;
 						return;
 					}
@@ -34,44 +53,38 @@ var wcsdmSetting = {
 				// Show Add shipping method modal if the shipping is not added.
 				if (!isMethodAdded) {
 					$('.wc-shipping-zone-add-method').trigger('click');
-					$('select[name="add_method_id"]')
-						.val(self._params.method_id)
-						.trigger('change');
+					$('select[name="add_method_id"]').val(self.params.methodId).trigger('change');
 				}
 			}, 200);
 		}
 
 		// Handle setting link clicked.
 		$(document).on('click', '.wc-shipping-zone-method-settings', function () {
-			var method_title = $(this).closest('tr').find('.wc-shipping-zone-method-type').text();
-			if (method_title !== self._params.method_title) {
+			var methodTitle = $(this).closest('tr').find('.wc-shipping-zone-method-type').text();
+			if (methodTitle !== self.params.methodTitle) {
 				return false;
 			}
 			$('#woocommerce_wcsdm_gmaps_api_units').trigger('change');
-			self._initGoogleMaps();
+			$('#woocommerce_wcsdm_gmaps_api_key').trigger('input');
 		});
+
+		// Handle on API Key field setting changed.
+		$(document).on('input', '#woocommerce_wcsdm_gmaps_api_key', debounce(function () {
+			self._initGoogleMaps();
+		}, 250));
+
+		// Handle on Latitude and Longitude field setting changed.
+		$(document).on('change', '#woocommerce_wcsdm_origin_lat, #woocommerce_wcsdm_origin_lng', debounce(function () {
+			if (!$('#woocommerce_wcsdm_origin_lat').val().length || !$('#woocommerce_wcsdm_origin_lng').val().length) {
+				return;
+			}
+			self._initGoogleMaps();
+		}, 250));
 
 		// Handle on distnace unit field setting changed.
 		$(document).on('change', '#woocommerce_wcsdm_gmaps_api_units', function () {
-			switch ($(this).val()) {
-				case 'metric':
-					$('.field-group.distance .field-group-icon').text('KM');
-					$('option[value="per_unit"]').text(self._params.txt.per_unit_km);
-					break;
-
-				default:
-					$('.field-group.distance .field-group-icon').text('MI');
-					$('option[value="per_unit"]').text(self._params.txt.per_unit_mi);
-					break;
-			}
-		});
-
-		// Handle on latitude and longitude field setting changed.
-		$(document).on('change', '#' + self._inputLatSel + ', #' + self._inputLngSel, function () {
-			if ($('.gm-err-content').length) {
-				return false;
-			}
-			self._initGoogleMaps();
+			$('.field-group.distance .field-group-icon').text(self.params.i18n.distance[$(this).val()].unit);
+			$('option[value="per_unit"]').text(self.params.i18n.distance[$(this).val()].perUnit);
 		});
 
 		// Handle toggle rate rows in bulk.
@@ -89,44 +102,39 @@ var wcsdmSetting = {
 	_initGoogleMaps: function () {
 		var self = this;
 
-		$('#' + self._mapWrapperSel).show().siblings('.description').hide();
+		$('#wcsdm-map-wrapper').show().siblings('.description').hide();
 
-		try {
-			if (
-				typeof google === 'undefined' ||
-				typeof google.maps === 'undefined'
-			) {
-				throw 'google is not defined';
-			}
-			self._buildGoogleMaps();
-		} catch (error) {
-			var mapScriptUrl = 'https://maps.googleapis.com/maps/api/js?key=' + self._decode($('#map-secret-key').val()) + '&libraries=geometry,places&&language=' + self._params.language;
-			$.getScript(mapScriptUrl, function () {
-				self._buildGoogleMaps();
-			});
+		var apiKey = $('#woocommerce_wcsdm_gmaps_api_key').val();
+		if (!apiKey.length) {
+			return;
 		}
+
+		if (typeof window.google !== 'undefined') {
+			window.google = undefined;
+		}
+
+		var mapScriptUrl = 'https://maps.googleapis.com/maps/api/js?libraries=geometry,places&key=' + apiKey + '&language=' + self.params.language;
+		$.getScript(mapScriptUrl, function () {
+			self._buildGoogleMaps();
+		});
 	},
 	_buildGoogleMaps: function () {
 		var self = this;
 		var defaultLat = -6.175392;
 		var defaultLng = 106.827153;
-		var curLat = $('#' + self._inputLatSel).val();
-		var curLng = $('#' + self._inputLngSel).val();
+		var curLat = $('#woocommerce_wcsdm_origin_lat').val();
+		var curLng = $('#woocommerce_wcsdm_origin_lng').val();
 		curLat = curLat.length ? parseFloat(curLat) : defaultLat;
 		curLng = curLng.length ? parseFloat(curLng) : defaultLng;
 		var curLatLng = { lat: curLat, lng: curLng };
-		var tmplMapCanvas = wp.template(self._mapCanvasSel);
-		var tmplMapSearch = wp.template(self._mapSearchSel);
-		if (!$('#' + self._mapCanvasSel).length) {
-			$('#' + self._mapWrapperSel).append(
-				tmplMapCanvas({
-					map_canvas_id: self._mapCanvasSel
-				})
-			);
+		var tmplMapCanvas = wp.template('wcsdm-map-canvas');
+		var tmplMapSearch = wp.template('wcsdm-map-search');
+		if (!$('#wcsdm-map-canvas').length) {
+			$('#wcsdm-map-wrapper').append(tmplMapCanvas());
 		}
 		var markers = [];
 		var map = new google.maps.Map(
-			document.getElementById(self._mapCanvasSel),
+			document.getElementById('wcsdm-map-canvas'),
 			{
 				center: curLatLng,
 				zoom: self._zoomLevel,
@@ -137,13 +145,13 @@ var wcsdmSetting = {
 			map: map,
 			position: curLatLng,
 			draggable: true,
-			icon: self._params.marker
+			icon: self.params.marker
 		});
 
 		var infowindow = new google.maps.InfoWindow({ maxWidth: 350 });
 
 		if (curLat === defaultLat && curLng === defaultLng) {
-			infowindow.setContent(self._params.txt.drag_marker);
+			infowindow.setContent(self.params.i18n.dragMarker);
 			infowindow.open(map, marker);
 		} else {
 			self._setLatLng(marker.position, marker, map, infowindow);
@@ -159,15 +167,11 @@ var wcsdmSetting = {
 
 		markers.push(marker);
 
-		if (!$('#' + self._mapSearchSel).length) {
-			$('#' + self._mapWrapperSel).append(
-				tmplMapSearch({
-					map_search_id: self._mapSearchSel
-				})
-			);
+		if (!$('#wcsdm-map-search').length) {
+			$('#wcsdm-map-wrapper').append(tmplMapSearch());
 		}
 		// Create the search box and link it to the UI element.
-		var inputAddress = document.getElementById(self._mapSearchSel);
+		var inputAddress = document.getElementById('wcsdm-map-search');
 		var searchBox = new google.maps.places.SearchBox(inputAddress);
 		map.controls[google.maps.ControlPosition.TOP_LEFT].push(inputAddress);
 		// Bias the SearchBox results towards current map's viewport.
@@ -196,7 +200,7 @@ var wcsdmSetting = {
 					map: map,
 					position: place.geometry.location,
 					draggable: true,
-					icon: self._params.marker
+					icon: self.params.marker
 				});
 				self._setLatLng(place.geometry.location, marker, map, infowindow);
 				google.maps.event.addListener(marker, 'dragstart', function () {
@@ -216,20 +220,13 @@ var wcsdmSetting = {
 			});
 			map.fitBounds(bounds);
 		});
-
-		setInterval(function () {
-			if ($('.gm-err-content').length) {
-				$('#' + self._mapWrapperSel)
-					.hide()
-					.siblings('.description')
-					.show();
-				$('#' + self._mapSearchSel).remove();
-				google = undefined;
-			}
-		}, 1000);
+	},
+	_showMapError: function (errorMsg) {
+		$('#wcsdm-map-wrapper').empty().hide().siblings('.description').show('fast', function () {
+			window.alert(errorMsg);
+		});
 	},
 	_setLatLng: function (location, marker, map, infowindow) {
-		var self = this;
 		var geocoder = new google.maps.Geocoder();
 		geocoder.geocode(
 			{
@@ -246,8 +243,8 @@ var wcsdmSetting = {
 			}
 		);
 		map.setCenter(location);
-		$('#' + self._inputLatSel).val(location.lat());
-		$('#' + self._inputLngSel).val(location.lng());
+		$('#woocommerce_wcsdm_origin_lat').val(location.lat());
+		$('#woocommerce_wcsdm_origin_lng').val(location.lng());
 	},
 	_toggleRateRowsBulk: function (e) {
 		var $this = $(e.currentTarget);
@@ -297,106 +294,9 @@ var wcsdmSetting = {
 		$table.find('tbody [type=checkbox]:checked').each(function (index, checkbox) {
 			$(checkbox).closest('tr').remove();
 		});
-	},
-	_encode: function (e) {
-		var self = this;
-		var t = '';
-		var n, r, i, s, o, u, a;
-		var f = 0;
-		e = self._utf8_encode(e);
-		while (f < e.length) {
-			n = e.charCodeAt(f++);
-			r = e.charCodeAt(f++);
-			i = e.charCodeAt(f++);
-			s = n >> 2;
-			o = ((n & 3) << 4) | (r >> 4);
-			u = ((r & 15) << 2) | (i >> 6);
-			a = i & 63;
-			if (isNaN(r)) {
-				u = a = 64;
-			} else if (isNaN(i)) {
-				a = 64;
-			}
-			t =
-				t +
-				this._keyStr.charAt(s) +
-				this._keyStr.charAt(o) +
-				this._keyStr.charAt(u) +
-				this._keyStr.charAt(a);
-		}
-		return t;
-	},
-	_decode: function (e) {
-		var self = this;
-		var t = '';
-		var n, r, i;
-		var s, o, u, a;
-		var f = 0;
-		e = e.replace(/[^A-Za-z0-9+/=]/g, '');
-		while (f < e.length) {
-			s = this._keyStr.indexOf(e.charAt(f++));
-			o = this._keyStr.indexOf(e.charAt(f++));
-			u = this._keyStr.indexOf(e.charAt(f++));
-			a = this._keyStr.indexOf(e.charAt(f++));
-			n = (s << 2) | (o >> 4);
-			r = ((o & 15) << 4) | (u >> 2);
-			i = ((u & 3) << 6) | a;
-			t = t + String.fromCharCode(n);
-			if (u !== 64) {
-				t = t + String.fromCharCode(r);
-			}
-			if (a !== 64) {
-				t = t + String.fromCharCode(i);
-			}
-		}
-		t = self._utf8_decode(t);
-		return t;
-	},
-	_utf8_encode: function (e) {
-		e = e.replace(/rn/g, 'n');
-		var t = '';
-		for (var n = 0; n < e.length; n++) {
-			var r = e.charCodeAt(n);
-			if (r < 128) {
-				t += String.fromCharCode(r);
-			} else if (r > 127 && r < 2048) {
-				t += String.fromCharCode((r >> 6) | 192);
-				t += String.fromCharCode((r & 63) | 128);
-			} else {
-				t += String.fromCharCode((r >> 12) | 224);
-				t += String.fromCharCode(((r >> 6) & 63) | 128);
-				t += String.fromCharCode((r & 63) | 128);
-			}
-		}
-		return t;
-	},
-	_utf8_decode: function (e) {
-		var t = '';
-		var n = 0;
-		var r = 0;
-		var c2 = 0;
-		var c3 = 0;
-		while (n < e.length) {
-			r = e.charCodeAt(n);
-			if (r < 128) {
-				t += String.fromCharCode(r);
-				n++;
-			} else if (r > 191 && r < 224) {
-				c2 = e.charCodeAt(n + 1);
-				t += String.fromCharCode(((r & 31) << 6) | (c2 & 63));
-				n += 2;
-			} else {
-				c2 = e.charCodeAt(n + 1);
-				c3 = e.charCodeAt(n + 2);
-				t += String.fromCharCode(
-					((r & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63)
-				);
-				n += 3;
-			}
-		}
-		return t;
 	}
 };
+
 $(document).ready(function () {
 	wcsdmSetting.init(wcsdm_params);
 });
