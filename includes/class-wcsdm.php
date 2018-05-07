@@ -321,12 +321,7 @@ class Wcsdm extends WC_Shipping_Method {
 								<strong><?php esc_html_e( 'Free Shipping', 'wcsdm' ); ?></strong><span class="tooltip" data-tooltip="<?php esc_attr_e( 'The shipping will be defined as FREE if any of conditionals below met. Leave blank to disable free shipping.', 'wcsdm' ); ?>"></span>
 							</td>
 						</tr>
-						<tr class="font-bold">
-							<td class="col-checkbox"><div><input class="select-item" type="checkbox"></div></td>
-							<?php foreach ( $cols as $col_key => $col_label ) : ?>
-								<td class="col-data col-<?php echo esc_html( $col_key ); ?>"><?php echo esc_html( $col_label ); ?></td>
-							<?php endforeach; ?>
-						</tr>
+						<?php $this->generate_rate_row_heading( $cols ); ?>
 					</thead>
 					<tbody>
 						<?php
@@ -338,30 +333,43 @@ class Wcsdm extends WC_Shipping_Method {
 						?>
 					</tbody>
 					<tfoot>
-						<tr class="font-bold">
-							<td class="col-checkbox">
-								<div>
-									<a href="#" class="add_row button" data-key="<?php echo esc_attr( $this->get_field_key( $key ) ); ?>"><?php esc_html_e( 'Add Rate', 'wcsdm' ); ?></a>
-									<a href="#" class="remove_rows button" style="display: none"><?php esc_html_e( 'Remove Rate', 'wcsdm' ); ?></a>
-								</div>
-							</td>
-							<?php foreach ( $cols as $col_key => $col_label ) : ?>
-								<td class="col-data col-<?php echo esc_html( $col_key ); ?>"><?php echo esc_html( $col_label ); ?></td>
-							<?php endforeach; ?>
-						</tr>
+						<?php $this->generate_rate_row_heading( $cols, 'bottom' ); ?>
 					</tfoot>
 				</table>
 				<script type="text/template" id="tmpl-rates-list-input-table-row">
-				<tr>
-					<?php
-					$this->generate_rate_row( $cols, $this->get_field_key( $key ) );
-					?>
-				</tr>
+					<?php $this->generate_rate_row( $cols, $this->get_field_key( $key ) ); ?>
 				</script>
 			</td>
 		</tr>
 		<?php
 		return ob_get_clean();
+	}
+
+	/**
+	 * Generate table rate row heading
+	 *
+	 * @param array  $cols Table rate columns.
+	 * @param string $position Row heading position.
+	 * @return void
+	 */
+	private function generate_rate_row_heading( $cols, $position = 'top' ) {
+		?>
+		<tr class="font-bold">
+			<td class="col-checkbox">
+				<div>
+					<?php if ( 'top' === $position ) : ?>
+						<input class="select-item" type="checkbox">
+					<?php else : ?>
+						<a href="#" class="add_row button"><?php esc_html_e( 'Add Row', 'wcsdm' ); ?></a>
+						<a href="#" class="remove_rows button" style="display: none"><?php esc_html_e( 'Remove Rows', 'wcsdm' ); ?></a>
+					<?php endif; ?>
+				</div>
+			</td>
+			<?php foreach ( $cols as $col_key => $col_label ) : ?>
+				<td class="col-data col-<?php echo esc_html( $col_key ); ?>"><?php echo esc_html( $col_label ); ?></td>
+			<?php endforeach; ?>
+		</tr>
+		<?php
 	}
 
 	/**
