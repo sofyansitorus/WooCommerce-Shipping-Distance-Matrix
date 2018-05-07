@@ -116,7 +116,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'desc_tip'    => true,
 			),
 			'tax_status'              => array(
-				'title'   => __( 'Tax status', 'wcsdm' ),
+				'title'   => __( 'Tax Status', 'wcsdm' ),
 				'type'    => 'select',
 				'class'   => 'wc-enhanced-select',
 				'default' => 'taxable',
@@ -157,7 +157,7 @@ class Wcsdm extends WC_Shipping_Method {
 				),
 			),
 			'gmaps_api_avoid'         => array(
-				'title'       => __( 'Restrictions', 'wcsdm' ),
+				'title'       => __( 'Route Restrictions', 'wcsdm' ),
 				'type'        => 'select',
 				'description' => __( 'Google Maps Distance Matrix API restrictions parameter.', 'wcsdm' ),
 				'desc_tip'    => true,
@@ -182,17 +182,17 @@ class Wcsdm extends WC_Shipping_Method {
 				),
 			),
 			'show_distance'           => array(
-				'title'       => __( 'Show distance', 'wcsdm' ),
+				'title'       => __( 'Show Distance Info', 'wcsdm' ),
 				'label'       => __( 'Yes', 'wcsdm' ),
 				'type'        => 'checkbox',
 				'description' => __( 'Show the distance info to customer during checkout.', 'wcsdm' ),
 				'desc_tip'    => true,
 			),
 			'ceil_distance'           => array(
-				'title'       => __( 'Round Distance', 'wcsdm' ),
+				'title'       => __( 'Round Up Distance', 'wcsdm' ),
 				'label'       => __( 'Yes', 'wcsdm' ),
 				'type'        => 'checkbox',
-				'description' => __( 'Round distance UP to the nearest integer.', 'wcsdm' ),
+				'description' => __( 'Round up distance to the nearest integer.', 'wcsdm' ),
 				'desc_tip'    => true,
 			),
 			'enable_fallback_request' => array(
@@ -203,7 +203,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'desc_tip'    => true,
 			),
 			'calc_type'               => array(
-				'title'       => __( 'Calculation type', 'wcsdm' ),
+				'title'       => __( 'Calculation Type', 'wcsdm' ),
 				'type'        => 'select',
 				'class'       => 'wc-enhanced-select',
 				'default'     => 'per_item',
@@ -295,13 +295,13 @@ class Wcsdm extends WC_Shipping_Method {
 		ksort( $shipping_classes );
 		$cols = array(
 			'distance'  => __( 'Max. Distances', 'wcsdm' ),
-			'cost_type' => __( 'Calculation Type', 'wcsdm' ),
+			'base'      => __( 'Base Cost', 'wcsdm' ),
+			'cost_type' => __( 'Rate Type', 'wcsdm' ),
 			'class_0'   => __( 'Unspecified', 'wcsdm' ),
 		);
 		foreach ( $shipping_classes as $shipping_class_id => $shipping_class ) {
 			$cols[ 'class_' . $shipping_class_id ] = $shipping_class->name;
 		}
-		$cols['base']            = __( 'Additional Cost', 'wcsdm' );
 		$cols['free_min_amount'] = __( 'Min. Amount', 'wcsdm' );
 		$cols['free_min_qty']    = __( 'Min. Quantity', 'wcsdm' );
 		?>
@@ -310,15 +310,15 @@ class Wcsdm extends WC_Shipping_Method {
 				<table id="rates-list-table" class="widefat wc_input_table" cellspacing="0">
 					<thead>
 						<tr>
-							<td class="col-checkbox"><div></div></td>
+							<td class="col-checkbox"></td>
+							<td class="col-base"></td>
 							<td class="col-distance"></td>
 							<td class="col-cost-type"></td>
 							<td colspan="<?php echo count( $shipping_classes ) + 1; ?>" class="cols-shipping-class">
 								<strong><?php esc_html_e( 'Shipping Rate by Product Shipping Class', 'wcsdm' ); ?></strong><span class="tooltip" data-tooltip="<?php esc_attr_e( 'Enter rate for each products shipping class below. Leave blank to disable shipping rate calculation.', 'wcsdm' ); ?>"></span>
 							</td>
-							<td class="col-base"></td>
 							<td class="col-free-shipping" colspan="2">
-								<strong><?php esc_html_e( 'Free Shipping', 'wcsdm' ); ?></strong><span class="tooltip" data-tooltip="<?php esc_attr_e( 'The shipping will be defined as FREE if any of conditionals below met. Leave blank to disable free shipping.', 'wcsdm' ); ?>"></span>
+								<strong><?php esc_html_e( 'Free Shipping', 'wcsdm' ); ?></strong><span class="tooltip" data-tooltip="<?php esc_attr_e( 'The shipping will be defined as FREE if any of conditions below are met. Leave blank to disable free shipping.', 'wcsdm' ); ?>"></span>
 							</td>
 						</tr>
 						<?php $this->generate_rate_row_heading( $cols ); ?>
