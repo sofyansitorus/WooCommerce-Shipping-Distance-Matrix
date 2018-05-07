@@ -94,7 +94,7 @@ var wcsdmSetting = {
 		// Handle toggle rate rows in bulk.
 		$(document).on('change', '#rates-list-table thead .select-item', self._toggleRateRowsBulk);
 
-		// Handle toggle rate rows in individually.
+		// Handle toggle rate rows individually.
 		$(document).on('change', '#rates-list-table tbody .select-item', self._toggleRateRows);
 
 		// Handle add rate rows.
@@ -273,6 +273,12 @@ var wcsdmSetting = {
 		var $thead = $table.find('thead');
 		var $tbody = $table.find('tbody');
 		var $tfoot = $table.find('tfoot');
+
+		if ($this.is(':checked')) {
+			$this.closest('tr').addClass('selected');
+		} else {
+			$this.closest('tr').removeClass('selected');
+		}
 
 		if ($tbody.find('[type=checkbox]:checked').length) {
 			$tfoot.find('.add_row').hide('fast', function () {
