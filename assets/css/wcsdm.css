@@ -94,7 +94,7 @@
 
 #rates-list-table tbody input[type="text"],
 #rates-list-table tbody input[type="number"] {
-  min-width: 70px !important;
+  min-width: 60px !important;
   max-width: 100% !important;
   width: 100% !important;
   border: 1px solid #ddd;
