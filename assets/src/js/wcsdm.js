@@ -22,6 +22,7 @@ function debounce(func, wait, immediate) {
 }
 
 // Taking Over window.console.error
+var isMapError = false;
 var windowConsoleError = window.console.error;
 window.console.error = function () {
 	var errMsg = arguments[0];
@@ -102,12 +103,14 @@ var wcsdmSetting = {
 	_initGoogleMaps: function () {
 		var self = this;
 
-		$('#wcsdm-map-wrapper').show().siblings('.description').hide();
+		$('#wcsdm-map-wrapper').hide().siblings('.description').show();
 
 		var apiKey = $('#woocommerce_wcsdm_gmaps_api_key').val();
 		if (!apiKey.length) {
 			return;
 		}
+
+		isMapError = false;
 
 		if (typeof window.google !== 'undefined') {
 			window.google = undefined;
@@ -220,9 +223,15 @@ var wcsdmSetting = {
 			});
 			map.fitBounds(bounds);
 		});
+		setTimeout(function () {
+			if (!isMapError) {
+				$('#wcsdm-map-wrapper').show().siblings('.description').hide();
+			}
+		}, 500);
 	},
 	_showMapError: function (errorMsg) {
 		$('#wcsdm-map-wrapper').empty().hide().siblings('.description').show('fast', function () {
+			isMapError = true;
 			window.alert(errorMsg);
 		});
 	},
