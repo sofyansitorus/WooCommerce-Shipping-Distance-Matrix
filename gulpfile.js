@@ -9,6 +9,8 @@ var plumber = require('gulp-plumber');
 var notify = require('gulp-notify');
 var gulpPhpCS = require('gulp-phpcs');
 var wpPot = require('gulp-wp-pot');
+var browserSync = require('browser-sync').create();
+var argv = require('yargs').argv;
 
 var scriptsSrc = ['assets/src/js/*.js'];
 var scriptsDest = 'assets/js';
@@ -73,7 +75,8 @@ gulp.task('sass', function () {
             'opera 12.1',
             'ios 6',
             'android 4'))
-        .pipe(gulp.dest(sassDest));
+        .pipe(gulp.dest(sassDest))
+        .pipe(browserSync.stream());
 });
 
 // Minify CSS
@@ -108,14 +111,15 @@ gulp.task('i18n', function () {
         .pipe(gulp.dest('languages/wcsdm.pot'));
 });
 
-// Default task
-gulp.task('default', ['scripts', 'minify-scripts', 'i18n']);
-
 // Dev task with watch
-gulp.task('watch', ['scripts', 'minify-scripts', 'sass', 'minify-css', 'phpcs'], function () {
-    gulp.watch([scriptsSrc], ['scripts']);
-    gulp.watch([minifyScriptsSrc], ['minify-scripts']);
+gulp.task('default', ['sass', 'scripts', 'phpcs'], function () {
+    browserSync.init({
+        proxy: argv.proxy
+    });
     gulp.watch([sassSrc], ['sass']);
-    gulp.watch([minifyCssSrc], ['minify-css']);
-    gulp.watch([phpcsSrc], ['phpcs']);
+    gulp.watch([scriptsSrc], ['scripts']).on('change', browserSync.reload);
+    gulp.watch([phpcsSrc], ['phpcs']).on('change', browserSync.reload);
 });
+
+// Build task
+gulp.task('build', ['sass', 'minify-css', 'scripts', 'minify-scripts', 'i18n']);
