@@ -116,7 +116,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'desc_tip'    => true,
 			),
 			'tax_status'              => array(
-				'title'   => __( 'Tax status', 'wcsdm' ),
+				'title'   => __( 'Tax Status', 'wcsdm' ),
 				'type'    => 'select',
 				'class'   => 'wc-enhanced-select',
 				'default' => 'taxable',
@@ -157,7 +157,7 @@ class Wcsdm extends WC_Shipping_Method {
 				),
 			),
 			'gmaps_api_avoid'         => array(
-				'title'       => __( 'Restrictions', 'wcsdm' ),
+				'title'       => __( 'Route Restrictions', 'wcsdm' ),
 				'type'        => 'select',
 				'description' => __( 'Google Maps Distance Matrix API restrictions parameter.', 'wcsdm' ),
 				'desc_tip'    => true,
@@ -182,17 +182,17 @@ class Wcsdm extends WC_Shipping_Method {
 				),
 			),
 			'show_distance'           => array(
-				'title'       => __( 'Show distance', 'wcsdm' ),
+				'title'       => __( 'Show Distance Info', 'wcsdm' ),
 				'label'       => __( 'Yes', 'wcsdm' ),
 				'type'        => 'checkbox',
 				'description' => __( 'Show the distance info to customer during checkout.', 'wcsdm' ),
 				'desc_tip'    => true,
 			),
 			'ceil_distance'           => array(
-				'title'       => __( 'Round Distance', 'wcsdm' ),
+				'title'       => __( 'Round Up Distance', 'wcsdm' ),
 				'label'       => __( 'Yes', 'wcsdm' ),
 				'type'        => 'checkbox',
-				'description' => __( 'Round distance UP to the nearest integer.', 'wcsdm' ),
+				'description' => __( 'Round up distance to the nearest integer.', 'wcsdm' ),
 				'desc_tip'    => true,
 			),
 			'enable_fallback_request' => array(
@@ -203,17 +203,16 @@ class Wcsdm extends WC_Shipping_Method {
 				'desc_tip'    => true,
 			),
 			'calc_type'               => array(
-				'title'       => __( 'Calculation type', 'wcsdm' ),
+				'title'       => __( 'Calculation Type', 'wcsdm' ),
 				'type'        => 'select',
 				'class'       => 'wc-enhanced-select',
 				'default'     => 'per_item',
 				'options'     => array(
-					'per_item'           => __( 'Per item', 'wcsdm' ),
-					'per_product'        => __( 'Per product', 'wcsdm' ),
-					'per_shipping_class' => __( 'Per shipping class', 'wcsdm' ),
-					'per_order'          => __( 'Per order', 'wcsdm' ),
+					'per_item'           => __( 'Charge shipping for each items multiplied with quantity', 'wcsdm' ),
+					'per_product'        => __( 'Charge shipping grouped by product', 'wcsdm' ),
+					'per_shipping_class' => __( 'Charge shipping grouped by product shipping class', 'wcsdm' ),
+					'per_order'          => __( 'Charge shipping for the most expensive item shipping cost', 'wcsdm' ),
 				),
-				'description' => __( '<strong>Per item</strong>: Charge shipping for each items multiplied with quantity.<br><strong>Per product</strong>: Charge shipping grouped by product.<br><strong>Per shipping class</strong>: Charge shipping grouped by product shipping class.<br><strong>Per order</strong>: Charge shipping for the most expensive item shipping cost.', 'wcsdm' ),
 			),
 			'table_rates'             => array(
 				'type' => 'table_rates',
@@ -253,7 +252,6 @@ class Wcsdm extends WC_Shipping_Method {
 				<label for="<?php echo esc_attr( $field_key ); ?>"><?php echo wp_kses_post( $data['title'] ); ?></label>
 			</th>
 			<td class="forminp">
-				<input type="hidden" id="map-secret-key" value="<?php echo esc_attr( WCSDM_MAP_SECRET_KEY ); ?>">
 				<div id="<?php echo esc_attr( $this->id ); ?>-map-wrapper" class="<?php echo esc_attr( $this->id ); ?>-map-wrapper"></div>
 				<div id="<?php echo esc_attr( $this->id ); ?>-lat-lng-wrap">
 					<div><label for="<?php echo esc_attr( $field_key ); ?>_lat"><?php echo esc_html( 'Latitude', 'wcsdm' ); ?></label><input type="text" id="<?php echo esc_attr( $field_key ); ?>_lat" name="<?php echo esc_attr( $field_key ); ?>_lat" value="<?php echo esc_attr( $this->get_option( $key . '_lat' ) ); ?>" class="origin-coordinates"></div>
@@ -261,10 +259,10 @@ class Wcsdm extends WC_Shipping_Method {
 				</div>
 				<?php echo wp_kses( $this->get_description_html( $data ), wp_kses_allowed_html( 'post' ) ); ?>
 				<script type="text/html" id="tmpl-<?php echo esc_attr( $this->id ); ?>-map-search">
-					<input id="{{data.map_search_id}}" class="<?php echo esc_attr( $this->id ); ?>-map-search controls" type="text" placeholder="<?php echo esc_attr( __( 'Search your store location', 'wcsdm' ) ); ?>" autocomplete="off" />
+					<input id="wcsdm-map-search" class="<?php echo esc_attr( $this->id ); ?>-map-search controls" type="text" placeholder="<?php echo esc_attr( __( 'Search your store location', 'wcsdm' ) ); ?>" autocomplete="off" />
 				</script>
 				<script type="text/html" id="tmpl-<?php echo esc_attr( $this->id ); ?>-map-canvas">
-					<div id="{{data.map_canvas_id}}" class="<?php echo esc_attr( $this->id ); ?>-map-canvas"></div>
+					<div id="wcsdm-map-canvas" class="<?php echo esc_attr( $this->id ); ?>-map-canvas"></div>
 				</script>
 			</td>
 		</tr>
@@ -296,13 +294,13 @@ class Wcsdm extends WC_Shipping_Method {
 		ksort( $shipping_classes );
 		$cols = array(
 			'distance'  => __( 'Max. Distances', 'wcsdm' ),
-			'cost_type' => __( 'Calculation Type', 'wcsdm' ),
+			'cost_type' => __( 'Cost Type', 'wcsdm' ),
 			'class_0'   => __( 'Unspecified', 'wcsdm' ),
 		);
 		foreach ( $shipping_classes as $shipping_class_id => $shipping_class ) {
 			$cols[ 'class_' . $shipping_class_id ] = $shipping_class->name;
 		}
-		$cols['base']            = __( 'Additional Cost', 'wcsdm' );
+		$cols['base'] = __( 'Additional Cost', 'wcsdm' );
 		$cols['free_min_amount'] = __( 'Min. Amount', 'wcsdm' );
 		$cols['free_min_qty']    = __( 'Min. Quantity', 'wcsdm' );
 		?>
@@ -311,23 +309,17 @@ class Wcsdm extends WC_Shipping_Method {
 				<table id="rates-list-table" class="widefat wc_input_table" cellspacing="0">
 					<thead>
 						<tr>
-							<td class="col-checkbox"><div></div></td>
+							<td class="col-checkbox"></td>
 							<td class="col-distance"></td>
-							<td class="col-cost-type"></td>
-							<td colspan="<?php echo count( $shipping_classes ) + 1; ?>" class="cols-shipping-class">
-								<strong><?php esc_html_e( 'Shipping Rate by Product Shipping Class', 'wcsdm' ); ?></strong><span class="tooltip" data-tooltip="<?php esc_attr_e( 'Enter rate for each products shipping class below. Leave blank to disable shipping rate calculation.', 'wcsdm' ); ?>"></span>
+							<td colspan="<?php echo count( $shipping_classes ) + 2; ?>" class="cols-shipping-class">
+								<strong><?php esc_html_e( 'Rate by Shipping Class', 'wcsdm' ); ?></strong><span class="tooltip" data-tooltip="<?php esc_attr_e( 'Enter rate for each products shipping class below. Leave blank to disable shipping rate calculation.', 'wcsdm' ); ?>"></span>
 							</td>
 							<td class="col-base"></td>
 							<td class="col-free-shipping" colspan="2">
-								<strong><?php esc_html_e( 'Free Shipping', 'wcsdm' ); ?></strong><span class="tooltip" data-tooltip="<?php esc_attr_e( 'The shipping will be defined as FREE if any of conditionals below met. Leave blank to disable free shipping.', 'wcsdm' ); ?>"></span>
+								<strong><?php esc_html_e( 'Free Shipping', 'wcsdm' ); ?></strong><span class="tooltip" data-tooltip="<?php esc_attr_e( 'The shipping will be defined as FREE if any of conditions below are met. Leave blank to disable free shipping.', 'wcsdm' ); ?>"></span>
 							</td>
 						</tr>
-						<tr class="font-bold">
-							<td class="col-checkbox"><div><input class="select-item" type="checkbox"></div></td>
-							<?php foreach ( $cols as $col_key => $col_label ) : ?>
-								<td class="col-data col-<?php echo esc_html( $col_key ); ?>"><?php echo esc_html( $col_label ); ?></td>
-							<?php endforeach; ?>
-						</tr>
+						<?php $this->generate_rate_row_heading( $cols ); ?>
 					</thead>
 					<tbody>
 						<?php
@@ -339,30 +331,43 @@ class Wcsdm extends WC_Shipping_Method {
 						?>
 					</tbody>
 					<tfoot>
-						<tr class="font-bold">
-							<td class="col-checkbox">
-								<div>
-									<a href="#" class="add_row button" data-key="<?php echo esc_attr( $this->get_field_key( $key ) ); ?>"><?php esc_html_e( 'Add Rate', 'wcsdm' ); ?></a>
-									<a href="#" class="remove_rows button" style="display: none"><?php esc_html_e( 'Remove Rate', 'wcsdm' ); ?></a>
-								</div>
-							</td>
-							<?php foreach ( $cols as $col_key => $col_label ) : ?>
-								<td class="col-data col-<?php echo esc_html( $col_key ); ?>"><?php echo esc_html( $col_label ); ?></td>
-							<?php endforeach; ?>
-						</tr>
+						<?php $this->generate_rate_row_heading( $cols, 'bottom' ); ?>
 					</tfoot>
 				</table>
 				<script type="text/template" id="tmpl-rates-list-input-table-row">
-				<tr>
-					<?php
-					$this->generate_rate_row( $cols, $this->get_field_key( $key ) );
-					?>
-				</tr>
+					<?php $this->generate_rate_row( $cols, $this->get_field_key( $key ) ); ?>
 				</script>
 			</td>
 		</tr>
 		<?php
 		return ob_get_clean();
+	}
+
+	/**
+	 * Generate table rate row heading
+	 *
+	 * @param array  $cols Table rate columns.
+	 * @param string $position Row heading position.
+	 * @return void
+	 */
+	private function generate_rate_row_heading( $cols, $position = 'top' ) {
+		?>
+		<tr class="font-bold">
+			<td class="col-checkbox">
+				<div>
+					<?php if ( 'top' === $position ) : ?>
+						<input class="select-item" type="checkbox">
+					<?php else : ?>
+						<a href="#" class="add_row button"><?php esc_html_e( 'Add Row', 'wcsdm' ); ?></a>
+						<a href="#" class="remove_rows button" style="display: none"><?php esc_html_e( 'Remove Rows', 'wcsdm' ); ?></a>
+					<?php endif; ?>
+				</div>
+			</td>
+			<?php foreach ( $cols as $col_key => $col_label ) : ?>
+				<td class="col-data col-<?php echo esc_html( $col_key ); ?>"><?php echo esc_html( $col_label ); ?></td>
+			<?php endforeach; ?>
+		</tr>
+		<?php
 	}
 
 	/**

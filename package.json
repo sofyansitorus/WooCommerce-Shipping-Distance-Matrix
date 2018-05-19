@@ -1,25 +1,30 @@
 {
-  "name": "woongkir",
-  "title": "Woongkir",
+  "name": "wcsdm",
+  "title": "WooCommerce shipping rates calculator based on products shipping class and distances",
+  "author": "Sofyan Sitorus",
   "homepage": "https://github.com/sofyansitorus/",
+  "version": "1.0.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sofyansitorus/Woongkir.git"
+    "url": "https://github.com/sofyansitorus/WooCommerce-Shipping-Distance-Matrix.git"
   },
   "devDependencies": {
+    "browser-sync": "^2.24.4",
     "gulp": "^3.9.1",
+    "gulp-autoprefixer": "^5.0.0",
     "gulp-clean-css": "^3.9.3",
-    "gulp-concat": "^2.6.1",
     "gulp-iife": "^0.3.0",
     "gulp-notify": "^3.2.0",
+    "gulp-phpcs": "^2.1.0",
     "gulp-plumber": "^1.2.0",
     "gulp-rename": "^1.2.2",
     "gulp-sass": "^4.0.1",
-    "gulp-uglify": "3.0.0"
+    "gulp-uglify": "3.0.0",
+    "gulp-wp-pot": "^2.2.0",
+    "yargs": "^11.0.0"
   },
   "scripts": {
-    "watch": "gulp watch",
-    "build": "gulp"
-  },
-  "author": "Sofyan Sitorus"
+    "dev": "gulp",
+    "build": "gulp build"
+  }
 }

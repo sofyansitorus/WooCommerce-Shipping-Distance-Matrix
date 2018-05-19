@@ -61,7 +61,6 @@ define( 'WCSDM_URL', plugin_dir_url( __FILE__ ) );
 define( 'WCSDM_VERSION', '1.4' );
 define( 'WCSDM_METHOD_ID', 'wcsdm' );
 define( 'WCSDM_METHOD_TITLE', 'Shipping Distance Matrix' );
-define( 'WCSDM_MAP_SECRET_KEY', 'QUl6YVN5Qk82MVFJUm52Zkc5c2tKTW1HV1JVbWhsSU5lcUZXaTdV' );
 
 /**
  * Load plugin textdomain.
@@ -173,16 +172,24 @@ function wcsdm_admin_enqueue_scripts( $hook ) {
 			'wcsdm',
 			'wcsdm_params',
 			array(
-				'show_settings' => isset( $_GET['wcsdm_settings'] ) && is_admin(),
-				'method_id'     => WCSDM_METHOD_ID,
-				'method_title'  => WCSDM_METHOD_TITLE,
-				'txt'           => array(
-					'drag_marker' => __( 'Drag this marker or search your address at the input above.', 'wcsdm' ),
-					'per_unit_km' => __( 'Per Kilometer', 'wcsdm' ),
-					'per_unit_mi' => __( 'Per Mile', 'wcsdm' ),
+				'showSettings' => isset( $_GET['wcsdm_settings'] ) && is_admin(),
+				'methodId'     => WCSDM_METHOD_ID,
+				'methodTitle'  => WCSDM_METHOD_TITLE,
+				'i18n'         => array(
+					'dragMarker' => __( 'Drag this marker or search your address at the input above.', 'wcsdm' ),
+					'distance'   => array(
+						'metric'   => array(
+							'perUnit' => __( 'Per Kilometer', 'wcsdm' ),
+							'unit'    => __( 'KM', 'wcsdm' ),
+						),
+						'imperial' => array(
+							'perUnit' => __( 'Per Mile', 'wcsdm' ),
+							'unit'    => __( 'MI', 'wcsdm' ),
+						),
+					),
 				),
-				'marker'        => WCSDM_URL . 'assets/img/marker.png',
-				'language'      => get_locale(),
+				'marker'       => WCSDM_URL . 'assets/img/marker.png',
+				'language'     => get_locale(),
 			)
 		);
 	}

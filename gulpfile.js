@@ -4,8 +4,13 @@ var uglify = require('gulp-uglify');
 var iife = require('gulp-iife');
 var sass = require('gulp-sass');
 var cleanCSS = require('gulp-clean-css');
+var autoprefixer = require('gulp-autoprefixer');
 var plumber = require('gulp-plumber');
 var notify = require('gulp-notify');
+var gulpPhpCS = require('gulp-phpcs');
+var wpPot = require('gulp-wp-pot');
+var browserSync = require('browser-sync').create();
+var argv = require('yargs').argv;
 
 var scriptsSrc = ['assets/src/js/*.js'];
 var scriptsDest = 'assets/js';
@@ -18,6 +23,8 @@ var sassDest = 'assets/css';
 
 var minifyCssSrc = ['assets/css/*.css', '!assets/css/*.min.css'];
 var minifyCssDest = 'assets/css';
+
+var phpcsSrc = ['*.php', '**/*.php', '!vendor/*', '!node_modules/*', '!index.php', '!**/index.php'];
 
 // Custom error handler
 var errorHandler = function () {
@@ -59,11 +66,21 @@ gulp.task('sass', function () {
     return gulp.src(sassSrc)
         .pipe(errorHandler())
         .pipe(sass().on('error', sass.logError))
-        .pipe(gulp.dest(sassDest));
+        .pipe(autoprefixer(
+            'last 2 version',
+            '> 1%',
+            'safari 5',
+            'ie 8',
+            'ie 9',
+            'opera 12.1',
+            'ios 6',
+            'android 4'))
+        .pipe(gulp.dest(sassDest))
+        .pipe(browserSync.stream());
 });
 
 // Minify CSS
-gulp.task('minify-css', () => {
+gulp.task('minify-css', function () {
     return gulp.src(minifyCssSrc)
         .pipe(errorHandler())
         .pipe(rename({
@@ -73,13 +90,36 @@ gulp.task('minify-css', () => {
         .pipe(gulp.dest(minifyCssDest));
 });
 
-// Default task
-gulp.task('default', ['scripts', 'minify-scripts']);
+gulp.task('phpcs', function () {
+    return gulp.src(phpcsSrc)
+        .pipe(errorHandler())
+        .pipe(gulpPhpCS({
+            bin: '/usr/local/bin/phpcs',
+            standard: 'WordPress',
+            warningSeverity: 0
+        }))
+        // Log all problems that was found
+        .pipe(gulpPhpCS.reporter('log'));
+});
+
+gulp.task('i18n', function () {
+    return gulp.src(phpcsSrc)
+        .pipe(wpPot({
+            'domain': 'wcsdm',
+            'package': 'WooCommerce-Shipping-Distance-Matrix'
+        }))
+        .pipe(gulp.dest('languages/wcsdm.pot'));
+});
 
 // Dev task with watch
-gulp.task('watch', ['scripts', 'minify-scripts', 'sass', 'minify-css'], function () {
-    gulp.watch([scriptsSrc], ['scripts']);
-    gulp.watch([minifyScriptsSrc], ['minify-scripts']);
+gulp.task('default', ['sass', 'scripts', 'phpcs'], function () {
+    browserSync.init({
+        proxy: argv.proxy
+    });
     gulp.watch([sassSrc], ['sass']);
-    gulp.watch([minifyCssSrc], ['minify-css']);
+    gulp.watch([scriptsSrc], ['scripts']).on('change', browserSync.reload);
+    gulp.watch([phpcsSrc], ['phpcs']).on('change', browserSync.reload);
 });
+
+// Build task
+gulp.task('build', ['sass', 'minify-css', 'scripts', 'minify-scripts', 'i18n']);

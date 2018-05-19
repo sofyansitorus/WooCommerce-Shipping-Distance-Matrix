@@ -7,7 +7,6 @@
         border: 1px solid transparent;
         border-radius: 2px 0 0 2px;
         box-sizing: border-box;
-        -moz-box-sizing: border-box;
         height: 32px;
         outline: none;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
@@ -116,7 +115,7 @@
         }
         input[type="text"],
         input[type="number"] {
-            min-width: 90px !important;
+            min-width: 60px !important;
             max-width: 100% !important;
             width: 100% !important;
             border: 1px solid #ddd;
@@ -201,7 +200,6 @@
         color: white;
         z-index: 2;
         border-radius: 2px;
-        transition: opacity 0.2s cubic-bezier(.64, .09, .08, 1), transform 0.2s cubic-bezier(.64, .09, .08, 1);
         width: 200px;
     }
     &:hover {
@@ -224,7 +222,5 @@
         vertical-align: top;
         text-align: center;
         transition: color .1s ease-in 0;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
     }
 }
