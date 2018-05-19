@@ -4,7 +4,7 @@ Tags: woocommerce,woocommerce-shipping,local-shipping,private-shipping
 Requires at least: 4.8
 Tested up to: 4.9.5
 Requires PHP: 5.6
-Stable tag: trunk
+Stable tag: 1.4.1
 License: GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -75,6 +75,13 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 2. Settings panel bottom area
 
 == Changelog ==
+
+= 1.4.1 =
+* Fix - Error in Google Map address picker.
+
+= 1.4 =
+
+* Improvements - Enable Free Shipping Option.
 
 = 1.3.8 =
 
@@ -193,6 +200,6 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 * Feature - Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
 
 == Upgrade Notice ==
-= 1.4 =
+= 1.4.1 =
 
-This version include major changes for improvements and bug fixes. Updating plugin settings is required after update.
+This version fixes address map picker error.
