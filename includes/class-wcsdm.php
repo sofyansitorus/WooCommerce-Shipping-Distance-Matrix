@@ -208,12 +208,11 @@ class Wcsdm extends WC_Shipping_Method {
 				'class'       => 'wc-enhanced-select',
 				'default'     => 'per_item',
 				'options'     => array(
-					'per_item'           => __( 'Per item', 'wcsdm' ),
-					'per_product'        => __( 'Per product', 'wcsdm' ),
-					'per_shipping_class' => __( 'Per shipping class', 'wcsdm' ),
-					'per_order'          => __( 'Per order', 'wcsdm' ),
+					'per_item'           => __( 'Charge shipping for each items multiplied with quantity', 'wcsdm' ),
+					'per_product'        => __( 'Charge shipping grouped by product', 'wcsdm' ),
+					'per_shipping_class' => __( 'Charge shipping grouped by product shipping class', 'wcsdm' ),
+					'per_order'          => __( 'Charge shipping for the most expensive item shipping cost', 'wcsdm' ),
 				),
-				'description' => __( '<strong>Per item</strong>: Charge shipping for each items multiplied with quantity.<br><strong>Per product</strong>: Charge shipping grouped by product.<br><strong>Per shipping class</strong>: Charge shipping grouped by product shipping class.<br><strong>Per order</strong>: Charge shipping for the most expensive item shipping cost.', 'wcsdm' ),
 			),
 			'table_rates'             => array(
 				'type' => 'table_rates',
