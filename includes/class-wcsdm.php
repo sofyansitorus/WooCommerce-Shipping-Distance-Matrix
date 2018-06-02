@@ -749,6 +749,9 @@ class Wcsdm extends WC_Shipping_Method {
 				if ( empty( $value['distance'] ) ) {
 					continue;
 				}
+				if ( ! strlen( $value['class_0'] ) ) {
+					continue;
+				}
 				$rates_filtered[ $value['distance'] ] = $value;
 			}
 
