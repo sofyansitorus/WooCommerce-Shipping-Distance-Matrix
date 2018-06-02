@@ -136,7 +136,7 @@ var wcsdmSetting = {
 			e.preventDefault();
 			var $row = $(e.currentTarget).closest('tr');
 			$row.find('.wcsdm-input').each(function () {
-				$('#' + $(this).data('id')).val($(this).val()).trigger('change');
+				$('#' + $(this).data('id')).val($(this).val()).attr('name', '').trigger('change');
 			});
 			rowIndex = $row.index();
 			var $section = $(e.currentTarget).closest('section');
