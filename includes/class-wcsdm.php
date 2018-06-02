@@ -203,16 +203,18 @@ class Wcsdm extends WC_Shipping_Method {
 				'desc_tip'    => true,
 			),
 			'calc_type'               => array(
-				'title'   => __( 'Calculation Type', 'wcsdm' ),
-				'type'    => 'select',
-				'class'   => 'wc-enhanced-select',
-				'default' => 'per_order',
-				'options' => array(
-					'per_order'          => __( 'Per Order: Charge shipping for the most expensive item shipping cost', 'wcsdm' ),
-					'per_shipping_class' => __( 'Per Shipping Class: Charge shipping grouped by product shipping class ID', 'wcsdm' ),
-					'per_product'        => __( 'Per Product: Charge shipping grouped by product ID', 'wcsdm' ),
-					'per_item'           => __( 'Per Unit: Charge shipping for each items multiplied with quantity', 'wcsdm' ),
+				'title'       => __( 'Progressive Shipping Cost', 'wcsdm' ),
+				'type'        => 'select',
+				'class'       => 'wc-enhanced-select',
+				'default'     => 'per_order',
+				'options'     => array(
+					'per_order'          => __( 'No', 'wcsdm' ),
+					'per_shipping_class' => __( 'Per Shipping Class: Accumulate total shipping cost by shipping class ID', 'wcsdm' ),
+					'per_product'        => __( 'Per Product: Accumulate total shipping cost by product ID', 'wcsdm' ),
+					'per_item'           => __( 'Per Unit: Accumulate total shipping cost by quantity', 'wcsdm' ),
 				),
+				'description' => __( 'By default the total shipping cost will be flat by choosing the most expensive shipping rate by comparing for each items added into the cart. Example: there was 2 products with different shipping class in the cart, then the highest rate will be used as the total shipping cost.', 'wcsdm' ),
+				'desc_tip'    => true,
 			),
 			'table_rates'             => array(
 				'type' => 'table_rates',
