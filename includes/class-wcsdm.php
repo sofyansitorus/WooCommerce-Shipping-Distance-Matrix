@@ -449,8 +449,7 @@ class Wcsdm extends WC_Shipping_Method {
 			<?php endforeach; ?>
 			<td class="col-advanced">
 				<?php
-				foreach ( $this->rates_fields( false ) as $key => $col ) : ?>
-					<?php
+				foreach ( $this->rates_fields( false ) as $key => $col ) :
 					$data_id    = 'woocommerce_' . $this->id . '_' . $key;
 					$input_name = $field_key . '_' . $key;
 					$value      = isset( $rate[ $key ] ) ? $rate[ $key ] : '';
@@ -607,10 +606,13 @@ class Wcsdm extends WC_Shipping_Method {
 				$new_fields[ $key ] = $field;
 				if ( 'class_0' === $key ) {
 					foreach ( $shipping_classes as $class_id => $class_obj ) {
-						$class_field = $field;
-						$class_field['title'] = sprintf( '%s: %s', $field['title'], $class_obj->name );
-						$class_field['advanced'] = true;
-						$new_fields[ 'class_' . $class_id ] = $class_field;
+						$new_fields[ 'class_' . $class_id ] = array_merge($field, array(
+							// translators: %s is Product shipping class name.
+							'title'       => sprintf( __( 'Shipping Rate for "%s"', 'wcsdm' ), $class_obj->name ),
+							'description' => __( 'Shipping rate for specific product shipping class. This rate will override the default shipping rate defined above.', 'wcsdm' ),
+							'desc_tip'    => true,
+							'advanced'    => true,
+						));
 					}
 				}
 			}
