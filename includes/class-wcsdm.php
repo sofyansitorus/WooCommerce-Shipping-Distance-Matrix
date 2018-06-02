@@ -203,7 +203,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'desc_tip'    => true,
 			),
 			'calc_type'               => array(
-				'title'       => __( 'Progressive Shipping Cost', 'wcsdm' ),
+				'title'       => __( 'Progressive Total Cost', 'wcsdm' ),
 				'type'        => 'select',
 				'class'       => 'wc-enhanced-select',
 				'default'     => 'per_order',
