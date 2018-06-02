@@ -570,8 +570,8 @@ class Wcsdm extends WC_Shipping_Method {
 				'default'  => 'no',
 				'options'  => array(
 					'no'      => __( 'No', 'wcsdm' ),
-					'yes'     => __( 'Yes', 'wcsdm' ),
-					'yes_alt' => __( 'Yes, if any of rules below is matched', 'wcsdm' ),
+					'yes'     => __( 'Yes, set as Free Shipping', 'wcsdm' ),
+					'yes_alt' => __( 'Yes, set as Free Shipping if any of rules below is matched', 'wcsdm' ),
 				),
 				'advanced' => false,
 			),
