@@ -313,17 +313,6 @@ class Wcsdm extends WC_Shipping_Method {
 			<td class="wcsdm-table-col wcsdm-table-col-rates" colspan="2">
 				<table id="wcsdm-table-rates" class="wc_input_table widefat wcsdm-table wcsdm-table-rates" cellspacing="0">
 					<thead>
-						<?php if ( $shipping_classes ) : ?>
-						<tr>
-							<td class="col-checkbox"></td>
-							<td class="col-distance"></td>
-							<td class="col-cost-type"></td>
-							<td class="cols-shipping-class" colspan="<?php echo count( $shipping_classes ) + 1; ?>">
-								<strong><?php esc_html_e( 'Shipping Rate per Shipping Class', 'wcsdm' ); ?></strong><span class="tooltip" data-tooltip="<?php esc_attr_e( 'Enter rate for each products shipping class below. Enter 0 set as free shipping. Leave blank to disable shipping rate calculation for specific class.', 'wcsdm' ); ?>"></span>
-							</td>
-							<td class="col-advanced"></td>
-						</tr>
-						<?php endif; ?>
 						<?php $this->generate_rate_row_heading( $cols ); ?>
 					</thead>
 					<tbody>
@@ -343,7 +332,7 @@ class Wcsdm extends WC_Shipping_Method {
 					<?php $this->generate_rate_row( $this->get_field_key( $key ) ); ?>
 				</script>
 				<script type="text/template" id="tmpl-btn-advanced">
-					<button id="btn-dummy" class="button button-primary button-large"><?php esc_html_e( 'Save Advanced Rate Settings', 'wcsdm' ); ?></button>
+					<button id="btn-dummy" class="button button-primary button-large"><?php esc_html_e( 'Apply Changes', 'wcsdm' ); ?></button>
 				</script>
 			</td>
 		</tr>
@@ -545,18 +534,14 @@ class Wcsdm extends WC_Shipping_Method {
 
 		$fields = array(
 			'distance'        => array(
-				'type'     => 'text',
+				'type'     => 'number',
 				'title'    => __( 'Maximum Distances', 'wcsdm' ),
-				'before'   => '',
-				'after'    => '',
 				'class'    => 'wcsdm-input',
 				'advanced' => false,
 			),
 			'cost_type'       => array(
 				'type'     => 'select',
 				'title'    => __( 'Cost Type', 'wcsdm' ),
-				'before'   => '',
-				'after'    => '',
 				'class'    => 'wcsdm-input',
 				'default'  => 'flat',
 				'options'  => array(
@@ -566,18 +551,14 @@ class Wcsdm extends WC_Shipping_Method {
 				'advanced' => false,
 			),
 			'class_0'         => array(
-				'type'     => 'text',
+				'type'     => 'number',
 				'title'    => __( 'Shipping Rate', 'wcsdm' ),
-				'before'   => '',
-				'after'    => '',
 				'class'    => 'wcsdm-input',
 				'advanced' => false,
 			),
 			'base'            => array(
-				'type'     => 'text',
+				'type'     => 'number',
 				'title'    => __( 'Addional Cost', 'wcsdm' ),
-				'before'   => '',
-				'after'    => '',
 				'class'    => 'wcsdm-input',
 				'default'  => '0',
 				'advanced' => true,
@@ -585,8 +566,6 @@ class Wcsdm extends WC_Shipping_Method {
 			'free'            => array(
 				'type'     => 'select',
 				'title'    => __( 'Free Shipping', 'wcsdm' ),
-				'before'   => '',
-				'after'    => '',
 				'class'    => 'wcsdm-input',
 				'default'  => 'no',
 				'options'  => array(
@@ -597,18 +576,14 @@ class Wcsdm extends WC_Shipping_Method {
 				'advanced' => false,
 			),
 			'free_min_amount' => array(
-				'type'     => 'text',
+				'type'     => 'number',
 				'title'    => __( 'Rule #1: Minimum Order Amount', 'wcsdm' ),
-				'before'   => '',
-				'after'    => '',
 				'class'    => 'wcsdm-input',
 				'advanced' => true,
 			),
 			'free_min_qty'    => array(
-				'type'     => 'text',
+				'type'     => 'number',
 				'title'    => __( 'Rule #2: Minimum Order Quantity', 'wcsdm' ),
-				'before'   => '',
-				'after'    => '',
 				'class'    => 'wcsdm-input',
 				'advanced' => true,
 			),
@@ -622,6 +597,22 @@ class Wcsdm extends WC_Shipping_Method {
 
 		if ( $advanced ) {
 			unset( $fields['advanced'] );
+		}
+
+		if ( $shipping_classes ) {
+			$new_fields = array();
+			foreach ( $fields as $key => $field ) {
+				$new_fields[ $key ] = $field;
+				if ( 'class_0' === $key ) {
+					foreach ( $shipping_classes as $class_id => $class_obj ) {
+						$class_field = $field;
+						$class_field['title'] = sprintf( '%s: %s', $field['title'], $class_obj->name );
+						$class_field['advanced'] = true;
+						$new_fields[ 'class_' . $class_id ] = $class_field;
+					}
+				}
+			}
+			return $new_fields;
 		}
 
 		return $fields;
