@@ -203,19 +203,22 @@ class Wcsdm extends WC_Shipping_Method {
 				'desc_tip'    => true,
 			),
 			'calc_type'               => array(
-				'title'       => __( 'Calculation Type', 'wcsdm' ),
-				'type'        => 'select',
-				'class'       => 'wc-enhanced-select',
-				'default'     => 'per_item',
-				'options'     => array(
-					'per_item'           => __( 'Charge shipping for each items multiplied with quantity', 'wcsdm' ),
-					'per_product'        => __( 'Charge shipping grouped by product', 'wcsdm' ),
-					'per_shipping_class' => __( 'Charge shipping grouped by product shipping class', 'wcsdm' ),
-					'per_order'          => __( 'Charge shipping for the most expensive item shipping cost', 'wcsdm' ),
+				'title'   => __( 'Calculation Type', 'wcsdm' ),
+				'type'    => 'select',
+				'class'   => 'wc-enhanced-select',
+				'default' => 'per_order',
+				'options' => array(
+					'per_order'          => __( 'Per Order: Charge shipping for the most expensive item shipping cost', 'wcsdm' ),
+					'per_shipping_class' => __( 'Per Shipping Class: Charge shipping grouped by product shipping class ID', 'wcsdm' ),
+					'per_product'        => __( 'Per Product: Charge shipping grouped by product ID', 'wcsdm' ),
+					'per_item'           => __( 'Per Unit: Charge shipping for each items multiplied with quantity', 'wcsdm' ),
 				),
 			),
 			'table_rates'             => array(
 				'type' => 'table_rates',
+			),
+			'table_advanced'            => array(
+				'type' => 'table_advanced',
 			),
 		);
 	}
@@ -277,7 +280,8 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @param string $key Settings field key.
 	 * @param array  $data Settings field data.
 	 */
-	public function generate_coordinates_html( $key, $data ) {}
+	public function generate_coordinates_html( $key, $data ) {
+	}
 
 	/**
 	 * Generate table rates HTML form.
@@ -291,34 +295,34 @@ class Wcsdm extends WC_Shipping_Method {
 		foreach ( WC()->shipping->get_shipping_classes() as $shipping_classes_key => $shipping_classes_value ) {
 			$shipping_classes[ $shipping_classes_value->term_id ] = $shipping_classes_value;
 		}
-		ksort( $shipping_classes );
+		if ( $shipping_classes ) {
+			ksort( $shipping_classes );
+		}
 		$cols = array(
-			'distance'  => __( 'Max. Distances', 'wcsdm' ),
+			'distance'  => __( 'Maximum Distances', 'wcsdm' ),
 			'cost_type' => __( 'Cost Type', 'wcsdm' ),
-			'class_0'   => __( 'Unspecified', 'wcsdm' ),
+			'class_0'   => $shipping_classes ? __( 'None', 'wcsdm' ) : __( 'Shipping Rate', 'wcsdm' ),
 		);
 		foreach ( $shipping_classes as $shipping_class_id => $shipping_class ) {
 			$cols[ 'class_' . $shipping_class_id ] = $shipping_class->name;
 		}
-		$cols['base'] = __( 'Additional Cost', 'wcsdm' );
-		$cols['free_min_amount'] = __( 'Min. Amount', 'wcsdm' );
-		$cols['free_min_qty']    = __( 'Min. Quantity', 'wcsdm' );
+		$cols['advanced'] = __( 'Advanced', 'wcsdm' );
 		?>
 		<tr valign="top">
 			<td colspan="2">
-				<table id="rates-list-table" class="widefat wc_input_table" cellspacing="0">
+				<table id="wcsdm-table-rates" class="widefat wc_input_table wcsdm-table" cellspacing="0">
 					<thead>
+						<?php if ( $shipping_classes ) : ?>
 						<tr>
 							<td class="col-checkbox"></td>
 							<td class="col-distance"></td>
-							<td colspan="<?php echo count( $shipping_classes ) + 2; ?>" class="cols-shipping-class">
-								<strong><?php esc_html_e( 'Rate by Shipping Class', 'wcsdm' ); ?></strong><span class="tooltip" data-tooltip="<?php esc_attr_e( 'Enter rate for each products shipping class below. Leave blank to disable shipping rate calculation.', 'wcsdm' ); ?>"></span>
+							<td class="col-cost-type"></td>
+							<td class="cols-shipping-class" colspan="<?php echo count( $shipping_classes ) + 1; ?>">
+								<strong><?php esc_html_e( 'Shipping Rate per Shipping Class', 'wcsdm' ); ?></strong><span class="tooltip" data-tooltip="<?php esc_attr_e( 'Enter rate for each products shipping class below. Enter 0 set as free shipping. Leave blank to disable shipping rate calculation for specific class.', 'wcsdm' ); ?>"></span>
 							</td>
-							<td class="col-base"></td>
-							<td class="col-free-shipping" colspan="2">
-								<strong><?php esc_html_e( 'Free Shipping', 'wcsdm' ); ?></strong><span class="tooltip" data-tooltip="<?php esc_attr_e( 'The shipping will be defined as FREE if any of conditions below are met. Leave blank to disable free shipping.', 'wcsdm' ); ?>"></span>
-							</td>
+							<td class="col-advanced"></td>
 						</tr>
+						<?php endif; ?>
 						<?php $this->generate_rate_row_heading( $cols ); ?>
 					</thead>
 					<tbody>
@@ -337,6 +341,70 @@ class Wcsdm extends WC_Shipping_Method {
 				<script type="text/template" id="tmpl-rates-list-input-table-row">
 					<?php $this->generate_rate_row( $cols, $this->get_field_key( $key ) ); ?>
 				</script>
+				<script type="text/template" id="tmpl-btn-advanced">
+					<button id="btn-dummy" class="button button-primary button-large">Save advanced settings</button>
+				</script>
+			</td>
+		</tr>
+		<?php
+		return ob_get_clean();
+	}
+
+	/**
+	 * Generate coordinates settings field.
+	 *
+	 * @since 1.2.4
+	 * @param string $key Settings field key.
+	 * @param array  $data Settings field data.
+	 */
+	public function generate_table_advanced_html( $key, $data ) {
+		$field_key = $this->get_field_key( $key );
+
+		$defaults = array(
+			'title'             => '',
+			'disabled'          => false,
+			'class'             => '',
+			'css'               => '',
+			'placeholder'       => '',
+			'type'              => 'text',
+			'desc_tip'          => false,
+			'description'       => '',
+			'custom_attributes' => array(),
+			'options'           => array(),
+		);
+
+		$data = wp_parse_args( $data, $defaults );
+
+		ob_start();
+		?>
+		<tr valign="top" class="advanced-row" style="display:none;">
+			<td colspan="2" style="padding:0">
+				<table id="wcsdm-table-advanced" class="widefat wc_input_table wcsdm-table" cellspacing="0">
+					<tbody>
+						<tr valign="top">
+							<th scope="row" class="titledesc">
+								<label for="advanced_base">Additional Cost</label>
+							</th>
+							<td class="forminp">
+								<fieldset>
+									<legend class="screen-reader-text"><span>Additional Cost</span></legend>
+									<input name="woocommerce_wcsdm_table_rates_class_0[]" class="input-text regular-input input-cost field-class_0" type="number" value="" min="0" step="any">
+								</fieldset>
+							</td>
+						</tr>
+						<tr valign="top">
+							<th scope="row" class="titledesc">
+								<label for="woocommerce_wcsdm_title">Title</label>
+							</th>
+							<td class="forminp">
+								<fieldset>
+									<legend class="screen-reader-text"><span>Title</span></legend>
+									<input class="input-text regular-input " type="text" id="woocommerce_wcsdm_title" style="background-image: url(&quot;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABHklEQVQ4EaVTO26DQBD1ohQWaS2lg9JybZ+AK7hNwx2oIoVf4UPQ0Lj1FdKktevIpel8AKNUkDcWMxpgSaIEaTVv3sx7uztiTdu2s/98DywOw3Dued4Who/M2aIx5lZV1aEsy0+qiwHELyi+Ytl0PQ69SxAxkWIA4RMRTdNsKE59juMcuZd6xIAFeZ6fGCdJ8kY4y7KAuTRNGd7jyEBXsdOPE3a0QGPsniOnnYMO67LgSQN9T41F2QGrQRRFCwyzoIF2qyBuKKbcOgPXdVeY9rMWgNsjf9ccYesJhk3f5dYT1HX9gR0LLQR30TnjkUEcx2uIuS4RnI+aj6sJR0AM8AaumPaM/rRehyWhXqbFAA9kh3/8/NvHxAYGAsZ/il8IalkCLBfNVAAAAABJRU5ErkJggg==&quot;); background-repeat: no-repeat; background-attachment: scroll; background-size: 16px 18px; background-position: 98% 50%;" value="Shipping Distance Matrix" placeholder="">
+								</fieldset>
+							</td>
+						</tr>
+					</tbody>
+				</table>
 			</td>
 		</tr>
 		<?php
@@ -389,11 +457,11 @@ class Wcsdm extends WC_Shipping_Method {
 					switch ( $col_key ) {
 						case 'distance':
 							?>
-							<div class="field-group <?php echo esc_attr( $col_key ); ?>" data-unit-metric="<?php esc_attr_e( 'KM', 'wcsdm' ); ?>" data-unit-imperial="<?php esc_attr_e( 'MI', 'wcsdm' ); ?>">
-								<div class="field-group-input">
-									<input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="input-text regular-input no-decimal field-<?php echo esc_attr( $col_key ); ?>" type="number" value="<?php echo esc_attr( $value ); ?>" min="0" step="5">
+							<div class="field-groups has-units <?php echo esc_attr( $col_key ); ?>" data-unit-metric="<?php esc_attr_e( 'KM', 'wcsdm' ); ?>" data-unit-imperial="<?php esc_attr_e( 'MI', 'wcsdm' ); ?>">
+								<div class="field-group-item field-group-item-input">
+									<input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="input-text regular-input no-decimal field-<?php echo esc_attr( $col_key ); ?>" type="number" value="<?php echo esc_attr( $value ); ?>" min="0" step="1">
 								</div>
-								<div class="field-group-icon"></div>
+								<div class="field-group-item field-group-item-units"></div>
 							</div>
 							<?php
 							break;
@@ -407,10 +475,10 @@ class Wcsdm extends WC_Shipping_Method {
 							break;
 						case 'base':
 							?>
-							<div class="field-group <?php echo esc_attr( $col_key ); ?>">
-								<div class="field-group-icon"><?php echo esc_attr( get_woocommerce_currency() ); ?></div>
-								<div class="field-group-input">
-									<input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="input-text regular-input field-<?php echo esc_attr( $col_key ); ?>" type="number" value="<?php echo esc_attr( $value ); ?>" min="0" step="any">
+							<div class="field-groups has-units <?php echo esc_attr( $col_key ); ?>">
+								<div class="field-group-item field-group-item-units"><?php echo esc_attr( get_woocommerce_currency() ); ?></div>
+								<div class="field-group-item field-group-item-input">
+									<input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="input-text regular-input input-cost field-<?php echo esc_attr( $col_key ); ?>" type="number" value="<?php echo esc_attr( $value ); ?>" min="0" step="any">
 								</div>
 							</div>
 							<?php
@@ -419,28 +487,33 @@ class Wcsdm extends WC_Shipping_Method {
 							?>
 							<div class="field-group <?php echo esc_attr( $col_key ); ?>">
 								<div class="field-group-input">
-									<input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="input-text regular-input no-decimal field-<?php echo esc_attr( $col_key ); ?>" type="number" value="<?php echo esc_attr( $value ); ?>" min="0" step="1">
+									<input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="input-text regular-input field-<?php echo esc_attr( $col_key ); ?>" type="number" value="<?php echo esc_attr( $value ); ?>" min="0" step="1">
 								</div>
-								<div class="field-group-icon"><?php esc_attr_e( 'PCS', 'wcsdm' ); ?></div>
+								<div class="field-group-units"><?php esc_attr_e( 'PCS', 'wcsdm' ); ?></div>
 							</div>
 							<?php
 							break;
 						case 'free_min_amount':
 							?>
 							<div class="field-group <?php echo esc_attr( $col_key ); ?>">
-								<div class="field-group-icon"><?php echo esc_attr( get_woocommerce_currency() ); ?></div>
+								<div class="field-group-units"><?php echo esc_attr( get_woocommerce_currency() ); ?></div>
 								<div class="field-group-input">
 									<input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="input-text regular-input field-<?php echo esc_attr( $col_key ); ?>" type="number" value="<?php echo esc_attr( $value ); ?>" min="0" step="any">
 								</div>
 							</div>
 							<?php
 							break;
+						case 'advanced':
+							?>
+							<a href="#" class="dashicons dashicons-admin-generic advanced-rate"></a>
+							<?php
+							break;
 						default:
 							?>
-							<div class="field-group field-group-cost <?php echo esc_attr( $col_key ); ?>">
-								<div class="field-group-icon"><?php echo esc_attr( get_woocommerce_currency() ); ?></div>
-								<div class="field-group-input">
-									<input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="input-text regular-input field-cost field-<?php echo esc_attr( $col_key ); ?>" type="number" value="<?php echo esc_attr( $value ); ?>" min="0" step="any">
+							<div class="field-groups has-units <?php echo esc_attr( $col_key ); ?>">
+								<div class="field-group-item field-group-item-units"><?php echo esc_attr( get_woocommerce_currency() ); ?></div>
+								<div class="field-group-item field-group-item-input">
+									<input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="input-text regular-input input-cost field-<?php echo esc_attr( $col_key ); ?>" type="number" value="<?php echo esc_attr( $value ); ?>" min="0" step="any">
 								</div>
 							</div>
 							<?php
