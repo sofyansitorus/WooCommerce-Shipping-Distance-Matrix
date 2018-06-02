@@ -111,21 +111,64 @@ var wcsdmSetting = {
 			}
 		});
 
+		$(document).on('change', '#wcsdm-table-rates tbody .wcsdm-input-dummy', function (e) {
+			$(e.currentTarget).closest('td').find('.wcsdm-input').val($(e.currentTarget).val());
+		});
+
+		$(document).on('change', '#woocommerce_wcsdm_free', function (e) {
+			switch ($(e.currentTarget).val()) {
+				case 'yes_alt':
+					$('#woocommerce_wcsdm_free_min_amount').closest('tr').show();
+					$('#woocommerce_wcsdm_free_min_qty').closest('tr').show();
+					break;
+
+				default:
+					$('#woocommerce_wcsdm_free_min_amount').closest('tr').hide();
+					$('#woocommerce_wcsdm_free_min_qty').closest('tr').hide();
+					break;
+			}
+		});
+
+		var rowIndex;
 
 		// Handle on distance field changed.
-		$(document).on('click', '.advanced-rate', function (e) {
+		$(document).on('click', '.advanced-rate-settings', function (e) {
 			e.preventDefault();
-			var $formTable = $(e.currentTarget).closest('table.form-table').attr('data-row', $(e.currentTarget).closest('tr').index());
-			$formTable.find('.advanced-row').show().siblings().hide();
-			var tmplBtn = wp.template('btn-advanced');
-			$('#btn-ok').hide().after(tmplBtn);
+			var $row = $(e.currentTarget).closest('tr');
+			$row.find('.wcsdm-input').each(function () {
+				$('#' + $(this).data('id')).val($(this).val()).trigger('change');
+			});
+			rowIndex = $row.index();
+			var $section = $(e.currentTarget).closest('section');
+			$section.find('.wcsdm-table-row-advanced').show().siblings().hide();
+			$('#btn-ok').hide().after(wp.template('btn-advanced'));
+			$('#woocommerce_wcsdm_free').trigger('change');
 		});
 
 		$(document).on('click', '#btn-dummy', function (e) {
 			e.preventDefault();
-			var $formTable = $(e.currentTarget).hide().closest('section').find('table.form-table');
-			$formTable.find('.advanced-row').hide().siblings().show();
+			$('#wcsdm-table-advanced .wcsdm-input').each(function () {
+				var $input = $(this);
+				var inputVal = $input.val();
+				var inputId = $input.attr('id');
+				var $inputTarget = $('#wcsdm-table-rates tbody tr:eq(' + rowIndex + ') .wcsdm-input.' + inputId);
+				$inputTarget.val(inputVal);
+
+				if ($inputTarget.hasClass('wcsdm-input-free')) {
+					if (inputVal === 'yes' || inputVal === 'yes_alt') {
+						$inputTarget.closest('td').find('.dashicons').addClass('dashicons-yes').removeClass('dashicons-no');
+					} else {
+						$inputTarget.closest('td').find('.dashicons').addClass('dashicons-no').removeClass('dashicons-yes');
+					}
+				} else {
+					$inputTarget.closest('td').find('.wcsdm-input-dummy').val(inputVal);
+				}
+				$input.val('');
+			});
+			$(e.currentTarget).closest('section').find('.wcsdm-table-row-advanced').hide().siblings().show();
+			$(e.currentTarget).remove();
 			$('#btn-ok').show();
+			$('.wc-modal-shipping-method-settings').scrollTop($('.wc-modal-shipping-method-settings').height());
 		});
 
 		// Handle toggle rate rows in bulk.
