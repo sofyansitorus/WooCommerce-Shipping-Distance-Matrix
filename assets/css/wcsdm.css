@@ -68,7 +68,8 @@
     width: 345px; }
 
 .wcsdm-table-row .wcsdm-table-col {
-  padding-bottom: 0 !important; }
+  padding-bottom: 0 !important;
+  padding-top: 0 !important; }
   .wcsdm-table-row .wcsdm-table-col.wcsdm-table-col-rates {
     padding-left: 0 !important;
     padding-right: 0 !important; }
@@ -121,7 +122,7 @@
 
 .wcsdm-table-row .wcsdm-table.wcsdm-table-rates .col-free {
   padding: 0;
-  width: 122px;
+  width: 132px;
   text-align: center; }
 
 .wcsdm-table-row .wcsdm-table.wcsdm-table-rates .col-advanced {
@@ -182,11 +183,21 @@
     display: block;
     clear: both; }
 
-.wcsdm-table-row .wcsdm-table.wcsdm-table-rates .dashicons-no {
-  color: #c4c4c4; }
+.wcsdm-table-row .wcsdm-table.wcsdm-table-rates .free-shipping-no:before {
+  content: "\f158";
+  color: #c4c4c4;
+  font-weight: 700; }
 
-.wcsdm-table-row .wcsdm-table.wcsdm-table-rates .dashicons-yes {
+.wcsdm-table-row .wcsdm-table.wcsdm-table-rates .free-shipping-yes:before {
+  content: "\f147";
   color: #52bd54;
+  font-weight: 700;
+  font-weight: 700; }
+
+.wcsdm-table-row .wcsdm-table.wcsdm-table-rates .free-shipping-yes_alt:before {
+  content: "\f210";
+  color: #52bd54;
+  font-weight: 700;
   font-weight: 700; }
 
 [class^="tooltip"] {

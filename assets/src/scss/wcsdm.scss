@@ -87,6 +87,7 @@
 .wcsdm-table-row {
     .wcsdm-table-col {
         padding-bottom: 0 !important;
+        padding-top: 0 !important;
         &.wcsdm-table-col-rates {
             padding-left: 0 !important;
             padding-right: 0 !important;
@@ -139,7 +140,7 @@
             }
             .col-free {
                 padding: 0;
-                width: 122px;
+                width: 132px;
                 text-align: center;
             }
             .col-advanced {
@@ -218,12 +219,24 @@
                     }
                 }
             }
-            .dashicons-no {
-                color: #c4c4c4;
-            }
-            .dashicons-yes {
-                color: #52bd54;
-                font-weight: 700;
+            .free-shipping-{
+                &no:before{
+                    content: "\f158";
+                    color: #c4c4c4;
+                    font-weight: 700;
+                }
+                &yes:before{
+                    content: "\f147";
+                    color: #52bd54;
+                    font-weight: 700;
+                    font-weight: 700;
+                }
+                &yes_alt:before{
+                    content: "\f210";
+                    color: #52bd54;
+                    font-weight: 700;
+                    font-weight: 700;
+                }
             }
         }
     }
