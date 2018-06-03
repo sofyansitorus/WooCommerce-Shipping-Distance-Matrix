@@ -58,7 +58,7 @@ class Wcsdm extends WC_Shipping_Method {
 		$this->method_title = WCSDM_METHOD_TITLE;
 
 		// Description shown in admin.
-		$this->method_description = __( 'Shipping rates calculator based on products shipping class and route distances.', 'wcsdm' );
+		$this->method_description = __( 'Shipping rates calculator that allows you to easily offer shipping rates based on the distance.', 'wcsdm' );
 
 		$this->enabled = $this->get_option( 'enabled' );
 

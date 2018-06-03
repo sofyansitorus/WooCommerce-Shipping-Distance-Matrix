@@ -14,7 +14,7 @@
  * @wordpress-plugin
  * Plugin Name:       WooCommerce Shipping Distance Matrix
  * Plugin URI:        https://github.com/sofyansitorus/WooCommerce-Shipping-Distance-Matrix
- * Description:       WooCommerce shipping rates calculator based on products shipping class and route distances that calculated using Google Maps Distance Matrix API.
+ * Description:       WooCommerce shipping rates calculator that allows you to easily offer shipping rates based on the distance that calculated using Google Maps Distance Matrix Service API.
  * Version:           1.4.1
  * Author:            Sofyan Sitorus
  * Author URI:        https://github.com/sofyansitorus
