@@ -99,7 +99,7 @@ class Wcsdm extends WC_Shipping_Method {
 		$this->all_options['table_rates']             = $this->get_option( 'table_rates' );
 		$this->all_options['tax_status']              = $this->get_option( 'tax_status' );
 
-		foreach ( $this->all_options as $key => $value) {
+		foreach ( $this->all_options as $key => $value ) {
 			$this->{$key} = $value;
 		}
 
@@ -138,15 +138,16 @@ class Wcsdm extends WC_Shipping_Method {
 				),
 			),
 			'gmaps_api_key'           => array(
-				'title'       => __( 'API Key', 'wcsdm' ),
+				'title'       => __( 'Google API Key', 'wcsdm' ),
 				'type'        => 'text',
-				'description' => __( 'This plugin require Google Maps Distance Matrix API Key and service is enabled. <a href="https://developers.google.com/maps/documentation/distance-matrix/get-api-key" target="_blank">Click here</a> to go to Google API Console to get API Key and to enable the service.', 'wcsdm' ),
+				'description' => __( 'This plugin makes use of the Google Maps and Google Distance Matrix APIs. <a href="https://developers.google.com/maps/documentation/distance-matrix/get-api-key" target="_blank">Click here</a> obtain a Google API Key.', 'wcsdm' ),
 				'default'     => '',
 			),
 			'origin'                  => array(
 				'title'       => __( 'Store Location', 'wcsdm' ),
 				'type'        => 'address_picker',
-				'description' => __( '<a href="http://www.latlong.net/" target="_blank">Click here</a> to get your store location coordinates info.', 'wcsdm' ),
+				'description' => __( 'Drag the and drop the store icon to your store location or search your store location by type an address into the search field. You can also set you store location by fill in the Latitude and Latitude coordinates manually.', 'wcsdm' ),
+				'desc_tip'    => true,
 			),
 			'origin_lat'              => array(
 				'title' => __( 'Store Location Latitude', 'wcsdm' ),
@@ -233,7 +234,7 @@ class Wcsdm extends WC_Shipping_Method {
 			),
 			'table_advanced'          => array(
 				'type'  => 'table_advanced',
-				'title' => __( 'Advanced Rate Settings', 'wcsdm' ),
+				'title' => __( 'Distance Rate Rules &raquo; Advanced Settings', 'wcsdm' ),
 			),
 		);
 	}
@@ -266,16 +267,17 @@ class Wcsdm extends WC_Shipping_Method {
 		ob_start(); ?>
 		<tr valign="top">
 			<th scope="row" class="titledesc">
-				<?php echo esc_html( $this->get_tooltip_html( $data ) ); ?>
+				<?php echo $this->get_tooltip_html( $data ); // WPCS: XSS ok. ?>
 				<label for="<?php echo esc_attr( $field_key ); ?>"><?php echo wp_kses_post( $data['title'] ); ?></label>
 			</th>
 			<td class="forminp">
+				<div id="<?php echo esc_attr( $this->id ); ?>-map-error" class="notice notice-error"></div>
 				<div id="<?php echo esc_attr( $this->id ); ?>-map-wrapper" class="<?php echo esc_attr( $this->id ); ?>-map-wrapper"></div>
 				<div id="<?php echo esc_attr( $this->id ); ?>-lat-lng-wrap">
 					<div><label for="<?php echo esc_attr( $field_key ); ?>_lat"><?php echo esc_html( 'Latitude', 'wcsdm' ); ?></label><input type="text" id="<?php echo esc_attr( $field_key ); ?>_lat" name="<?php echo esc_attr( $field_key ); ?>_lat" value="<?php echo esc_attr( $this->get_option( $key . '_lat' ) ); ?>" class="origin-coordinates"></div>
 					<div><label for="<?php echo esc_attr( $field_key ); ?>_lng"><?php echo esc_html( 'Longitude', 'wcsdm' ); ?></label><input type="text" id="<?php echo esc_attr( $field_key ); ?>_lng" name="<?php echo esc_attr( $field_key ); ?>_lng" value="<?php echo esc_attr( $this->get_option( $key . '_lng' ) ); ?>" class="origin-coordinates"></div>
 				</div>
-				<?php echo wp_kses( $this->get_description_html( $data ), wp_kses_allowed_html( 'post' ) ); ?>
+				<?php echo $this->get_description_html( $data ); // WPCS: XSS ok. ?>
 				<script type="text/html" id="tmpl-<?php echo esc_attr( $this->id ); ?>-map-search">
 					<input id="wcsdm-map-search" class="<?php echo esc_attr( $this->id ); ?>-map-search controls" type="text" placeholder="<?php echo esc_attr( __( 'Search your store location', 'wcsdm' ) ); ?>" autocomplete="off" />
 				</script>
@@ -306,28 +308,12 @@ class Wcsdm extends WC_Shipping_Method {
 	 */
 	public function generate_table_rates_html( $key ) {
 		ob_start();
-		$shipping_classes = array();
-		foreach ( WC()->shipping->get_shipping_classes() as $shipping_classes_key => $shipping_classes_value ) {
-			$shipping_classes[ $shipping_classes_value->term_id ] = $shipping_classes_value;
-		}
-		if ( $shipping_classes ) {
-			ksort( $shipping_classes );
-		}
-		$cols = array(
-			'distance'  => __( 'Maximum Distances', 'wcsdm' ),
-			'cost_type' => __( 'Cost Type', 'wcsdm' ),
-			'class_0'   => $shipping_classes ? __( 'None', 'wcsdm' ) : __( 'Shipping Rate', 'wcsdm' ),
-		);
-		foreach ( $shipping_classes as $shipping_class_id => $shipping_class ) {
-			$cols[ 'class_' . $shipping_class_id ] = $shipping_class->name;
-		}
-		$cols['advanced'] = __( 'Advanced', 'wcsdm' );
 		?>
 		<tr valign="top" id="wcsdm-table-row-rates" class="wcsdm-table-row wcsdm-table-row-rates">
 			<td class="wcsdm-table-col wcsdm-table-col-rates" colspan="2">
 				<table id="wcsdm-table-rates" class="wc_input_table widefat wcsdm-table wcsdm-table-rates" cellspacing="0">
 					<thead>
-						<?php $this->generate_rate_row_heading( $cols ); ?>
+						<?php $this->generate_rate_row_heading(); ?>
 					</thead>
 					<tbody>
 						<?php
@@ -339,7 +325,7 @@ class Wcsdm extends WC_Shipping_Method {
 						?>
 					</tbody>
 					<tfoot>
-						<?php $this->generate_rate_row_heading( $cols, 'bottom' ); ?>
+						<?php $this->generate_rate_row_heading( 'bottom' ); ?>
 					</tfoot>
 				</table>
 				<script type="text/template" id="tmpl-rates-list-input-table-row">
@@ -357,13 +343,20 @@ class Wcsdm extends WC_Shipping_Method {
 	/**
 	 * Generate table rate row heading
 	 *
-	 * @param array  $cols Table rate columns.
 	 * @param string $position Row heading position.
 	 * @return void
 	 */
-	private function generate_rate_row_heading( $cols, $position = 'top' ) {
+	private function generate_rate_row_heading( $position = 'top' ) {
+		$fields = $this->rates_fields( true );
 		?>
-		<tr class="font-bold">
+		<?php if ( 'top' === $position ) : ?>
+		<tr>
+			<td colspan="<?php echo esc_attr( count( $fields ) + 1 ); ?>" class="full-width-col">
+				<strong><?php esc_html_e( 'Distance Rate Rules', 'wcsdm' ); ?></strong>
+			</td>
+		</tr>
+		<?php endif; ?>
+		<tr>
 			<td class="col-checkbox">
 				<div>
 					<?php if ( 'top' === $position ) : ?>
@@ -374,9 +367,9 @@ class Wcsdm extends WC_Shipping_Method {
 					<?php endif; ?>
 				</div>
 			</td>
-			<?php foreach ( $this->rates_fields( false ) as $key => $col ) : ?>
+			<?php foreach ( $fields as $key => $col ) : ?>
 				<?php if ( ! $col['advanced'] ) : ?>
-				<td class="col-data col-<?php echo esc_html( $key ); ?>">
+				<td class="col-centered col-<?php echo esc_html( $key ); ?>">
 					<?php if ( 'top' === $position && 'advanced' !== $key && ! empty( $col['description'] ) ) : ?>
 						<span class="tooltip" data-tooltip="<?php echo esc_attr( $col['description'] ); ?>">
 					<?php endif; ?>
@@ -399,12 +392,13 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @return void
 	 */
 	private function generate_rate_row( $field_key, $rate = array() ) {
+		$fields = $this->rates_fields();
 		?>
 		<tr>
 			<td class="col-checkbox">
 				<div><input class="select-item" type="checkbox"></div>
 			</td>
-			<?php foreach ( $this->rates_fields( false ) as $key => $col ) : ?>
+			<?php foreach ( $fields as $key => $col ) : ?>
 				<?php
 				$data_id    = 'woocommerce_' . $this->id . '_' . $key;
 				$input_name = $field_key . '_' . $key;
@@ -412,7 +406,7 @@ class Wcsdm extends WC_Shipping_Method {
 				switch ( $key ) {
 					case 'distance':
 						?>
-						<td class="col-data col-<?php echo esc_html( $key ); ?>">
+						<td class="col-<?php echo esc_html( $key ); ?>">
 							<div class="field-groups has-units <?php echo esc_attr( $key ); ?>">
 								<div class="field-group-item field-group-item-input">
 									<input class="input-text regular-input input-cost wcsdm-input-dummy field-<?php echo esc_attr( $key ); ?>" data-id="<?php echo esc_attr( $data_id ); ?>" type="number" value="<?php echo esc_attr( $value ); ?>" min="0" step="any">
@@ -425,7 +419,7 @@ class Wcsdm extends WC_Shipping_Method {
 						break;
 					case 'cost_type':
 						?>
-						<td class="col-data col-<?php echo esc_html( $key ); ?>">
+						<td class="col-<?php echo esc_html( $key ); ?>">
 							<select class="select cost-type wcsdm-input-dummy" data-id="<?php echo esc_attr( $data_id ); ?>">
 								<?php foreach ( $col['options'] as $option_value => $option_text ) : ?>
 									<option value="<?php echo esc_attr( $option_value ); ?>" <?php selected( $value, $option_value ); ?>><?php echo esc_html( $option_text ); ?></option>
@@ -437,7 +431,7 @@ class Wcsdm extends WC_Shipping_Method {
 						break;
 					case 'class_0':
 						?>
-						<td class="col-data col-<?php echo esc_html( $key ); ?>">
+						<td class="col-<?php echo esc_html( $key ); ?>">
 							<div class="field-groups has-units <?php echo esc_attr( $key ); ?>">
 								<div class="field-group-item field-group-item-units"><?php echo esc_attr( get_woocommerce_currency() ); ?></div>
 								<div class="field-group-item field-group-item-input">
@@ -450,7 +444,7 @@ class Wcsdm extends WC_Shipping_Method {
 						break;
 					case 'free':
 						?>
-						<td class="col-data col-<?php echo esc_html( $key ); ?>">
+						<td class="col-<?php echo esc_html( $key ); ?>">
 							<a href="#" class="advanced-rate-settings"><span class="dashicons free-shipping-<?php echo esc_attr( $value ); ?>"></span></a>
 							<input name="<?php echo esc_attr( $input_name ); ?>[]" type="hidden" value="<?php echo esc_attr( $value ); ?>" class="wcsdm-input wcsdm-input-<?php echo esc_attr( $key ); ?> <?php echo esc_attr( $data_id ); ?>" data-id="<?php echo esc_attr( $data_id ); ?>">
 						</td>
@@ -461,7 +455,7 @@ class Wcsdm extends WC_Shipping_Method {
 			<?php endforeach; ?>
 			<td class="col-advanced">
 				<?php
-				foreach ( $this->rates_fields( false ) as $key => $col ) :
+				foreach ( $fields as $key => $col ) :
 					$data_id    = 'woocommerce_' . $this->id . '_' . $key;
 					$input_name = $field_key . '_' . $key;
 					$value      = isset( $rate[ $key ] ) ? $rate[ $key ] : '';
@@ -519,10 +513,14 @@ class Wcsdm extends WC_Shipping_Method {
 		?>
 		<tr valign="top" id="wcsdm-table-row-advanced" class="wcsdm-table-row wcsdm-table-row-advanced">
 			<td class="wcsdm-table-col wcsdm-table-col-advanced" colspan="2">
-				<h3 class="wc-settings-sub-title"><?php echo wp_kses_post( $data['title'] ); ?></h3>
 				<table id="wcsdm-table-advanced" class="form-table wcsdm-table wcsdm-table-advanced" cellspacing="0">
+					<thead>
+						<tr>
+							<td colspan="2" class="full-width-col"><strong><?php echo wp_kses_post( $data['title'] ); ?></strong></td>
+						</tr>
+					</thead>
 					<tbody>
-						<?php $this->generate_settings_html( $this->rates_fields() ); ?>
+						<?php $this->generate_settings_html( $this->rates_fields( false, true ) ); ?>
 					</tbody>
 				</table>
 			</td>
@@ -536,15 +534,11 @@ class Wcsdm extends WC_Shipping_Method {
 	 *
 	 * @since    1.4.2
 	 *
-	 * @param bool $advanced Is fields will be displayed in adnaced settings form.
+	 * @param bool $heading_only Is fields will be displayed in table heading only.
+	 * @param bool $advanced_form Is fields will be displayed in advanced settings form.
 	 * @return array
 	 */
-	public function rates_fields( $advanced = true ) {
-		$shipping_classes = array();
-		foreach ( WC()->shipping->get_shipping_classes() as $shipping_classes_key => $shipping_classes_value ) {
-			$shipping_classes[ $shipping_classes_value->term_id ] = $shipping_classes_value;
-		}
-
+	public function rates_fields( $heading_only = false, $advanced_form = false ) {
 		$fields = array(
 			'distance'        => array(
 				'type'        => 'number',
@@ -553,6 +547,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'description' => __( 'The maximum distances rule for the shipping rate. This input is required.', 'wcsdm' ),
 				'desc_tip'    => true,
 				'advanced'    => false,
+				'heading'     => true,
 			),
 			'cost_type'       => array(
 				'type'        => 'select',
@@ -566,6 +561,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'description' => __( 'Determine wether to use flat price or flexible price per distances unit.', 'wcsdm' ),
 				'desc_tip'    => true,
 				'advanced'    => false,
+				'heading'     => true,
 			),
 			'class_0'         => array(
 				'type'        => 'number',
@@ -574,6 +570,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'description' => __( 'The shipping rate within the distances range. This input is required.', 'wcsdm' ),
 				'desc_tip'    => true,
 				'advanced'    => false,
+				'heading'     => true,
 			),
 			'base'            => array(
 				'type'        => 'number',
@@ -583,6 +580,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'description' => __( 'Surcharge that will be added to the total shipping cost.', 'wcsdm' ),
 				'desc_tip'    => true,
 				'advanced'    => true,
+				'heading'     => false,
 			),
 			'free'            => array(
 				'type'        => 'select',
@@ -597,6 +595,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'description' => __( 'Free shipping options within the distances range.', 'wcsdm' ),
 				'desc_tip'    => true,
 				'advanced'    => false,
+				'heading'     => true,
 			),
 			'free_min_amount' => array(
 				'type'        => 'number',
@@ -605,6 +604,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'description' => __( 'The free shipping rule for minimum order amount. Leave blank to disable this rule. But at least one rule must be defined either by minimum order amount or minimum order quantity.', 'wcsdm' ),
 				'desc_tip'    => true,
 				'advanced'    => true,
+				'heading'     => false,
 			),
 			'free_min_qty'    => array(
 				'type'        => 'number',
@@ -613,17 +613,20 @@ class Wcsdm extends WC_Shipping_Method {
 				'description' => __( 'The free shipping rule for minimum order quantity. Leave blank to disable this rule. But at least one rule must be defined either by minimum order amount or minimum order quantity.', 'wcsdm' ),
 				'desc_tip'    => true,
 				'advanced'    => true,
+				'heading'     => false,
 			),
 			'advanced'        => array(
 				'type'        => 'link',
 				'title'       => __( 'Advanced', 'wcsdm' ),
 				'description' => __( 'Advanced Settings', 'wcsdm' ),
 				'advanced'    => false,
+				'heading'     => true,
 			),
 		);
 
-		if ( $advanced ) {
-			unset( $fields['advanced'] );
+		$shipping_classes = array();
+		foreach ( WC()->shipping->get_shipping_classes() as $shipping_classes_key => $shipping_classes_value ) {
+			$shipping_classes[ $shipping_classes_value->term_id ] = $shipping_classes_value;
 		}
 
 		if ( $shipping_classes ) {
@@ -638,11 +641,24 @@ class Wcsdm extends WC_Shipping_Method {
 							'description' => __( 'Shipping rate for specific product shipping class. This rate will override the default shipping rate defined above. Zero value will be ignored.', 'wcsdm' ),
 							'desc_tip'    => true,
 							'advanced'    => true,
+							'heading'     => false,
 						));
 					}
 				}
 			}
-			return $new_fields;
+			$fields = $new_fields;
+		}
+
+		if ( $heading_only ) {
+			foreach ( $fields as $key => $field ) {
+				if ( ! $field ) {
+					unset( $field[ $key ] );
+				}
+			}
+		}
+
+		if ( $advanced_form ) {
+			unset( $fields['advanced'] );
 		}
 
 		return $fields;

@@ -2,6 +2,7 @@
     position: relative;
     width: 100%;
     padding-right: 10px;
+    margin-bottom: 15px;
     .controls {
         margin-top: 10px;
         border: 1px solid transparent;
@@ -13,7 +14,7 @@
     }
     .wcsdm-map-canvas {
         position: relative;
-        height: 360px;
+        height: 340px;
     }
     .wcsdm-map-search {
         position: relative;
@@ -29,6 +30,14 @@
         &:focus {
             border-color: #4d90fe;
         }
+    }
+}
+
+#wcsdm-map-error {
+    display: none;
+    margin-bottom: 15px;
+    &.notice {
+        margin-left: 0;
     }
 }
 
@@ -86,12 +95,7 @@
 
 .wcsdm-table-row {
     .wcsdm-table-col {
-        padding-bottom: 0 !important;
-        padding-top: 0 !important;
-        &.wcsdm-table-col-rates {
-            padding-left: 0 !important;
-            padding-right: 0 !important;
-        }
+        padding: 0 !important;
     }
     &.wcsdm-table-row-advanced {
         display: none;
@@ -116,12 +120,18 @@
                 cursor: not-allowed;
             }
         }
+        .full-width-col {
+            background: #f1f1f1;
+        }
         .select {
             min-width: 130px !important;
             height: 36px !important;
             line-height: 36px !important;
         }
         &.wcsdm-table-rates {
+            .col-centered {
+                text-align: center;
+            }
             .col-checkbox {
                 padding: 0;
                 width: 136px;
@@ -147,13 +157,6 @@
                 padding: 0;
                 width: 112px;
                 text-align: center;
-            }
-            thead,
-            tfoot {
-                td,
-                th {
-                    text-align: center;
-                }
             }
             tbody {
                 tr.selected {
@@ -219,19 +222,19 @@
                     }
                 }
             }
-            .free-shipping-{
-                &no:before{
+            .free-shipping- {
+                &no:before {
                     content: "\f158";
                     color: #c4c4c4;
                     font-weight: 700;
                 }
-                &yes:before{
+                &yes:before {
                     content: "\f147";
                     color: #52bd54;
                     font-weight: 700;
                     font-weight: 700;
                 }
-                &yes_alt:before{
+                &yes_alt:before {
                     content: "\f210";
                     color: #52bd54;
                     font-weight: 700;

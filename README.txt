@@ -13,7 +13,7 @@ WooCommerce shipping rates calculator that allows you to easily offer shipping r
 == Description ==
 WooCommerce shipping rates calculator that allows you to easily offer shipping rates based on the distance that calculated using Google Maps Distance Matrix Service API.
 
-This plugin perfect perfect for the store owner who wants to charge customers for delivery of items based on how far away they are from the store. A perfect example would be for store that use private shipping or local shipping company.
+This plugin perfect for the store owner who wants to charge customers for delivery of items based on how far away they are from the store. A perfect example would be for store that use private delivery or local delivery company.
 
 = Key Features =
 

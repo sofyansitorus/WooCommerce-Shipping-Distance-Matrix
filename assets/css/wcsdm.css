@@ -1,7 +1,8 @@
 .wcsdm-map-wrapper {
   position: relative;
   width: 100%;
-  padding-right: 10px; }
+  padding-right: 10px;
+  margin-bottom: 15px; }
   .wcsdm-map-wrapper .controls {
     margin-top: 10px;
     border: 1px solid transparent;
@@ -14,7 +15,7 @@
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3); }
   .wcsdm-map-wrapper .wcsdm-map-canvas {
     position: relative;
-    height: 360px; }
+    height: 340px; }
   .wcsdm-map-wrapper .wcsdm-map-search {
     position: relative;
     background-color: #fff;
@@ -28,6 +29,12 @@
     margin-top: 10px !important; }
     .wcsdm-map-wrapper .wcsdm-map-search:focus {
       border-color: #4d90fe; }
+
+#wcsdm-map-error {
+  display: none;
+  margin-bottom: 15px; }
+  #wcsdm-map-error.notice {
+    margin-left: 0; }
 
 #wcsdm-lat-lng-wrap {
   width: 100%;
@@ -68,11 +75,7 @@
     width: 345px; }
 
 .wcsdm-table-row .wcsdm-table-col {
-  padding-bottom: 0 !important;
-  padding-top: 0 !important; }
-  .wcsdm-table-row .wcsdm-table-col.wcsdm-table-col-rates {
-    padding-left: 0 !important;
-    padding-right: 0 !important; }
+  padding: 0 !important; }
 
 .wcsdm-table-row.wcsdm-table-row-advanced {
   display: none; }
@@ -102,10 +105,16 @@
   .wcsdm-table-row .wcsdm-table input[type="number"]:read-only {
     cursor: not-allowed; }
 
+.wcsdm-table-row .wcsdm-table .full-width-col {
+  background: #f1f1f1; }
+
 .wcsdm-table-row .wcsdm-table .select {
   min-width: 130px !important;
   height: 36px !important;
   line-height: 36px !important; }
+
+.wcsdm-table-row .wcsdm-table.wcsdm-table-rates .col-centered {
+  text-align: center; }
 
 .wcsdm-table-row .wcsdm-table.wcsdm-table-rates .col-checkbox {
   padding: 0;
@@ -128,12 +137,6 @@
 .wcsdm-table-row .wcsdm-table.wcsdm-table-rates .col-advanced {
   padding: 0;
   width: 112px;
-  text-align: center; }
-
-.wcsdm-table-row .wcsdm-table.wcsdm-table-rates thead td,
-.wcsdm-table-row .wcsdm-table.wcsdm-table-rates thead th,
-.wcsdm-table-row .wcsdm-table.wcsdm-table-rates tfoot td,
-.wcsdm-table-row .wcsdm-table.wcsdm-table-rates tfoot th {
   text-align: center; }
 
 .wcsdm-table-row .wcsdm-table.wcsdm-table-rates tbody tr.selected td,
