@@ -155,11 +155,7 @@ var wcsdmSetting = {
 				$inputTarget.val(inputVal);
 
 				if ($inputTarget.hasClass('wcsdm-input-free')) {
-					if (inputVal === 'yes' || inputVal === 'yes_alt') {
-						$inputTarget.closest('td').find('.dashicons').addClass('dashicons-yes').removeClass('dashicons-no');
-					} else {
-						$inputTarget.closest('td').find('.dashicons').addClass('dashicons-no').removeClass('dashicons-yes');
-					}
+					$inputTarget.closest('td').find('.dashicons').removeClass().addClass('dashicons').addClass('free-shipping-' + inputVal);
 				} else {
 					$inputTarget.closest('td').find('.wcsdm-input-dummy').val(inputVal);
 				}
