@@ -65,6 +65,7 @@ var wcsdmSetting = {
 			if (methodTitle !== self.params.methodTitle) {
 				return false;
 			}
+			$('.field-distance').trigger('change');
 			$('#woocommerce_wcsdm_gmaps_api_units').trigger('change');
 			$('#woocommerce_wcsdm_gmaps_api_key').trigger('input');
 		});
@@ -82,23 +83,98 @@ var wcsdmSetting = {
 			self._initGoogleMaps();
 		}, 250));
 
-		// Handle on distnace unit field setting changed.
+		// Handle on distance unit field setting changed.
 		$(document).on('change', '#woocommerce_wcsdm_gmaps_api_units', function () {
-			$('.field-group.distance .field-group-icon').text(self.params.i18n.distance[$(this).val()].unit);
+			$('.field-groups.distance .field-group-item-units').text(self.params.i18n.distance[$(this).val()].unit);
 			$('option[value="per_unit"]').text(self.params.i18n.distance[$(this).val()].perUnit);
 		});
 
+		// Handle on distance unit field setting changed.
+		$(document).on('change', '#woocommerce_wcsdm_gmaps_api_units', function () {
+			$('.field-groups.distance .field-group-item-units').text(self.params.i18n.distance[$(this).val()].unit);
+			$('option[value="per_unit"]').text(self.params.i18n.distance[$(this).val()].perUnit);
+		});
+
+		// Handle on distance field changed.
+		$(document).on('change input', '.field-distance', function (e) {
+			var $inputTarget = $(e.currentTarget);
+			var inputVal = parseInt($inputTarget.val());
+			if (inputVal < 10) {
+				$inputTarget.attr('step', '1');
+			} else if (inputVal >= 10 && inputVal <= 50) {
+				$inputTarget.attr('step', '5');
+			} else {
+				$inputTarget.attr('step', '10');
+			}
+		});
+
+		$(document).on('change', '#wcsdm-table-rates tbody .wcsdm-input-dummy', function (e) {
+			$(e.currentTarget).closest('td').find('.wcsdm-input').val($(e.currentTarget).val());
+		});
+
+		$(document).on('change', '#woocommerce_wcsdm_free', function (e) {
+			switch ($(e.currentTarget).val()) {
+				case 'yes_alt':
+					$('#woocommerce_wcsdm_free_min_amount').closest('tr').show();
+					$('#woocommerce_wcsdm_free_min_qty').closest('tr').show();
+					break;
+
+				default:
+					$('#woocommerce_wcsdm_free_min_amount').closest('tr').hide();
+					$('#woocommerce_wcsdm_free_min_qty').closest('tr').hide();
+					break;
+			}
+		});
+
+		var rowIndex;
+
+		// Handle on distance field changed.
+		$(document).on('click', '.advanced-rate-settings', function (e) {
+			e.preventDefault();
+			var $row = $(e.currentTarget).closest('tr');
+			$row.find('.wcsdm-input').each(function () {
+				$('#' + $(this).data('id')).val($(this).val()).attr('name', '').trigger('change');
+			});
+			rowIndex = $row.index();
+			var $section = $(e.currentTarget).closest('section');
+			$section.find('.wcsdm-table-row-advanced').show().siblings().hide();
+			$('#btn-ok').hide().after(wp.template('btn-advanced'));
+			$('#woocommerce_wcsdm_free').trigger('change');
+		});
+
+		$(document).on('click', '#btn-dummy', function (e) {
+			e.preventDefault();
+			$('#wcsdm-table-advanced .wcsdm-input').each(function () {
+				var $input = $(this);
+				var inputVal = $input.val();
+				var inputId = $input.attr('id');
+				var $inputTarget = $('#wcsdm-table-rates tbody tr:eq(' + rowIndex + ') .wcsdm-input.' + inputId);
+				$inputTarget.val(inputVal);
+
+				if ($inputTarget.hasClass('wcsdm-input-free')) {
+					$inputTarget.closest('td').find('.dashicons').removeClass().addClass('dashicons').addClass('free-shipping-' + inputVal);
+				} else {
+					$inputTarget.closest('td').find('.wcsdm-input-dummy').val(inputVal);
+				}
+				$input.val('');
+			});
+			$(e.currentTarget).closest('section').find('.wcsdm-table-row-advanced').hide().siblings().show();
+			$(e.currentTarget).remove();
+			$('#btn-ok').show();
+			$('.wc-modal-shipping-method-settings').scrollTop($('.wc-modal-shipping-method-settings').height());
+		});
+
 		// Handle toggle rate rows in bulk.
-		$(document).on('change', '#rates-list-table thead .select-item', self._toggleRateRowsBulk);
+		$(document).on('change', '#wcsdm-table-rates thead .select-item', self._toggleRateRowsBulk);
 
 		// Handle toggle rate rows individually.
-		$(document).on('change', '#rates-list-table tbody .select-item', self._toggleRateRows);
+		$(document).on('change', '#wcsdm-table-rates tbody .select-item', self._toggleRateRows);
 
 		// Handle add rate rows.
-		$(document).on('click', '#rates-list-table .button.add_row', self._addRateRows);
+		$(document).on('click', '#wcsdm-table-rates .button.add_row', self._addRateRows);
 
 		// Handle remove rate rows.
-		$(document).on('click', '#rates-list-table .button.remove_rows', self._removeRateRows);
+		$(document).on('click', '#wcsdm-table-rates .button.remove_rows', self._removeRateRows);
 	},
 	_initGoogleMaps: function () {
 		var self = this;
@@ -295,7 +371,7 @@ var wcsdmSetting = {
 	},
 	_addRateRows: function (e) {
 		e.preventDefault();
-		$('#rates-list-table tbody').append(wp.template('rates-list-input-table-row')).find('tr:last-child .field-distance').focus();
+		$('#wcsdm-table-rates tbody').append(wp.template('rates-list-input-table-row')).find('tr:last-child .field-distance').focus();
 		$('#woocommerce_wcsdm_gmaps_api_units').trigger('change');
 	},
 	_removeRateRows: function (e) {

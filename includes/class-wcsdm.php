@@ -37,6 +37,14 @@ class Wcsdm extends WC_Shipping_Method {
 	private $google_api_url = 'https://maps.googleapis.com/maps/api/distancematrix/json';
 
 	/**
+	 * All options data
+	 *
+	 * @since    1.4.02
+	 * @var array
+	 */
+	private $all_options = array();
+
+	/**
 	 * Constructor for your shipping class
 	 *
 	 * @since    1.0.0
@@ -50,7 +58,7 @@ class Wcsdm extends WC_Shipping_Method {
 		$this->method_title = WCSDM_METHOD_TITLE;
 
 		// Description shown in admin.
-		$this->method_description = __( 'Shipping rates calculator based on products shipping class and route distances.', 'wcsdm' );
+		$this->method_description = __( 'Shipping rates calculator that allows you to easily offer shipping rates based on the distance.', 'wcsdm' );
 
 		$this->enabled = $this->get_option( 'enabled' );
 
@@ -77,19 +85,23 @@ class Wcsdm extends WC_Shipping_Method {
 		$this->init_settings(); // This is part of the settings API. Loads settings you previously init.
 
 		// Define user set variables.
-		$this->title                   = $this->get_option( 'title' );
-		$this->gmaps_api_key           = $this->get_option( 'gmaps_api_key' );
-		$this->origin_lat              = $this->get_option( 'origin_lat' );
-		$this->origin_lng              = $this->get_option( 'origin_lng' );
-		$this->gmaps_api_units         = $this->get_option( 'gmaps_api_units', 'metric' );
-		$this->gmaps_api_mode          = $this->get_option( 'gmaps_api_mode', 'driving' );
-		$this->gmaps_api_avoid         = $this->get_option( 'gmaps_api_avoid' );
-		$this->calc_type               = $this->get_option( 'calc_type', 'per_item' );
-		$this->enable_fallback_request = $this->get_option( 'enable_fallback_request', 'no' );
-		$this->show_distance           = $this->get_option( 'show_distance' );
-		$this->ceil_distance           = $this->get_option( 'ceil_distance', 'no' );
-		$this->table_rates             = $this->get_option( 'table_rates' );
-		$this->tax_status              = $this->get_option( 'tax_status' );
+		$this->all_options['title']                   = $this->get_option( 'title' );
+		$this->all_options['gmaps_api_key']           = $this->get_option( 'gmaps_api_key' );
+		$this->all_options['origin_lat']              = $this->get_option( 'origin_lat' );
+		$this->all_options['origin_lng']              = $this->get_option( 'origin_lng' );
+		$this->all_options['gmaps_api_units']         = $this->get_option( 'gmaps_api_units', 'metric' );
+		$this->all_options['gmaps_api_mode']          = $this->get_option( 'gmaps_api_mode', 'driving' );
+		$this->all_options['gmaps_api_avoid']         = $this->get_option( 'gmaps_api_avoid' );
+		$this->all_options['calc_type']               = $this->get_option( 'calc_type', 'per_item' );
+		$this->all_options['enable_fallback_request'] = $this->get_option( 'enable_fallback_request', 'no' );
+		$this->all_options['show_distance']           = $this->get_option( 'show_distance' );
+		$this->all_options['ceil_distance']           = $this->get_option( 'ceil_distance', 'no' );
+		$this->all_options['table_rates']             = $this->get_option( 'table_rates' );
+		$this->all_options['tax_status']              = $this->get_option( 'tax_status' );
+
+		foreach ( $this->all_options as $key => $value) {
+			$this->{$key} = $value;
+		}
 
 		// Save settings in admin if you have any defined.
 		add_action( 'woocommerce_update_options_shipping_' . $this->id, array( $this, 'process_admin_options' ) );
@@ -203,19 +215,25 @@ class Wcsdm extends WC_Shipping_Method {
 				'desc_tip'    => true,
 			),
 			'calc_type'               => array(
-				'title'       => __( 'Calculation Type', 'wcsdm' ),
+				'title'       => __( 'Progressive Total Cost', 'wcsdm' ),
 				'type'        => 'select',
 				'class'       => 'wc-enhanced-select',
-				'default'     => 'per_item',
+				'default'     => 'per_order',
 				'options'     => array(
-					'per_item'           => __( 'Charge shipping for each items multiplied with quantity', 'wcsdm' ),
-					'per_product'        => __( 'Charge shipping grouped by product', 'wcsdm' ),
-					'per_shipping_class' => __( 'Charge shipping grouped by product shipping class', 'wcsdm' ),
-					'per_order'          => __( 'Charge shipping for the most expensive item shipping cost', 'wcsdm' ),
+					'per_order'          => __( 'No', 'wcsdm' ),
+					'per_shipping_class' => __( 'Per Shipping Class: Accumulate total shipping cost by shipping class ID', 'wcsdm' ),
+					'per_product'        => __( 'Per Product: Accumulate total shipping cost by product ID', 'wcsdm' ),
+					'per_item'           => __( 'Per Unit: Accumulate total shipping cost by quantity', 'wcsdm' ),
 				),
+				'description' => __( 'By default the total shipping cost will be flat by choosing the most expensive shipping rate by comparing for each items added into the cart. Example: there was 2 products with different shipping class in the cart, then the highest rate will be used as the total shipping cost.', 'wcsdm' ),
+				'desc_tip'    => true,
 			),
 			'table_rates'             => array(
 				'type' => 'table_rates',
+			),
+			'table_advanced'          => array(
+				'type'  => 'table_advanced',
+				'title' => __( 'Advanced Rate Settings', 'wcsdm' ),
 			),
 		);
 	}
@@ -277,7 +295,8 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @param string $key Settings field key.
 	 * @param array  $data Settings field data.
 	 */
-	public function generate_coordinates_html( $key, $data ) {}
+	public function generate_coordinates_html( $key, $data ) {
+	}
 
 	/**
 	 * Generate table rates HTML form.
@@ -291,41 +310,30 @@ class Wcsdm extends WC_Shipping_Method {
 		foreach ( WC()->shipping->get_shipping_classes() as $shipping_classes_key => $shipping_classes_value ) {
 			$shipping_classes[ $shipping_classes_value->term_id ] = $shipping_classes_value;
 		}
-		ksort( $shipping_classes );
+		if ( $shipping_classes ) {
+			ksort( $shipping_classes );
+		}
 		$cols = array(
-			'distance'  => __( 'Max. Distances', 'wcsdm' ),
+			'distance'  => __( 'Maximum Distances', 'wcsdm' ),
 			'cost_type' => __( 'Cost Type', 'wcsdm' ),
-			'class_0'   => __( 'Unspecified', 'wcsdm' ),
+			'class_0'   => $shipping_classes ? __( 'None', 'wcsdm' ) : __( 'Shipping Rate', 'wcsdm' ),
 		);
 		foreach ( $shipping_classes as $shipping_class_id => $shipping_class ) {
 			$cols[ 'class_' . $shipping_class_id ] = $shipping_class->name;
 		}
-		$cols['base'] = __( 'Additional Cost', 'wcsdm' );
-		$cols['free_min_amount'] = __( 'Min. Amount', 'wcsdm' );
-		$cols['free_min_qty']    = __( 'Min. Quantity', 'wcsdm' );
+		$cols['advanced'] = __( 'Advanced', 'wcsdm' );
 		?>
-		<tr valign="top">
-			<td colspan="2">
-				<table id="rates-list-table" class="widefat wc_input_table" cellspacing="0">
+		<tr valign="top" id="wcsdm-table-row-rates" class="wcsdm-table-row wcsdm-table-row-rates">
+			<td class="wcsdm-table-col wcsdm-table-col-rates" colspan="2">
+				<table id="wcsdm-table-rates" class="wc_input_table widefat wcsdm-table wcsdm-table-rates" cellspacing="0">
 					<thead>
-						<tr>
-							<td class="col-checkbox"></td>
-							<td class="col-distance"></td>
-							<td colspan="<?php echo count( $shipping_classes ) + 2; ?>" class="cols-shipping-class">
-								<strong><?php esc_html_e( 'Rate by Shipping Class', 'wcsdm' ); ?></strong><span class="tooltip" data-tooltip="<?php esc_attr_e( 'Enter rate for each products shipping class below. Leave blank to disable shipping rate calculation.', 'wcsdm' ); ?>"></span>
-							</td>
-							<td class="col-base"></td>
-							<td class="col-free-shipping" colspan="2">
-								<strong><?php esc_html_e( 'Free Shipping', 'wcsdm' ); ?></strong><span class="tooltip" data-tooltip="<?php esc_attr_e( 'The shipping will be defined as FREE if any of conditions below are met. Leave blank to disable free shipping.', 'wcsdm' ); ?>"></span>
-							</td>
-						</tr>
 						<?php $this->generate_rate_row_heading( $cols ); ?>
 					</thead>
 					<tbody>
 						<?php
 						if ( $this->table_rates ) :
 							foreach ( $this->table_rates as $table_rate ) :
-								$this->generate_rate_row( $cols, $this->get_field_key( $key ), $table_rate );
+								$this->generate_rate_row( $this->get_field_key( $key ), $table_rate );
 							endforeach;
 						endif;
 						?>
@@ -335,7 +343,10 @@ class Wcsdm extends WC_Shipping_Method {
 					</tfoot>
 				</table>
 				<script type="text/template" id="tmpl-rates-list-input-table-row">
-					<?php $this->generate_rate_row( $cols, $this->get_field_key( $key ) ); ?>
+					<?php $this->generate_rate_row( $this->get_field_key( $key ) ); ?>
+				</script>
+				<script type="text/template" id="tmpl-btn-advanced">
+					<button id="btn-dummy" class="button button-primary button-large"><?php esc_html_e( 'Apply Changes', 'wcsdm' ); ?></button>
 				</script>
 			</td>
 		</tr>
@@ -363,8 +374,18 @@ class Wcsdm extends WC_Shipping_Method {
 					<?php endif; ?>
 				</div>
 			</td>
-			<?php foreach ( $cols as $col_key => $col_label ) : ?>
-				<td class="col-data col-<?php echo esc_html( $col_key ); ?>"><?php echo esc_html( $col_label ); ?></td>
+			<?php foreach ( $this->rates_fields( false ) as $key => $col ) : ?>
+				<?php if ( ! $col['advanced'] ) : ?>
+				<td class="col-data col-<?php echo esc_html( $key ); ?>">
+					<?php if ( 'top' === $position && 'advanced' !== $key && ! empty( $col['description'] ) ) : ?>
+						<span class="tooltip" data-tooltip="<?php echo esc_attr( $col['description'] ); ?>">
+					<?php endif; ?>
+					<strong><?php echo esc_html( $col['title'] ); ?></strong>
+					<?php if ( 'top' === $position && 'advanced' !== $key && ! empty( $col['description'] ) ) : ?>
+						</span>
+					<?php endif; ?>
+				</td>
+				<?php endif; ?>
 			<?php endforeach; ?>
 		</tr>
 		<?php
@@ -373,84 +394,258 @@ class Wcsdm extends WC_Shipping_Method {
 	/**
 	 * Generate table rate columns
 	 *
-	 * @param array  $cols Table rate columns.
 	 * @param string $field_key Table rate column key.
 	 * @param array  $rate Table rate data.
 	 * @return void
 	 */
-	private function generate_rate_row( $cols, $field_key, $rate = array() ) {
+	private function generate_rate_row( $field_key, $rate = array() ) {
 		?>
 		<tr>
-			<td class="col-checkbox"><div><input class="select-item" type="checkbox"></div></td>
-			<?php foreach ( $cols as $col_key => $col_label ) : ?>
-				<td class="col-data col-<?php echo esc_html( $col_key ); ?>">
-					<?php
-					$value = isset( $rate[ $col_key ] ) ? $rate[ $col_key ] : '';
-					switch ( $col_key ) {
-						case 'distance':
-							?>
-							<div class="field-group <?php echo esc_attr( $col_key ); ?>" data-unit-metric="<?php esc_attr_e( 'KM', 'wcsdm' ); ?>" data-unit-imperial="<?php esc_attr_e( 'MI', 'wcsdm' ); ?>">
-								<div class="field-group-input">
-									<input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="input-text regular-input no-decimal field-<?php echo esc_attr( $col_key ); ?>" type="number" value="<?php echo esc_attr( $value ); ?>" min="0" step="5">
+			<td class="col-checkbox">
+				<div><input class="select-item" type="checkbox"></div>
+			</td>
+			<?php foreach ( $this->rates_fields( false ) as $key => $col ) : ?>
+				<?php
+				$data_id    = 'woocommerce_' . $this->id . '_' . $key;
+				$input_name = $field_key . '_' . $key;
+				$value      = isset( $rate[ $key ] ) ? $rate[ $key ] : ( isset( $col['default'] ) ? $col['default'] : '' );
+				switch ( $key ) {
+					case 'distance':
+						?>
+						<td class="col-data col-<?php echo esc_html( $key ); ?>">
+							<div class="field-groups has-units <?php echo esc_attr( $key ); ?>">
+								<div class="field-group-item field-group-item-input">
+									<input class="input-text regular-input input-cost wcsdm-input-dummy field-<?php echo esc_attr( $key ); ?>" data-id="<?php echo esc_attr( $data_id ); ?>" type="number" value="<?php echo esc_attr( $value ); ?>" min="0" step="any">
 								</div>
-								<div class="field-group-icon"></div>
+								<div class="field-group-item field-group-item-units"></div>
 							</div>
-							<?php
-							break;
-						case 'cost_type':
-							?>
-							<select class="select cost-type" name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]">
-								<option value="flat" <?php selected( $value, 'flat' ); ?>><?php esc_html_e( 'Flat', 'wcsdm' ); ?></option>
-								<option value="per_unit" <?php selected( $value, 'per_unit' ); ?>></option>
+							<input name="<?php echo esc_attr( $input_name ); ?>[]" type="hidden" value="<?php echo esc_attr( $value ); ?>" class="wcsdm-input wcsdm-input-<?php echo esc_attr( $key ); ?> <?php echo esc_attr( $data_id ); ?>" data-id="<?php echo esc_attr( $data_id ); ?>">
+						</td>
+						<?php
+						break;
+					case 'cost_type':
+						?>
+						<td class="col-data col-<?php echo esc_html( $key ); ?>">
+							<select class="select cost-type wcsdm-input-dummy" data-id="<?php echo esc_attr( $data_id ); ?>">
+								<?php foreach ( $col['options'] as $option_value => $option_text ) : ?>
+									<option value="<?php echo esc_attr( $option_value ); ?>" <?php selected( $value, $option_value ); ?>><?php echo esc_html( $option_text ); ?></option>
+								<?php endforeach; ?>
 							</select>
-							<?php
-							break;
-						case 'base':
-							?>
-							<div class="field-group <?php echo esc_attr( $col_key ); ?>">
-								<div class="field-group-icon"><?php echo esc_attr( get_woocommerce_currency() ); ?></div>
-								<div class="field-group-input">
-									<input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="input-text regular-input field-<?php echo esc_attr( $col_key ); ?>" type="number" value="<?php echo esc_attr( $value ); ?>" min="0" step="any">
+							<input name="<?php echo esc_attr( $input_name ); ?>[]" type="hidden" value="<?php echo esc_attr( $value ); ?>" class="wcsdm-input wcsdm-input-<?php echo esc_attr( $key ); ?> <?php echo esc_attr( $data_id ); ?>" data-id="<?php echo esc_attr( $data_id ); ?>">
+						</td>
+						<?php
+						break;
+					case 'class_0':
+						?>
+						<td class="col-data col-<?php echo esc_html( $key ); ?>">
+							<div class="field-groups has-units <?php echo esc_attr( $key ); ?>">
+								<div class="field-group-item field-group-item-units"><?php echo esc_attr( get_woocommerce_currency() ); ?></div>
+								<div class="field-group-item field-group-item-input">
+									<input class="input-text regular-input input-cost wcsdm-input-dummy field-<?php echo esc_attr( $key ); ?>" data-id="<?php echo esc_attr( $data_id ); ?>" type="number" value="<?php echo esc_attr( $value ); ?>" min="0" step="any">
 								</div>
 							</div>
-							<?php
+							<input name="<?php echo esc_attr( $input_name ); ?>[]" type="hidden" value="<?php echo esc_attr( $value ); ?>" class="wcsdm-input wcsdm-input-<?php echo esc_attr( $key ); ?> <?php echo esc_attr( $data_id ); ?>" data-id="<?php echo esc_attr( $data_id ); ?>">
+						</td>
+						<?php
+						break;
+					case 'free':
+						?>
+						<td class="col-data col-<?php echo esc_html( $key ); ?>">
+							<a href="#" class="advanced-rate-settings"><span class="dashicons free-shipping-<?php echo esc_attr( $value ); ?>"></span></a>
+							<input name="<?php echo esc_attr( $input_name ); ?>[]" type="hidden" value="<?php echo esc_attr( $value ); ?>" class="wcsdm-input wcsdm-input-<?php echo esc_attr( $key ); ?> <?php echo esc_attr( $data_id ); ?>" data-id="<?php echo esc_attr( $data_id ); ?>">
+						</td>
+						<?php
+						break;
+				}
+				?>
+			<?php endforeach; ?>
+			<td class="col-advanced">
+				<?php
+				foreach ( $this->rates_fields( false ) as $key => $col ) :
+					$data_id    = 'woocommerce_' . $this->id . '_' . $key;
+					$input_name = $field_key . '_' . $key;
+					$value      = isset( $rate[ $key ] ) ? $rate[ $key ] : '';
+					switch ( $key ) {
+						case 'distance':
+						case 'cost_type':
+						case 'class_0':
+						case 'free':
+							// Do nothing.
 							break;
-						case 'free_min_qty':
+						case 'advanced':
 							?>
-							<div class="field-group <?php echo esc_attr( $col_key ); ?>">
-								<div class="field-group-input">
-									<input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="input-text regular-input no-decimal field-<?php echo esc_attr( $col_key ); ?>" type="number" value="<?php echo esc_attr( $value ); ?>" min="0" step="1">
-								</div>
-								<div class="field-group-icon"><?php esc_attr_e( 'PCS', 'wcsdm' ); ?></div>
-							</div>
-							<?php
-							break;
-						case 'free_min_amount':
-							?>
-							<div class="field-group <?php echo esc_attr( $col_key ); ?>">
-								<div class="field-group-icon"><?php echo esc_attr( get_woocommerce_currency() ); ?></div>
-								<div class="field-group-input">
-									<input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="input-text regular-input field-<?php echo esc_attr( $col_key ); ?>" type="number" value="<?php echo esc_attr( $value ); ?>" min="0" step="any">
-								</div>
-							</div>
+							<a href="#" class="advanced-rate-settings" title="<?php echo esc_attr( $col['description'] ); ?>"><span class="dashicons dashicons-admin-generic"></span></a>
 							<?php
 							break;
 						default:
 							?>
-							<div class="field-group field-group-cost <?php echo esc_attr( $col_key ); ?>">
-								<div class="field-group-icon"><?php echo esc_attr( get_woocommerce_currency() ); ?></div>
-								<div class="field-group-input">
-									<input name="<?php echo esc_attr( $field_key ); ?>_<?php echo esc_attr( $col_key ); ?>[]" class="input-text regular-input field-cost field-<?php echo esc_attr( $col_key ); ?>" type="number" value="<?php echo esc_attr( $value ); ?>" min="0" step="any">
-								</div>
-							</div>
+							<input type="hidden" name="<?php echo esc_attr( $input_name ); ?>[]" value="<?php echo esc_attr( $value ); ?>" class="wcsdm-input wcsdm-input-<?php echo esc_attr( $key ); ?> <?php echo esc_attr( $data_id ); ?>" data-id="<?php echo esc_attr( $data_id ); ?>">
 							<?php
 							break;
 					}
 					?>
-				</td>
-			<?php endforeach; ?>
+				<?php endforeach; ?>
+			</td>
 		</tr>
 		<?php
+	}
+
+	/**
+	 * Generate advanced settings form
+	 *
+	 * @since 1.2.4
+	 * @param string $key Settings field key.
+	 * @param array  $data Settings field data.
+	 */
+	public function generate_table_advanced_html( $key, $data ) {
+		$field_key = $this->get_field_key( $key );
+
+		$defaults = array(
+			'title'             => '',
+			'disabled'          => false,
+			'class'             => '',
+			'css'               => '',
+			'placeholder'       => '',
+			'type'              => 'text',
+			'desc_tip'          => false,
+			'description'       => '',
+			'custom_attributes' => array(),
+			'options'           => array(),
+		);
+
+		$data = wp_parse_args( $data, $defaults );
+
+		ob_start();
+		?>
+		<tr valign="top" id="wcsdm-table-row-advanced" class="wcsdm-table-row wcsdm-table-row-advanced">
+			<td class="wcsdm-table-col wcsdm-table-col-advanced" colspan="2">
+				<h3 class="wc-settings-sub-title"><?php echo wp_kses_post( $data['title'] ); ?></h3>
+				<table id="wcsdm-table-advanced" class="form-table wcsdm-table wcsdm-table-advanced" cellspacing="0">
+					<tbody>
+						<?php $this->generate_settings_html( $this->rates_fields() ); ?>
+					</tbody>
+				</table>
+			</td>
+		</tr>
+		<?php
+		return ob_get_clean();
+	}
+
+	/**
+	 * Populate rate fields
+	 *
+	 * @since    1.4.2
+	 *
+	 * @param bool $advanced Is fields will be displayed in adnaced settings form.
+	 * @return array
+	 */
+	public function rates_fields( $advanced = true ) {
+		$shipping_classes = array();
+		foreach ( WC()->shipping->get_shipping_classes() as $shipping_classes_key => $shipping_classes_value ) {
+			$shipping_classes[ $shipping_classes_value->term_id ] = $shipping_classes_value;
+		}
+
+		$fields = array(
+			'distance'        => array(
+				'type'        => 'number',
+				'title'       => __( 'Maximum Distances', 'wcsdm' ),
+				'class'       => 'wcsdm-input',
+				'description' => __( 'The maximum distances rule for the shipping rate. This input is required.', 'wcsdm' ),
+				'desc_tip'    => true,
+				'advanced'    => false,
+			),
+			'cost_type'       => array(
+				'type'        => 'select',
+				'title'       => __( 'Cost Type', 'wcsdm' ),
+				'class'       => 'wcsdm-input',
+				'default'     => 'flat',
+				'options'     => array(
+					'flat'     => __( 'Flat', 'wcsdm' ),
+					'per_unit' => '',
+				),
+				'description' => __( 'Determine wether to use flat price or flexible price per distances unit.', 'wcsdm' ),
+				'desc_tip'    => true,
+				'advanced'    => false,
+			),
+			'class_0'         => array(
+				'type'        => 'number',
+				'title'       => __( 'Shipping Rate', 'wcsdm' ),
+				'class'       => 'wcsdm-input',
+				'description' => __( 'The shipping rate within the distances range. This input is required.', 'wcsdm' ),
+				'desc_tip'    => true,
+				'advanced'    => false,
+			),
+			'base'            => array(
+				'type'        => 'number',
+				'title'       => __( 'Additional Cost', 'wcsdm' ),
+				'class'       => 'wcsdm-input',
+				'default'     => '0',
+				'description' => __( 'Surcharge that will be added to the total shipping cost.', 'wcsdm' ),
+				'desc_tip'    => true,
+				'advanced'    => true,
+			),
+			'free'            => array(
+				'type'        => 'select',
+				'title'       => __( 'Free Shipping', 'wcsdm' ),
+				'class'       => 'wcsdm-input',
+				'default'     => 'no',
+				'options'     => array(
+					'no'      => __( 'Disable', 'wcsdm' ),
+					'yes'     => __( 'Yes, enable as Free Shipping', 'wcsdm' ),
+					'yes_alt' => __( 'Yes, enable as Free Shipping if any of rules below is matched', 'wcsdm' ),
+				),
+				'description' => __( 'Free shipping options within the distances range.', 'wcsdm' ),
+				'desc_tip'    => true,
+				'advanced'    => false,
+			),
+			'free_min_amount' => array(
+				'type'        => 'number',
+				'title'       => __( 'Rule #1: Minimum Order Amount', 'wcsdm' ),
+				'class'       => 'wcsdm-input',
+				'description' => __( 'The free shipping rule for minimum order amount. Leave blank to disable this rule. But at least one rule must be defined either by minimum order amount or minimum order quantity.', 'wcsdm' ),
+				'desc_tip'    => true,
+				'advanced'    => true,
+			),
+			'free_min_qty'    => array(
+				'type'        => 'number',
+				'title'       => __( 'Rule #2: Minimum Order Quantity', 'wcsdm' ),
+				'class'       => 'wcsdm-input',
+				'description' => __( 'The free shipping rule for minimum order quantity. Leave blank to disable this rule. But at least one rule must be defined either by minimum order amount or minimum order quantity.', 'wcsdm' ),
+				'desc_tip'    => true,
+				'advanced'    => true,
+			),
+			'advanced'        => array(
+				'type'        => 'link',
+				'title'       => __( 'Advanced', 'wcsdm' ),
+				'description' => __( 'Advanced Settings', 'wcsdm' ),
+				'advanced'    => false,
+			),
+		);
+
+		if ( $advanced ) {
+			unset( $fields['advanced'] );
+		}
+
+		if ( $shipping_classes ) {
+			$new_fields = array();
+			foreach ( $fields as $key => $field ) {
+				$new_fields[ $key ] = $field;
+				if ( 'class_0' === $key ) {
+					foreach ( $shipping_classes as $class_id => $class_obj ) {
+						$new_fields[ 'class_' . $class_id ] = array_merge($field, array(
+							// translators: %s is Product shipping class name.
+							'title'       => sprintf( __( 'Shipping Rate for "%s"', 'wcsdm' ), $class_obj->name ),
+							'description' => __( 'Shipping rate for specific product shipping class. This rate will override the default shipping rate defined above. Zero value will be ignored.', 'wcsdm' ),
+							'desc_tip'    => true,
+							'advanced'    => true,
+						));
+					}
+				}
+			}
+			return $new_fields;
+		}
+
+		return $fields;
 	}
 
 	/**
@@ -543,6 +738,7 @@ class Wcsdm extends WC_Shipping_Method {
 
 				foreach ( $post_data_value as $index => $row_value ) {
 					switch ( $data_key ) {
+						case 'free':
 						case 'cost_type':
 							$value = $row_value;
 							break;
@@ -577,13 +773,25 @@ class Wcsdm extends WC_Shipping_Method {
 
 			foreach ( $rates as $key => $value ) {
 				if ( empty( $value['distance'] ) ) {
-					continue;
+					if ( is_numeric( $value['distance'] ) ) {
+						throw new Exception( __( 'Maximum distance input field value must be greater than zero', 'wcsdm' ) );
+					}
+					throw new Exception( __( 'Maximum distance input field is required', 'wcsdm' ) );
+				}
+				if ( empty( $value['class_0'] ) ) {
+					if ( is_numeric( $value['class_0'] ) ) {
+						throw new Exception( __( 'Shipping rate input field value must be greater than zero', 'wcsdm' ) );
+					}
+					throw new Exception( __( 'Shipping rate input field is required', 'wcsdm' ) );
+				}
+				if ( 'yes_alt' === $value['free'] && empty( $value['free_min_amount'] ) && empty( $value['free_min_qty'] ) ) {
+					throw new Exception( __( 'You must define at least one free shipping rule either by minimum order amount or minimum order quantity', 'wcsdm' ) );
 				}
 				$rates_filtered[ $value['distance'] ] = $value;
 			}
 
 			if ( empty( $rates_filtered ) ) {
-				throw new Exception( __( 'Shipping Rates is required', 'wcsdm' ) );
+				throw new Exception( __( 'Shipping rates table is empty', 'wcsdm' ) );
 			}
 
 			ksort( $rates_filtered );
@@ -635,29 +843,37 @@ class Wcsdm extends WC_Shipping_Method {
 				throw new Exception( $rate_data->get_error_message() );
 			}
 
-			// Check if free shipping by minimum order amount.
-			$is_free_shipping = false;
-			if ( strlen( $rate_data['free_min_amount'] ) && $woocommerce->cart->get_cart_contents_total() >= $rate_data['free_min_amount'] ) {
-				$is_free_shipping = true;
-			}
+			// Check if free shipping.
+			if ( 'no' !== $rate_data['free'] ) {
+				$is_free_shipping = 'yes' === $rate_data['free'];
 
-			// Check if free shipping by minimum order quantity.
-			if ( strlen( $rate_data['free_min_qty'] ) && $woocommerce->cart->get_cart_contents_count() >= $rate_data['free_min_qty'] ) {
-				$is_free_shipping = true;
-			}
+				if ( ! $is_free_shipping ) {
+					// Check if free shipping by matc with rules defined.
+					if ( strlen( $rate_data['free_min_amount'] ) && $woocommerce->cart->get_cart_contents_total() >= $rate_data['free_min_amount'] ) {
+						$is_free_shipping = true;
+					}
 
-			// Apply free shipping rate.
-			if ( $is_free_shipping ) {
-				// Register the rate.
-				$this->register_rate(
-					array(
-						'id'        => $this->get_rate_id(),
-						'label'     => __( 'Free Shipping', 'wcsdm' ),
-						'cost'      => 0,
-						'meta_data' => $api_request,
-					)
-				);
-				return;
+					// Check if free shipping by minimum order quantity.
+					if ( strlen( $rate_data['free_min_qty'] ) && $woocommerce->cart->get_cart_contents_count() >= $rate_data['free_min_qty'] ) {
+						$is_free_shipping = true;
+					}
+				}
+
+				// Apply free shipping rate.
+				if ( $is_free_shipping ) {
+					// Register the rate.
+					$this->register_rate(
+						array(
+							'id'        => $this->get_rate_id(),
+							'label'     => __( 'Free Shipping', 'wcsdm' ),
+							'cost'      => 0,
+							'taxes'     => false,
+							'package'   => $package,
+							'meta_data' => $api_request,
+						)
+					);
+					return;
+				}
 			}
 
 			$cost_total              = 0;
@@ -669,11 +885,19 @@ class Wcsdm extends WC_Shipping_Method {
 			foreach ( $package['contents'] as $hash => $item ) {
 				$shipping_class_id = $item['data']->get_shipping_class_id();
 				$product_id        = $item['data']->get_id();
+				$default_rate      = isset( $rate_data['class_0'] ) ? $rate_data['class_0'] : false;
 
 				$calculated_cost = isset( $rate_data[ 'class_' . $shipping_class_id ] ) ? $rate_data[ 'class_' . $shipping_class_id ] : false;
 
-				if ( ! $calculated_cost && is_numeric( $calculated_cost ) ) {
-					throw new Exception( __( 'Product shipping class rate is not defined', 'wcsdm' ) );
+				if ( ! $calculated_cost && $default_rate ) {
+					$calculated_cost = $default_rate;
+				}
+
+				if ( ! $calculated_cost ) {
+					if ( is_numeric( $calculated_cost ) ) {
+						throw new Exception( __( 'Use the free shipping option instead of set the shipping rate as zero', 'wcsdm' ) );
+					}
+					throw new Exception( __( 'Unable to calculate the shipping rate', 'wcsdm' ) );
 				}
 
 				// Multiply shipping cost with distance unit.
@@ -689,20 +913,18 @@ class Wcsdm extends WC_Shipping_Method {
 						}
 						break;
 					case 'per_shipping_class':
-						if ( isset( $cost_per_shipping_class[ $shipping_class_id ] ) ) {
-							if ( $calculated_cost > $cost_per_shipping_class[ $shipping_class_id ] ) {
-								$cost_per_shipping_class[ $shipping_class_id ] = $calculated_cost;
-							}
-						} else {
+						if ( ! isset( $cost_per_shipping_class[ $shipping_class_id ] ) ) {
+							$cost_per_shipping_class[ $shipping_class_id ] = $calculated_cost;
+						}
+						if ( isset( $cost_per_shipping_class[ $shipping_class_id ] ) && $calculated_cost > $cost_per_shipping_class[ $shipping_class_id ] ) {
 							$cost_per_shipping_class[ $shipping_class_id ] = $calculated_cost;
 						}
 						break;
 					case 'per_product':
-						if ( isset( $cost_per_product[ $product_id ] ) ) {
-							if ( $calculated_cost > $cost_per_product[ $product_id ] ) {
-								$cost_per_product[ $product_id ] = $calculated_cost;
-							}
-						} else {
+						if ( ! isset( $cost_per_product[ $product_id ] ) ) {
+							$cost_per_product[ $product_id ] = $calculated_cost;
+						}
+						if ( isset( $cost_per_product[ $product_id ] ) && $calculated_cost > $cost_per_product[ $product_id ] ) {
 							$cost_per_product[ $product_id ] = $calculated_cost;
 						}
 						break;
@@ -742,13 +964,14 @@ class Wcsdm extends WC_Shipping_Method {
 				'id'        => $this->get_rate_id(),
 				'label'     => $label,
 				'cost'      => $cost_total,
+				'package'   => $package,
 				'meta_data' => $api_request,
 			);
 
 			// Register the rate.
 			$this->register_rate( $rate );
 		} catch ( Exception $e ) {
-			$this->show_debug( $e->getMessage() );
+			$this->show_debug( $e->getMessage(), is_cart() ? 'error' : 'notice' );
 		}
 	}
 
@@ -801,7 +1024,8 @@ class Wcsdm extends WC_Shipping_Method {
 			}
 		}
 
-		return new WP_Error( 'no_rates', __( 'No rates data availbale.', 'wcsdm' ) );
+		// translators: %1$s distance value, %2$s distance unit.
+		return new WP_Error( 'no_rates', sprintf( __( 'No shipping rates defined within distance range: %1$s %2$s', 'wcsdm' ), $distance, 'imperial' === $this->gmaps_api_units ? 'mi' : 'km' ) );
 	}
 
 	/**
@@ -826,22 +1050,13 @@ class Wcsdm extends WC_Shipping_Method {
 			return false;
 		}
 
-		$request_url_args = array(
-			'key'          => rawurlencode( $this->gmaps_api_key ),
-			'mode'         => rawurlencode( $this->gmaps_api_mode ),
-			'avoid'        => is_string( $this->gmaps_api_avoid ) ? rawurlencode( $this->gmaps_api_avoid ) : '',
-			'units'        => rawurlencode( $this->gmaps_api_units ),
-			'language'     => rawurlencode( get_locale() ),
-			'origins'      => rawurlencode( implode( ',', $origin_info ) ),
-			'destinations' => rawurlencode( implode( ',', $destination_info ) ),
-		);
-
 		$cache_key = $this->id . '_api_request_' . md5(
 			wp_json_encode(
 				array(
-					'request_url_args' => $request_url_args,
-					'table_rates'      => $this->table_rates,
+					'destination_info' => $destination_info,
+					'origin_info'      => $origin_info,
 					'package'          => $package,
+					'all_options'      => $this->all_options,
 				)
 			)
 		);
@@ -854,6 +1069,16 @@ class Wcsdm extends WC_Shipping_Method {
 			$this->show_debug( __( 'Cached data', 'wcsdm' ) . ': ' . wp_json_encode( $cached_data ) );
 			return $cached_data;
 		}
+
+		$request_url_args = array(
+			'key'          => rawurlencode( $this->gmaps_api_key ),
+			'mode'         => rawurlencode( $this->gmaps_api_mode ),
+			'avoid'        => is_string( $this->gmaps_api_avoid ) ? rawurlencode( $this->gmaps_api_avoid ) : '',
+			'units'        => rawurlencode( $this->gmaps_api_units ),
+			'language'     => rawurlencode( get_locale() ),
+			'origins'      => rawurlencode( implode( ',', $origin_info ) ),
+			'destinations' => rawurlencode( implode( ',', $destination_info ) ),
+		);
 
 		$request_url = add_query_arg( $request_url_args, $this->google_api_url );
 
@@ -1049,20 +1274,22 @@ class Wcsdm extends WC_Shipping_Method {
 					if ( empty( $country_code ) ) {
 						$country_code = $data[ $key ];
 					}
-					$full_country             = isset( WC()->countries->countries[ $country_code ] ) ? WC()->countries->countries[ $country_code ] : $country_code;
-					$destination_info[ $key ] = trim( $full_country );
+					$destination_info[ $key ] = isset( WC()->countries->countries[ $country_code ] ) ? WC()->countries->countries[ $country_code ] : $country_code;
 					break;
 				case 'state':
 					if ( empty( $country_code ) ) {
 						$country_code = $data['country'];
 					}
-					$full_state               = isset( WC()->countries->states[ $country_code ][ $data[ $key ] ] ) ? WC()->countries->states[ $country_code ][ $data[ $key ] ] : $data[ $key ];
-					$destination_info[ $key ] = trim( $full_state );
+					$destination_info[ $key ] = isset( WC()->countries->states[ $country_code ][ $data[ $key ] ] ) ? WC()->countries->states[ $country_code ][ $data[ $key ] ] : $data[ $key ];
 					break;
 				default:
-					$destination_info[ $key ] = trim( $data[ $key ] );
+					$destination_info[ $key ] = $data[ $key ];
 					break;
 			}
+		}
+
+		if ( $destination_info ) {
+			$destination_info = array_map( 'trim', $destination_info );
 		}
 
 		/**
