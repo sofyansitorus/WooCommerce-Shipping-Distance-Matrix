@@ -8,28 +8,31 @@ Stable tag: 1.4.1
 License: GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
-WooCommerce shipping rates calculator based on products shipping class and route distances that calculated using Google Maps Distance Matrix API.
+WooCommerce shipping rates calculator that allows you to easily offer shipping rates based on the distance that calculated using Google Maps Distance Matrix Service API.
 
 == Description ==
-WooCommerce shipping rates calculator based on products shipping class and route distances that calculated using Google Maps Distance Matrix API.
+WooCommerce shipping rates calculator that allows you to easily offer shipping rates based on the distance that calculated using Google Maps Distance Matrix Service API.
 
-This plugin perfect for online store that use local shipping or private shipping such as selling flower, food & beverage but not limited to.
-
-This plugin require Google Maps Distance Matrix API Key and service is enabled. [Click here](https://developers.google.com/maps/documentation/distance-matrix/get-api-key) to go to Google API Console to get API Key and to enable the service.
+This plugin perfect perfect for the store owner who wants to charge customers for delivery of items based on how far away they are from the store. A perfect example would be for store that use private shipping or local shipping company.
 
 = Key Features =
 
-* Set shipping cost as flat rate or per km/mi schema.
-* Set base fee for per km/mi shipping cost schema.
-* Set different shipping cost for each product shipping class.
+* Set shipping rate as flat price or flexible price per distances unit.
+* Set different shipping rate for each product shipping class.
+* Set free shipping with or without rules for each distance ranges.
+* Set surcharge for each distance ranges.
 * Set unlimited distances ranges.
+* Set flat or pregressive total shipping cost.
 * Set shipping origin location coordinates using Maps Picker.
 * Set distances unit: Mile, Kilometre.
 * Set travel mode: Driving, Walking, Bicycling.
 * Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
-* Set cost calculation type: Per item, Per product, Per shipping class, Per order.
 * Set visibility distance info to customer.
 * Set fallback request if there is no results for API request using full address.
+
+= Dependencies =
+
+This plugin require Google Maps Distance Matrix API Key and service is enabled. [Click here](https://developers.google.com/maps/documentation/distance-matrix/get-api-key) to go to Google API Console to get API Key and to enable the service.
 
 == Installation ==
 = Minimum Requirements =
@@ -71,8 +74,11 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 * [Plugin GitHub Repository](https://github.com/sofyansitorus/WooCommerce-Shipping-Distance-Matrix)
 
 == Screenshots ==
-1. Settings panel top area
-2. Settings panel bottom area
+1. Settings Panel: General
+2. Settings Panel: Table Rates
+3. Settings Panel: Advanced Rate Settings
+4. Cart Page
+5. Cart Page - Free Shipping
 
 == Changelog ==
 
