@@ -35,6 +35,9 @@ window.console.error = function () {
 	windowConsoleError.apply(windowConsoleError, arguments);
 };
 
+var rowIndex;
+var rowScrollTop = 0;
+
 var wcsdmSetting = {
 	_zoomLevel: 16,
 	init: function (params) {
@@ -111,49 +114,44 @@ var wcsdmSetting = {
 			}
 		});
 
+		// Handle on dummy field value changed.
 		$(document).on('change', '#wcsdm-table-rates tbody .wcsdm-input-dummy', function (e) {
 			$(e.currentTarget).closest('td').find('.wcsdm-input').val($(e.currentTarget).val());
 		});
 
+		// Handle on free shipping option field value changed.
 		$(document).on('change', '#woocommerce_wcsdm_free', function (e) {
-			switch ($(e.currentTarget).val()) {
-				case 'yes_alt':
-					$('#woocommerce_wcsdm_free_min_amount').closest('tr').show();
-					$('#woocommerce_wcsdm_free_min_qty').closest('tr').show();
-					break;
-
-				default:
-					$('#woocommerce_wcsdm_free_min_amount').closest('tr').hide();
-					$('#woocommerce_wcsdm_free_min_qty').closest('tr').hide();
-					break;
+			$('.free-shipping-yes_alt').closest('tr').hide();
+			if ($(e.currentTarget).val() === 'yes_alt') {
+				$('.free-shipping-yes_alt').closest('tr').show();
 			}
 		});
 
-		var rowIndex;
-
-		// Handle on distance field changed.
+		// Handle on advanced rate settings link clicked.
 		$(document).on('click', '.advanced-rate-settings', function (e) {
 			e.preventDefault();
-			var $row = $(e.currentTarget).closest('tr');
+			var $row = $(e.currentTarget).closest('tr').removeClass('applied');
+			$row.siblings().removeClass('applied');
 			$row.find('.wcsdm-input').each(function () {
 				$('#' + $(this).data('id')).val($(this).val()).attr('name', '').trigger('change');
 			});
 			rowIndex = $row.index();
+			rowScrollTop = Math.abs($row.closest('form').position().top);
 			var $section = $(e.currentTarget).closest('section');
 			$section.find('.wcsdm-table-row-advanced').show().siblings().hide();
 			$('#btn-ok').hide().after(wp.template('btn-advanced'));
 			$('#woocommerce_wcsdm_free').trigger('change');
 		});
 
+		// Handle on Apply Change button clicked.
 		$(document).on('click', '#btn-dummy', function (e) {
 			e.preventDefault();
+			var $inputTarget;
 			$('#wcsdm-table-advanced .wcsdm-input').each(function () {
 				var $input = $(this);
 				var inputVal = $input.val();
 				var inputId = $input.attr('id');
-				var $inputTarget = $('#wcsdm-table-rates tbody tr:eq(' + rowIndex + ') .wcsdm-input.' + inputId);
-				$inputTarget.val(inputVal);
-
+				$inputTarget = $('#wcsdm-table-rates tbody tr:eq(' + rowIndex + ')').addClass('applied').find('.wcsdm-input.' + inputId).val(inputVal);
 				if ($inputTarget.hasClass('wcsdm-input-free')) {
 					$inputTarget.closest('td').find('.dashicons').removeClass().addClass('dashicons').addClass('free-shipping-' + inputVal);
 				} else {
@@ -164,7 +162,16 @@ var wcsdmSetting = {
 			$(e.currentTarget).closest('section').find('.wcsdm-table-row-advanced').hide().siblings().show();
 			$(e.currentTarget).remove();
 			$('#btn-ok').show();
-			$('.wc-modal-shipping-method-settings').scrollTop($('.wc-modal-shipping-method-settings').height());
+
+			$('.wc-modal-shipping-method-settings').animate({
+				scrollTop: rowScrollTop
+			}, 500);
+
+			setTimeout(function () {
+				if ($inputTarget) {
+					$inputTarget.closest('tr').removeClass('applied');
+				}
+			}, 1000);
 		});
 
 		// Handle toggle rate rows in bulk.
@@ -362,6 +369,11 @@ var wcsdmSetting = {
 			return;
 		}
 		$checkbox.prop('checked', $this.is(':checked')).trigger('change');
+		if ($this.is(':checked')) {
+			$('.wc-modal-shipping-method-settings').animate({
+				scrollTop: $('.wc-modal-shipping-method-settings').find('form').outerHeight()
+			}, 500);
+		}
 	},
 	_toggleRateRows: function (e) {
 		var $this = $(e.currentTarget);
@@ -369,6 +381,8 @@ var wcsdmSetting = {
 		var $thead = $table.find('thead');
 		var $tbody = $table.find('tbody');
 		var $tfoot = $table.find('tfoot');
+
+		$this.closest('tr').removeClass('applied').siblings().removeClass('applied');
 
 		if ($this.is(':checked')) {
 			$this.closest('tr').addClass('selected');
@@ -396,6 +410,7 @@ var wcsdmSetting = {
 		e.preventDefault();
 		$('#wcsdm-table-rates tbody').append(wp.template('rates-list-input-table-row')).find('tr:last-child .field-distance').focus();
 		$('#woocommerce_wcsdm_gmaps_api_units').trigger('change');
+		$('.wc-modal-shipping-method-settings').scrollTop($('.wc-modal-shipping-method-settings').find('form').outerHeight());
 	},
 	_removeRateRows: function (e) {
 		e.preventDefault();

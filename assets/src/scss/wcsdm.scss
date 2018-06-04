@@ -159,10 +159,26 @@
                 text-align: center;
             }
             tbody {
+                tr {
+                    td,
+                    th {
+                        background-color: #ffffff;
+                        transition: background-color 500ms ease-out;
+                    }
+                }
                 tr.selected {
                     td,
                     th {
                         background-color: #fefbcc;
+                    }
+                }
+                tr.applied {
+                    td,
+                    th {
+                        background-color: #ccf9ff !important;
+                        .advanced-rate-settings {
+                            display: none;
+                        }
                     }
                 }
                 td {

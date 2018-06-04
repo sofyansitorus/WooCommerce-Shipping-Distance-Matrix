@@ -600,7 +600,7 @@ class Wcsdm extends WC_Shipping_Method {
 			'free_min_amount' => array(
 				'type'        => 'number',
 				'title'       => __( 'Rule #1: Minimum Order Amount', 'wcsdm' ),
-				'class'       => 'wcsdm-input',
+				'class'       => 'wcsdm-input free-shipping-yes_alt',
 				'description' => __( 'The free shipping rule for minimum order amount. Leave blank to disable this rule. But at least one rule must be defined either by minimum order amount or minimum order quantity.', 'wcsdm' ),
 				'desc_tip'    => true,
 				'advanced'    => true,
@@ -609,7 +609,7 @@ class Wcsdm extends WC_Shipping_Method {
 			'free_min_qty'    => array(
 				'type'        => 'number',
 				'title'       => __( 'Rule #2: Minimum Order Quantity', 'wcsdm' ),
-				'class'       => 'wcsdm-input',
+				'class'       => 'wcsdm-input free-shipping-yes_alt',
 				'description' => __( 'The free shipping rule for minimum order quantity. Leave blank to disable this rule. But at least one rule must be defined either by minimum order amount or minimum order quantity.', 'wcsdm' ),
 				'desc_tip'    => true,
 				'advanced'    => true,

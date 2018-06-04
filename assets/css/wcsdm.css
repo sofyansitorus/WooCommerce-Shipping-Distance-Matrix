@@ -139,9 +139,22 @@
   width: 112px;
   text-align: center; }
 
+.wcsdm-table-row .wcsdm-table.wcsdm-table-rates tbody tr td,
+.wcsdm-table-row .wcsdm-table.wcsdm-table-rates tbody tr th {
+  background-color: #ffffff;
+  -webkit-transition: background-color 500ms ease-out;
+  transition: background-color 500ms ease-out; }
+
 .wcsdm-table-row .wcsdm-table.wcsdm-table-rates tbody tr.selected td,
 .wcsdm-table-row .wcsdm-table.wcsdm-table-rates tbody tr.selected th {
   background-color: #fefbcc; }
+
+.wcsdm-table-row .wcsdm-table.wcsdm-table-rates tbody tr.applied td,
+.wcsdm-table-row .wcsdm-table.wcsdm-table-rates tbody tr.applied th {
+  background-color: #ccf9ff !important; }
+  .wcsdm-table-row .wcsdm-table.wcsdm-table-rates tbody tr.applied td .advanced-rate-settings,
+  .wcsdm-table-row .wcsdm-table.wcsdm-table-rates tbody tr.applied th .advanced-rate-settings {
+    display: none; }
 
 .wcsdm-table-row .wcsdm-table.wcsdm-table-rates tbody td {
   text-align: center; }
