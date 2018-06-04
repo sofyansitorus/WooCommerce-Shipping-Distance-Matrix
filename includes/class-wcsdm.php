@@ -350,20 +350,20 @@ class Wcsdm extends WC_Shipping_Method {
 		$fields = $this->rates_fields( true );
 		?>
 		<?php if ( 'top' === $position ) : ?>
-		<tr>
+		<tr id="row-heading-top" class="row-heading row-heading-top">
 			<td colspan="<?php echo esc_attr( count( $fields ) + 1 ); ?>" class="full-width-col">
 				<strong><?php esc_html_e( 'Distance Rate Rules', 'wcsdm' ); ?></strong>
 			</td>
 		</tr>
 		<?php endif; ?>
-		<tr>
+		<tr class="row-heading row-heading-both">
 			<td class="col-checkbox">
 				<div>
 					<?php if ( 'top' === $position ) : ?>
 						<input class="select-item" type="checkbox">
 					<?php else : ?>
-						<a href="#" class="add_row button"><?php esc_html_e( 'Add Row', 'wcsdm' ); ?></a>
-						<a href="#" class="remove_rows button" style="display: none"><?php esc_html_e( 'Remove Rows', 'wcsdm' ); ?></a>
+						<a href="#" class="add_row button button-primary"><?php esc_html_e( 'Add Row', 'wcsdm' ); ?></a>
+						<a href="#" class="remove_rows button button-secondary delete" style="display: none"><?php esc_html_e( 'Remove Rows', 'wcsdm' ); ?></a>
 					<?php endif; ?>
 				</div>
 			</td>
@@ -381,6 +381,13 @@ class Wcsdm extends WC_Shipping_Method {
 				<?php endif; ?>
 			<?php endforeach; ?>
 		</tr>
+		<?php if ( 'top' !== $position ) : ?>
+		<tr id="row-heading-bottom" class="row-heading row-heading-bottom">
+			<td colspan="<?php echo esc_attr( count( $fields ) + 1 ); ?>" class="full-width-col col-centered">
+				<a href="#" class="add_row button button-primary button-large button-no-rates"><?php esc_html_e( 'Add Rate', 'wcsdm' ); ?></a>
+			</td>
+		</tr>
+		<?php endif; ?>
 		<?php
 	}
 

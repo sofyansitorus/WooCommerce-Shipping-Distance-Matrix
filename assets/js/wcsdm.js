@@ -74,6 +74,7 @@ var wcsdmSetting = {
 			$('.field-distance').trigger('change');
 			$('#woocommerce_wcsdm_gmaps_api_units').trigger('change');
 			$('#woocommerce_wcsdm_gmaps_api_key').trigger('input');
+			self._toggleNoRatesRow();
 		});
 
 		// Handle on API Key field setting changed.
@@ -411,6 +412,7 @@ var wcsdmSetting = {
 		$('#wcsdm-table-rates tbody').append(wp.template('rates-list-input-table-row')).find('tr:last-child .field-distance').focus();
 		$('#woocommerce_wcsdm_gmaps_api_units').trigger('change');
 		$('.wc-modal-shipping-method-settings').scrollTop($('.wc-modal-shipping-method-settings').find('form').outerHeight());
+		wcsdmSetting._toggleNoRatesRow();
 	},
 	_removeRateRows: function (e) {
 		e.preventDefault();
@@ -423,6 +425,14 @@ var wcsdmSetting = {
 		$table.find('tbody [type=checkbox]:checked').each(function (index, checkbox) {
 			$(checkbox).closest('tr').remove();
 		});
+		wcsdmSetting._toggleNoRatesRow();
+	},
+	_toggleNoRatesRow: function () {
+		if ($('#wcsdm-table-rates tbody tr').length) {
+			$('#row-heading-bottom').hide().closest('table').find('thead, tbody, tfoot .row-heading-both').show();
+		} else {
+			$('#row-heading-bottom').show().find('.add_row').show().closest('table').find('thead, tbody, tfoot .row-heading-both').hide();
+		}
 	}
 };
 

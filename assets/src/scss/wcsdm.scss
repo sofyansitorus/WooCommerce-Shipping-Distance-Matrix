@@ -128,6 +128,14 @@
             height: 36px !important;
             line-height: 36px !important;
         }
+        .button {
+            float: none !important;
+        }
+        .button-no-rates{
+            font-size: 2em;
+            padding: 10px 50px;
+            height: auto;
+        }
         &.wcsdm-table-rates {
             .col-centered {
                 text-align: center;
@@ -143,9 +151,6 @@
                 input {
                     margin: 0 !important;
                     padding: 0 !important;
-                }
-                .button {
-                    float: none !important;
                 }
             }
             .col-free {
