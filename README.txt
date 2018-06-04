@@ -4,7 +4,7 @@ Tags: woocommerce,woocommerce-shipping,local-shipping,private-shipping
 Requires at least: 4.8
 Tested up to: 4.9.5
 Requires PHP: 5.6
-Stable tag: 1.4.2
+Stable tag: 1.4.3
 License: GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -81,6 +81,10 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 5. Cart Page - Free Shipping
 
 == Changelog ==
+
+= 1.4.3 =
+* Fix - Update minified styles and scripts.
+* Improvements - Enable real time API key validation.
 
 = 1.4.2 =
 * Improvements - Settings Panel
@@ -211,6 +215,6 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 * Feature - Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
 
 == Upgrade Notice ==
-= 1.4.2 =
+= 1.4.3 =
 
-This version includes serveral improvements. After version upgrade, update settings is required.
+This version includes fixes and improvements. Upgrade is required.
