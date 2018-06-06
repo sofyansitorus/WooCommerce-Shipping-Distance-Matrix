@@ -38,7 +38,6 @@ if ( ! defined( 'WPINC' ) ) {
  * @param string $plugin_file Plugin file name.
  */
 function wcsdm_is_plugin_active( $plugin_file ) {
-
 	$active_plugins = (array) apply_filters( 'active_plugins', get_option( 'active_plugins', array() ) );
 
 	if ( is_multisite() ) {
