@@ -41,17 +41,16 @@ var rowScrollTop = 0;
 var wcsdmSetting = {
 	_zoomLevel: 16,
 	init: function (params) {
-		var self = this;
-		self.params = params;
+		wcsdmSetting.params = params;
 
 		// Try show settings modal on settings page.
-		if (self.params.showSettings) {
+		if (wcsdmSetting.params.showSettings) {
 			setTimeout(function () {
 				var isMethodAdded = false;
 				var methods = $(document).find('.wc-shipping-zone-method-type');
 				for (var i = 0; i < methods.length; i++) {
 					var method = methods[i];
-					if ($(method).text() === self.params.methodTitle) {
+					if ($(method).text() === wcsdmSetting.params.methodTitle) {
 						$(method).closest('tr').find('.row-actions .wc-shipping-zone-method-settings').trigger('click');
 						isMethodAdded = true;
 						return;
@@ -60,7 +59,7 @@ var wcsdmSetting = {
 				// Show Add shipping method modal if the shipping is not added.
 				if (!isMethodAdded) {
 					$('.wc-shipping-zone-add-method').trigger('click');
-					$('select[name="add_method_id"]').val(self.params.methodId).trigger('change');
+					$('select[name="add_method_id"]').val(wcsdmSetting.params.methodId).trigger('change');
 				}
 			}, 200);
 		}
@@ -68,18 +67,18 @@ var wcsdmSetting = {
 		// Handle setting link clicked.
 		$(document).on('click', '.wc-shipping-zone-method-settings', function () {
 			var methodTitle = $(this).closest('tr').find('.wc-shipping-zone-method-type').text();
-			if (methodTitle !== self.params.methodTitle) {
+			if (methodTitle !== wcsdmSetting.params.methodTitle) {
 				return false;
 			}
 			$('.field-distance').trigger('change');
 			$('#woocommerce_wcsdm_gmaps_api_units').trigger('change');
 			$('#woocommerce_wcsdm_gmaps_api_key').trigger('input');
-			self._toggleNoRatesRow();
+			wcsdmSetting._toggleNoRatesRow();
 		});
 
 		// Handle on API Key field setting changed.
 		$(document).on('input', '#woocommerce_wcsdm_gmaps_api_key', debounce(function () {
-			self._initGoogleMaps();
+			wcsdmSetting._initGoogleMaps();
 		}, 250));
 
 		// Handle on Latitude and Longitude field setting changed.
@@ -87,19 +86,19 @@ var wcsdmSetting = {
 			if (!$('#woocommerce_wcsdm_origin_lat').val().length || !$('#woocommerce_wcsdm_origin_lng').val().length) {
 				return;
 			}
-			self._initGoogleMaps();
+			wcsdmSetting._initGoogleMaps();
 		}, 250));
 
 		// Handle on distance unit field setting changed.
 		$(document).on('change', '#woocommerce_wcsdm_gmaps_api_units', function () {
-			$('.field-groups.distance .field-group-item-units').text(self.params.i18n.distance[$(this).val()].unit);
-			$('option[value="per_unit"]').text(self.params.i18n.distance[$(this).val()].perUnit);
+			$('.field-groups.distance .field-group-item-units').text(wcsdmSetting.params.i18n.distance[$(this).val()].unit);
+			$('option[value="per_unit"]').text(wcsdmSetting.params.i18n.distance[$(this).val()].perUnit);
 		});
 
 		// Handle on distance unit field setting changed.
 		$(document).on('change', '#woocommerce_wcsdm_gmaps_api_units', function () {
-			$('.field-groups.distance .field-group-item-units').text(self.params.i18n.distance[$(this).val()].unit);
-			$('option[value="per_unit"]').text(self.params.i18n.distance[$(this).val()].perUnit);
+			$('.field-groups.distance .field-group-item-units').text(wcsdmSetting.params.i18n.distance[$(this).val()].unit);
+			$('option[value="per_unit"]').text(wcsdmSetting.params.i18n.distance[$(this).val()].perUnit);
 		});
 
 		// Handle on distance field changed.
@@ -176,19 +175,18 @@ var wcsdmSetting = {
 		});
 
 		// Handle toggle rate rows in bulk.
-		$(document).on('change', '#wcsdm-table-rates thead .select-item', self._toggleRateRowsBulk);
+		$(document).on('change', '#wcsdm-table-rates thead .select-item', wcsdmSetting._toggleRateRowsBulk);
 
 		// Handle toggle rate rows individually.
-		$(document).on('change', '#wcsdm-table-rates tbody .select-item', self._toggleRateRows);
+		$(document).on('change', '#wcsdm-table-rates tbody .select-item', wcsdmSetting._toggleRateRows);
 
 		// Handle add rate rows.
-		$(document).on('click', '#wcsdm-table-rates .button.add_row', self._addRateRows);
+		$(document).on('click', '#wcsdm-table-rates .button.add_row', wcsdmSetting._addRateRows);
 
 		// Handle remove rate rows.
-		$(document).on('click', '#wcsdm-table-rates .button.remove_rows', self._removeRateRows);
+		$(document).on('click', '#wcsdm-table-rates .button.remove_rows', wcsdmSetting._removeRateRows);
 	},
 	_initGoogleMaps: function () {
-		var self = this;
 		$('#wcsdm-map-error').hide().empty();
 		$('#wcsdm-map-wrapper').hide().empty();
 		$('#wcsdm-lat-lng-wrap').hide();
@@ -207,13 +205,12 @@ var wcsdmSetting = {
 			window.google = undefined;
 		}
 
-		var mapScriptUrl = 'https://maps.googleapis.com/maps/api/js?libraries=geometry,places&key=' + apiKey + '&language=' + self.params.language;
+		var mapScriptUrl = 'https://maps.googleapis.com/maps/api/js?libraries=geometry,places&key=' + apiKey + '&language=' + wcsdmSetting.params.language;
 		$.getScript(mapScriptUrl, function () {
-			self._buildGoogleMaps();
+			wcsdmSetting._buildGoogleMaps();
 		});
 	},
 	_buildGoogleMaps: function () {
-		var self = this;
 		var defaultLat = -6.175392;
 		var defaultLng = 106.827153;
 		var curLat = $('#woocommerce_wcsdm_origin_lat').val();
@@ -231,7 +228,7 @@ var wcsdmSetting = {
 			document.getElementById('wcsdm-map-canvas'),
 			{
 				center: curLatLng,
-				zoom: self._zoomLevel,
+				zoom: wcsdmSetting._zoomLevel,
 				mapTypeId: 'roadmap'
 			}
 		);
@@ -239,16 +236,16 @@ var wcsdmSetting = {
 			map: map,
 			position: curLatLng,
 			draggable: true,
-			icon: self.params.marker
+			icon: wcsdmSetting.params.marker
 		});
 
 		var infowindow = new google.maps.InfoWindow({ maxWidth: 350 });
 
 		if (curLat === defaultLat && curLng === defaultLng) {
-			infowindow.setContent(self.params.i18n.dragMarker);
+			infowindow.setContent(wcsdmSetting.params.i18n.dragMarker);
 			infowindow.open(map, marker);
 		} else {
-			self._setLatLng(marker.position, marker, map, infowindow);
+			wcsdmSetting._setLatLng(marker.position, marker, map, infowindow);
 		}
 
 		google.maps.event.addListener(marker, 'dragstart', function () {
@@ -256,7 +253,7 @@ var wcsdmSetting = {
 		});
 
 		google.maps.event.addListener(marker, 'dragend', function (event) {
-			self._setLatLng(event.latLng, marker, map, infowindow);
+			wcsdmSetting._setLatLng(event.latLng, marker, map, infowindow);
 		});
 
 		markers.push(marker);
@@ -294,14 +291,14 @@ var wcsdmSetting = {
 					map: map,
 					position: place.geometry.location,
 					draggable: true,
-					icon: self.params.marker
+					icon: wcsdmSetting.params.marker
 				});
-				self._setLatLng(place.geometry.location, marker, map, infowindow);
+				wcsdmSetting._setLatLng(place.geometry.location, marker, map, infowindow);
 				google.maps.event.addListener(marker, 'dragstart', function () {
 					infowindow.close();
 				});
 				google.maps.event.addListener(marker, 'dragend', function (event) {
-					self._setLatLng(event.latLng, marker, map, infowindow);
+					wcsdmSetting._setLatLng(event.latLng, marker, map, infowindow);
 				});
 				// Create a marker for each place.
 				markers.push(marker);
@@ -430,8 +427,10 @@ var wcsdmSetting = {
 	_toggleNoRatesRow: function () {
 		if ($('#wcsdm-table-rates tbody tr').length) {
 			$('#row-heading-bottom').hide().closest('table').find('thead, tbody, tfoot .row-heading-both').show();
+			$('#btn-ok').show();
 		} else {
 			$('#row-heading-bottom').show().find('.add_row').show().closest('table').find('thead, tbody, tfoot .row-heading-both').hide();
+			$('#btn-ok').hide();
 		}
 	}
 };
