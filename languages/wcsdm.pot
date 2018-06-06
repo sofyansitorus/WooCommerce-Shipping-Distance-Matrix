@@ -13,27 +13,27 @@ msgstr ""
 "X-Poedit-SourceCharset: UTF-8\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: wcsdm.php:113
+#: wcsdm.php:112
 msgid "Settings"
 msgstr ""
 
-#: wcsdm.php:179
+#: wcsdm.php:178
 msgid "Drag this marker or search your address at the input above."
 msgstr ""
 
-#: wcsdm.php:182
+#: wcsdm.php:181
 msgid "Per Kilometer"
 msgstr ""
 
-#: wcsdm.php:183
+#: wcsdm.php:182
 msgid "KM"
 msgstr ""
 
-#: wcsdm.php:186
+#: wcsdm.php:185
 msgid "Per Mile"
 msgstr ""
 
-#: wcsdm.php:187
+#: wcsdm.php:186
 msgid "MI"
 msgstr ""
 
