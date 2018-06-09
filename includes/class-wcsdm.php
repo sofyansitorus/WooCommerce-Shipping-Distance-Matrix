@@ -1136,7 +1136,6 @@ class Wcsdm extends WC_Shipping_Method {
 		}
 
 		if ( $data ) {
-
 			delete_transient( $cache_key ); // To make sure the transient data re-created, delete it first.
 			set_transient( $cache_key, $data, HOUR_IN_SECONDS ); // Store the data to transient with expiration in 1 hour for later use.
 
@@ -1190,12 +1189,6 @@ class Wcsdm extends WC_Shipping_Method {
 				throw new Exception( $error_message );
 			}
 
-			$element_lvl_errors = array(
-				'NOT_FOUND'                 => __( 'Origin and/or destination of this pairing could not be geocoded', 'wcsdm' ),
-				'ZERO_RESULTS'              => __( 'No route could be found between the origin and destination', 'wcsdm' ),
-				'MAX_ROUTE_LENGTH_EXCEEDED' => __( 'Requested route is too long and cannot be processed', 'wcsdm' ),
-			);
-
 			$errors  = array();
 			$results = array();
 
@@ -1222,10 +1215,10 @@ class Wcsdm extends WC_Shipping_Method {
 					'ZERO_RESULTS'              => __( 'No route could be found between the origin and destination', 'wcsdm' ),
 					'MAX_ROUTE_LENGTH_EXCEEDED' => __( 'Requested route is too long and cannot be processed', 'wcsdm' ),
 				);
-				if ( empty( $errors ) ) {
+				if ( ! empty( $errors ) ) {
 					foreach ( $errors as $error ) {
 						if ( isset( $error_template[ $error ] ) ) {
-							throw new Exception( $error_template[ $error ] );
+							throw new Exception( __( 'API Response Error', 'wcsdm' ) . ': ' . $error_template[ $error ] );
 						}
 					}
 				}
