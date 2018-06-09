@@ -1208,7 +1208,7 @@ class Wcsdm extends WC_Shipping_Method {
 						continue;
 					}
 					$results[] = array(
-						'distance'      => $element['distance']['value'],
+						'distance'      => $this->convert_distance( $element['distance']['value'] ),
 						'distance_text' => $element['distance']['text'],
 						'duration'      => $element['duration']['value'],
 						'duration_text' => $element['duration']['text'],
@@ -1241,8 +1241,6 @@ class Wcsdm extends WC_Shipping_Method {
 			}
 
 			$result = $results[0];
-
-			$result['distance'] = $this->convert_m( $result['distance'] );
 
 			// Rounds distance UP to the nearest integer.
 			if ( 'yes' === $this->ceil_distance ) {
@@ -1366,8 +1364,8 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @param int $meters Number of meters to convert.
 	 * @return int
 	 */
-	private function convert_m( $meters ) {
-		return ( 'metric' === $this->gmaps_api_units ) ? $this->convert_m_to_km( $meters ) : $this->convert_m_to_mi( $meters );
+	private function convert_distance( $meters ) {
+		return ( 'metric' === $this->gmaps_api_units ) ? $this->convert_distance_to_km( $meters ) : $this->convert_distance_to_mi( $meters );
 	}
 
 	/**
@@ -1377,7 +1375,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @param int $meters Number of meters to convert.
 	 * @return int
 	 */
-	private function convert_m_to_mi( $meters ) {
+	private function convert_distance_to_mi( $meters ) {
 		return $meters * 0.000621371;
 	}
 
@@ -1388,7 +1386,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @param int $meters Number of meters to convert.
 	 * @return int
 	 */
-	private function convert_m_to_km( $meters ) {
+	private function convert_distance_to_km( $meters ) {
 		return $meters * 0.001;
 	}
 
