@@ -92,7 +92,7 @@ class Wcsdm extends WC_Shipping_Method {
 		$this->all_options['gmaps_api_units']         = $this->get_option( 'gmaps_api_units', 'metric' );
 		$this->all_options['gmaps_api_mode']          = $this->get_option( 'gmaps_api_mode', 'driving' );
 		$this->all_options['gmaps_api_avoid']         = $this->get_option( 'gmaps_api_avoid' );
-		$this->all_options['prefered_route']          = $this->get_option( 'prefered_route', 'shortest' );
+		$this->all_options['prefered_route']          = $this->get_option( 'prefered_route', 'prefered_route' );
 		$this->all_options['calc_type']               = $this->get_option( 'calc_type', 'per_item' );
 		$this->all_options['enable_fallback_request'] = $this->get_option( 'enable_fallback_request', 'no' );
 		$this->all_options['show_distance']           = $this->get_option( 'show_distance' );
@@ -187,12 +187,14 @@ class Wcsdm extends WC_Shipping_Method {
 			'prefered_route'          => array(
 				'title'       => __( 'Prefered Route', 'wcsdm' ),
 				'type'        => 'select',
-				'description' => __( 'Prefered route that will be used for calculation', 'wcsdm' ),
+				'description' => __( 'Prefered route that will be used for calculation if API provide several routes', 'wcsdm' ),
 				'desc_tip'    => true,
-				'default'     => 'shortest',
+				'default'     => 'shortest_distance',
 				'options'     => array(
-					'shortest' => __( 'Shortest Route', 'wcsdm' ),
-					'fastest'  => __( 'Fastest Route', 'wcsdm' ),
+					'shortest_distance' => __( 'Shortest Distance', 'wcsdm' ),
+					'longest_distance'  => __( 'Longest Distance', 'wcsdm' ),
+					'shortest_duration' => __( 'Shortest Duration', 'wcsdm' ),
+					'longest_duration'  => __( 'Longest Duration', 'wcsdm' ),
 				),
 			),
 			'gmaps_api_units'         => array(
@@ -1226,10 +1228,19 @@ class Wcsdm extends WC_Shipping_Method {
 			}
 
 			if ( count( $results ) > 1 ) {
-				if ( 'fastest' === $this->prefered_route ) {
-					usort( $results, array( $this, 'usort_by_duration' ) );
-				} else {
-					usort( $results, array( $this, 'usort_by_distance' ) );
+				switch ( $this->prefered_route ) {
+					case 'longest_duration':
+						usort( $results, array( $this, 'longest_duration_results' ) );
+						break;
+					case 'longest_distance':
+						usort( $results, array( $this, 'longest_distance_results' ) );
+						break;
+					case 'shortest_duration':
+						usort( $results, array( $this, 'shortest_duration_results' ) );
+						break;
+					default:
+						usort( $results, array( $this, 'shortest_distance_results' ) );
+						break;
 				}
 			}
 
@@ -1405,14 +1416,44 @@ class Wcsdm extends WC_Shipping_Method {
 	}
 
 	/**
-	 * Sort API response array by distance.
+	 * Sort ascending API response array by duration.
 	 *
-	 * @since    1.3.2
+	 * @since    1.4.4
 	 * @param array $a Array 1 that will be sorted.
 	 * @param array $b Array 2 that will be compared.
-	 * @return array
+	 * @return int
 	 */
-	private function usort_by_distance( $a, $b ) {
+	private function shortest_duration_results( $a, $b ) {
+		if ( $a['duration'] === $b['duration'] ) {
+			return 0;
+		}
+		return ( $a['duration'] < $b['duration'] ) ? -1 : 1;
+	}
+
+	/**
+	 * Sort descending API response array by duration.
+	 *
+	 * @since    1.4.4
+	 * @param array $a Array 1 that will be sorted.
+	 * @param array $b Array 2 that will be compared.
+	 * @return int
+	 */
+	private function longest_duration_results( $a, $b ) {
+		if ( $a['duration'] === $b['duration'] ) {
+			return 0;
+		}
+		return ( $a['duration'] > $b['duration'] ) ? -1 : 1;
+	}
+
+	/**
+	 * Sort ascending API response array by distance.
+	 *
+	 * @since    1.4.4
+	 * @param array $a Array 1 that will be sorted.
+	 * @param array $b Array 2 that will be compared.
+	 * @return int
+	 */
+	private function shortest_distance_results( $a, $b ) {
 		if ( $a['distance'] === $b['distance'] ) {
 			return 0;
 		}
@@ -1420,18 +1461,18 @@ class Wcsdm extends WC_Shipping_Method {
 	}
 
 	/**
-	 * Sort API response array by duration.
+	 * Sort descending API response array by distance.
 	 *
-	 * @since    1.3.2
+	 * @since    1.4.4
 	 * @param array $a Array 1 that will be sorted.
 	 * @param array $b Array 2 that will be compared.
-	 * @return array
+	 * @return int
 	 */
-	private function usort_by_duration( $a, $b ) {
-		if ( $a['duration'] === $b['duration'] ) {
+	private function longest_distance_results( $a, $b ) {
+		if ( $a['distance'] === $b['distance'] ) {
 			return 0;
 		}
-		return ( $a['duration'] < $b['duration'] ) ? -1 : 1;
+		return ( $a['distance'] > $b['distance'] ) ? -1 : 1;
 	}
 
 	/**
