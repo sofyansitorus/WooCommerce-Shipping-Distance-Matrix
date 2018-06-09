@@ -92,6 +92,7 @@ class Wcsdm extends WC_Shipping_Method {
 		$this->all_options['gmaps_api_units']         = $this->get_option( 'gmaps_api_units', 'metric' );
 		$this->all_options['gmaps_api_mode']          = $this->get_option( 'gmaps_api_mode', 'driving' );
 		$this->all_options['gmaps_api_avoid']         = $this->get_option( 'gmaps_api_avoid' );
+		$this->all_options['prefered_route']          = $this->get_option( 'prefered_route', 'shortest' );
 		$this->all_options['calc_type']               = $this->get_option( 'calc_type', 'per_item' );
 		$this->all_options['enable_fallback_request'] = $this->get_option( 'enable_fallback_request', 'no' );
 		$this->all_options['show_distance']           = $this->get_option( 'show_distance' );
@@ -181,6 +182,17 @@ class Wcsdm extends WC_Shipping_Method {
 					'highways' => __( 'Avoid Highways', 'wcsdm' ),
 					'ferries'  => __( 'Avoid Ferries', 'wcsdm' ),
 					'indoor'   => __( 'Avoid Indoor', 'wcsdm' ),
+				),
+			),
+			'prefered_route'          => array(
+				'title'       => __( 'Prefered Route', 'wcsdm' ),
+				'type'        => 'select',
+				'description' => __( 'Prefered route that will be used for calculation', 'wcsdm' ),
+				'desc_tip'    => true,
+				'default'     => 'shortest',
+				'options'     => array(
+					'shortest' => __( 'Shortest Route', 'wcsdm' ),
+					'fastest'  => __( 'Fastest Route', 'wcsdm' ),
 				),
 			),
 			'gmaps_api_units'         => array(
@@ -642,14 +654,16 @@ class Wcsdm extends WC_Shipping_Method {
 				$new_fields[ $key ] = $field;
 				if ( 'class_0' === $key ) {
 					foreach ( $shipping_classes as $class_id => $class_obj ) {
-						$new_fields[ 'class_' . $class_id ] = array_merge($field, array(
-							// translators: %s is Product shipping class name.
-							'title'       => sprintf( __( 'Shipping Rate for "%s"', 'wcsdm' ), $class_obj->name ),
-							'description' => __( 'Shipping rate for specific product shipping class. This rate will override the default shipping rate defined above. Zero value will be ignored.', 'wcsdm' ),
-							'desc_tip'    => true,
-							'advanced'    => true,
-							'heading'     => false,
-						));
+						$new_fields[ 'class_' . $class_id ] = array_merge(
+							$field, array(
+								// translators: %s is Product shipping class name.
+								'title'       => sprintf( __( 'Shipping Rate for "%s"', 'wcsdm' ), $class_obj->name ),
+								'description' => __( 'Shipping rate for specific product shipping class. This rate will override the default shipping rate defined above. Zero value will be ignored.', 'wcsdm' ),
+								'desc_tip'    => true,
+								'advanced'    => true,
+								'heading'     => false,
+							)
+						);
 					}
 				}
 			}
@@ -1141,11 +1155,6 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @return array|bool Formatted response data, false on failure.
 	 */
 	private function process_api_response( $raw_response ) {
-
-		$distance      = 0;
-		$distance_text = null;
-		$response_data = null;
-
 		try {
 			// Check if HTTP request is error.
 			if ( is_wp_error( $raw_response ) ) {
@@ -1187,48 +1196,67 @@ class Wcsdm extends WC_Shipping_Method {
 				'MAX_ROUTE_LENGTH_EXCEEDED' => __( 'Requested route is too long and cannot be processed', 'wcsdm' ),
 			);
 
+			$errors  = array();
+			$results = array();
+
 			// Get the shipping distance.
 			foreach ( $response_data['rows'] as $row ) {
-
-				// Break the loop if distance is defined.
-				if ( $distance && $distance_text ) {
-					break;
-				}
-
 				foreach ( $row['elements'] as $element ) {
+					// Gather Element-level Status Codes.
 					if ( 'OK' !== $element['status'] ) {
-						$error_message = __( 'API Response Error', 'wcsdm' ) . ': ' . $element['status'];
-						if ( isset( $element_lvl_errors[ $element['status'] ] ) ) {
-							$error_message .= ' - ' . $element_lvl_errors[ $element['status'] ];
-						}
-						throw new Exception( $error_message );
+						$errors[] = $element['status'];
+						continue;
 					}
-					if ( ! empty( $element['distance']['value'] ) && $distance < $element['distance']['value'] ) {
-						$distance      = $this->convert_m( $element['distance']['value'] );
-						$distance_text = $element['distance']['text'];
-					}
+					$results[] = array(
+						'distance'      => $element['distance']['value'],
+						'distance_text' => $element['distance']['text'],
+						'duration'      => $element['duration']['value'],
+						'duration_text' => $element['duration']['text'],
+					);
 				}
 			}
 
-			if ( ! $distance || ! $distance_text ) {
-				throw new Exception( __( 'Unknown error', 'wcsdm' ) );
+			if ( empty( $results ) ) {
+				$error_template = array(
+					'NOT_FOUND'                 => __( 'Origin and/or destination of this pairing could not be geocoded', 'wcsdm' ),
+					'ZERO_RESULTS'              => __( 'No route could be found between the origin and destination', 'wcsdm' ),
+					'MAX_ROUTE_LENGTH_EXCEEDED' => __( 'Requested route is too long and cannot be processed', 'wcsdm' ),
+				);
+				if ( empty( $errors ) ) {
+					foreach ( $errors as $error ) {
+						if ( isset( $error_template[ $error ] ) ) {
+							throw new Exception( $error_template[ $error ] );
+						}
+					}
+				}
+				throw new Exception( __( 'API Response Error', 'wcsdm' ) . ': ' . __( 'No results found', 'wcsdm' ) );
 			}
+
+			if ( count( $results ) > 1 ) {
+				if ( 'fastest' === $this->prefered_route ) {
+					usort( $results, array( $this, 'usort_by_duration' ) );
+				} else {
+					usort( $results, array( $this, 'usort_by_distance' ) );
+				}
+			}
+
+			$result = $results[0];
+
+			$result['distance'] = $this->convert_m( $result['distance'] );
+
+			// Rounds distance UP to the nearest integer.
+			if ( 'yes' === $this->ceil_distance ) {
+				$result['distance']      = ceil( $result['distance'] );
+				$result['distance_text'] = $result['distance'] . preg_replace( '/[0-9\.,]/', '', $result['distance_text'] );
+			}
+
+			$result['response'] = $response_data;
+
+			return $result;
 		} catch ( Exception $e ) {
 			$this->show_debug( $e->getMessage(), 'notice' );
 			return false;
 		}
-
-		// Rounds distance UP to the nearest integer.
-		if ( 'yes' === $this->ceil_distance ) {
-			$distance      = ceil( $distance );
-			$distance_text = $distance . preg_replace( '/[0-9\.,]/', '', $distance_text );
-		}
-
-		return array(
-			'distance'      => $distance,
-			'distance_text' => $distance_text,
-			'response'      => $response_data,
-		);
 	}
 
 	/**
@@ -1362,6 +1390,36 @@ class Wcsdm extends WC_Shipping_Method {
 	 */
 	private function convert_m_to_km( $meters ) {
 		return $meters * 0.001;
+	}
+
+	/**
+	 * Sort API response array by distance.
+	 *
+	 * @since    1.3.2
+	 * @param array $a Array 1 that will be sorted.
+	 * @param array $b Array 2 that will be compared.
+	 * @return array
+	 */
+	private function usort_by_distance( $a, $b ) {
+		if ( $a['distance'] === $b['distance'] ) {
+			return 0;
+		}
+		return ( $a['distance'] < $b['distance'] ) ? -1 : 1;
+	}
+
+	/**
+	 * Sort API response array by duration.
+	 *
+	 * @since    1.3.2
+	 * @param array $a Array 1 that will be sorted.
+	 * @param array $b Array 2 that will be compared.
+	 * @return array
+	 */
+	private function usort_by_duration( $a, $b ) {
+		if ( $a['duration'] === $b['duration'] ) {
+			return 0;
+		}
+		return ( $a['duration'] < $b['duration'] ) ? -1 : 1;
 	}
 
 	/**
