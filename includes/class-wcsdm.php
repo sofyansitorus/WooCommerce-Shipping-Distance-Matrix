@@ -1197,7 +1197,7 @@ class Wcsdm extends WC_Shipping_Method {
 			// Get the shipping distance.
 			foreach ( $response_data['rows'] as $row ) {
 				foreach ( $row['elements'] as $element ) {
-					// Gather Element-level Status Codes.
+					// Check element status code.
 					if ( 'OK' !== $element['status'] ) {
 						$errors[] = $element['status'];
 						continue;
@@ -1218,9 +1218,9 @@ class Wcsdm extends WC_Shipping_Method {
 					'MAX_ROUTE_LENGTH_EXCEEDED' => __( 'Requested route is too long and cannot be processed', 'wcsdm' ),
 				);
 				if ( ! empty( $errors ) ) {
-					foreach ( $errors as $error ) {
-						if ( isset( $error_template[ $error ] ) ) {
-							throw new Exception( __( 'API Response Error', 'wcsdm' ) . ': ' . $error_template[ $error ] );
+					foreach ( $errors as $error_key ) {
+						if ( isset( $error_template[ $error_key ] ) ) {
+							throw new Exception( __( 'API Response Error', 'wcsdm' ) . ': ' . $error_template[ $error_key ] );
 						}
 					}
 				}
