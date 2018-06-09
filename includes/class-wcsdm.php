@@ -1294,15 +1294,23 @@ class Wcsdm extends WC_Shipping_Method {
 		$keys = array( 'address', 'address_2', 'city', 'state', 'postcode', 'country' );
 
 		// Remove destination field keys for shipping calculator request.
-		if ( isset( $_POST['calc_shipping'], $_POST['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ), 'woocommerce-cart' ) ) {
-			$keys_remove = array( 'address', 'address_2' );
-			if ( ! apply_filters( 'woocommerce_shipping_calculator_enable_city', false ) ) {
-				array_push( $keys_remove, 'city' );
+		if ( $this->is_calc_shipping() ) {
+			$address = array();
+
+			$address['country']  = isset( $_POST['calc_shipping_country'] ) ? wc_clean( wp_unslash( $_POST['calc_shipping_country'] ) ) : ''; // WPCS: input var ok, CSRF ok, sanitization ok.
+			$address['state']    = isset( $_POST['calc_shipping_state'] ) ? wc_clean( wp_unslash( $_POST['calc_shipping_state'] ) ) : ''; // WPCS: input var ok, CSRF ok, sanitization ok.
+			$address['postcode'] = isset( $_POST['calc_shipping_postcode'] ) ? wc_clean( wp_unslash( $_POST['calc_shipping_postcode'] ) ) : ''; // WPCS: input var ok, CSRF ok, sanitization ok.
+			$address['city']     = isset( $_POST['calc_shipping_city'] ) ? wc_clean( wp_unslash( $_POST['calc_shipping_city'] ) ) : ''; // WPCS: input var ok, CSRF ok, sanitization ok.
+
+			$address = apply_filters( 'woocommerce_cart_calculate_shipping_address', $address );
+
+			$removes = apply_filters( 'wcsdm_cart_calculate_shipping_address_remove', array( 'address', 'address_2', 'city', 'postcode' ) );
+
+			foreach ( $removes as $remove ) {
+				if ( ! isset( $address[ $remove ] ) || empty( $address[ $remove ] ) ) {
+					$keys = array_diff( $keys, array( $remove ) );
+				}
 			}
-			if ( ! apply_filters( 'woocommerce_shipping_calculator_enable_postcode', false ) ) {
-				array_push( $keys_remove, 'postcode' );
-			}
-			$keys = array_diff( $keys, $keys_remove );
 		}
 
 		$country_code = false;
@@ -1348,6 +1356,19 @@ class Wcsdm extends WC_Shipping_Method {
 		 *      }
 		 */
 		return apply_filters( 'woocommerce_' . $this->id . '_shipping_destination_info', $destination_info, $this );
+	}
+
+	/**
+	 * Check if current request is shipping calculator form.
+	 *
+	 * @return bool
+	 */
+	private function is_calc_shipping() {
+		if ( isset( $_POST['calc_shipping'], $_POST['woocommerce-shipping-calculator-nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['woocommerce-shipping-calculator-nonce'] ) ), 'woocommerce-shipping-calculator' ) ) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
