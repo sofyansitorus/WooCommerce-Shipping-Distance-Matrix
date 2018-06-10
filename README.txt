@@ -82,6 +82,14 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 
 == Changelog ==
 
+= 1.4.4 =
+* Improvements - Added new option: Prefered Route
+* Improvements - Impropve accuration in cart shipping calculator form.
+
+= 1.4.3 =
+* Fix - Update minified styles and scripts.
+* Improvements - Enable real time API key validation.
+
 = 1.4.3 =
 * Fix - Update minified styles and scripts.
 * Improvements - Enable real time API key validation.
@@ -215,6 +223,6 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 * Feature - Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
 
 == Upgrade Notice ==
-= 1.4.3 =
+= 1.4.4 =
 
-This version includes fixes and improvements. Upgrade is required.
+This version includes improvements.
