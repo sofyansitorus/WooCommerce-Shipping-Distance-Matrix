@@ -41,368 +41,408 @@ msgstr ""
 msgid "Shipping rates calculator that allows you to easily offer shipping rates based on the distance."
 msgstr ""
 
-#: includes/class-wcsdm.php:124
+#: includes/class-wcsdm.php:125
 msgid "Title"
 msgstr ""
 
-#: includes/class-wcsdm.php:126
+#: includes/class-wcsdm.php:127
 msgid "This controls the title which the user sees during checkout."
 msgstr ""
 
-#: includes/class-wcsdm.php:131
+#: includes/class-wcsdm.php:132
 msgid "Tax Status"
 msgstr ""
 
-#: includes/class-wcsdm.php:136
+#: includes/class-wcsdm.php:137
 msgid "Taxable"
 msgstr ""
 
-#: includes/class-wcsdm.php:137, includes/class-wcsdm.php:179
+#: includes/class-wcsdm.php:138, includes/class-wcsdm.php:180
 msgid "None"
 msgstr ""
 
-#: includes/class-wcsdm.php:141
+#: includes/class-wcsdm.php:142
 msgid "Google API Key"
 msgstr ""
 
-#: includes/class-wcsdm.php:143
+#: includes/class-wcsdm.php:144
 msgid "This plugin makes use of the Google Maps and Google Distance Matrix APIs. <a href=\"https://developers.google.com/maps/documentation/distance-matrix/get-api-key\" target=\"_blank\">Click here</a> obtain a Google API Key."
 msgstr ""
 
-#: includes/class-wcsdm.php:147
+#: includes/class-wcsdm.php:148
 msgid "Store Location"
 msgstr ""
 
-#: includes/class-wcsdm.php:149
+#: includes/class-wcsdm.php:150
 msgid "Drag the and drop the store icon to your store location or search your store location by type an address into the search field. You can also set you store location by fill in the Latitude and Latitude coordinates manually."
 msgstr ""
 
-#: includes/class-wcsdm.php:153
+#: includes/class-wcsdm.php:154
 msgid "Store Location Latitude"
 msgstr ""
 
-#: includes/class-wcsdm.php:157
+#: includes/class-wcsdm.php:158
 msgid "Store Location Logitude"
 msgstr ""
 
-#: includes/class-wcsdm.php:161
+#: includes/class-wcsdm.php:162
 msgid "Travel Mode"
 msgstr ""
 
-#: includes/class-wcsdm.php:163
+#: includes/class-wcsdm.php:164
 msgid "Google Maps Distance Matrix API travel mode parameter."
 msgstr ""
 
-#: includes/class-wcsdm.php:167
+#: includes/class-wcsdm.php:168
 msgid "Driving"
 msgstr ""
 
-#: includes/class-wcsdm.php:168
+#: includes/class-wcsdm.php:169
 msgid "Walking"
 msgstr ""
 
-#: includes/class-wcsdm.php:169
+#: includes/class-wcsdm.php:170
 msgid "Bicycling"
 msgstr ""
 
-#: includes/class-wcsdm.php:173
+#: includes/class-wcsdm.php:174
 msgid "Route Restrictions"
 msgstr ""
 
-#: includes/class-wcsdm.php:175
+#: includes/class-wcsdm.php:176
 msgid "Google Maps Distance Matrix API restrictions parameter."
 msgstr ""
 
-#: includes/class-wcsdm.php:180
+#: includes/class-wcsdm.php:181
 msgid "Avoid Tolls"
 msgstr ""
 
-#: includes/class-wcsdm.php:181
+#: includes/class-wcsdm.php:182
 msgid "Avoid Highways"
 msgstr ""
 
-#: includes/class-wcsdm.php:182
+#: includes/class-wcsdm.php:183
 msgid "Avoid Ferries"
 msgstr ""
 
-#: includes/class-wcsdm.php:183
+#: includes/class-wcsdm.php:184
 msgid "Avoid Indoor"
 msgstr ""
 
-#: includes/class-wcsdm.php:187
-msgid "Distance Units"
+#: includes/class-wcsdm.php:188
+msgid "Prefered Route"
 msgstr ""
 
-#: includes/class-wcsdm.php:189
-msgid "Google Maps Distance Matrix API distance units parameter."
-msgstr ""
-
-#: includes/class-wcsdm.php:193
-msgid "Kilometers"
+#: includes/class-wcsdm.php:190
+msgid "Prefered route that will be used for calculation if API provide several routes"
 msgstr ""
 
 #: includes/class-wcsdm.php:194
-msgid "Miles"
+msgid "Shortest Distance"
 msgstr ""
 
-#: includes/class-wcsdm.php:198
-msgid "Show Distance Info"
+#: includes/class-wcsdm.php:195
+msgid "Longest Distance"
 msgstr ""
 
-#: includes/class-wcsdm.php:199, includes/class-wcsdm.php:206, includes/class-wcsdm.php:213
-msgid "Yes"
+#: includes/class-wcsdm.php:196
+msgid "Shortest Duration"
+msgstr ""
+
+#: includes/class-wcsdm.php:197
+msgid "Longest Duration"
 msgstr ""
 
 #: includes/class-wcsdm.php:201
-msgid "Show the distance info to customer during checkout."
+msgid "Distance Units"
 msgstr ""
 
-#: includes/class-wcsdm.php:205
-msgid "Round Up Distance"
+#: includes/class-wcsdm.php:203
+msgid "Google Maps Distance Matrix API distance units parameter."
+msgstr ""
+
+#: includes/class-wcsdm.php:207
+msgid "Kilometers"
 msgstr ""
 
 #: includes/class-wcsdm.php:208
-msgid "Round up distance to the nearest integer."
+msgid "Miles"
 msgstr ""
 
 #: includes/class-wcsdm.php:212
-msgid "Enable Fallback Request"
+msgid "Show Distance Info"
+msgstr ""
+
+#: includes/class-wcsdm.php:213, includes/class-wcsdm.php:220, includes/class-wcsdm.php:227
+msgid "Yes"
 msgstr ""
 
 #: includes/class-wcsdm.php:215
-msgid "If there is no results for API request using full address, the system will attempt to make another API request to the Google API server without \"Address Line 1\" parameter. The fallback request will only using \"Address Line 2\", \"City\", \"State/Province\", \"Postal Code\" and \"Country\" parameters."
+msgid "Show the distance info to customer during checkout."
 msgstr ""
 
 #: includes/class-wcsdm.php:219
-msgid "Progressive Total Cost"
+msgid "Round Up Distance"
 msgstr ""
 
-#: includes/class-wcsdm.php:224
-msgid "No"
-msgstr ""
-
-#: includes/class-wcsdm.php:225
-msgid "Per Shipping Class: Accumulate total shipping cost by shipping class ID"
+#: includes/class-wcsdm.php:222
+msgid "Round up distance to the nearest integer."
 msgstr ""
 
 #: includes/class-wcsdm.php:226
-msgid "Per Product: Accumulate total shipping cost by product ID"
-msgstr ""
-
-#: includes/class-wcsdm.php:227
-msgid "Per Unit: Accumulate total shipping cost by quantity"
+msgid "Enable Fallback Request"
 msgstr ""
 
 #: includes/class-wcsdm.php:229
+msgid "If there is no results for API request using full address, the system will attempt to make another API request to the Google API server without \"Address Line 1\" parameter. The fallback request will only using \"Address Line 2\", \"City\", \"State/Province\", \"Postal Code\" and \"Country\" parameters."
+msgstr ""
+
+#: includes/class-wcsdm.php:233
+msgid "Progressive Total Cost"
+msgstr ""
+
+#: includes/class-wcsdm.php:238
+msgid "No"
+msgstr ""
+
+#: includes/class-wcsdm.php:239
+msgid "Per Shipping Class: Accumulate total shipping cost by shipping class ID"
+msgstr ""
+
+#: includes/class-wcsdm.php:240
+msgid "Per Product: Accumulate total shipping cost by product ID"
+msgstr ""
+
+#: includes/class-wcsdm.php:241
+msgid "Per Unit: Accumulate total shipping cost by quantity"
+msgstr ""
+
+#: includes/class-wcsdm.php:243
 msgid "By default the total shipping cost will be flat by choosing the most expensive shipping rate by comparing for each items added into the cart. Example: there was 2 products with different shipping class in the cart, then the highest rate will be used as the total shipping cost."
 msgstr ""
 
-#: includes/class-wcsdm.php:237
+#: includes/class-wcsdm.php:251
 msgid "Distance Rate Rules &raquo; Advanced Settings"
 msgstr ""
 
-#: includes/class-wcsdm.php:282
+#: includes/class-wcsdm.php:296
 msgid "Search your store location"
 msgstr ""
 
-#: includes/class-wcsdm.php:335
+#: includes/class-wcsdm.php:349
 msgid "Apply Changes"
 msgstr ""
 
-#: includes/class-wcsdm.php:355
+#: includes/class-wcsdm.php:369
 msgid "Distance Rate Rules"
 msgstr ""
 
-#: includes/class-wcsdm.php:365
+#: includes/class-wcsdm.php:379
 msgid "Add Row"
 msgstr ""
 
-#: includes/class-wcsdm.php:366
+#: includes/class-wcsdm.php:380
 msgid "Remove Rows"
 msgstr ""
 
-#: includes/class-wcsdm.php:387
+#: includes/class-wcsdm.php:401
 msgid "Add Rate"
 msgstr ""
 
-#: includes/class-wcsdm.php:552
+#: includes/class-wcsdm.php:566
 msgid "Maximum Distances"
 msgstr ""
 
-#: includes/class-wcsdm.php:554
+#: includes/class-wcsdm.php:568
 msgid "The maximum distances rule for the shipping rate. This input is required."
 msgstr ""
 
-#: includes/class-wcsdm.php:561
+#: includes/class-wcsdm.php:575
 msgid "Cost Type"
 msgstr ""
 
-#: includes/class-wcsdm.php:565
+#: includes/class-wcsdm.php:579
 msgid "Flat"
 msgstr ""
 
-#: includes/class-wcsdm.php:568
+#: includes/class-wcsdm.php:582
 msgid "Determine wether to use flat price or flexible price per distances unit."
 msgstr ""
 
-#: includes/class-wcsdm.php:575
+#: includes/class-wcsdm.php:589
 msgid "Shipping Rate"
 msgstr ""
 
-#: includes/class-wcsdm.php:577
+#: includes/class-wcsdm.php:591
 msgid "The shipping rate within the distances range. This input is required."
 msgstr ""
 
-#: includes/class-wcsdm.php:584
+#: includes/class-wcsdm.php:598
 msgid "Additional Cost"
 msgstr ""
 
-#: includes/class-wcsdm.php:587
+#: includes/class-wcsdm.php:601
 msgid "Surcharge that will be added to the total shipping cost."
 msgstr ""
 
-#: includes/class-wcsdm.php:594, includes/class-wcsdm.php:891
+#: includes/class-wcsdm.php:608, includes/class-wcsdm.php:907
 msgid "Free Shipping"
 msgstr ""
 
-#: includes/class-wcsdm.php:598
+#: includes/class-wcsdm.php:612
 msgid "Disable"
 msgstr ""
 
-#: includes/class-wcsdm.php:599
+#: includes/class-wcsdm.php:613
 msgid "Yes, enable as Free Shipping"
 msgstr ""
 
-#: includes/class-wcsdm.php:600
+#: includes/class-wcsdm.php:614
 msgid "Yes, enable as Free Shipping if any of rules below is matched"
 msgstr ""
 
-#: includes/class-wcsdm.php:602
+#: includes/class-wcsdm.php:616
 msgid "Free shipping options within the distances range."
 msgstr ""
 
-#: includes/class-wcsdm.php:609
+#: includes/class-wcsdm.php:623
 msgid "Rule #1: Minimum Order Amount"
 msgstr ""
 
-#: includes/class-wcsdm.php:611
+#: includes/class-wcsdm.php:625
 msgid "The free shipping rule for minimum order amount. Leave blank to disable this rule. But at least one rule must be defined either by minimum order amount or minimum order quantity."
 msgstr ""
 
-#: includes/class-wcsdm.php:618
+#: includes/class-wcsdm.php:632
 msgid "Rule #2: Minimum Order Quantity"
 msgstr ""
 
-#: includes/class-wcsdm.php:620
+#: includes/class-wcsdm.php:634
 msgid "The free shipping rule for minimum order quantity. Leave blank to disable this rule. But at least one rule must be defined either by minimum order amount or minimum order quantity."
 msgstr ""
 
-#: includes/class-wcsdm.php:627
+#: includes/class-wcsdm.php:641
 msgid "Advanced"
 msgstr ""
 
-#: includes/class-wcsdm.php:628
+#: includes/class-wcsdm.php:642
 msgid "Advanced Settings"
 msgstr ""
 
 #. translators: %s is Product shipping class name.
-#: includes/class-wcsdm.php:647
+#: includes/class-wcsdm.php:662
 msgid "Shipping Rate for \"%s\""
 msgstr ""
 
-#: includes/class-wcsdm.php:648
+#: includes/class-wcsdm.php:663
 msgid "Shipping rate for specific product shipping class. This rate will override the default shipping rate defined above. Zero value will be ignored."
 msgstr ""
 
-#: includes/class-wcsdm.php:686
+#: includes/class-wcsdm.php:702
 msgid "API Key is required"
 msgstr ""
 
-#: includes/class-wcsdm.php:707
+#: includes/class-wcsdm.php:723
 msgid "Store Location Latitude is required"
 msgstr ""
 
-#: includes/class-wcsdm.php:728
+#: includes/class-wcsdm.php:744
 msgid "Store Location Longitude is required"
 msgstr ""
 
-#: includes/class-wcsdm.php:800
+#: includes/class-wcsdm.php:816
 msgid "Maximum distance input field value must be greater than zero"
 msgstr ""
 
-#: includes/class-wcsdm.php:802
+#: includes/class-wcsdm.php:818
 msgid "Maximum distance input field is required"
 msgstr ""
 
-#: includes/class-wcsdm.php:806
+#: includes/class-wcsdm.php:822
 msgid "Shipping rate input field value must be greater than zero"
 msgstr ""
 
-#: includes/class-wcsdm.php:808
+#: includes/class-wcsdm.php:824
 msgid "Shipping rate input field is required"
 msgstr ""
 
-#: includes/class-wcsdm.php:811
+#: includes/class-wcsdm.php:827
 msgid "You must define at least one free shipping rule either by minimum order amount or minimum order quantity"
 msgstr ""
 
-#: includes/class-wcsdm.php:817
+#: includes/class-wcsdm.php:833
 msgid "Shipping rates table is empty"
 msgstr ""
 
-#: includes/class-wcsdm.php:859, includes/class-wcsdm.php:1159
+#: includes/class-wcsdm.php:875, includes/class-wcsdm.php:1175
 msgid "API response is empty"
 msgstr ""
 
-#: includes/class-wcsdm.php:921
+#: includes/class-wcsdm.php:937
 msgid "Use the free shipping option instead of set the shipping rate as zero"
 msgstr ""
 
-#: includes/class-wcsdm.php:923
+#: includes/class-wcsdm.php:939
 msgid "Unable to calculate the shipping rate"
 msgstr ""
 
 #. translators: %1$s distance value, %2$s distance unit.
-#: includes/class-wcsdm.php:1051
+#: includes/class-wcsdm.php:1067
 msgid "No shipping rates defined within distance range: %1$s %2$s"
 msgstr ""
 
+#: includes/class-wcsdm.php:1081
+msgid "API Key is empty"
+msgstr ""
+
+#: includes/class-wcsdm.php:1086
+msgid "Destination info is empty"
+msgstr ""
+
 #: includes/class-wcsdm.php:1091
+msgid "Origin info is empty"
+msgstr ""
+
+#: includes/class-wcsdm.php:1109
 msgid "Cache key"
 msgstr ""
 
-#: includes/class-wcsdm.php:1092
+#: includes/class-wcsdm.php:1110
 msgid "Cached data"
 msgstr ""
 
-#: includes/class-wcsdm.php:1108
+#: includes/class-wcsdm.php:1126
 msgid "API Request URL"
 msgstr ""
 
-#: includes/class-wcsdm.php:1119
+#: includes/class-wcsdm.php:1137
 msgid "API Fallback Request URL"
 msgstr ""
 
-#: includes/class-wcsdm.php:1167
+#: includes/class-wcsdm.php:1143
+msgid "API response data is empty"
+msgstr ""
+
+#: includes/class-wcsdm.php:1183
 msgid "Error occured while decoding API response"
 msgstr ""
 
-#: includes/class-wcsdm.php:1177, includes/class-wcsdm.php:1200
+#: includes/class-wcsdm.php:1193, includes/class-wcsdm.php:1229, includes/class-wcsdm.php:1233
 msgid "API Response Error"
 msgstr ""
 
-#: includes/class-wcsdm.php:1185
+#: includes/class-wcsdm.php:1222
 msgid "Origin and/or destination of this pairing could not be geocoded"
 msgstr ""
 
-#: includes/class-wcsdm.php:1186
+#: includes/class-wcsdm.php:1223
 msgid "No route could be found between the origin and destination"
 msgstr ""
 
-#: includes/class-wcsdm.php:1187
+#: includes/class-wcsdm.php:1224
 msgid "Requested route is too long and cannot be processed"
 msgstr ""
 
-#: includes/class-wcsdm.php:1214
-msgid "Unknown error"
+#: includes/class-wcsdm.php:1233
+msgid "No results found"
 msgstr ""
