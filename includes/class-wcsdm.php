@@ -1072,79 +1072,85 @@ class Wcsdm extends WC_Shipping_Method {
 	 *
 	 * @since    1.0.0
 	 * @param array $package The cart content data.
-	 * @return array
+	 * @throws Exception Throw error if validation not passed.
+	 * @return mixed array of API response data, false on failure.
 	 */
 	private function api_request( $package ) {
-		if ( empty( $this->gmaps_api_key ) ) {
-			return false;
-		}
+		try {
+			if ( empty( $this->gmaps_api_key ) ) {
+				throw new Exception( __( 'API Key is empty', 'wcsdm' ) );
+			}
 
-		$destination_info = $this->get_destination_info( $package['destination'] );
-		if ( empty( $destination_info ) ) {
-			return false;
-		}
+			$destination_info = $this->get_destination_info( $package['destination'] );
+			if ( empty( $destination_info ) ) {
+				throw new Exception( __( 'Destination info is empty', 'wcsdm' ) );
+			}
 
-		$origin_info = $this->get_origin_info( $package );
-		if ( empty( $origin_info ) ) {
-			return false;
-		}
+			$origin_info = $this->get_origin_info( $package );
+			if ( empty( $origin_info ) ) {
+				throw new Exception( __( 'Origin info is empty', 'wcsdm' ) );
+			}
 
-		$cache_key = $this->id . '_api_request_' . md5(
-			wp_json_encode(
-				array(
-					'destination_info' => $destination_info,
-					'origin_info'      => $origin_info,
-					'package'          => $package,
-					'all_options'      => $this->all_options,
+			$cache_key = $this->id . '_api_request_' . md5(
+				wp_json_encode(
+					array(
+						'destination_info' => $destination_info,
+						'origin_info'      => $origin_info,
+						'package'          => $package,
+						'all_options'      => $this->all_options,
+					)
 				)
-			)
-		);
+			);
 
-		// Check if the data already chached and return it.
-		$cached_data = get_transient( $cache_key );
+			// Check if the data already chached and return it.
+			$cached_data = get_transient( $cache_key );
 
-		if ( false !== $cached_data ) {
-			$this->show_debug( __( 'Cache key', 'wcsdm' ) . ': ' . $cache_key );
-			$this->show_debug( __( 'Cached data', 'wcsdm' ) . ': ' . wp_json_encode( $cached_data ) );
-			return $cached_data;
-		}
+			if ( false !== $cached_data ) {
+				$this->show_debug( __( 'Cache key', 'wcsdm' ) . ': ' . $cache_key );
+				$this->show_debug( __( 'Cached data', 'wcsdm' ) . ': ' . wp_json_encode( $cached_data ) );
+				return $cached_data;
+			}
 
-		$request_url_args = array(
-			'key'          => rawurlencode( $this->gmaps_api_key ),
-			'mode'         => rawurlencode( $this->gmaps_api_mode ),
-			'avoid'        => is_string( $this->gmaps_api_avoid ) ? rawurlencode( $this->gmaps_api_avoid ) : '',
-			'units'        => rawurlencode( $this->gmaps_api_units ),
-			'language'     => rawurlencode( get_locale() ),
-			'origins'      => rawurlencode( implode( ',', $origin_info ) ),
-			'destinations' => rawurlencode( implode( ',', $destination_info ) ),
-		);
-
-		$request_url = add_query_arg( $request_url_args, $this->google_api_url );
-
-		$this->show_debug( __( 'API Request URL', 'wcsdm' ) . ': ' . str_replace( rawurlencode( $this->gmaps_api_key ), '**********', $request_url ), 'notice' );
-
-		$data = $this->process_api_response( wp_remote_get( esc_url_raw( $request_url ) ) );
-
-		// Try to make fallback request if no results found.
-		if ( ! $data && 'yes' === $this->enable_fallback_request && ! empty( $destination_info['address_2'] ) ) {
-			unset( $destination_info['address'] );
-			$request_url_args['destinations'] = rawurlencode( implode( ',', $destination_info ) );
+			$request_url_args = array(
+				'key'          => rawurlencode( $this->gmaps_api_key ),
+				'mode'         => rawurlencode( $this->gmaps_api_mode ),
+				'avoid'        => is_string( $this->gmaps_api_avoid ) ? rawurlencode( $this->gmaps_api_avoid ) : '',
+				'units'        => rawurlencode( $this->gmaps_api_units ),
+				'language'     => rawurlencode( get_locale() ),
+				'origins'      => rawurlencode( implode( ',', $origin_info ) ),
+				'destinations' => rawurlencode( implode( ',', $destination_info ) ),
+			);
 
 			$request_url = add_query_arg( $request_url_args, $this->google_api_url );
 
-			$this->show_debug( __( 'API Fallback Request URL', 'wcsdm' ) . ': ' . str_replace( rawurlencode( $this->gmaps_api_key ), '**********', $request_url ), 'notice' );
+			$this->show_debug( __( 'API Request URL', 'wcsdm' ) . ': ' . str_replace( rawurlencode( $this->gmaps_api_key ), '**********', $request_url ), 'notice' );
 
 			$data = $this->process_api_response( wp_remote_get( esc_url_raw( $request_url ) ) );
-		}
 
-		if ( $data ) {
+			// Try to make fallback request if no results found.
+			if ( ! $data && 'yes' === $this->enable_fallback_request && ! empty( $destination_info['address_2'] ) ) {
+				unset( $destination_info['address'] );
+				$request_url_args['destinations'] = rawurlencode( implode( ',', $destination_info ) );
+
+				$request_url = add_query_arg( $request_url_args, $this->google_api_url );
+
+				$this->show_debug( __( 'API Fallback Request URL', 'wcsdm' ) . ': ' . str_replace( rawurlencode( $this->gmaps_api_key ), '**********', $request_url ), 'notice' );
+
+				$data = $this->process_api_response( wp_remote_get( esc_url_raw( $request_url ) ) );
+			}
+
+			if ( empty( $data ) ) {
+				throw new Exception( __( 'API response data is empty', 'wcsdm' ) );
+			}
+
 			delete_transient( $cache_key ); // To make sure the transient data re-created, delete it first.
 			set_transient( $cache_key, $data, HOUR_IN_SECONDS ); // Store the data to transient with expiration in 1 hour for later use.
 
 			return $data;
+		} catch ( Exception $e ) {
+			$this->show_debug( $e->getMessage(), is_cart() ? 'error' : 'notice' );
+			return false;
 		}
-
-		return false;
 	}
 
 	/**
@@ -1302,31 +1308,43 @@ class Wcsdm extends WC_Shipping_Method {
 	private function get_destination_info( $data ) {
 		$destination_info = array();
 
-		$keys = array( 'address', 'address_2', 'city', 'state', 'postcode', 'country' );
+		$address_fields = array( 'address', 'address_2', 'city', 'state', 'postcode', 'country' );
 
 		// Remove destination field keys for shipping calculator request.
-		if ( $this->is_calc_shipping() ) {
+		if ( $this->is_calc_shipping_form() ) {
 			$address = array();
 
-			$address['country']  = isset( $_POST['calc_shipping_country'] ) ? wc_clean( wp_unslash( $_POST['calc_shipping_country'] ) ) : ''; // WPCS: input var ok, CSRF ok, sanitization ok.
-			$address['state']    = isset( $_POST['calc_shipping_state'] ) ? wc_clean( wp_unslash( $_POST['calc_shipping_state'] ) ) : ''; // WPCS: input var ok, CSRF ok, sanitization ok.
-			$address['postcode'] = isset( $_POST['calc_shipping_postcode'] ) ? wc_clean( wp_unslash( $_POST['calc_shipping_postcode'] ) ) : ''; // WPCS: input var ok, CSRF ok, sanitization ok.
-			$address['city']     = isset( $_POST['calc_shipping_city'] ) ? wc_clean( wp_unslash( $_POST['calc_shipping_city'] ) ) : ''; // WPCS: input var ok, CSRF ok, sanitization ok.
+			$address['country']   = isset( $_POST['calc_shipping_country'] ) ? wc_clean( wp_unslash( $_POST['calc_shipping_country'] ) ) : ''; // WPCS: input var ok, CSRF ok, sanitization ok.
+			$address['state']     = isset( $_POST['calc_shipping_state'] ) ? wc_clean( wp_unslash( $_POST['calc_shipping_state'] ) ) : ''; // WPCS: input var ok, CSRF ok, sanitization ok.
+			$address['postcode']  = isset( $_POST['calc_shipping_postcode'] ) ? wc_clean( wp_unslash( $_POST['calc_shipping_postcode'] ) ) : ''; // WPCS: input var ok, CSRF ok, sanitization ok.
+			$address['city']      = isset( $_POST['calc_shipping_city'] ) ? wc_clean( wp_unslash( $_POST['calc_shipping_city'] ) ) : ''; // WPCS: input var ok, CSRF ok, sanitization ok.
+			$address['address_2'] = isset( $_POST['calc_shipping_address_2'] ) ? wc_clean( wp_unslash( $_POST['calc_shipping_address_2'] ) ) : ''; // WPCS: input var ok, CSRF ok, sanitization ok.
+			$address['address']   = isset( $_POST['calc_shipping_address'] ) ? wc_clean( wp_unslash( $_POST['calc_shipping_address'] ) ) : ''; // WPCS: input var ok, CSRF ok, sanitization ok.
 
 			$address = apply_filters( 'woocommerce_cart_calculate_shipping_address', $address );
 
-			$removes = apply_filters( 'wcsdm_cart_calculate_shipping_address_remove', array( 'address', 'address_2', 'city', 'postcode' ) );
+			$removes = apply_filters(
+				'wcsdm_cart_calculate_shipping_address_remove', array(
+					'country'   => true,
+					'state'     => true,
+					'city'      => true,
+					'postcode'  => true,
+					'address_2' => false,
+					'address'   => false,
+				)
+			);
 
-			foreach ( $removes as $remove ) {
-				if ( ! isset( $address[ $remove ] ) || empty( $address[ $remove ] ) ) {
-					$keys = array_diff( $keys, array( $remove ) );
+			foreach ( $removes as $remove => $filter ) {
+				if ( ! apply_filters( 'woocommerce_shipping_calculator_enable_' . $remove, $filter ) || ! isset( $address[ $remove ] ) || empty( $address[ $remove ] ) ) {
+					$address_fields = array_diff( $address_fields, array( $remove ) );
+					continue;
 				}
 			}
 		}
 
 		$country_code = false;
 
-		foreach ( $keys as $key ) {
+		foreach ( $address_fields as $key ) {
 			if ( empty( $data[ $key ] ) ) {
 				continue;
 			}
@@ -1374,7 +1392,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 *
 	 * @return bool
 	 */
-	private function is_calc_shipping() {
+	private function is_calc_shipping_form() {
 		if ( isset( $_POST['calc_shipping'], $_POST['woocommerce-shipping-calculator-nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['woocommerce-shipping-calculator-nonce'] ) ), 'woocommerce-shipping-calculator' ) ) {
 			return true;
 		}
@@ -1401,7 +1419,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @return int
 	 */
 	private function convert_distance_to_mi( $meters ) {
-		return $meters * 0.000621371;
+		return wc_format_decimal( ( $meters * 0.000621371 ), 1 );
 	}
 
 	/**
@@ -1412,7 +1430,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @return int
 	 */
 	private function convert_distance_to_km( $meters ) {
-		return $meters * 0.001;
+		return wc_format_decimal( ( $meters * 0.001 ), 1 );
 	}
 
 	/**
