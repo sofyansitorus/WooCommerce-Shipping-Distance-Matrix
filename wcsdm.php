@@ -147,7 +147,7 @@ add_filter( 'woocommerce_shipping_methods', 'wcsdm_shipping_methods' );
  * @param    string $hook Current admin page hook.
  */
 function wcsdm_admin_enqueue_scripts( $hook ) {
-	if ( 'woocommerce_page_wc-settings' === $hook ) {
+	if ( false !== strpos( $hook, 'wc-settings' ) ) {
 		// Enqueue admin styles.
 		$wcsdm_admin_css = ( defined( 'WCSDM_DEV' ) && WCSDM_DEV ) ? add_query_arg( array( 't' => time() ), WCSDM_URL . 'assets/css/wcsdm.css' ) : WCSDM_URL . 'assets/css/wcsdm.min.css';
 		wp_enqueue_style(
