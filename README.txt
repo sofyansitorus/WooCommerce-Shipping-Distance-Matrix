@@ -5,7 +5,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Requires at least: 4.8
 Tested up to: 4.9.5
 Requires PHP: 5.6
-Stable tag: 1.4.5
+Stable tag: 1.4.6
 License: GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -14,20 +14,21 @@ WooCommerce shipping rates calculator that allows you to easily offer shipping r
 == Description ==
 WooCommerce shipping rates calculator that allows you to easily offer shipping rates based on the distance that calculated using Google Maps Distance Matrix Service API.
 
-This plugin perfect for the store owner who wants to charge customers for delivery of items based on how far away they are from the store. A perfect example would be for store that use private delivery or local delivery company.
+This plugin perfect for the store owner who wants to charge customers for delivery of items based on how far away they are from the store. A perfect example would be online store that selling flowers, food, beverages. It’s not limited to just those, but anything that use local delivery or self delivery bussiness.
 
 = Key Features =
 
-* Set shipping rate as flat price or flexible price per distances unit.
-* Set different shipping rate for each product shipping class.
+* Set unlimited distances ranges.
+* Set shipping rate as flat price or flexible price per distances unit for each distance ranges.
 * Set free shipping with or without rules for each distance ranges.
 * Set surcharge for each distance ranges.
-* Set unlimited distances ranges.
+* Set different shipping rate for each product shipping class.
 * Set flat or pregressive total shipping cost.
 * Set shipping origin location coordinates using Maps Picker.
-* Set distances unit: Mile, Kilometre.
+* Set distances unit: Mile, Kilometer.
 * Set travel mode: Driving, Walking, Bicycling.
 * Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
+* Set prefered route: Shortest Distance, Longest Distance, Shortest Duration, Longest Duration.
 * Set visibility distance info to customer.
 * Set fallback request if there is no results for API request using full address.
 
@@ -82,6 +83,10 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 5. Cart Page - Free Shipping
 
 == Changelog ==
+
+= 1.4.6 =
+* Fix - Rate row not visible when switch free shipping option.
+* Fix - Flickering Map address picker when changing API Key.
 
 = 1.4.5 =
 * Fix - In rare case, settings panel broken for site using UTF-8 characters language.
@@ -222,11 +227,11 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 * Feature - Set shipping cost by product shipping class.
 * Feature - Set unlimited distances ranges.
 * Feature - Set origin info by coordinates.
-* Feature - Set distances unit: Mile, Kilometre.
+* Feature - Set distances unit: Mile, Kilometer.
 * Feature - Set travel mode: Driving, Walking, Bicycling.
 * Feature - Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
 
 == Upgrade Notice ==
-= 1.4.5 =
+= 1.4.6 =
 
-This version includes bug fix.
+This version includes bug fixes.
