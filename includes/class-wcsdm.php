@@ -147,7 +147,7 @@ class Wcsdm extends WC_Shipping_Method {
 			'origin'                  => array(
 				'title'       => __( 'Store Location', 'wcsdm' ),
 				'type'        => 'address_picker',
-				'description' => __( 'Drag the and drop the store icon to your store location or search your store location by type an address into the search field. You can also set you store location by fill in the Latitude and Latitude coordinates manually.', 'wcsdm' ),
+				'description' => __( 'Drag the and drop the store icon to your store location at the map or search your store location by typing an address into the search input field.', 'wcsdm' ),
 				'desc_tip'    => true,
 			),
 			'origin_lat'              => array(
@@ -288,10 +288,11 @@ class Wcsdm extends WC_Shipping_Method {
 				<div id="<?php echo esc_attr( $this->id ); ?>-map-error" class="notice notice-error"></div>
 				<div id="<?php echo esc_attr( $this->id ); ?>-map-wrapper" class="<?php echo esc_attr( $this->id ); ?>-map-wrapper"></div>
 				<div id="<?php echo esc_attr( $this->id ); ?>-lat-lng-wrap">
-					<div><label for="<?php echo esc_attr( $field_key ); ?>_lat"><?php echo esc_html( 'Latitude', 'wcsdm' ); ?></label><input type="text" id="<?php echo esc_attr( $field_key ); ?>_lat" name="<?php echo esc_attr( $field_key ); ?>_lat" value="<?php echo esc_attr( $this->get_option( $key . '_lat' ) ); ?>" class="origin-coordinates"></div>
-					<div><label for="<?php echo esc_attr( $field_key ); ?>_lng"><?php echo esc_html( 'Longitude', 'wcsdm' ); ?></label><input type="text" id="<?php echo esc_attr( $field_key ); ?>_lng" name="<?php echo esc_attr( $field_key ); ?>_lng" value="<?php echo esc_attr( $this->get_option( $key . '_lng' ) ); ?>" class="origin-coordinates"></div>
+					<div><label for="<?php echo esc_attr( $field_key ); ?>_lat"><?php echo esc_html( 'Latitude', 'wcsdm' ); ?></label><input type="text" id="<?php echo esc_attr( $field_key ); ?>_lat" name="<?php echo esc_attr( $field_key ); ?>_lat" value="<?php echo esc_attr( $this->get_option( $key . '_lat' ) ); ?>" class="origin-coordinates" readonly></div>
+					<div><label for="<?php echo esc_attr( $field_key ); ?>_lng"><?php echo esc_html( 'Longitude', 'wcsdm' ); ?></label><input type="text" id="<?php echo esc_attr( $field_key ); ?>_lng" name="<?php echo esc_attr( $field_key ); ?>_lng" value="<?php echo esc_attr( $this->get_option( $key . '_lng' ) ); ?>" class="origin-coordinates" readonly></div>
 				</div>
 				<?php echo $this->get_description_html( $data ); // WPCS: XSS ok. ?>
+				<div id="<?php echo esc_attr( $this->id ); ?>-map-spinner" class="spinner" style="visibility: visible;"></div>
 				<script type="text/html" id="tmpl-<?php echo esc_attr( $this->id ); ?>-map-search">
 					<input id="wcsdm-map-search" class="<?php echo esc_attr( $this->id ); ?>-map-search controls" type="text" placeholder="<?php echo esc_attr( __( 'Search your store location', 'wcsdm' ) ); ?>" autocomplete="off" />
 				</script>
