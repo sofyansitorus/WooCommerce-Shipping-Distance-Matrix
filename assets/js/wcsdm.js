@@ -115,9 +115,11 @@ var wcsdmSetting = {
 
 		// Handle on free shipping option field value changed.
 		$(document).on('change', '#woocommerce_wcsdm_free', function (e) {
-			$('.free-shipping-yes_alt').closest('tr').hide();
+			$('#woocommerce_wcsdm_free_min_amount').closest('tr').hide();
+			$('#woocommerce_wcsdm_free_min_qty').closest('tr').hide();
 			if ($(e.currentTarget).val() === 'yes_alt') {
-				$('.free-shipping-yes_alt').closest('tr').show();
+				$('#woocommerce_wcsdm_free_min_amount').closest('tr').show();
+				$('#woocommerce_wcsdm_free_min_qty').closest('tr').show();
 			}
 		});
 
