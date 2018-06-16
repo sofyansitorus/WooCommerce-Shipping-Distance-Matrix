@@ -69,9 +69,9 @@ Credits: [InMotion Hosting](https://www.inmotionhosting.com)
 The error printed there is came from the Google API. Click any link printed within the error message to find out the causes and solutions.
 
 = I see message "There are no shipping methods available" in the cart/checkout page, what should I do? =
-Please try to switch the Debug Mode Settings to On. Then open your cart/checkout page. You will see the error printed if there was.
+Please try to switch the WooCommerce Shipping Debug Mode setting to "On". Then open your cart/checkout page. You will see the error printed if there was.
 
-[WooCommerce Shipping Debug Mode](https://docs.woocommerce.com/document/product-shipping-classes/shipping-debug-mode/)
+[Click here](https://docs.woocommerce.com/document/product-shipping-classes/shipping-debug-mode/) for how to switch WooCommerce Shipping Debug Mode.
 
 = Where can I get support or report bug? =
 You can create support ticket at plugin support forum:
