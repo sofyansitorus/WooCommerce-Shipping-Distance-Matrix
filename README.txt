@@ -71,7 +71,7 @@ The error printed there is came from the Google API. Click any link printed with
 = I see message "There are no shipping methods available" in the cart/checkout page, what should I do? =
 Please try to switch the Debug Mode Settings to On. Then open your cart/checkout page. You will see the error printed if there was.
 
-[https://docs.woocommerce.com/document/product-shipping-classes/shipping-debug-mode/](https://docs.woocommerce.com/document/product-shipping-classes/shipping-debug-mode/)
+[WooCommerce Shipping Debug Mode](https://docs.woocommerce.com/document/product-shipping-classes/shipping-debug-mode/)
 
 = Where can I get support or report bug? =
 You can create support ticket at plugin support forum:
