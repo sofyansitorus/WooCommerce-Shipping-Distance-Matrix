@@ -65,8 +65,16 @@ You can setup the plugin setting from the WooCommerce Shipping Zones settings pa
 
 Credits: [InMotion Hosting](https://www.inmotionhosting.com)
 
+= I got error in the "Store Location" setting field", what should I do? =
+The error printed there is came from the Google API. Click any link printed within the error message to find out the causes and solutions.
+
+= I see message "There are no shipping methods available" in the cart/checkout page, what should I do? =
+Please try to switch the Debug Mode Settings to On. Then open your cart/checkout page. You will see the error printed if there was.
+
+https://docs.woocommerce.com/document/product-shipping-classes/shipping-debug-mode/
+
 = Where can I get support or report bug? =
-You can create support ticket at plugin support forum :
+You can create support ticket at plugin support forum:
 
 * [Plugin Support Forum](https://wordpress.org/support/plugin/wcsdm)
 
