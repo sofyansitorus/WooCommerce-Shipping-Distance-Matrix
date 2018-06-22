@@ -1530,7 +1530,7 @@ class Wcsdm extends WC_Shipping_Method {
 	private function show_debug( $message, $type = 'success' ) {
 		$debug_mode = 'yes' === get_option( 'woocommerce_shipping_debug_mode', 'no' );
 
-		if ( $debug_mode && ! defined( 'WOOCOMMERCE_CHECKOUT' ) && ! defined( 'WC_DOING_AJAX' ) && ! wc_has_notice( $message ) ) {
+		if ( $debug_mode && ! defined( 'WOOCOMMERCE_CHECKOUT' ) && ! defined( 'WC_DOING_AJAX' ) && ! wc_has_notice( $message ) && current_user_can( 'administrator' ) ) {
 			wc_add_notice( $message, $type );
 		}
 	}
