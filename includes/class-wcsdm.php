@@ -893,14 +893,13 @@ class Wcsdm extends WC_Shipping_Method {
 	public function calculate_shipping( $package = array() ) {
 		global $woocommerce;
 
+		$api_request = $this->api_request( $package );
+
+		if ( ! $api_request ) {
+			return;
+		}
+
 		try {
-
-			$api_request = $this->api_request( $package );
-
-			if ( ! $api_request ) {
-				throw new Exception( __( 'API response is empty', 'wcsdm' ) );
-			}
-
 			$rate_data = $this->get_rate_by_distance( $api_request['distance'] );
 
 			// Bail early if there is no rate found.
@@ -1036,7 +1035,7 @@ class Wcsdm extends WC_Shipping_Method {
 			// Register the rate.
 			$this->register_rate( $rate );
 		} catch ( Exception $e ) {
-			$this->show_debug( $e->getMessage(), is_cart() ? 'error' : 'notice' );
+			$this->show_debug( $e->getMessage(), is_cart() || $this->is_calc_shipping() ? 'error' : 'notice' );
 		}
 	}
 
@@ -1103,13 +1102,13 @@ class Wcsdm extends WC_Shipping_Method {
 	 */
 	private function api_request( $package ) {
 		try {
-			if ( empty( $this->gmaps_api_key ) ) {
-				throw new Exception( __( 'API Key is empty', 'wcsdm' ) );
-			}
-
 			$destination_info = $this->get_destination_info( $package['destination'] );
 			if ( empty( $destination_info ) ) {
-				throw new Exception( __( 'Destination info is empty', 'wcsdm' ) );
+				return false;
+			}
+
+			if ( empty( $this->gmaps_api_key ) ) {
+				throw new Exception( __( 'API Key is empty', 'wcsdm' ) );
 			}
 
 			$origin_info = $this->get_origin_info( $package );
@@ -1149,7 +1148,7 @@ class Wcsdm extends WC_Shipping_Method {
 
 			$request_url = add_query_arg( $request_url_args, $this->google_api_url );
 
-			$this->show_debug( __( 'API Request URL', 'wcsdm' ) . ': ' . str_replace( rawurlencode( $this->gmaps_api_key ), '**********', $request_url ), 'notice' );
+			$this->show_debug( __( 'API Request URL', 'wcsdm' ) . ': ' . str_replace( rawurlencode( $this->gmaps_api_key ), '**********', $request_url ) );
 
 			$data = $this->process_api_response( wp_remote_get( esc_url_raw( $request_url ) ) );
 
@@ -1160,13 +1159,13 @@ class Wcsdm extends WC_Shipping_Method {
 
 				$request_url = add_query_arg( $request_url_args, $this->google_api_url );
 
-				$this->show_debug( __( 'API Fallback Request URL', 'wcsdm' ) . ': ' . str_replace( rawurlencode( $this->gmaps_api_key ), '**********', $request_url ), 'notice' );
+				$this->show_debug( __( 'API Fallback Request URL', 'wcsdm' ) . ': ' . str_replace( rawurlencode( $this->gmaps_api_key ), '**********', $request_url ) );
 
 				$data = $this->process_api_response( wp_remote_get( esc_url_raw( $request_url ) ) );
 			}
 
 			if ( empty( $data ) ) {
-				throw new Exception( __( 'API response data is empty', 'wcsdm' ) );
+				return false;
 			}
 
 			delete_transient( $cache_key ); // To make sure the transient data re-created, delete it first.
@@ -1174,7 +1173,7 @@ class Wcsdm extends WC_Shipping_Method {
 
 			return $data;
 		} catch ( Exception $e ) {
-			$this->show_debug( $e->getMessage(), is_cart() ? 'error' : 'notice' );
+			$this->show_debug( $e->getMessage(), is_cart() || $this->is_calc_shipping() ? 'error' : 'notice' );
 			return false;
 		}
 	}
@@ -1288,7 +1287,7 @@ class Wcsdm extends WC_Shipping_Method {
 
 			return $result;
 		} catch ( Exception $e ) {
-			$this->show_debug( $e->getMessage(), 'notice' );
+			$this->show_debug( $e->getMessage(), is_cart() || $this->is_calc_shipping() ? 'error' : 'notice' );
 			return false;
 		}
 	}
@@ -1328,73 +1327,109 @@ class Wcsdm extends WC_Shipping_Method {
 	 * Get shipping destination info
 	 *
 	 * @since    1.0.0
+	 * @throws Exception Throw error if validation not passed.
 	 * @param array $data Shipping destination data in associative array format: address, city, state, postcode, country.
 	 * @return string
 	 */
 	private function get_destination_info( $data ) {
+		$errors = array();
+
+		$country_code = isset( $data['country'] ) && ! empty( $data['country'] ) ? $data['country'] : false;
+
+		if ( ! $country_code ) {
+			throw new Exception( __( 'Shipping destination country is not defined', 'wcsdm' ) );
+		}
+
+		$fields_default = WC()->countries->get_default_address_fields();
+
+		$country_locale = WC()->countries->get_country_locale();
+		$country_locale = isset( $country_locale[ $country_code ] ) ? $country_locale[ $country_code ] : $country_locale['default'];
+
+		$fields_rules = array(
+			'address'   => false,
+			'address_2' => false,
+			'city'      => true,
+			'state'     => WC()->countries->get_states( $country_code ),
+			'postcode'  => true,
+			'country'   => true,
+		);
+
 		$destination_info = array();
 
-		$address_fields = array( 'address', 'address_2', 'city', 'state', 'postcode', 'country' );
+		foreach ( $fields_rules as $field => $calculator_enable ) {
+			$calculator_enable = apply_filters( 'woocommerce_shipping_calculator_enable_' . $field, $calculator_enable );
+			if ( $this->is_calc_shipping() && ! $calculator_enable ) {
+				continue;
+			}
 
-		// Remove destination field keys for shipping calculator request.
-		if ( $this->is_calc_shipping_form() ) {
-			$address = array();
+			$field_data = isset( $fields_default[ $field ] ) ? $fields_default[ $field ] : false;
+			if ( empty( $field_data ) ) {
+				continue;
+			}
 
-			$address['country']   = isset( $_POST['calc_shipping_country'] ) ? wc_clean( wp_unslash( $_POST['calc_shipping_country'] ) ) : ''; // WPCS: input var ok, CSRF ok, sanitization ok.
-			$address['state']     = isset( $_POST['calc_shipping_state'] ) ? wc_clean( wp_unslash( $_POST['calc_shipping_state'] ) ) : ''; // WPCS: input var ok, CSRF ok, sanitization ok.
-			$address['postcode']  = isset( $_POST['calc_shipping_postcode'] ) ? wc_clean( wp_unslash( $_POST['calc_shipping_postcode'] ) ) : ''; // WPCS: input var ok, CSRF ok, sanitization ok.
-			$address['city']      = isset( $_POST['calc_shipping_city'] ) ? wc_clean( wp_unslash( $_POST['calc_shipping_city'] ) ) : ''; // WPCS: input var ok, CSRF ok, sanitization ok.
-			$address['address_2'] = isset( $_POST['calc_shipping_address_2'] ) ? wc_clean( wp_unslash( $_POST['calc_shipping_address_2'] ) ) : ''; // WPCS: input var ok, CSRF ok, sanitization ok.
-			$address['address']   = isset( $_POST['calc_shipping_address'] ) ? wc_clean( wp_unslash( $_POST['calc_shipping_address'] ) ) : ''; // WPCS: input var ok, CSRF ok, sanitization ok.
+			if ( isset( $country_locale[ $field ] ) ) {
+				$field_data = array_merge( $field_data, $country_locale[ $field ] );
+			}
 
-			$address = apply_filters( 'woocommerce_cart_calculate_shipping_address', $address );
+			if ( isset( $field_data['hidden'] ) && $field_data['hidden'] ) {
+				continue;
+			}
 
-			$removes = apply_filters(
-				'wcsdm_cart_calculate_shipping_address_remove', array(
-					'country'   => true,
-					'state'     => true,
-					'city'      => true,
-					'postcode'  => true,
-					'address_2' => false,
-					'address'   => false,
-				)
-			);
+			$field_label = isset( $field_data['label'] ) ? $field_data['label'] : $field;
+			$field_value = isset( $data[ $field ] ) ? $data[ $field ] : '';
 
-			foreach ( $removes as $remove => $filter ) {
-				if ( ! apply_filters( 'woocommerce_shipping_calculator_enable_' . $remove, $filter ) || ! isset( $address[ $remove ] ) || empty( $address[ $remove ] ) ) {
-					$address_fields = array_diff( $address_fields, array( $remove ) );
-					continue;
+			if ( empty( $field_value ) && $field_data['required'] ) {
+				// translators: %s is shipping destination field label.
+				array_push( $errors, sprintf( __( 'Shipping destination field is empty: %s', 'wcsdm' ), $field_label ) );
+				continue;
+			}
+
+			if ( ! empty( $field_value ) ) {
+				switch ( $field ) {
+					case 'postcode':
+						$poscode_valid = WC_Validation::is_postcode( $field_value, $country_code );
+						if ( $poscode_valid ) {
+							$poscode_valid = $this->validate_postcode( $field_value, $country_code );
+						}
+
+						if ( ! $poscode_valid ) {
+							// translators: %s is shipping destination field label.
+							array_push( $errors, sprintf( __( 'Shipping destination field is invalid: %s', 'wcsdm' ), $field_label ) );
+						}
+
+						if ( $poscode_valid ) {
+							$destination_info[ $field ] = $field_value;
+						}
+						break;
+
+					case 'state':
+						if ( isset( WC()->countries->states[ $country_code ][ $field_value ] ) ) {
+							$field_value = WC()->countries->states[ $country_code ][ $field_value ];
+						}
+						$destination_info[ $field ] = $field_value;
+						break;
+
+					case 'country':
+						if ( isset( WC()->countries->countries[ $field_value ] ) ) {
+							$field_value = WC()->countries->countries[ $field_value ];
+						}
+						$destination_info[ $field ] = $field_value;
+						break;
+
+					default:
+						$destination_info[ $field ] = $field_value;
+						break;
 				}
 			}
 		}
 
-		$country_code = false;
+		error_log(print_r($destination_info, true));
 
-		foreach ( $address_fields as $key ) {
-			if ( empty( $data[ $key ] ) ) {
-				continue;
+		if ( $errors ) {
+			foreach ( $errors as $error ) {
+				$this->show_debug( $error, is_cart() || $this->is_calc_shipping() ? 'error' : 'notice' );
 			}
-			switch ( $key ) {
-				case 'country':
-					if ( empty( $country_code ) ) {
-						$country_code = $data[ $key ];
-					}
-					$destination_info[ $key ] = isset( WC()->countries->countries[ $country_code ] ) ? WC()->countries->countries[ $country_code ] : $country_code;
-					break;
-				case 'state':
-					if ( empty( $country_code ) ) {
-						$country_code = $data['country'];
-					}
-					$destination_info[ $key ] = isset( WC()->countries->states[ $country_code ][ $data[ $key ] ] ) ? WC()->countries->states[ $country_code ][ $data[ $key ] ] : $data[ $key ];
-					break;
-				default:
-					$destination_info[ $key ] = $data[ $key ];
-					break;
-			}
-		}
-
-		if ( $destination_info ) {
-			$destination_info = array_map( 'trim', $destination_info );
+			return false;
 		}
 
 		/**
@@ -1418,7 +1453,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 *
 	 * @return bool
 	 */
-	private function is_calc_shipping_form() {
+	private function is_calc_shipping() {
 		if ( isset( $_POST['calc_shipping'], $_POST['woocommerce-shipping-calculator-nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['woocommerce-shipping-calculator-nonce'] ) ), 'woocommerce-shipping-calculator' ) ) {
 			return true;
 		}
@@ -1520,6 +1555,185 @@ class Wcsdm extends WC_Shipping_Method {
 	}
 
 	/**
+	 * Validate postal code
+	 *
+	 * @since    1.4.7
+	 * @param array $postcode Postal code to validate.
+	 * @param array $country_code Country code.
+	 * @return bool
+	 */
+	private function validate_postcode( $postcode, $country_code ) {
+		$patterns = array(
+			'GB' => 'GIR[ ]?0AA|((AB|AL|B|BA|BB|BD|BH|BL|BN|BR|BS|BT|CA|CB|CF|CH|CM|CO|CR|CT|CV|CW|DA|DD|DE|DG|DH|DL|DN|DT|DY|E|EC|EH|EN|EX|FK|FY|G|GL|GY|GU|HA|HD|HG|HP|HR|HS|HU|HX|IG|IM|IP|IV|JE|KA|KT|KW|KY|L|LA|LD|LE|LL|LN|LS|LU|M|ME|MK|ML|N|NE|NG|NN|NP|NR|NW|OL|OX|PA|PE|PH|PL|PO|PR|RG|RH|RM|S|SA|SE|SG|SK|SL|SM|SN|SO|SP|SR|SS|ST|SW|SY|TA|TD|TF|TN|TQ|TR|TS|TW|UB|W|WA|WC|WD|WF|WN|WR|WS|WV|YO|ZE)(\d[\dA-Z]?[ ]?\d[ABD-HJLN-UW-Z]{2}))|BFPO[ ]?\d{1,4}',
+			'JE' => 'JE\d[\dA-Z]?[ ]?\d[ABD-HJLN-UW-Z]{2}',
+			'GG' => 'GY\d[\dA-Z]?[ ]?\d[ABD-HJLN-UW-Z]{2}',
+			'IM' => 'IM\d[\dA-Z]?[ ]?\d[ABD-HJLN-UW-Z]{2}',
+			'US' => '\d{5}([ \-]\d{4})?',
+			'CA' => '[ABCEGHJKLMNPRSTVXY]\d[ABCEGHJ-NPRSTV-Z][ ]?\d[ABCEGHJ-NPRSTV-Z]\d',
+			'DE' => '\d{5}',
+			'JP' => '\d{3}-\d{4}',
+			'FR' => '\d{2}[ ]?\d{3}',
+			'AU' => '\d{4}',
+			'IT' => '\d{5}',
+			'CH' => '\d{4}',
+			'AT' => '\d{4}',
+			'ES' => '\d{5}',
+			'NL' => '\d{4}[ ]?[A-Z]{2}',
+			'BE' => '\d{4}',
+			'DK' => '\d{4}',
+			'SE' => '\d{3}[ ]?\d{2}',
+			'NO' => '\d{4}',
+			'BR' => '\d{5}[\-]?\d{3}',
+			'PT' => '\d{4}([\-]\d{3})?',
+			'FI' => '\d{5}',
+			'AX' => '22\d{3}',
+			'KR' => '\d{3}[\-]\d{3}',
+			'CN' => '\d{6}',
+			'TW' => '\d{3}(\d{2})?',
+			'SG' => '\d{6}',
+			'DZ' => '\d{5}',
+			'AD' => 'AD\d{3}',
+			'AR' => '([A-HJ-NP-Z])?\d{4}([A-Z]{3})?',
+			'AM' => '(37)?\d{4}',
+			'AZ' => '\d{4}',
+			'BH' => '((1[0-2]|[2-9])\d{2})?',
+			'BD' => '\d{4}',
+			'BB' => '(BB\d{5})?',
+			'BY' => '\d{6}',
+			'BM' => '[A-Z]{2}[ ]?[A-Z0-9]{2}',
+			'BA' => '\d{5}',
+			'IO' => 'BBND 1ZZ',
+			'BN' => '[A-Z]{2}[ ]?\d{4}',
+			'BG' => '\d{4}',
+			'KH' => '\d{5}',
+			'CV' => '\d{4}',
+			'CL' => '\d{7}',
+			'CR' => '\d{4,5}|\d{3}-\d{4}',
+			'HR' => '\d{5}',
+			'CY' => '\d{4}',
+			'CZ' => '\d{3}[ ]?\d{2}',
+			'DO' => '\d{5}',
+			'EC' => '([A-Z]\d{4}[A-Z]|(?:[A-Z]{2})?\d{6})?',
+			'EG' => '\d{5}',
+			'EE' => '\d{5}',
+			'FO' => '\d{3}',
+			'GE' => '\d{4}',
+			'GR' => '\d{3}[ ]?\d{2}',
+			'GL' => '39\d{2}',
+			'GT' => '\d{5}',
+			'HT' => '\d{4}',
+			'HN' => '(?:\d{5})?',
+			'HU' => '\d{4}',
+			'IS' => '\d{3}',
+			'IN' => '\d{6}',
+			'ID' => '\d{5}',
+			'IL' => '\d{5}',
+			'JO' => '\d{5}',
+			'KZ' => '\d{6}',
+			'KE' => '\d{5}',
+			'KW' => '\d{5}',
+			'LA' => '\d{5}',
+			'LV' => '\d{4}',
+			'LB' => '(\d{4}([ ]?\d{4})?)?',
+			'LI' => '(948[5-9])|(949[0-7])',
+			'LT' => '\d{5}',
+			'LU' => '\d{4}',
+			'MK' => '\d{4}',
+			'MY' => '\d{5}',
+			'MV' => '\d{5}',
+			'MT' => '[A-Z]{3}[ ]?\d{2,4}',
+			'MU' => '(\d{3}[A-Z]{2}\d{3})?',
+			'MX' => '\d{5}',
+			'MD' => '\d{4}',
+			'MC' => '980\d{2}',
+			'MA' => '\d{5}',
+			'NP' => '\d{5}',
+			'NZ' => '\d{4}',
+			'NI' => '((\d{4}-)?\d{3}-\d{3}(-\d{1})?)?',
+			'NG' => '(\d{6})?',
+			'OM' => '(PC )?\d{3}',
+			'PK' => '\d{5}',
+			'PY' => '\d{4}',
+			'PH' => '\d{4}',
+			'PL' => '\d{2}-\d{3}',
+			'PR' => '00[679]\d{2}([ \-]\d{4})?',
+			'RO' => '\d{6}',
+			'RU' => '\d{6}',
+			'SM' => '4789\d',
+			'SA' => '\d{5}',
+			'SN' => '\d{5}',
+			'SK' => '\d{3}[ ]?\d{2}',
+			'SI' => '\d{4}',
+			'ZA' => '\d{4}',
+			'LK' => '\d{5}',
+			'TJ' => '\d{6}',
+			'TH' => '\d{5}',
+			'TN' => '\d{4}',
+			'TR' => '\d{5}',
+			'TM' => '\d{6}',
+			'UA' => '\d{5}',
+			'UY' => '\d{5}',
+			'UZ' => '\d{6}',
+			'VA' => '00120',
+			'VE' => '\d{4}',
+			'ZM' => '\d{5}',
+			'AS' => '96799',
+			'CC' => '6799',
+			'CK' => '\d{4}',
+			'RS' => '\d{6}',
+			'ME' => '8\d{4}',
+			'CS' => '\d{5}',
+			'YU' => '\d{5}',
+			'CX' => '6798',
+			'ET' => '\d{4}',
+			'FK' => 'FIQQ 1ZZ',
+			'NF' => '2899',
+			'FM' => '(9694[1-4])([ \-]\d{4})?',
+			'GF' => '9[78]3\d{2}',
+			'GN' => '\d{3}',
+			'GP' => '9[78][01]\d{2}',
+			'GS' => 'SIQQ 1ZZ',
+			'GU' => '969[123]\d([ \-]\d{4})?',
+			'GW' => '\d{4}',
+			'HM' => '\d{4}',
+			'IQ' => '\d{5}',
+			'KG' => '\d{6}',
+			'LR' => '\d{4}',
+			'LS' => '\d{3}',
+			'MG' => '\d{3}',
+			'MH' => '969[67]\d([ \-]\d{4})?',
+			'MN' => '\d{6}',
+			'MP' => '9695[012]([ \-]\d{4})?',
+			'MQ' => '9[78]2\d{2}',
+			'NC' => '988\d{2}',
+			'NE' => '\d{4}',
+			'VI' => '008(([0-4]\d)|(5[01]))([ \-]\d{4})?',
+			'PF' => '987\d{2}',
+			'PG' => '\d{3}',
+			'PM' => '9[78]5\d{2}',
+			'PN' => 'PCRN 1ZZ',
+			'PW' => '96940',
+			'RE' => '9[78]4\d{2}',
+			'SH' => '(ASCN|STHL) 1ZZ',
+			'SJ' => '\d{4}',
+			'SO' => '\d{5}',
+			'SZ' => '[HLMS]\d{3}',
+			'TC' => 'TKCA 1ZZ',
+			'WF' => '986\d{2}',
+			'XK' => '\d{5}',
+			'YT' => '976\d{2}',
+		);
+
+		$pattern = isset( $patterns[ $country_code ] ) ? $patterns[ $country_code ] : false;
+
+		if ( ! $pattern ) {
+			return true;
+		}
+
+		return preg_match( "/^$pattern$/", $postcode, $matches );
+	}
+
+	/**
 	 * Show debug info
 	 *
 	 * @since    1.0.0
@@ -1527,11 +1741,15 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @param string $type The type of notice.
 	 * @return void
 	 */
-	private function show_debug( $message, $type = 'success' ) {
+	private function show_debug( $message, $type = 'notice' ) {
 		$debug_mode = 'yes' === get_option( 'woocommerce_shipping_debug_mode', 'no' );
 
-		if ( $debug_mode && ! defined( 'WOOCOMMERCE_CHECKOUT' ) && ! defined( 'WC_DOING_AJAX' ) && ! wc_has_notice( $message ) && current_user_can( 'administrator' ) ) {
-			wc_add_notice( $message, $type );
+		if ( ! current_user_can( 'administrator' ) ) {
+			return;
+		}
+
+		if ( $debug_mode && ! defined( 'WOOCOMMERCE_CHECKOUT' ) && ! defined( 'WC_DOING_AJAX' ) && ! wc_has_notice( $message ) ) {
+			wc_add_notice( 'WCSDM => ' . $message, $type );
 		}
 	}
 }
