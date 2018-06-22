@@ -95,7 +95,7 @@ var wcsdmSetting = {
 		// Handle on distance field changed.
 		$(document).on('change input', '.field-distance', function (e) {
 			var $inputTarget = $(e.currentTarget);
-			var inputVal = parseInt($inputTarget.val());
+			var inputVal = parseInt($inputTarget.val(), 10);
 			if (inputVal < 10) {
 				$inputTarget.attr('step', '1');
 			} else if (inputVal >= 10 && inputVal <= 50) {

@@ -147,7 +147,7 @@ class Wcsdm extends WC_Shipping_Method {
 			'origin'                  => array(
 				'title'       => __( 'Store Location', 'wcsdm' ),
 				'type'        => 'address_picker',
-				'description' => __( 'Drag the and drop the store icon to your store location at the map or search your store location by typing an address into the search input field.', 'wcsdm' ),
+				'description' => __( 'Drag the and drop the store icon to your store location at the map or search your store location by typing an address into the search input field. If you see any error printed on the setting field, please click the link printed within the error message to find out the causes and solutions.', 'wcsdm' ),
 				'desc_tip'    => true,
 			),
 			'origin_lat'              => array(
@@ -562,14 +562,25 @@ class Wcsdm extends WC_Shipping_Method {
 	 */
 	public function rates_fields( $heading_only = false, $advanced_form = false ) {
 		$fields = array(
-			'distance'        => array(
-				'type'        => 'number',
-				'title'       => __( 'Maximum Distances', 'wcsdm' ),
+			'shipping_label'  => array_merge( $this->instance_form_fields['title'], array(
 				'class'       => 'wcsdm-input',
-				'description' => __( 'The maximum distances rule for the shipping rate. This input is required.', 'wcsdm' ),
+				'description' => $this->instance_form_fields['title']['description'] . ' ' . __( 'Leave blank to use the global title settings.', 'wcsdm' ),
+				'default'     => '',
 				'desc_tip'    => true,
-				'advanced'    => false,
-				'heading'     => true,
+				'advanced'    => true,
+				'heading'     => false,
+			) ),
+			'distance'        => array(
+				'type'              => 'number',
+				'title'             => __( 'Maximum Distances', 'wcsdm' ),
+				'class'             => 'wcsdm-input field-distance',
+				'description'       => __( 'The maximum distances rule for the shipping rate. This input is required.', 'wcsdm' ),
+				'desc_tip'          => true,
+				'advanced'          => false,
+				'heading'           => true,
+				'custom_attributes' => array(
+					'min' => '0',
+				),
 			),
 			'cost_type'       => array(
 				'type'        => 'select',
@@ -586,23 +597,29 @@ class Wcsdm extends WC_Shipping_Method {
 				'heading'     => true,
 			),
 			'class_0'         => array(
-				'type'        => 'number',
-				'title'       => __( 'Shipping Rate', 'wcsdm' ),
-				'class'       => 'wcsdm-input',
-				'description' => __( 'The shipping rate within the distances range. This input is required.', 'wcsdm' ),
-				'desc_tip'    => true,
-				'advanced'    => false,
-				'heading'     => true,
+				'type'              => 'number',
+				'title'             => __( 'Default Shipping Rate', 'wcsdm' ),
+				'class'             => 'wcsdm-input',
+				'description'       => __( 'The shipping rate within the distances range. This input is required.', 'wcsdm' ),
+				'desc_tip'          => true,
+				'advanced'          => false,
+				'heading'           => true,
+				'custom_attributes' => array(
+					'min' => '0',
+				),
 			),
 			'base'            => array(
-				'type'        => 'number',
-				'title'       => __( 'Additional Cost', 'wcsdm' ),
-				'class'       => 'wcsdm-input',
-				'default'     => '0',
-				'description' => __( 'Surcharge that will be added to the total shipping cost.', 'wcsdm' ),
-				'desc_tip'    => true,
-				'advanced'    => true,
-				'heading'     => false,
+				'type'              => 'number',
+				'title'             => __( 'Additional Cost', 'wcsdm' ),
+				'class'             => 'wcsdm-input',
+				'default'           => '0',
+				'description'       => __( 'Surcharge that will be added to the total shipping cost.', 'wcsdm' ),
+				'desc_tip'          => true,
+				'advanced'          => true,
+				'heading'           => false,
+				'custom_attributes' => array(
+					'min' => '0',
+				),
 			),
 			'free'            => array(
 				'type'        => 'select',
@@ -620,22 +637,28 @@ class Wcsdm extends WC_Shipping_Method {
 				'heading'     => true,
 			),
 			'free_min_amount' => array(
-				'type'        => 'number',
-				'title'       => __( 'Rule #1: Minimum Order Amount', 'wcsdm' ),
-				'class'       => 'wcsdm-input free-shipping-yes_alt',
-				'description' => __( 'The free shipping rule for minimum order amount. Leave blank to disable this rule. But at least one rule must be defined either by minimum order amount or minimum order quantity.', 'wcsdm' ),
-				'desc_tip'    => true,
-				'advanced'    => true,
-				'heading'     => false,
+				'type'              => 'number',
+				'title'             => __( 'Rule #1: Minimum Order Amount', 'wcsdm' ),
+				'class'             => 'wcsdm-input free-shipping-yes_alt',
+				'description'       => __( 'The free shipping rule for minimum order amount. Leave blank to disable this rule. But at least one rule must be defined either by minimum order amount or minimum order quantity.', 'wcsdm' ),
+				'desc_tip'          => true,
+				'advanced'          => true,
+				'heading'           => false,
+				'custom_attributes' => array(
+					'min' => '0',
+				),
 			),
 			'free_min_qty'    => array(
-				'type'        => 'number',
-				'title'       => __( 'Rule #2: Minimum Order Quantity', 'wcsdm' ),
-				'class'       => 'wcsdm-input free-shipping-yes_alt',
-				'description' => __( 'The free shipping rule for minimum order quantity. Leave blank to disable this rule. But at least one rule must be defined either by minimum order amount or minimum order quantity.', 'wcsdm' ),
-				'desc_tip'    => true,
-				'advanced'    => true,
-				'heading'     => false,
+				'type'              => 'number',
+				'title'             => __( 'Rule #2: Minimum Order Quantity', 'wcsdm' ),
+				'class'             => 'wcsdm-input free-shipping-yes_alt',
+				'description'       => __( 'The free shipping rule for minimum order quantity. Leave blank to disable this rule. But at least one rule must be defined either by minimum order amount or minimum order quantity.', 'wcsdm' ),
+				'desc_tip'          => true,
+				'advanced'          => true,
+				'heading'           => false,
+				'custom_attributes' => array(
+					'min' => '0',
+				),
 			),
 			'advanced'        => array(
 				'type'        => 'link',
@@ -660,8 +683,8 @@ class Wcsdm extends WC_Shipping_Method {
 						$new_fields[ 'class_' . $class_id ] = array_merge(
 							$field, array(
 								// translators: %s is Product shipping class name.
-								'title'       => sprintf( __( 'Shipping Rate for "%s"', 'wcsdm' ), $class_obj->name ),
-								'description' => __( 'Shipping rate for specific product shipping class. This rate will override the default shipping rate defined above. Zero value will be ignored.', 'wcsdm' ),
+								'title'       => sprintf( __( 'Shipping Rate for "%s" Shipping Class', 'wcsdm' ), $class_obj->name ),
+								'description' => __( 'Shipping rate for specific product shipping class. This rate will override the default shipping rate defined above. Blank or zero value will be ignored.', 'wcsdm' ),
 								'desc_tip'    => true,
 								'advanced'    => true,
 								'heading'     => false,
@@ -778,6 +801,7 @@ class Wcsdm extends WC_Shipping_Method {
 
 				foreach ( $post_data_value as $index => $row_value ) {
 					switch ( $data_key ) {
+						case 'shipping_label':
 						case 'free':
 						case 'cost_type':
 							$value = $row_value;
@@ -870,6 +894,7 @@ class Wcsdm extends WC_Shipping_Method {
 		global $woocommerce;
 
 		try {
+
 			$api_request = $this->api_request( $package );
 
 			if ( ! $api_request ) {
@@ -881,6 +906,12 @@ class Wcsdm extends WC_Shipping_Method {
 			// Bail early if there is no rate found.
 			if ( is_wp_error( $rate_data ) ) {
 				throw new Exception( $rate_data->get_error_message() );
+			}
+
+			// Set shipping courier label.
+			$label = empty( $rate_data['shipping_label'] ) ? $this->title : $rate_data['shipping_label'];
+			if ( 'yes' === $this->show_distance && ! empty( $api_request['distance_text'] ) ) {
+				$label = sprintf( '%s (%s)', $label, $api_request['distance_text'] );
 			}
 
 			// Check if free shipping.
@@ -905,7 +936,7 @@ class Wcsdm extends WC_Shipping_Method {
 					$this->register_rate(
 						array(
 							'id'        => $this->get_rate_id(),
-							'label'     => __( 'Free Shipping', 'wcsdm' ),
+							'label'     => $label,
 							'cost'      => 0,
 							'taxes'     => false,
 							'package'   => $package,
@@ -992,12 +1023,6 @@ class Wcsdm extends WC_Shipping_Method {
 			// Apply shipping base fee.
 			if ( ! empty( $rate_data['base'] ) ) {
 				$cost_total += $rate_data['base'];
-			}
-
-			// Set shipping courier label.
-			$label = $this->title;
-			if ( 'yes' === $this->show_distance && ! empty( $api_request['distance_text'] ) ) {
-				$label = sprintf( '%s (%s)', $label, $api_request['distance_text'] );
 			}
 
 			$rate = array(
