@@ -598,7 +598,7 @@ class Wcsdm extends WC_Shipping_Method {
 			),
 			'class_0'         => array(
 				'type'              => 'number',
-				'title'             => __( 'Default Shipping Rate', 'wcsdm' ),
+				'title'             => $advanced_form ? __( 'Default Shipping Rate', 'wcsdm' ) : __( 'Shipping Rate', 'wcsdm' ),
 				'class'             => 'wcsdm-input',
 				'description'       => __( 'The shipping rate within the distances range. This input is required.', 'wcsdm' ),
 				'desc_tip'          => true,
