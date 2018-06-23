@@ -3,3 +3,4 @@ package-lock.json
 /.wpt.yml
 /build
 .DS_Store
+/dist
