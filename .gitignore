@@ -4,3 +4,6 @@ package-lock.json
 /build
 .DS_Store
 /dist
+/languages/wcsdm.pot
+/assets/js/wcsdm.min.js
+/assets/css/wcsdm.min.css
