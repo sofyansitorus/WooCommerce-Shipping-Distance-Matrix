@@ -45,6 +45,14 @@ class Wcsdm extends WC_Shipping_Method {
 	private $all_options = array();
 
 	/**
+	 * All debugs data
+	 *
+	 * @since    1.4.02
+	 * @var array
+	 */
+	private $_debugs = array();
+
+	/**
 	 * Constructor for your shipping class
 	 *
 	 * @since    1.0.0
@@ -1035,7 +1043,7 @@ class Wcsdm extends WC_Shipping_Method {
 			// Register the rate.
 			$this->register_rate( $rate );
 		} catch ( Exception $e ) {
-			$this->show_debug( $e->getMessage(), is_cart() || $this->is_calc_shipping() ? 'error' : 'notice' );
+			$this->show_debug( $e->getMessage(), 'error' );
 		}
 	}
 
@@ -1173,7 +1181,7 @@ class Wcsdm extends WC_Shipping_Method {
 
 			return $data;
 		} catch ( Exception $e ) {
-			$this->show_debug( $e->getMessage(), is_cart() || $this->is_calc_shipping() ? 'error' : 'notice' );
+			$this->show_debug( $e->getMessage(), 'error' );
 			return false;
 		}
 	}
@@ -1287,7 +1295,7 @@ class Wcsdm extends WC_Shipping_Method {
 
 			return $result;
 		} catch ( Exception $e ) {
-			$this->show_debug( $e->getMessage(), is_cart() || $this->is_calc_shipping() ? 'error' : 'notice' );
+			$this->show_debug( $e->getMessage(), 'error' );
 			return false;
 		}
 	}
@@ -1395,6 +1403,7 @@ class Wcsdm extends WC_Shipping_Method {
 						if ( ! $poscode_valid ) {
 							// translators: %s is shipping destination field label.
 							array_push( $errors, sprintf( __( 'Shipping destination field is invalid: %s', 'wcsdm' ), $field_label ) );
+							continue;
 						}
 
 						if ( $poscode_valid ) {
@@ -1423,11 +1432,9 @@ class Wcsdm extends WC_Shipping_Method {
 			}
 		}
 
-		error_log(print_r($destination_info, true));
-
 		if ( $errors ) {
 			foreach ( $errors as $error ) {
-				$this->show_debug( $error, is_cart() || $this->is_calc_shipping() ? 'error' : 'notice' );
+				$this->show_debug( $error, 'error' );
 			}
 			return false;
 		}
@@ -1741,15 +1748,41 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @param string $type The type of notice.
 	 * @return void
 	 */
-	private function show_debug( $message, $type = 'notice' ) {
-		$debug_mode = 'yes' === get_option( 'woocommerce_shipping_debug_mode', 'no' );
+	private function show_debug( $message, $type = '' ) {
+		if ( empty( $message ) ) {
+			return;
+		}
+
+		if ( get_option( 'woocommerce_shipping_debug_mode', 'no' ) !== 'yes' ) {
+			return;
+		}
 
 		if ( ! current_user_can( 'administrator' ) ) {
 			return;
 		}
 
-		if ( $debug_mode && ! defined( 'WOOCOMMERCE_CHECKOUT' ) && ! defined( 'WC_DOING_AJAX' ) && ! wc_has_notice( $message ) ) {
-			wc_add_notice( 'WCSDM => ' . $message, $type );
+		if ( defined( 'WOOCOMMERCE_CHECKOUT' ) ) {
+			return;
 		}
+
+		if ( defined( 'WC_DOING_AJAX' ) ) {
+			return;
+		}
+
+		$debug_key = md5( $message );
+
+		if ( isset( $this->_debugs[ $debug_key ] ) ) {
+			return;
+		}
+
+		$this->_debugs[ $debug_key ] = $message;
+
+		$debug_prefix = strtoupper( WCSDM_METHOD_ID );
+
+		if ( ! empty( $type ) ) {
+			$debug_prefix .= '_' . strtoupper( $type );
+		}
+
+		wc_add_notice( $debug_prefix . ' => ' . $message, 'notice' );
 	}
 }
