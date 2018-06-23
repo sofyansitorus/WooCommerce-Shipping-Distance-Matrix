@@ -59,19 +59,15 @@ In the search field type “WooCommerce Shipping Distance Matrix” and click Se
 == Frequently Asked Questions ==
 
 = How to set the plugin settings? =
-You can setup the plugin setting from the WooCommerce Shipping Zones settings panel. Please check the following video tutorial how to setup the WooCommerce Shipping Zones:
-
-[youtube https://www.youtube.com/watch?v=eThWmrnBP38]
-
-Credits: [InMotion Hosting](https://www.inmotionhosting.com)
+You can setup the plugin setting from the WooCommerce Shipping Zones settings panel. Please [click here](https://fast.wistia.net/embed/iframe/95yiocro6p) for the video tutorial how to setup the WooCommerce Shipping Zones.
 
 = I got error in the "Store Location" setting field", what should I do? =
-The error printed there is came from the Google API. Click any link printed within the error message to find out the causes and solutions.
+The error printed in there is came from the Google API. Click any link printed within the error message to find out the causes and solutions.
 
 = I see message "There are no shipping methods available" in the cart/checkout page, what should I do? =
 Please try to switch the WooCommerce Shipping Debug Mode setting to "On". Then open your cart/checkout page. You will see the error printed if there was.
 
-[Click here](https://docs.woocommerce.com/document/product-shipping-classes/shipping-debug-mode/) for how to switch WooCommerce Shipping Debug Mode.
+[Click here](https://fast.wistia.net/embed/iframe/9c9008dxnr) for how to switch WooCommerce Shipping Debug Mode.
 
 = Where can I get support or report bug? =
 You can create support ticket at plugin support forum:
