@@ -5,7 +5,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Requires at least: 4.8
 Tested up to: 4.9.5
 Requires PHP: 5.6
-Stable tag: 1.4.6
+Stable tag: 1.4.7
 License: GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -88,6 +88,11 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 
 == Changelog ==
 
+= 1.4.7 =
+* Feature - Added new field to set the shipping title dynamically for each distance ranges.
+* Fix - Added destination address validation.
+* Improvements - Improved table rates setting sorted automatically by distance.
+
 = 1.4.6 =
 * Fix - Rate row not visible when switch free shipping option.
 * Fix - Flickering Map address picker when changing API Key.
@@ -97,7 +102,7 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 
 = 1.4.4 =
 * Improvements - Added new option: Prefered Route
-* Improvements - Impropve accuration in cart shipping calculator form.
+* Improvements - Improved accuration in cart shipping calculator form.
 
 = 1.4.3 =
 * Fix - Update minified styles and scripts.
@@ -236,6 +241,6 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 * Feature - Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
 
 == Upgrade Notice ==
-= 1.4.6 =
+= 1.4.7 =
 
-This version includes bug fixes.
+This version includes bug fixes and improvements. We highly recommend that you update the plugin to the latest version.
