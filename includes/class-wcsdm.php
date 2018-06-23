@@ -582,7 +582,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'type'              => 'number',
 				'title'             => __( 'Maximum Distances', 'wcsdm' ),
 				'class'             => 'wcsdm-input field-distance',
-				'description'       => __( 'The maximum distances rule for the shipping rate. This input is required.', 'wcsdm' ),
+				'description'       => __( 'The maximum distances rule for the shipping rate. This input is required and the value must be unique.', 'wcsdm' ),
 				'desc_tip'          => true,
 				'advanced'          => false,
 				'heading'           => true,
