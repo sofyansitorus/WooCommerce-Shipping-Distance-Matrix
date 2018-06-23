@@ -21,10 +21,12 @@
     "gulp-sass": "^4.0.1",
     "gulp-uglify": "3.0.0",
     "gulp-wp-pot": "^2.2.0",
+    "gulp-zip": "^4.1.0",
     "yargs": "^11.0.0"
   },
   "scripts": {
     "dev": "gulp",
-    "build": "gulp build"
+    "build": "gulp build",
+    "export": "gulp export"
   }
 }
