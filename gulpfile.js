@@ -11,6 +11,7 @@ var gulpPhpCS = require('gulp-phpcs');
 var wpPot = require('gulp-wp-pot');
 var browserSync = require('browser-sync').create();
 var argv = require('yargs').argv;
+var zip = require('gulp-zip');
 
 var scriptsSrc = ['assets/src/js/*.js'];
 var scriptsDest = 'assets/js';
@@ -123,3 +124,10 @@ gulp.task('default', ['sass', 'scripts', 'phpcs'], function () {
 
 // Build task
 gulp.task('build', ['sass', 'minify-css', 'scripts', 'minify-scripts', 'i18n']);
+
+// Export files task
+gulp.task('export', ['build'], function () {
+    gulp.src(['./**', '!dist/', '!dist/**', '!node_modules/', '!node_modules/**', '!assets/src/', '!assets/src/**', '!gulpfile.js', '!package-lock.json', '!package.json'])
+        .pipe(zip('wcsdm.zip'))
+        .pipe(gulp.dest('dist'));
+});
