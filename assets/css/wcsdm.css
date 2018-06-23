@@ -169,6 +169,10 @@
   .wcsdm-table-row .wcsdm-table.wcsdm-table-rates tbody tr.applied th .advanced-rate-settings {
     display: none; }
 
+.wcsdm-table-row .wcsdm-table.wcsdm-table-rates tbody tr.changed.sorting td,
+.wcsdm-table-row .wcsdm-table.wcsdm-table-rates tbody tr.changed.sorting th {
+  background-color: #d2ffd4 !important; }
+
 .wcsdm-table-row .wcsdm-table.wcsdm-table-rates tbody td {
   text-align: center; }
 

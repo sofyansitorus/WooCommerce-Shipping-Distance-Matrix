@@ -139,7 +139,7 @@
         .button {
             float: none !important;
         }
-        .button-no-rates{
+        .button-no-rates {
             font-size: 2em;
             padding: 10px 50px;
             height: auto;
@@ -192,6 +192,12 @@
                         .advanced-rate-settings {
                             display: none;
                         }
+                    }
+                }
+                tr.changed.sorting {
+                    td,
+                    th {
+                        background-color: #d2ffd4 !important;
                     }
                 }
                 td {

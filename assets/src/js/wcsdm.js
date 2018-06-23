@@ -86,12 +86,6 @@ var wcsdmSetting = {
 			$('option[value="per_unit"]').text(wcsdmSetting.params.i18n.distance[$(this).val()].perUnit);
 		});
 
-		// Handle on distance unit field setting changed.
-		$(document).on('change', '#woocommerce_wcsdm_gmaps_api_units', function () {
-			$('.field-groups.distance .field-group-item-units').text(wcsdmSetting.params.i18n.distance[$(this).val()].unit);
-			$('option[value="per_unit"]').text(wcsdmSetting.params.i18n.distance[$(this).val()].perUnit);
-		});
-
 		// Handle on distance field changed.
 		$(document).on('change input', '.field-distance', function (e) {
 			var $inputTarget = $(e.currentTarget);
@@ -103,6 +97,43 @@ var wcsdmSetting = {
 			} else {
 				$inputTarget.attr('step', '10');
 			}
+			var dataChange = $inputTarget.data('change');
+			if (typeof dataChange === 'undefined') {
+				$inputTarget.attr('data-change', $inputTarget.val());
+			} else if (dataChange !== $inputTarget.val()) {
+				$inputTarget.attr('data-change', $inputTarget.val());
+				$inputTarget.addClass('changed').closest('tr').addClass('changed');
+			}
+		});
+
+		// Sort rows based distance field on blur.
+		$(document).on('blur', '.wcsdm-table-rates .field-distance.changed', function (e) {
+			var rows = $('.wcsdm-table-rates > tbody > tr').addClass('sorting').get().sort(function (a, b) {
+				var valueA = parseInt($(a).find('.field-distance').val(), 10);
+				var valueB = parseInt($(b).find('.field-distance').val(), 10);
+
+				if (!valueA || isNaN(valueA)) {
+					return 2;
+				}
+
+				if (valueA < valueB) {
+					return -1;
+				}
+
+				if (valueA > valueB) {
+					return 1;
+				}
+
+				return 0;
+			});
+
+			$.each(rows, function (index, row) {
+				$('.wcsdm-table-rates').children('tbody').append(row);
+			});
+
+			setTimeout(function () {
+				$('.wcsdm-table-rates > tbody > tr').removeClass('changed sorting').find('.field-distance').removeClass('changed');
+			}, 800);
 		});
 
 		// Handle on dummy field value changed.
