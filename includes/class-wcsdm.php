@@ -1427,7 +1427,11 @@ class Wcsdm extends WC_Shipping_Method {
 
 		if ( $errors ) {
 			foreach ( $errors as $error ) {
-				$this->show_debug( $error, 'error' );
+				if ( $this->is_calc_shipping() ) {
+					wc_add_notice( $error, 'error' );
+				} else {
+					$this->show_debug( $error, 'error' );
+				}
 			}
 			return false;
 		}
