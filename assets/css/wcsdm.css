@@ -142,11 +142,6 @@
     margin: 0 !important;
     padding: 0 !important; }
 
-.wcsdm-table-row .wcsdm-table.wcsdm-table-rates .col-free {
-  padding: 0;
-  width: 132px;
-  text-align: center; }
-
 .wcsdm-table-row .wcsdm-table.wcsdm-table-rates .col-advanced {
   padding: 0;
   width: 112px;
@@ -182,56 +177,6 @@
 
 .wcsdm-table-row .wcsdm-table.wcsdm-table-rates tbody .select {
   width: 100% !important; }
-
-.wcsdm-table-row .wcsdm-table.wcsdm-table-rates tbody .field-groups {
-  margin: 0;
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box; }
-  .wcsdm-table-row .wcsdm-table.wcsdm-table-rates tbody .field-groups * {
-    margin: 0;
-    -webkit-box-sizing: border-box;
-            box-sizing: border-box; }
-  .wcsdm-table-row .wcsdm-table.wcsdm-table-rates tbody .field-groups .field-group-item {
-    float: left; }
-    .wcsdm-table-row .wcsdm-table.wcsdm-table-rates tbody .field-groups .field-group-item.field-group-item-input {
-      width: 100%; }
-    .wcsdm-table-row .wcsdm-table.wcsdm-table-rates tbody .field-groups .field-group-item.field-group-item-units {
-      width: 46px;
-      text-align: center;
-      line-height: 32px;
-      background: #eee;
-      border: 1px solid #ddd; }
-    .wcsdm-table-row .wcsdm-table.wcsdm-table-rates tbody .field-groups .field-group-item.field-group-item-icon {
-      width: 30px;
-      text-align: center;
-      padding-top: 7px; }
-  .wcsdm-table-row .wcsdm-table.wcsdm-table-rates tbody .field-groups[class*="has-"] .field-group-item-input {
-    width: calc(100% - 76px); }
-  .wcsdm-table-row .wcsdm-table.wcsdm-table-rates tbody .field-groups.has-units:not(.has-icon) .field-group-item-input {
-    width: calc(100% - 46px); }
-  .wcsdm-table-row .wcsdm-table.wcsdm-table-rates tbody .field-groups.has-icon:not(.has-units) .field-group-item-input {
-    width: calc(100% - 30px); }
-  .wcsdm-table-row .wcsdm-table.wcsdm-table-rates tbody .field-groups:after {
-    content: "";
-    display: block;
-    clear: both; }
-
-.wcsdm-table-row .wcsdm-table.wcsdm-table-rates .free-shipping-no:before {
-  content: "\f158";
-  color: #c4c4c4;
-  font-weight: 700; }
-
-.wcsdm-table-row .wcsdm-table.wcsdm-table-rates .free-shipping-yes:before {
-  content: "\f147";
-  color: #52bd54;
-  font-weight: 700;
-  font-weight: 700; }
-
-.wcsdm-table-row .wcsdm-table.wcsdm-table-rates .free-shipping-yes_alt:before {
-  content: "\f503";
-  color: #52bd54;
-  font-weight: 700;
-  font-weight: 700; }
 
 [class^="tooltip"] {
   position: relative; }

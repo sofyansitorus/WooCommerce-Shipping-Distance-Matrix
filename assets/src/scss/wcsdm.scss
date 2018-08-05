@@ -161,11 +161,6 @@
                     padding: 0 !important;
                 }
             }
-            .col-free {
-                padding: 0;
-                width: 132px;
-                text-align: center;
-            }
             .col-advanced {
                 padding: 0;
                 width: 112px;
@@ -209,71 +204,6 @@
                 }
                 .select {
                     width: 100% !important;
-                }
-                .field-groups {
-                    margin: 0;
-                    box-sizing: border-box;
-                    * {
-                        margin: 0;
-                        box-sizing: border-box;
-                    }
-                    .field-group-item {
-                        float: left;
-                        &.field-group-item-input {
-                            width: 100%;
-                        }
-                        &.field-group-item-units {
-                            width: 46px;
-                            text-align: center;
-                            line-height: 32px;
-                            background: #eee;
-                            border: 1px solid #ddd;
-                        }
-                        &.field-group-item-icon {
-                            width: 30px;
-                            text-align: center;
-                            padding-top: 7px;
-                        }
-                    }
-                    &[class*="has-"] {
-                        .field-group-item-input {
-                            width: calc(100% - 76px);
-                        }
-                    }
-                    &.has-units:not(.has-icon) {
-                        .field-group-item-input {
-                            width: calc(100% - 46px);
-                        }
-                    }
-                    &.has-icon:not(.has-units) {
-                        .field-group-item-input {
-                            width: calc(100% - 30px);
-                        }
-                    }
-                    &:after {
-                        content: "";
-                        display: block;
-                        clear: both;
-                    }
-                }
-            }
-            .free-shipping- {
-                &no:before {
-                    content: "\f158";
-                    color: #c4c4c4;
-                    font-weight: 700;
-                }
-                &yes:before {
-                    content: "\f147";
-                    color: #52bd54;
-                    font-weight: 700;
-                    font-weight: 700;
-                }
-                &yes_alt:before {
-                    content: "\f503";
-                    color: #52bd54;
-                    font-weight: 700;
-                    font-weight: 700;
                 }
             }
         }
