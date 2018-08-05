@@ -1241,9 +1241,11 @@ class Wcsdm extends WC_Shipping_Method {
 						$errors[] = $element['status'];
 						continue;
 					}
-					$results[] = array(
-						'distance'      => $this->convert_distance( $element['distance']['value'] ),
-						'distance_text' => $element['distance']['text'],
+					$distance      = $this->convert_distance( $element['distance']['value'] );
+					$distance_text = 'metric' === $this->gmaps_api_units ? $distance . ' km' : $distance . ' mi';
+					$results[]     = array(
+						'distance'      => $distance,
+						'distance_text' => $distance_text,
 						'duration'      => $element['duration']['value'],
 						'duration_text' => $element['duration']['text'],
 					);
@@ -1284,12 +1286,6 @@ class Wcsdm extends WC_Shipping_Method {
 			}
 
 			$result = $results[0];
-
-			// Rounds distance UP to the nearest integer.
-			if ( 'yes' === $this->ceil_distance ) {
-				$result['distance']      = ceil( $result['distance'] );
-				$result['distance_text'] = $result['distance'] . preg_replace( '/[0-9\.,]/', '', $result['distance_text'] );
-			}
 
 			$result['response'] = $response_data;
 
@@ -1487,7 +1483,14 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @return int
 	 */
 	private function convert_distance_to_mi( $meters ) {
-		return wc_format_decimal( ( $meters * 0.000621371 ), 1 );
+		$result = $meters * 0.000621371;
+
+		// Rounds distance UP to the nearest integer.
+		if ( 'yes' === $this->ceil_distance ) {
+			$result = ceil( $result );
+		}
+
+		return wc_format_decimal( $result, 1 );
 	}
 
 	/**
@@ -1498,7 +1501,14 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @return int
 	 */
 	private function convert_distance_to_km( $meters ) {
-		return wc_format_decimal( ( $meters * 0.001 ), 1 );
+		$result = $meters * 0.001;
+
+		// Rounds distance UP to the nearest integer.
+		if ( 'yes' === $this->ceil_distance ) {
+			$result = ceil( $result );
+		}
+
+		return wc_format_decimal( $result, 1 );
 	}
 
 	/**
