@@ -128,6 +128,29 @@
   padding: 10px 50px;
   height: auto; }
 
+.wcsdm-table-row .wcsdm-table tbody tr.selected td,
+.wcsdm-table-row .wcsdm-table tbody tr.selected th {
+  background-color: #fefbcc; }
+
+.wcsdm-table-row .wcsdm-table tbody tr.applied td,
+.wcsdm-table-row .wcsdm-table tbody tr.applied th {
+  background-color: #ccf9ff !important; }
+  .wcsdm-table-row .wcsdm-table tbody tr.applied td .advanced-rate-settings,
+  .wcsdm-table-row .wcsdm-table tbody tr.applied th .advanced-rate-settings {
+    display: none; }
+
+.wcsdm-table-row .wcsdm-table tbody tr.changed.sorting td,
+.wcsdm-table-row .wcsdm-table tbody tr.changed.sorting th {
+  background-color: #d2ffd4 !important; }
+
+.wcsdm-table-row .wcsdm-table tbody tr.error td,
+.wcsdm-table-row .wcsdm-table tbody tr.error th {
+  background-color: #f5cbcb !important; }
+
+.wcsdm-table-row .wcsdm-table tbody td.error,
+.wcsdm-table-row .wcsdm-table tbody th.error {
+  background-color: #f5cbcb !important; }
+
 .wcsdm-table-row .wcsdm-table.wcsdm-table-rates .col-centered {
   text-align: center; }
 
@@ -153,21 +176,6 @@
   -webkit-transition: background-color 500ms ease-out;
   transition: background-color 500ms ease-out; }
 
-.wcsdm-table-row .wcsdm-table.wcsdm-table-rates tbody tr.selected td,
-.wcsdm-table-row .wcsdm-table.wcsdm-table-rates tbody tr.selected th {
-  background-color: #fefbcc; }
-
-.wcsdm-table-row .wcsdm-table.wcsdm-table-rates tbody tr.applied td,
-.wcsdm-table-row .wcsdm-table.wcsdm-table-rates tbody tr.applied th {
-  background-color: #ccf9ff !important; }
-  .wcsdm-table-row .wcsdm-table.wcsdm-table-rates tbody tr.applied td .advanced-rate-settings,
-  .wcsdm-table-row .wcsdm-table.wcsdm-table-rates tbody tr.applied th .advanced-rate-settings {
-    display: none; }
-
-.wcsdm-table-row .wcsdm-table.wcsdm-table-rates tbody tr.changed.sorting td,
-.wcsdm-table-row .wcsdm-table.wcsdm-table-rates tbody tr.changed.sorting th {
-  background-color: #d2ffd4 !important; }
-
 .wcsdm-table-row .wcsdm-table.wcsdm-table-rates tbody td {
   text-align: center; }
 
@@ -177,6 +185,12 @@
 
 .wcsdm-table-row .wcsdm-table.wcsdm-table-rates tbody .select {
   width: 100% !important; }
+
+#wcsdm-error {
+  margin: 10px; }
+
+#advanced-buttons button + button {
+  margin-left: 10px; }
 
 [class^="tooltip"] {
   position: relative; }

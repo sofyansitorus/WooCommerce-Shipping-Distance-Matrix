@@ -186,6 +186,19 @@ function wcsdm_admin_enqueue_scripts( $hook ) {
 							'unit'    => __( 'MI', 'wcsdm' ),
 						),
 					),
+					'errors'     => array(
+						'error_title'            => __( 'Error occurred submitting the form. Please check details below:', 'wcsdm' ),
+						// translators: %s is shipping destination field label.
+						'field_required'         => __( '%s field is required', 'wcsdm' ),
+						// translators: %s is shipping destination field label.
+						'field_invalid'          => __( '%s field value is invalid', 'wcsdm' ),
+						// translators: %s is shipping destination field label.
+						'field_selected_invalid' => __( '%s field selected option is invalid', 'wcsdm' ),
+						// translators: %$1s is shipping destination field label, %$1d is minimum value rule.
+						'field_min_value'        => __( '%$1s field value must be equal or greater than %$2d', 'wcsdm' ),
+						// translators: %$1s is shipping destination field label, %$1d is maximum value rule.
+						'field_max_value'        => __( '%$1s field value must be equal or lower than %$2d', 'wcsdm' ),
+					),
 				),
 				'marker'       => WCSDM_URL . 'assets/img/marker.png',
 				'language'     => get_locale(),

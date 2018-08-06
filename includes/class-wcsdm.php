@@ -258,6 +258,9 @@ class Wcsdm extends WC_Shipping_Method {
 				'type'  => 'table_advanced',
 				'title' => __( 'Distance Rate Rules &raquo; Advanced Settings', 'wcsdm' ),
 			),
+			'js_template'             => array(
+				'type' => 'js_template',
+			),
 		);
 	}
 
@@ -293,7 +296,6 @@ class Wcsdm extends WC_Shipping_Method {
 				<label for="<?php echo esc_attr( $field_key ); ?>"><?php echo wp_kses_post( $data['title'] ); ?></label>
 			</th>
 			<td class="forminp">
-				<div id="<?php echo esc_attr( $this->id ); ?>-map-error" class="notice notice-error"></div>
 				<div id="<?php echo esc_attr( $this->id ); ?>-map-wrapper" class="<?php echo esc_attr( $this->id ); ?>-map-wrapper"></div>
 				<div id="<?php echo esc_attr( $this->id ); ?>-lat-lng-wrap">
 					<div><label for="<?php echo esc_attr( $field_key ); ?>_lat"><?php echo esc_html( 'Latitude', 'wcsdm' ); ?></label><input type="text" id="<?php echo esc_attr( $field_key ); ?>_lat" name="<?php echo esc_attr( $field_key ); ?>_lat" value="<?php echo esc_attr( $this->get_option( $key . '_lat' ) ); ?>" class="origin-coordinates" readonly></div>
@@ -301,12 +303,6 @@ class Wcsdm extends WC_Shipping_Method {
 				</div>
 				<?php echo $this->get_description_html( $data ); // WPCS: XSS ok. ?>
 				<div id="<?php echo esc_attr( $this->id ); ?>-map-spinner" class="spinner" style="visibility: visible;"></div>
-				<script type="text/html" id="tmpl-<?php echo esc_attr( $this->id ); ?>-map-search">
-					<input id="wcsdm-map-search" class="<?php echo esc_attr( $this->id ); ?>-map-search controls" type="text" placeholder="<?php echo esc_attr( __( 'Search your store location', 'wcsdm' ) ); ?>" autocomplete="off" />
-				</script>
-				<script type="text/html" id="tmpl-<?php echo esc_attr( $this->id ); ?>-map-canvas">
-					<div id="wcsdm-map-canvas" class="<?php echo esc_attr( $this->id ); ?>-map-canvas"></div>
-				</script>
 			</td>
 		</tr>
 		<?php
@@ -351,12 +347,6 @@ class Wcsdm extends WC_Shipping_Method {
 						<?php $this->generate_rate_row_heading( 'bottom' ); ?>
 					</tfoot>
 				</table>
-				<script type="text/template" id="tmpl-rates-list-input-table-row">
-					<?php $this->generate_rate_row(); ?>
-				</script>
-				<script type="text/template" id="tmpl-btn-apply-changes">
-					<button id="btn-apply-changes" class="button button-primary button-large"><?php esc_html_e( 'Apply Changes', 'wcsdm' ); ?></button>
-				</script>
 			</td>
 		</tr>
 		<?php
@@ -533,12 +523,14 @@ class Wcsdm extends WC_Shipping_Method {
 		foreach ( $this->rates_fields( 'hidden' ) as $field_key => $field ) {
 			$value = isset( $rate[ $field_key ] ) ? $rate[ $field_key ] : ( isset( $field['default'] ) ? $field['default'] : '' );
 
-			$html = $this->generate_text_html( $field_key, array_merge(
-				$field,
-				array(
-					'type' => 'hidden',
+			$html = $this->generate_text_html(
+				$field_key, array_merge(
+					$field,
+					array(
+						'type' => 'hidden',
+					)
 				)
-			) );
+			);
 
 			preg_match( '/<input(.*)name="([^"]+)"(.*)\/>/s', $html, $matches );
 
@@ -552,6 +544,36 @@ class Wcsdm extends WC_Shipping_Method {
 		}
 		?>
 		<a href="#" class="advanced-rate-settings" title="<?php echo esc_attr( $data['description'] ); ?>"><span class="dashicons dashicons-admin-generic"></span></a>
+		<?php
+		return ob_get_clean();
+	}
+
+	/**
+	 * Generate JS template
+	 *
+	 * @since 1.4.8
+	 */
+	public function generate_js_template_html() {
+		ob_start();
+		?>
+		<script type="text/template" id="tmpl-rates-list-input-table-row">
+			<?php $this->generate_rate_row(); ?>
+		</script>
+		<script type="text/template" id="tmpl-btn-apply-changes">
+			<div id="advanced-buttons"><button id="btn-cancel-changes" class="button button-secondary button-large"><?php esc_html_e( 'Cancel', 'wcsdm' ); ?></button><button id="btn-apply-changes" class="button button-primary button-large"><?php esc_html_e( 'Apply Changes', 'wcsdm' ); ?></button></div>
+		</script>
+		<script type="text/template" id="tmpl-btn-save-changes">
+			<button id="btn-save-changes" class="button button-primary button-large"><?php esc_html_e( 'Save Changes', 'wcsdm' ); ?></button>
+		</script>
+		<script type="text/template" id="tmpl-wcsdm-error">
+			<div id="wcsdm-error" class="notice notice-error"><strong class="error-message">{{data.title}}</strong><hr />{{{data.content}}}</div>
+		</script>
+		<script type="text/html" id="tmpl-wcsdm-map-search">
+			<input id="wcsdm-map-search" class="wcsdm-map-search controls" type="text" placeholder="<?php echo esc_attr( __( 'Search your store location', 'wcsdm' ) ); ?>" autocomplete="off" />
+		</script>
+		<script type="text/html" id="tmpl-wcsdm-map-canvas">
+			<div id="wcsdm-map-canvas" class="wcsdm-map-canvas"></div>
+		</script>
 		<?php
 		return ob_get_clean();
 	}
@@ -571,19 +593,23 @@ class Wcsdm extends WC_Shipping_Method {
 			'description'       => __( 'The shipping rate within the distances range. This input is required.', 'wcsdm' ),
 			'desc_tip'          => true,
 			'required'          => true,
+			'default'           => '0',
 			'custom_attributes' => array(
 				'min' => '0',
 			),
 			'context'           => array( 'advanced', 'dummy', 'hidden' ),
+			'cost_field'        => true,
 		);
 
 		$fields = array(
-			'shipping_label' => array_merge( $this->instance_form_fields['title'], array(
-				'description' => $this->instance_form_fields['title']['description'] . ' ' . __( 'Leave blank to use the global title settings.', 'wcsdm' ),
-				'default'     => '',
-				'desc_tip'    => true,
-				'context'     => array( 'advanced', 'hidden' ),
-			) ),
+			'shipping_label' => array_merge(
+				$this->instance_form_fields['title'], array(
+					'description' => $this->instance_form_fields['title']['description'] . ' ' . __( 'Leave blank to use the global title settings.', 'wcsdm' ),
+					'default'     => '',
+					'desc_tip'    => true,
+					'context'     => array( 'advanced', 'hidden' ),
+				)
+			),
 			'distance'       => array(
 				'type'              => 'number',
 				'title'             => __( 'Max. Distances', 'wcsdm' ),
@@ -626,11 +652,12 @@ class Wcsdm extends WC_Shipping_Method {
 				'default'     => 'flat',
 				'options'     => array(
 					'flat'     => __( 'Flat', 'wcsdm' ),
-					'per_unit' => '',
+					'per_unit' => __( 'Per Unit', 'wcsdm' ),
 					'formula'  => __( 'Formula', 'wcsdm' ),
 				),
 				'description' => __( 'Determine wether to use flat price or flexible price per distances unit.', 'wcsdm' ),
 				'desc_tip'    => true,
+				'required'    => true,
 				'context'     => array( 'advanced', 'dummy', 'hidden' ),
 			),
 			'class_0'        => $class_0_field,
@@ -644,6 +671,7 @@ class Wcsdm extends WC_Shipping_Method {
 				),
 				'description' => __( 'Determine wether to use different rate per product shipping class.', 'wcsdm' ),
 				'desc_tip'    => true,
+				'required'    => true,
 				'context'     => array( 'advanced', 'hidden' ),
 			),
 			'base'           => array(
@@ -652,6 +680,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'default'           => '0',
 				'description'       => __( 'Surcharge that will be added to the total shipping cost.', 'wcsdm' ),
 				'desc_tip'          => true,
+				'required'          => true,
 				'custom_attributes' => array(
 					'min' => '0',
 				),
@@ -665,19 +694,21 @@ class Wcsdm extends WC_Shipping_Method {
 		);
 
 		foreach ( $this->get_shipping_classes() as $class_id => $class_obj ) {
-			$fields = $this->array_insert_after( $fields, 'cost_class', array(
-				'class_' . $class_id => array_merge(
-					$class_0_field,
-					array(
-						// translators: %s is Product shipping class name.
-						'title'       => sprintf( __( '"%s" Class Shipping Rate', 'wcsdm' ), $class_obj->name ),
-						'description' => __( 'Shipping rate for specific product shipping class. This rate will override the default shipping rate defined above. Blank or zero value will be ignored.', 'wcsdm' ),
-						'context'     => array( 'advanced', 'hidden' ),
-						'class'       => 'cost_class--bind',
-						'required'    => array( 'cost_class' => 'yes' ),
-					)
-				),
-			) );
+			$fields = $this->array_insert_after(
+				$fields, 'cost_class', array(
+					'class_' . $class_id => array_merge(
+						$class_0_field,
+						array(
+							// translators: %s is Product shipping class name.
+							'title'       => sprintf( __( '"%s" Class Shipping Rate', 'wcsdm' ), $class_obj->name ),
+							'description' => __( 'Shipping rate for specific product shipping class. This rate will override the default shipping rate defined above. Blank or zero value will be ignored.', 'wcsdm' ),
+							'context'     => array( 'advanced', 'hidden' ),
+							'class'       => 'cost_class--bind',
+							'show_if'     => array( 'cost_class' => array( 'yes' ) ),
+						)
+					),
+				)
+			);
 		}
 
 		$populated_fields = array();
@@ -693,22 +724,33 @@ class Wcsdm extends WC_Shipping_Method {
 				$field_class .= ' wcsdm-rate-field--' . $context . ' wcsdm-rate-field--' . $context . '--' . $key;
 			}
 
+			if ( ! empty( $field['cost_field'] ) ) {
+				$field_class .= ' wcsdm-cost-field wcsdm-cost-field--' . $key;
+			}
+
 			if ( isset( $field['class'] ) ) {
 				$field_class .= ' ' . $field['class'];
 			}
 
-			$field_custom_attributes = array_merge(
-				isset( $field['custom_attributes'] ) ? $field['custom_attributes'] : array(),
-				array(
-					'data-key' => $key,
-					'data-type' => $field['type'],
+			$custom_attributes = is_array( $field['custom_attributes'] ) ? $field['custom_attributes'] : array();
+
+			$populated_fields[ $key ] = array_merge(
+				$field, array(
+					'class'             => $field_class,
+					'custom_attributes' => array_merge(
+						$custom_attributes, array(
+							'data-key'        => $key,
+							'data-title'      => isset( $field['title'] ) ? $field['title'] : '',
+							'data-type'       => isset( $field['type'] ) ? $field['type'] : '',
+							'data-options'    => isset( $field['options'] ) ? wp_json_encode( $field['options'] ) : '{}',
+							'data-required'   => ! empty( $field['required'] ) ? true : false,
+							'data-cost_field' => ! empty( $field['cost_field'] ) ? true : false,
+							'data-show_if'    => ! empty( $field['show_if'] ) && is_array( $field['show_if'] ) ? wp_json_encode( $field['show_if'] ) : false,
+							'data-hide_if'    => ! empty( $field['hide_if'] ) && is_array( $field['hide_if'] ) ? wp_json_encode( $field['hide_if'] ) : false,
+						)
+					),
 				)
 			);
-
-			$populated_fields[ $key ] = array_merge( $field, array(
-				'class'             => $field_class,
-				'custom_attributes' => $field_custom_attributes,
-			) );
 		}
 
 		return $populated_fields;
@@ -798,49 +840,73 @@ class Wcsdm extends WC_Shipping_Method {
 				$post_data_value = isset( $post_data[ $post_data_key ] ) ? $post_data[ $post_data_key ] : array();
 
 				foreach ( $post_data_value as $index => $row_value ) {
-					$is_required = isset( $field['required'] ) ? $field['required'] : false;
-					if ( is_array( $is_required ) ) {
-						$is_required_array = true;
-						foreach ( $is_required as $required_key => $required_value ) {
-							if ( ! isset( $post_data[ $this->get_field_key( $required_key ) ][ $index ] ) ) {
-								$is_required_array = false;
-								break;
-							}
+					$ignore_field = false;
+					$show_if      = ! empty( $field['show_if'] ) && is_array( $field['show_if'] ) ? $field['show_if'] : false;
+					$hide_if      = ! empty( $field['hide_if'] ) && is_array( $field['hide_if'] ) ? $field['hide_if'] : false;
 
-							if ( $post_data[ $this->get_field_key( $required_key ) ][ $index ] !== $required_value ) {
-								$is_required_array = false;
+					if ( $show_if ) {
+						foreach ( $show_if as $show_if_key => $show_if_value ) {
+							$post_data_show_if_key   = $this->get_field_key( $show_if_key );
+							$post_data_show_if_value = isset( $post_data[ $post_data_show_if_key ][ $index ] ) ? $post_data [ $post_data_show_if_key ][ $index ] : null;
+
+							if ( ! in_array( $post_data_show_if_value, $show_if_value, true ) ) {
+								$ignore_field = true;
 								break;
 							}
 						}
-						$is_required = $is_required_array;
 					}
 
-					if ( $is_required && ! strlen( $row_value ) ) {
-						// translators: %s is field name.
-						throw new Exception( sprintf( __( '%s field is required', 'wcsdm' ), $field['title'] ) );
-					}
+					if ( $hide_if ) {
+						foreach ( $hide_if as $hide_if_key => $hide_if_value ) {
+							$post_data_hide_if_key   = $this->get_field_key( $hide_if_key );
+							$post_data_hide_if_value = isset( $post_data[ $post_data_hide_if_key ][ $index ] ) ? $post_data [ $post_data_hide_if_key ][ $index ] : null;
 
-					switch ( $field['type'] ) {
-						case 'number':
-							if ( strlen( $row_value ) ) {
-								if ( ! is_numeric( $row_value ) ) {
-									// translators: %s is field name.
-									throw new Exception( sprintf( __( '%s field is invalid number', 'wcsdm' ), $field['title'] ) );
-								}
-
-								$min_value = isset( $field['custom_attributes']['min'] ) ? $field['custom_attributes']['min'] : false;
-								if ( false !== $min_value && $row_value < $min_value ) {
-									// translators: %1$s is field name, %2$d minimum value validation rule.
-									throw new Exception( sprintf( __( '%1$s must be greater than %2$d', 'wcsdm' ), $field['title'], $field['custom_attributes']['min'] ) );
-								}
+							if ( in_array( $post_data_hide_if_value, $hide_if_value, true ) ) {
+								$ignore_field = true;
+								break;
 							}
+						}
+					}
 
-							$value = $row_value;
-							break;
+					if ( ! $ignore_field ) {
+						$is_required = isset( $field['required'] ) ? $field['required'] : false;
 
-						default:
-							$value = $row_value;
-							break;
+						if ( $is_required && ! strlen( $row_value ) ) {
+							// translators: %s is field name.
+							throw new Exception( sprintf( __( '%s field is required', 'wcsdm' ), $field['title'] ) );
+						}
+
+						switch ( $field['type'] ) {
+							case 'number':
+								if ( strlen( $row_value ) ) {
+									if ( ! is_numeric( $row_value ) ) {
+										// translators: %s is field name.
+										throw new Exception( sprintf( __( '%s field is invalid number', 'wcsdm' ), $field['title'] ) );
+									}
+
+									$min_value = isset( $field['custom_attributes']['min'] ) ? $field['custom_attributes']['min'] : false;
+									if ( false !== $min_value && $row_value < $min_value ) {
+										// translators: %1$s is field name, %2$d minimum value validation rule.
+										throw new Exception( sprintf( __( '%1$s must be greater than %2$d', 'wcsdm' ), $field['title'], $field['custom_attributes']['min'] ) );
+									}
+								}
+
+								$value = $row_value;
+								break;
+
+							case 'select':
+								if ( strlen( $row_value ) && ! isset( $field['options'][ $row_value ] ) ) {
+									// translators: %s is field name.
+									throw new Exception( sprintf( __( '%s selected option is invalid', 'wcsdm' ), $field['title'] ) );
+								}
+
+								$value = $row_value;
+								break;
+
+							default:
+								$value = $row_value;
+								break;
+						}
 					}
 
 					$rates[ $index ][ $data_key ] = $value;
@@ -1596,7 +1662,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 */
 	private function array_insert_after( $array, $key, $new ) {
 		$keys  = array_keys( $array );
-		$index = array_search( $key, $keys );
+		$index = array_search( $key, $keys, true );
 		$pos   = false === $index ? count( $array ) : $index + 1;
 
 		return array_merge( array_slice( $array, 0, $pos ), $new, array_slice( $array, $pos ) );

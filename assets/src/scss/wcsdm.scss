@@ -144,6 +144,39 @@
             padding: 10px 50px;
             height: auto;
         }
+        tbody {
+            tr.selected {
+                td,
+                th {
+                    background-color: #fefbcc;
+                }
+            }
+            tr.applied {
+                td,
+                th {
+                    background-color: #ccf9ff !important;
+                    .advanced-rate-settings {
+                        display: none;
+                    }
+                }
+            }
+            tr.changed.sorting {
+                td,
+                th {
+                    background-color: #d2ffd4 !important;
+                }
+            }
+            tr.error {
+                td,
+                th {
+                    background-color: #f5cbcb !important;
+                }
+            }
+            td.error,
+            th.error {
+                background-color: #f5cbcb !important;
+            }
+        }
         &.wcsdm-table-rates {
             .col-centered {
                 text-align: center;
@@ -174,27 +207,6 @@
                         transition: background-color 500ms ease-out;
                     }
                 }
-                tr.selected {
-                    td,
-                    th {
-                        background-color: #fefbcc;
-                    }
-                }
-                tr.applied {
-                    td,
-                    th {
-                        background-color: #ccf9ff !important;
-                        .advanced-rate-settings {
-                            display: none;
-                        }
-                    }
-                }
-                tr.changed.sorting {
-                    td,
-                    th {
-                        background-color: #d2ffd4 !important;
-                    }
-                }
                 td {
                     text-align: center;
                 }
@@ -207,6 +219,16 @@
                 }
             }
         }
+    }
+}
+
+#wcsdm-error {
+    margin: 10px;
+}
+
+#advanced-buttons {
+    button+button {
+        margin-left: 10px;
     }
 }
 
