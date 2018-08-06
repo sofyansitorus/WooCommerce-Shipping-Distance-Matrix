@@ -110,17 +110,18 @@ var wcsdmSetting = {
 			if (methodTitle !== wcsdmSetting.params.methodTitle) {
 				return false;
 			}
+			$('.wcsdm-rate-field--hidden--select').each(function (i, input) {
+				var $input = $(input);
+				var inputKey = $input.data('key');
+				var inputValue = $input.val();
+				$input.closest('tr').find('.wcsdm-rate-field--dummy--' + inputKey).val(inputValue);
+			});
+			$('#woocommerce_wcsdm_gmaps_api_units').trigger('change');
+			$('#woocommerce_wcsdm_gmaps_api_key').trigger('input');
+			$('#btn-ok').hide().after(wp.template('btn-save-changes'));
+
 			setTimeout(function () {
-				$('.wcsdm-rate-field--hidden--select').each(function (i, input) {
-					var $input = $(input);
-					var inputKey = $input.data('key');
-					var inputValue = $input.val();
-					$input.closest('tr').find('.wcsdm-rate-field--dummy--' + inputKey).val(inputValue);
-				});
-				// $('.wcsdm-rate-field-dummy--distance').trigger('change');
-				$('#woocommerce_wcsdm_gmaps_api_units').trigger('change');
-				$('#woocommerce_wcsdm_gmaps_api_key').trigger('input');
-				$('#btn-ok').hide().after(wp.template('btn-save-changes'));
+				$('.wcsdm-rate-field--dummy--select').trigger('change');
 			}, 100);
 		});
 
@@ -135,34 +136,34 @@ var wcsdmSetting = {
 		});
 
 		// Handle on distance field changed.
-		$(document).on('change input', '.wcsdm-rate-field--distance', function (e) {
-			var $inputTarget = $(e.currentTarget);
-			var inputVal = parseInt($inputTarget.val(), 10);
-			if (inputVal < 10) {
-				$inputTarget.attr('step', '1');
-			} else if (inputVal >= 9 && inputVal <= 50) {
-				$inputTarget.attr('step', '5');
-			} else {
-				$inputTarget.attr('step', '10');
-			}
-		});
+		// $(document).on('change input', '.wcsdm-rate-field--distance', function (e) {
+		// 	var $inputTarget = $(e.currentTarget);
+		// 	var inputVal = parseInt($inputTarget.val(), 10);
+		// 	if (inputVal < 10) {
+		// 		$inputTarget.attr('step', '1');
+		// 	} else if (inputVal >= 9 && inputVal <= 50) {
+		// 		$inputTarget.attr('step', '5');
+		// 	} else {
+		// 		$inputTarget.attr('step', '10');
+		// 	}
+		// });
 
 		// Handle on distance field changed.
-		$(document).on('change input', '.wcsdm-rate-field--dummy--distance', function (e) {
-			var $inputTarget = $(e.currentTarget);
-			var dataChange = $inputTarget.data('change');
-			if (typeof dataChange === 'undefined') {
-				$inputTarget.attr('data-change', $inputTarget.val());
-			} else if (dataChange !== $inputTarget.val()) {
-				$inputTarget.attr('data-change', $inputTarget.val());
-				$inputTarget.addClass('changed').closest('tr').addClass('changed');
-			}
-		});
+		// $(document).on('change input', '.wcsdm-rate-field--dummy--distance', function (e) {
+		// 	var $inputTarget = $(e.currentTarget);
+		// 	var dataChange = $inputTarget.data('change');
+		// 	if (typeof dataChange === 'undefined') {
+		// 		$inputTarget.attr('data-change', $inputTarget.val());
+		// 	} else if (dataChange !== $inputTarget.val()) {
+		// 		$inputTarget.attr('data-change', $inputTarget.val());
+		// 		$inputTarget.addClass('changed').closest('tr').addClass('changed');
+		// 	}
+		// });
 
 		// Sort rows based distance field on blur.
-		$(document).on('blur', '.wcsdm-rate-field--dummy--distance.changed', function (e) {
-			wcsdmSetting._sortRates();
-		});
+		// $(document).on('blur', '.wcsdm-rate-field--dummy--distance.changed', function (e) {
+		// 	wcsdmSetting._sortRates();
+		// });
 
 		// Handle on Rates per Shipping CLass option field value changed.
 		$(document).on('change', '.wcsdm-rate-field--advanced', function (e) {
@@ -226,12 +227,16 @@ var wcsdmSetting = {
 		});
 
 		// Handle on dummy field value changed.
-		$(document).on('change input', '.wcsdm-rate-field--dummy', function (e) {
+		$(document).on('change input', '.wcsdm-rate-field--dummy', debounce(function (e) {
+			e.preventDefault();
+
 			var $input = $(e.currentTarget);
 			var inputVal = $input.val();
 			var inputKey = $input.attr('data-key');
 			$input.closest('tr').find('.wcsdm-rate-field--hidden--' + inputKey).val(inputVal);
-		});
+
+			wcsdmSetting._validateRatesList();
+		}, 500));
 
 		// Handle on advanced rate settings link clicked.
 		$(document).on('click', '.advanced-rate-settings', function (e) {
@@ -261,12 +266,12 @@ var wcsdmSetting = {
 			$('#wcsdm-error').remove();
 			$('#wcsdm-table-advanced tbody').find('tr, td').removeClass('error');
 
-			var errors = wcsdmSetting._validateForm($('.wcsdm-rate-field--advanced'));
+			var errors = wcsdmSetting._getRateFormErrors($('.wcsdm-rate-field--advanced'));
 
 			if (errors.length) {
 				var errorMessages = {};
 
-				for (let index = 0; index < errors.length; index++) {
+				for (var index = 0; index < errors.length; index++) {
 					errorMessages[errors[index].key] = errors[index].message;
 				}
 
@@ -299,7 +304,10 @@ var wcsdmSetting = {
 					scrollTop: rowScrollTop,
 				}, 500);
 
-				wcsdmSetting._sortRates();
+				setTimeout(function () {
+					wcsdmSetting._sortRates();
+					wcsdmSetting._validateRatesList();
+				}, 100);
 			}
 		});
 
@@ -314,36 +322,17 @@ var wcsdmSetting = {
 				scrollTop: rowScrollTop,
 			}, 500);
 
+			wcsdmSetting._validateRatesList();
+
 			setTimeout(() => {
 				$('#wcsdm-table-rates tbody tr:eq(' + rowIndex + ')').removeClass('applied');
-			}, 1000);
+			}, 800);
 		});
 
 		// Handle on Save Changes button clicked.
 		$(document).on('click', '#btn-save-changes', function (e) {
 			e.preventDefault();
-			$('#wcsdm-error').remove();
-			$('#wcsdm-table-rates tbody').find('tr, td, th').removeClass('error');
-
-			var errors = wcsdmSetting._validateForm($('.wcsdm-rate-field--hidden'));
-
-			if (errors.length) {
-				var errorMessages = {};
-
-				for (let index = 0; index < errors.length; index++) {
-					$('#wcsdm-table-rates tbody tr:eq(' + errors[index].rowIndex + ')').find('.col-' + errors[index].key).addClass('error');
-					errorMessages[errors[index].key] = errors[index].message;
-				}
-
-				var errorMessage = '';
-				Object.keys(errorMessages).forEach(function (key) {
-					errorMessage += '<p id="wcsdm-rate-field--error--' + key + '">' + errorMessages[key] + '</p>';
-				});
-
-				$('#wcsdm-table-rates').before(wp.template('wcsdm-error')({
-					title: wcsdm_params.i18n.errors.error_title,
-					content: errorMessage,
-				}));
+			if (wcsdmSetting._validateRatesList().length) {
 				return;
 			}
 
@@ -386,11 +375,22 @@ var wcsdmSetting = {
 
 		setTimeout(function () {
 			$('#btn-save-changes').prop('disabled', false);
-			$('#wcsdm-error').remove();
-			$('#wcsdm-table-rates > tbody > tr').removeClass('changed sorting error applied').find('td,th').removeClass('error').find('.wcsdm-rate-field--dummy--distance').removeClass('changed');
-		}, 1000);
+			$('#wcsdm-table-rates > tbody > tr').removeClass('changed sorting applied');
+			$('#wcsdm-table-rates .wcsdm-rate-field--dummy--distance').removeClass('changed');
+		}, 800);
 	},
-	_validateForm: function ($fields) {
+	_validateRatesList: function () {
+		// $('#wcsdm-error').remove();
+		$('#wcsdm-table-rates tbody').find('tr, td').removeClass('error');
+		var errors = wcsdmSetting._getRateFormErrors($('.wcsdm-rate-field--hidden'));
+		if (errors.length) {
+			for (var index = 0; index < errors.length; index++) {
+				$('#wcsdm-table-rates tbody tr:eq(' + errors[index].rowIndex + ')').find('.col-' + errors[index].key).addClass('error');
+			}
+		}
+		return errors;
+	},
+	_getRateFormErrors: function ($fields) {
 		var errors = [];
 		var fields = {};
 
@@ -408,7 +408,7 @@ var wcsdmSetting = {
 
 		Object.keys(fields).forEach(function (key) {
 			var dataRows = fields[key];
-			for (let index = 0; index < dataRows.length; index++) {
+			for (var index = 0; index < dataRows.length; index++) {
 				var dataRow = dataRows[index];
 				var ignoreField = false;
 				var showIf = dataRow.show_if || false;
