@@ -154,6 +154,7 @@ var wcsdmSetting = {
 
 		// Sort rows based distance field on blur.
 		$(document).on('blur', '.wcsdm-rate-field--dummy--distance.changed', function (e) {
+			$('#btn-save-changes').prop('disabled', true);
 			var rows = $('#wcsdm-table-rates > tbody > tr').addClass('sorting').get().sort(function (a, b) {
 				var valueADistance = parseInt($(a).find('.wcsdm-rate-field--dummy--distance').val(), 10);
 				var valueBDistance = parseInt($(b).find('.wcsdm-rate-field--dummy--distance').val(), 10);
@@ -178,6 +179,7 @@ var wcsdmSetting = {
 			});
 
 			setTimeout(function () {
+				$('#btn-save-changes').prop('disabled', false);
 				$('#wcsdm-error').remove();
 				$('#wcsdm-table-rates > tbody > tr').removeClass('changed sorting error').find('td,th').removeClass('error').find('.wcsdm-rate-field--dummy--distance').removeClass('changed');
 			}, 800);
@@ -427,16 +429,38 @@ var wcsdmSetting = {
 
 						if (rowValue.length) {
 							if (dataRow.type === 'number') {
-								if (isNaN(rowValue)) {
-									throw new Error(wcsdm_params.i18n.errors.field_invalid.replace('%s', dataRow.title));
-								}
+								var costType = fields['cost_type'][index].value;
+								var costField = dataRow.cost_field || false;
+								if (costType === 'formula' && costField) {
+									var matches = rowValue.match(/([0-9]|[\*\+\-\/\(\)]|\{d\}|\{w\}|\{a\}|\{q\})+/gs);
+									if (!matches.length || matches[0] !== rowValue) {
+										throw new Error(wcsdm_params.i18n.errors.field_invalid.replace('%s', dataRow.title));
+									}
 
-								if (!isNaN(dataRow.min) && parseFloat(rowValue) < parseFloat(dataRow.min)) {
-									throw new Error(wcsdm_params.i18n.errors.field_min_value.replace('%$1s', dataRow.title).replace('%$2d', dataRow.min));
-								}
+									if (rowValue.indexOf('(') !== -1 || rowValue.indexOf(')') !== -1) {
+										var opening = rowValue.replace(/[^\(]+/g, '');
+										var closing = rowValue.replace(/[^\)]+/g, '');
+										if (opening.length !== closing.length) {
+											throw new Error(wcsdm_params.i18n.errors.field_invalid.replace('%s', dataRow.title));
+										}
 
-								if (!isNaN(dataRow.max) && parseFloat(rowValue) < parseFloat(dataRow.max)) {
-									throw new Error(wcsdm_params.i18n.errors.field_max_value.replace('%$1s', dataRow.title).replace('%$2d', dataRow.max));
+										var cleaned = rowValue.replace(/\((?:[^()]|\([^()]*\))*\)/g, '');
+										if (cleaned && (cleaned.indexOf('(') !== -1 || cleaned.indexOf(')'))) {
+											throw new Error(wcsdm_params.i18n.errors.field_invalid.replace('%s', dataRow.title));
+										}
+									}
+								} else {
+									if (isNaN(rowValue)) {
+										throw new Error(wcsdm_params.i18n.errors.field_invalid.replace('%s', dataRow.title));
+									}
+
+									if (!isNaN(dataRow.min) && parseFloat(rowValue) < parseFloat(dataRow.min)) {
+										throw new Error(wcsdm_params.i18n.errors.field_min_value.replace('%$1s', dataRow.title).replace('%$2d', dataRow.min));
+									}
+
+									if (!isNaN(dataRow.max) && parseFloat(rowValue) < parseFloat(dataRow.max)) {
+										throw new Error(wcsdm_params.i18n.errors.field_max_value.replace('%$1s', dataRow.title).replace('%$2d', dataRow.max));
+									}
 								}
 							} else if (dataRow.type === 'object') {
 								if (typeof dataRow.options[rowValue] === 'undefined') {
