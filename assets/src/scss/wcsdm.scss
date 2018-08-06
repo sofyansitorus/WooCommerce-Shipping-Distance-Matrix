@@ -226,9 +226,18 @@
     margin: 10px;
 }
 
-#advanced-buttons {
+#advanced-buttons,
+#save-buttons {
     button+button {
         margin-left: 10px;
+    }
+    .dashicons {
+        margin-top: 5px;
+        &.dashicons-yes {
+            font-size: 26px;
+            margin-top: 3px;
+            margin-right: 6px;
+        }
     }
 }
 

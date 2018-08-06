@@ -189,8 +189,18 @@
 #wcsdm-error {
   margin: 10px; }
 
-#advanced-buttons button + button {
+#advanced-buttons button + button,
+#save-buttons button + button {
   margin-left: 10px; }
+
+#advanced-buttons .dashicons,
+#save-buttons .dashicons {
+  margin-top: 5px; }
+  #advanced-buttons .dashicons.dashicons-yes,
+  #save-buttons .dashicons.dashicons-yes {
+    font-size: 26px;
+    margin-top: 3px;
+    margin-right: 6px; }
 
 [class^="tooltip"] {
   position: relative; }

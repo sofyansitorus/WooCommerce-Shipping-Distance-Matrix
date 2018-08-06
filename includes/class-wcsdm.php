@@ -362,24 +362,7 @@ class Wcsdm extends WC_Shipping_Method {
 	private function generate_rate_row_heading( $position = 'top' ) {
 		$fields = $this->rates_fields( 'dummy' );
 		?>
-		<?php if ( 'top' === $position ) : ?>
-		<tr id="row-heading-top" class="row-heading row-heading-top">
-			<td colspan="<?php echo esc_attr( count( $fields ) + 1 ); ?>" class="full-width-col">
-				<strong><?php esc_html_e( 'Distance Rate Rules', 'wcsdm' ); ?></strong>
-			</td>
-		</tr>
-		<?php endif; ?>
-		<tr class="row-heading row-heading-both">
-			<td class="col-checkbox">
-				<div>
-					<?php if ( 'top' === $position ) : ?>
-						<input class="select-item" type="checkbox">
-					<?php else : ?>
-						<a href="#" class="add_row button button-primary"><?php esc_html_e( 'Add Row', 'wcsdm' ); ?></a>
-						<a href="#" class="remove_rows button button-secondary delete" style="display: none"><?php esc_html_e( 'Remove Rows', 'wcsdm' ); ?></a>
-					<?php endif; ?>
-				</div>
-			</td>
+		<tr>
 			<?php foreach ( $fields as $key => $col ) : ?>
 				<td class="col-centered col-<?php echo esc_html( $key ); ?>">
 					<?php if ( 'top' === $position && ! empty( $col['description'] ) ) : ?>
@@ -392,13 +375,6 @@ class Wcsdm extends WC_Shipping_Method {
 				</td>
 			<?php endforeach; ?>
 		</tr>
-		<?php if ( 'top' !== $position ) : ?>
-		<tr id="row-heading-bottom" class="row-heading row-heading-bottom">
-			<td colspan="<?php echo esc_attr( count( $fields ) + 1 ); ?>" class="full-width-col col-centered">
-				<a href="#" class="add_row button button-primary button-large button-no-rates"><?php esc_html_e( 'Add Rate', 'wcsdm' ); ?></a>
-			</td>
-		</tr>
-		<?php endif; ?>
 		<?php
 	}
 
@@ -412,9 +388,6 @@ class Wcsdm extends WC_Shipping_Method {
 		$fields = $this->rates_fields( 'dummy' );
 		?>
 		<tr>
-			<td class="col-checkbox">
-				<div><input class="select-item" type="checkbox"></div>
-			</td>
 			<?php
 			foreach ( $fields as $key => $field ) {
 
@@ -502,13 +475,36 @@ class Wcsdm extends WC_Shipping_Method {
 	}
 
 	/**
+	 * Generate delete rate button
+	 *
+	 * @since 1.2.4
+	 * @param string $key  Settings field key.
+	 * @param array  $data Settings field data.
+	 */
+	public function generate_delete_link_html( $key, $data ) {
+		$defaults = array(
+			'title'       => '',
+			'desc_tip'    => false,
+			'description' => '',
+		);
+
+		$data = wp_parse_args( $data, $defaults );
+
+		ob_start();
+		?>
+		<a href="#" class="btn-delete-rate" title="<?php echo esc_attr( $data['description'] ); ?>"><span class="dashicons dashicons-trash"></span></a>
+		<?php
+		return ob_get_clean();
+
+	}
+	/**
 	 * Generate advanced settings form
 	 *
 	 * @since 1.2.4
 	 * @param string $key  Settings field key.
 	 * @param array  $data Settings field data.
 	 */
-	public function generate_action_link_html( $key, $data ) {
+	public function generate_advanced_link_html( $key, $data ) {
 		$defaults = array(
 			'title'       => '',
 			'desc_tip'    => false,
@@ -560,10 +556,16 @@ class Wcsdm extends WC_Shipping_Method {
 			<?php $this->generate_rate_row(); ?>
 		</script>
 		<script type="text/template" id="tmpl-btn-apply-changes">
-			<div id="advanced-buttons"><button id="btn-cancel-changes" class="button button-secondary button-large"><?php esc_html_e( 'Cancel', 'wcsdm' ); ?></button><button id="btn-apply-changes" class="button button-primary button-large"><?php esc_html_e( 'Apply Changes', 'wcsdm' ); ?></button></div>
+			<div id="advanced-buttons">
+				<button id="btn-cancel-changes" class="button button-secondary button-large"><span class="dashicons dashicons-undo"></span> <?php esc_html_e( 'Cancel', 'wcsdm' ); ?></button>
+				<button id="btn-apply-changes" class="button button-primary button-large"><span class="dashicons dashicons-yes"></span> <?php esc_html_e( 'Apply Changes', 'wcsdm' ); ?></button>
+			</div>
 		</script>
 		<script type="text/template" id="tmpl-btn-save-changes">
-			<button id="btn-save-changes" class="button button-primary button-large"><?php esc_html_e( 'Save Changes', 'wcsdm' ); ?></button>
+			<div id="save-buttons">
+				<button id="btn-add-rate" class="button button-primary button-large"><span class="dashicons dashicons-plus"></span> <?php esc_html_e( 'Add New Rate', 'wcsdm' ); ?></button>
+				<button id="btn-save-changes" class="button button-primary button-large"><span class="dashicons dashicons-yes"></span> <?php esc_html_e( 'Save Changes', 'wcsdm' ); ?></button>
+			</div>
 		</script>
 		<script type="text/template" id="tmpl-wcsdm-error">
 			<div id="wcsdm-error" class="notice notice-error"><strong class="error-message">{{data.title}}</strong><hr />{{{data.content}}}</div>
@@ -613,7 +615,6 @@ class Wcsdm extends WC_Shipping_Method {
 			'distance'       => array(
 				'type'              => 'number',
 				'title'             => __( 'Max. Distances', 'wcsdm' ),
-				'class'             => 'field-distance',
 				'description'       => __( 'The maximum distances rule for the shipping rate. This input is required and the value must be unique.', 'wcsdm' ),
 				'desc_tip'          => true,
 				'required'          => true,
@@ -687,8 +688,13 @@ class Wcsdm extends WC_Shipping_Method {
 				'context'           => array( 'advanced', 'hidden' ),
 			),
 			'advanced'       => array(
-				'type'    => 'action_link',
+				'type'    => 'advanced_link',
 				'title'   => __( 'Advanced', 'wcsdm' ),
+				'context' => array( 'dummy' ),
+			),
+			'delete'         => array(
+				'type'    => 'delete_link',
+				'title'   => __( 'Delete', 'wcsdm' ),
 				'context' => array( 'dummy' ),
 			),
 		);
@@ -703,7 +709,6 @@ class Wcsdm extends WC_Shipping_Method {
 							'title'       => sprintf( __( '"%s" Class Shipping Rate', 'wcsdm' ), $class_obj->name ),
 							'description' => __( 'Shipping rate for specific product shipping class. This rate will override the default shipping rate defined above. Blank or zero value will be ignored.', 'wcsdm' ),
 							'context'     => array( 'advanced', 'hidden' ),
-							'class'       => 'cost_class--bind',
 							'show_if'     => array( 'cost_class' => array( 'yes' ) ),
 						)
 					),
@@ -718,25 +723,33 @@ class Wcsdm extends WC_Shipping_Method {
 				continue;
 			}
 
-			$field_class = 'wcsdm-rate-field wcsdm-rate-field--' . $key;
+			$field_classes = array(
+				'wcsdm-rate-field',
+				'wcsdm-rate-field--' . $key,
+				'wcsdm-rate-field--' . $field['type'],
+			);
 
 			if ( ! empty( $context ) ) {
-				$field_class .= ' wcsdm-rate-field--' . $context . ' wcsdm-rate-field--' . $context . '--' . $key;
+				$field_classes[] = 'wcsdm-rate-field--' . $context;
+				$field_classes[] = 'wcsdm-rate-field--' . $context . '--' . $key;
+				$field_classes[] = 'wcsdm-rate-field--' . $context . '--' . $field['type'];
 			}
 
 			if ( ! empty( $field['cost_field'] ) ) {
-				$field_class .= ' wcsdm-cost-field wcsdm-cost-field--' . $key;
+				$field_classes[] = 'wcsdm-cost-field';
+				$field_classes[] = 'wcsdm-cost-field--' . $key;
+				$field_classes[] = 'wcsdm-cost-field--' . $field['type'];
 			}
 
-			if ( isset( $field['class'] ) ) {
-				$field_class .= ' ' . $field['class'];
+			if ( ! empty( $field['class'] ) ) {
+				$field_classes[] = $field['class'];
 			}
 
 			$custom_attributes = is_array( $field['custom_attributes'] ) ? $field['custom_attributes'] : array();
 
 			$populated_fields[ $key ] = array_merge(
 				$field, array(
-					'class'             => $field_class,
+					'class'             => implode( $field_classes, ' ' ),
 					'custom_attributes' => array_merge(
 						$custom_attributes, array(
 							'data-key'        => $key,
