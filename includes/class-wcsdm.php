@@ -148,23 +148,24 @@ class Wcsdm extends WC_Shipping_Method {
 			),
 			'gmaps_api_key'           => array(
 				'title'       => __( 'Google API Key', 'wcsdm' ),
-				'type'        => 'text',
+				'type'        => 'api_key',
 				'description' => __( 'This plugin makes use of the Google Maps and Google Distance Matrix APIs. <a href="https://developers.google.com/maps/documentation/distance-matrix/get-api-key" target="_blank">Click here</a> obtain a Google API Key.', 'wcsdm' ),
 				'default'     => '',
 			),
-			'origin'                  => array(
-				'title'       => __( 'Store Location', 'wcsdm' ),
-				'type'        => 'address_picker',
-				'description' => __( 'Drag the and drop the store icon to your store location at the map or search your store location by typing an address into the search input field. If you see any error printed on the setting field, please click the link printed within the error message to find out the causes and solutions.', 'wcsdm' ),
-				'desc_tip'    => true,
-			),
 			'origin_lat'              => array(
 				'title' => __( 'Store Location Latitude', 'wcsdm' ),
-				'type'  => 'coordinates',
+				'type'  => 'custom',
 			),
 			'origin_lng'              => array(
 				'title' => __( 'Store Location Logitude', 'wcsdm' ),
-				'type'  => 'coordinates',
+				'type'  => 'custom',
+			),
+			'store_location'          => array(
+				'type'        => 'store_location',
+				'title'       => __( 'Store Location', 'wcsdm' ),
+				'description' => __( 'This plugin makes use of the Google Maps and Google Distance Matrix APIs. <a href="https://developers.google.com/maps/documentation/distance-matrix/get-api-key" target="_blank">Click here</a> obtain a Google API Key.', 'wcsdm' ),
+				'default'     => '',
+				'desc_tip'    => true,
 			),
 			'gmaps_api_mode'          => array(
 				'title'       => __( 'Travel Mode', 'wcsdm' ),
@@ -252,7 +253,8 @@ class Wcsdm extends WC_Shipping_Method {
 				'desc_tip'    => true,
 			),
 			'table_rates'             => array(
-				'type' => 'table_rates',
+				'type'  => 'table_rates',
+				'title' => __( 'Distance Rate Rules', 'wcsdm' ),
 			),
 			'table_advanced'          => array(
 				'type'  => 'table_advanced',
@@ -310,13 +312,138 @@ class Wcsdm extends WC_Shipping_Method {
 	}
 
 	/**
-	 * Generate coordinates settings field.
+	 * Generate API Key Input HTML.
+	 *
+	 * @param string $key Field key.
+	 * @param array  $data Field data.
+	 * @since  1.0.0
+	 * @return string
+	 */
+	public function generate_api_key_html( $key, $data ) {
+		$field_key = $this->get_field_key( $key );
+		$defaults  = array(
+			'title'             => '',
+			'disabled'          => false,
+			'class'             => '',
+			'css'               => '',
+			'placeholder'       => '',
+			'type'              => 'text',
+			'desc_tip'          => false,
+			'description'       => '',
+			'custom_attributes' => array(),
+		);
+
+		$data = wp_parse_args( $data, $defaults );
+
+		ob_start();
+		?>
+		<tr valign="top" id="wcsdm-row-api-key" class="wcsdm-row wcsdm-row--hidden wcsdm-row-api-key">
+			<td class="wcsdm-col wcsdm-col-map-picker" colspan="2">
+				<table id="wcsdm-table-map-picker" class="wcsdm-table wcsdm-table-map-picker" cellspacing="0">
+					<thead>
+						<tr>
+							<th colspan="2" class="full-width-col"><?php esc_html_e( 'Store Location Picker', 'wcsdm' ); ?></th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<th scope="row" class="titledesc">
+								<label for="<?php echo esc_attr( $field_key ); ?>"><?php echo wp_kses_post( $data['title'] ); ?> <?php echo $this->get_tooltip_html( $data ); // WPCS: XSS ok. ?></label>
+							</th>
+							<td class="forminp">
+								<fieldset>
+									<legend class="screen-reader-text"><span><?php echo wp_kses_post( $data['title'] ); ?></span></legend>
+									<input class="input-text regular-input <?php echo esc_attr( $data['class'] ); ?>" type="<?php echo esc_attr( $data['type'] ); ?>" name="<?php echo esc_attr( $field_key ); ?>" id="<?php echo esc_attr( $field_key ); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" value="<?php echo esc_attr( $this->get_option( $key ) ); ?>" placeholder="<?php echo esc_attr( $data['placeholder'] ); ?>" <?php disabled( $data['disabled'], true ); ?> data-title="<?php echo esc_attr( $data['title'] ); ?>" <?php echo $this->get_custom_attribute_html( $data ); // WPCS: XSS ok. ?> />
+
+								</fieldset>
+							</td>
+						</tr>
+						<tr id="wcsdm-row-map-picker-canvas">
+							<td colspan="2"><div id="wcsdm-map-picker-canvas"></div><div id="wcsdm-map-picker-instruction"><?php echo $this->get_description_html( $data ); // WPCS: XSS ok. ?></div></td>
+						</tr>
+						<tr id="wcsdm-row-map-picker-lat-lng">
+							<td colspan="2"><div id="map-picker-lat-lng"></div></td>
+						</tr>
+					</tbody>
+				</table>
+			</td>
+		</tr>
+		<?php
+
+		return ob_get_clean();
+	}
+
+	/**
+	 * Generate custom settings field.
 	 *
 	 * @since 1.2.4
 	 * @param string $key Settings field key.
 	 * @param array  $data Settings field data.
 	 */
-	public function generate_coordinates_html( $key, $data ) {
+	public function generate_custom_html( $key, $data ) {
+		$field_key = $this->get_field_key( $key );
+		$defaults  = array(
+			'title'             => '',
+			'disabled'          => false,
+			'class'             => '',
+			'css'               => '',
+			'placeholder'       => '',
+			'type'              => 'text',
+			'desc_tip'          => false,
+			'description'       => '',
+			'custom_attributes' => array(),
+		);
+
+		$data = wp_parse_args( $data, $defaults );
+
+		ob_start();
+		?>
+		<input type="hidden" name="<?php echo esc_attr( $field_key ); ?>" id="<?php echo esc_attr( $field_key ); ?>" value="<?php echo esc_attr( $this->get_option( $key ) ); ?>" <?php echo $this->get_custom_attribute_html( $data ); // WPCS: XSS ok. ?> />
+		<?php
+		return ob_get_clean();
+	}
+
+	/**
+	 * Generate store location picker settings field.
+	 *
+	 * @since 1.2.4
+	 * @param string $key Settings field key.
+	 * @param array  $data Settings field data.
+	 */
+	public function generate_store_location_html( $key, $data ) {
+		$field_key = $this->get_field_key( $key );
+		$lat_key = $this->get_field_key( 'origin_lat' );
+		$lng_key = $this->get_field_key( 'origin_lng' );
+
+		$defaults = array(
+			'title'             => '',
+			'disabled'          => false,
+			'class'             => '',
+			'css'               => '',
+			'placeholder'       => '',
+			'type'              => 'text',
+			'desc_tip'          => false,
+			'description'       => '',
+			'custom_attributes' => array(),
+			'options'           => array(),
+		);
+
+		$data = wp_parse_args( $data, $defaults );
+
+		ob_start();
+		?>
+		<tr valign="top" id="wcsdm-row-store-location" class="wcsdm-row wcsdm-row-store-location">
+			<th scope="row" class="titledesc">
+				<?php echo $this->get_tooltip_html( $data ); // WPCS: XSS ok. ?>
+				<label for="<?php echo esc_attr( $field_key ); ?>"><?php echo wp_kses_post( $data['title'] ); ?></label>
+			</th>
+			<td class="forminp">
+				<div id="wcsdm-col-store-location"></div>
+				<?php echo $this->get_description_html( $data ); // WPCS: XSS ok. ?>
+			</td>
+		</tr>
+		<?php
+		return ob_get_clean();
 	}
 
 	/**
@@ -324,12 +451,30 @@ class Wcsdm extends WC_Shipping_Method {
 	 *
 	 * @since    1.0.0
 	 * @param string $key Input field key.
+	 * @param array  $data Settings field data.
 	 */
-	public function generate_table_rates_html( $key ) {
+	public function generate_table_rates_html( $key, $data ) {
+		$field_key = $this->get_field_key( $key );
+		$defaults  = array(
+			'title'             => '',
+			'disabled'          => false,
+			'class'             => '',
+			'css'               => '',
+			'placeholder'       => '',
+			'type'              => 'text',
+			'desc_tip'          => false,
+			'description'       => '',
+			'custom_attributes' => array(),
+		);
+
+		$data = wp_parse_args( $data, $defaults );
 		ob_start();
 		?>
-		<tr valign="top" id="wcsdm-table-row-rates" class="wcsdm-table-row wcsdm-table-row-rates">
-			<td class="wcsdm-table-col wcsdm-table-col-rates" colspan="2">
+		<tr>
+			<td colspan="2" class="full-width-col"><strong><?php echo wp_kses_post( $data['title'] ); ?></strong></td>
+		</tr>
+		<tr valign="top" id="wcsdm-row-rates" class="wcsdm-row wcsdm-row-rates">
+			<td class="wcsdm-col wcsdm-col-rates" colspan="2">
 				<table id="wcsdm-table-rates" class="wc_input_table widefat wcsdm-table wcsdm-table-rates" cellspacing="0">
 					<thead>
 						<?php $this->generate_rate_row_heading(); ?>
@@ -451,9 +596,9 @@ class Wcsdm extends WC_Shipping_Method {
 
 		ob_start();
 		?>
-		<tr valign="top" id="wcsdm-table-row-advanced" class="wcsdm-table-row wcsdm-table-row-advanced">
-			<td class="wcsdm-table-col wcsdm-table-col-advanced" colspan="2">
-				<table id="wcsdm-table-advanced" class="form-table wcsdm-table wcsdm-table-advanced" cellspacing="0">
+		<tr valign="top" id="wcsdm-row-advanced" class="wcsdm-row wcsdm-row--hidden wcsdm-row-advanced">
+			<td class="wcsdm-col wcsdm-col-advanced" colspan="2">
+				<table id="wcsdm-table-advanced" class="wcsdm-table wcsdm-table-advanced" cellspacing="0">
 					<thead>
 						<tr>
 							<td colspan="2" class="full-width-col"><strong><?php echo wp_kses_post( $data['title'] ); ?></strong></td>
@@ -539,7 +684,7 @@ class Wcsdm extends WC_Shipping_Method {
 			}
 		}
 		?>
-		<a href="#" class="advanced-rate-settings" title="<?php echo esc_attr( $data['description'] ); ?>"><span class="dashicons dashicons-admin-generic"></span></a>
+		<a href="#" class="wcsdm-btn-advanced-link" title="<?php echo esc_attr( $data['description'] ); ?>"><span class="dashicons dashicons-admin-generic"></span></a>
 		<?php
 		return ob_get_clean();
 	}
@@ -555,26 +700,51 @@ class Wcsdm extends WC_Shipping_Method {
 		<script type="text/template" id="tmpl-rates-list-input-table-row">
 			<?php $this->generate_rate_row(); ?>
 		</script>
-		<script type="text/template" id="tmpl-btn-apply-changes">
-			<div id="advanced-buttons">
-				<button id="btn-cancel-changes" class="button button-secondary button-large"><span class="dashicons dashicons-undo"></span> <?php esc_html_e( 'Cancel', 'wcsdm' ); ?></button>
-				<button id="btn-apply-changes" class="button button-primary button-large"><span class="dashicons dashicons-yes"></span> <?php esc_html_e( 'Apply Changes', 'wcsdm' ); ?></button>
-			</div>
-		</script>
-		<script type="text/template" id="tmpl-btn-save-changes">
-			<div id="save-buttons">
-				<button id="btn-add-rate" class="button button-primary button-large"><span class="dashicons dashicons-plus"></span> <?php esc_html_e( 'Add New Rate', 'wcsdm' ); ?></button>
-				<button id="btn-save-changes" class="button button-primary button-large"><span class="dashicons dashicons-yes"></span> <?php esc_html_e( 'Save Changes', 'wcsdm' ); ?></button>
-			</div>
-		</script>
 		<script type="text/template" id="tmpl-wcsdm-error">
 			<div id="wcsdm-error" class="notice notice-error"><strong class="error-message">{{data.title}}</strong><hr />{{{data.content}}}</div>
 		</script>
 		<script type="text/html" id="tmpl-wcsdm-map-search">
 			<input id="wcsdm-map-search" class="wcsdm-map-search controls" type="text" placeholder="<?php echo esc_attr( __( 'Search your store location', 'wcsdm' ) ); ?>" autocomplete="off" />
 		</script>
-		<script type="text/html" id="tmpl-wcsdm-map-canvas">
-			<div id="wcsdm-map-canvas" class="wcsdm-map-canvas"></div>
+		<script type="text/html" id="tmpl-wcsdm-lat-lng-table">
+			<table class="wcsdm-table wcsdm-table-store-location">
+				<thead>
+					<tr>
+						<td><?php esc_html_e( 'Latitude', 'wcsdm' ); ?></td>
+						<td><?php esc_html_e( 'Longitude', 'wcsdm' ); ?></td>
+						<# if ( !data.hideButton ) { #>
+						<td class="col-btn-select-map">&nbsp;</td>
+						<# } #>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>
+							<input class="input-text regular-input" type="text" id="<?php echo esc_attr( $this->get_field_key( 'origin_lat_dummy' ) ); ?>" value="{{data.origin_lat}}" placeholder="<?php esc_attr_e( 'Latitude', 'wcsdm' ); ?>" data-title="<?php esc_attr_e( 'Latitude', 'wcsdm' ); ?>" readonly="readonly" />
+						</td>
+						<td>
+							<input class="input-text regular-input" type="text" id="<?php echo esc_attr( $this->get_field_key( 'origin_lng_dummy' ) ); ?>" value="{{data.origin_lng}}" placeholder="<?php esc_attr_e( 'Longitude', 'wcsdm' ); ?>" data-title="<?php esc_attr_e( 'Longitude', 'wcsdm' ); ?>" readonly="readonly" />
+						</td>
+						<# if ( !data.hideButton ) { #>
+						<td class="col-btn-map-picker">
+							<button id="wcsdm-btn-map-picker" class="button button-primary button-large"><span class="dashicons dashicons-location-alt"></span></button>
+						</td>
+						<# } #>
+					</tr>
+				</tbody>
+			</table>
+		</script>
+		<script type="text/template" id="tmpl-wcsdm-buttons-footer-primary">
+			<div id="wcsdm-buttons-footer-primary" class="wcsdm-buttons-footer wcsdm-buttons-footer--primary">
+				<button id="wcsdm-btn-primary-add-rate" class="button button-primary button-large"><span class="dashicons dashicons-plus"></span> <?php esc_html_e( 'Add New Rate', 'wcsdm' ); ?></button>
+				<button id="wcsdm-btn-primary-save-changes" class="button button-primary button-large"><span class="dashicons dashicons-yes"></span> <?php esc_html_e( 'Save Changes', 'wcsdm' ); ?></button>
+			</div>
+		</script>
+		<script type="text/template" id="tmpl-wcsdm-buttons-footer-advanced">
+			<div id="wcsdm-buttons-footer-advanced" class="wcsdm-buttons-footer wcsdm-buttons-footer--advanced">
+				<button id="{{data.id_cancel}}" class="button button-primary button-large"><span class="dashicons dashicons-undo"></span> <?php esc_html_e( 'Cancel', 'wcsdm' ); ?></button>
+				<button id="{{data.id_apply}}" class="button button-primary button-large"><span class="dashicons dashicons-yes"></span> <?php esc_html_e( 'Apply Changes', 'wcsdm' ); ?></button>
+			</div>
 		</script>
 		<?php
 		return ob_get_clean();

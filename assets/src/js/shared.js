@@ -21,7 +21,7 @@ function debounce(func, wait, immediate) {
     };
 }
 
-// jQury Function to get element attributes
+// jQuery Function to get element attributes
 $.fn.attrs = function (attrs) {
     var t = $(this);
     var results = {};

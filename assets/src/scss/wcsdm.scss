@@ -1,90 +1,3 @@
-.wcsdm-map-wrapper {
-    display: none;
-    position: relative;
-    width: 100%;
-    padding-right: 10px;
-    margin-bottom: 15px;
-    .controls {
-        margin-top: 10px;
-        border: 1px solid transparent;
-        border-radius: 2px 0 0 2px;
-        box-sizing: border-box;
-        height: 32px;
-        outline: none;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-    }
-    .wcsdm-map-canvas {
-        position: relative;
-        height: 340px;
-    }
-    .wcsdm-map-search {
-        position: relative;
-        background-color: #fff;
-        font-size: 13px;
-        font-weight: 300;
-        margin-left: 12px;
-        padding: 0 11px 0 13px;
-        text-overflow: ellipsis;
-        width: 600px;
-        max-width: 100%;
-        margin-top: 10px !important;
-        &:focus {
-            border-color: #4d90fe;
-        }
-    }
-}
-
-#wcsdm-map-error {
-    display: none;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    margin-bottom: 15px;
-    &.notice {
-        margin-left: 0;
-    }
-}
-
-#wcsdm-map-spinner {
-    visibility: visible;
-}
-
-#wcsdm-lat-lng-wrap {
-    display: none;
-    width: 100%;
-    padding-right: 10px;
-    div {
-        width: 50%;
-        &:first-child {
-            float: left;
-            padding-right: 10px;
-        }
-        &:last-child {
-            margin-left: 50%;
-            padding-left: 10px;
-        }
-        label {
-            display: block;
-        }
-        input {
-            display: block;
-            width: 100%;
-        }
-    }
-    @media only screen and (max-width: 1070px) {
-        div {
-            width: 100%;
-            &:first-child {
-                float: none;
-                padding-right: 0;
-            }
-            &:last-child {
-                margin-left: 0;
-                padding-left: 0;
-            }
-        }
-    }
-}
-
 .pac-container {
     z-index: 999999 !important;
     #type-selector {
@@ -101,14 +14,12 @@
     }
 }
 
-.wcsdm-table-row {
-    .wcsdm-table-col {
+.wcsdm-row {
+    .wcsdm-col {
         padding: 0 !important;
     }
-    &.wcsdm-table-row-advanced {
-        display: none;
-    }
     .wcsdm-table {
+        width: 100%;
         * {
             box-sizing: border-box;
         }
@@ -128,8 +39,8 @@
                 cursor: not-allowed;
             }
         }
-        .full-width-col {
-            background: #f1f1f1;
+        input:read-only {
+            background-color: #eee;
         }
         .select {
             min-width: 130px !important;
@@ -155,7 +66,7 @@
                 td,
                 th {
                     background-color: #ccf9ff !important;
-                    .advanced-rate-settings {
+                    .wcsdm-btn-advanced-link {
                         display: none;
                     }
                 }
@@ -219,18 +130,91 @@
                 }
             }
         }
+        &.wcsdm-table-store-location {
+            input {
+                width: 100%;
+            }
+            tr {
+                td {
+                    padding: 0;
+                    &:first-child {
+                        padding-right: 5px;
+                    }
+                    &+td {
+                        padding-left: 5px;
+                    }
+                    &.col-btn-map-picker {
+                        width: 60px !important;
+                    }
+                }
+            }
+            thead {
+                td {
+                    font-weight: bold;
+                }
+            }
+            tbody {
+                td {
+                    padding-top: 5px;
+                    padding-top: 5px;
+                }
+            }
+        }
+    }
+    &.wcsdm-row--hidden {
+        display: none;
+    }
+}
+
+.full-width-col {
+    background: #f1f1f1;
+}
+
+#wcsdm-map-picker-instruction {
+    display: none;
+}
+
+#wcsdm-map-picker-canvas {
+    position: relative;
+    margin: 0;
+    padding: 0;
+    height: 360px;
+    background-color: #eee;
+    &:before {
+        content: ".";
+        font-style: 30px;
+        color: #ffffff;
+        position: absolute;
+        width: 18px;
+        height: 18px;
+        border-radius: 18px;
+        background: #4d90fe;
+        left: 50%;
+        top: 50%;
+        margin-left: -9px;
+        margin-top: -9px;
+        -webkit-animation: infinite-spinning 1.08s linear infinite;
+        animation: infinite-spinning 1.08s linear infinite;
+        padding: 5px;
+    }
+    .description {
+        margin-top: 240px;
+        text-align: center;
     }
 }
 
 #wcsdm-error {
-    margin: 10px;
+    margin: 0;
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 
-#advanced-buttons,
-#save-buttons {
-    button+button {
-        margin-left: 10px;
-    }
+#wcsdm-map-search {
+    margin-top: 10px;
+    height: 30px;
+}
+
+.wcsdm-buttons-footer {
     .dashicons {
         margin-top: 5px;
         &.dashicons-yes {
@@ -238,7 +222,10 @@
             margin-top: 3px;
             margin-right: 6px;
         }
-    }
+	}
+	button:first-child{
+		float: left;
+	}
 }
 
 [class^="tooltip"] {
@@ -278,5 +265,31 @@
         vertical-align: top;
         text-align: center;
         transition: color .1s ease-in 0;
+    }
+}
+
+/*!
+ * WordPress CSS Spinner
+ */
+
+@-webkit-keyframes infinite-spinning {
+    from {
+        -webkit-transform: rotate(0deg);
+        transform: rotate(0deg);
+    }
+    to {
+        -webkit-transform: rotate(360deg);
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes infinite-spinning {
+    from {
+        -webkit-transform: rotate(0deg);
+        transform: rotate(0deg);
+    }
+    to {
+        -webkit-transform: rotate(360deg);
+        transform: rotate(360deg);
     }
 }

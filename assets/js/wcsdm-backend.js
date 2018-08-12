@@ -24,7 +24,7 @@ function debounce(func, wait, immediate) {
     };
 }
 
-// jQury Function to get element attributes
+// jQuery Function to get element attributes
 $.fn.attrs = function (attrs) {
     var t = $(this);
     var results = {};
@@ -65,6 +65,292 @@ $.fn.attrs = function (attrs) {
     return data;
 };
 
+// Taking Over window.console.error
+var isMapError = false, timerDistanceMatrix;
+var windowConsoleError = window.console.error;
+window.console.error = function () {
+	if (!isMapError && arguments[0].toLowerCase().indexOf('google') !== 1) {
+		isMapError = true;
+		wcsdmMap.showMapError(arguments[0]);
+	}
+	windowConsoleError.apply(windowConsoleError, arguments);
+};
+
+var currentLat;
+var currentLng;
+
+var wcsdmMap = {
+	zoomLevel: 16,
+	defaultLat: -6.175392,
+	defaultLng: 106.827153,
+	init: function (params) {
+		wcsdmMap.params = params;
+
+		// Handle setting link clicked.
+		$(document).on('click', '.wc-shipping-zone-method-settings', function () {
+			// Bail early if the link clicked others shipping method
+			var methodTitle = $(this).closest('tr').find('.wc-shipping-zone-method-type').text();
+			if (methodTitle !== wcsdmMap.params.methodTitle) {
+				return false;
+			}
+
+			currentLat = $('#woocommerce_wcsdm_origin_lat').val();
+			currentLng = $('#woocommerce_wcsdm_origin_lng').val();
+
+			$('#wcsdm-col-store-location').empty().append(wp.template('wcsdm-lat-lng-table')({
+				origin_lat: currentLat,
+				origin_lng: currentLng,
+				hideButton: false,
+			}));
+		});
+
+		$(document).on('click', '#wcsdm-btn-map-picker', function (e) {
+			e.preventDefault();
+			$('#wcsdm-map-picker-canvas').empty();
+			$('#wcsdm-row-api-key').show().siblings().hide();
+			$('#wcsdm-col-store-location').empty();
+			$('#map-picker-lat-lng').empty().append(wp.template('wcsdm-lat-lng-table')({
+				origin_lat: currentLat,
+				origin_lng: currentLng,
+				hideButton: true,
+			}));
+			$('#wcsdm-buttons-footer-primary').remove();
+			$('#btn-ok').after(wp.template('wcsdm-buttons-footer-advanced')({
+				id_cancel: 'wcsdm-btn-map-cancel',
+				id_apply: 'wcsdm-btn-map-apply',
+			}));
+			$('#woocommerce_wcsdm_gmaps_api_key').trigger('input');
+		});
+
+		$(document).on('click', '#wcsdm-btn-map-cancel', function (e) {
+			e.preventDefault();
+			$('#wcsdm-error').remove();
+			$(e.currentTarget).closest('div').remove();
+			$('#wcsdm-col-store-location').empty().append(wp.template('wcsdm-lat-lng-table')({
+				origin_lat: currentLat,
+				origin_lng: currentLng,
+				hideButton: false,
+			}));
+			$('#wcsdm-map-picker-canvas').empty();
+			$('#wcsdm-row-api-key').hide().siblings().not('.wcsdm-row--hidden').show();
+			$('#btn-ok').after(wp.template('wcsdm-buttons-footer-primary'));
+		});
+
+		$(document).on('click', '#wcsdm-btn-map-apply', function (e) {
+			e.preventDefault();
+			$('#wcsdm-error').remove();
+			var errors = {};
+			var requiredFields = [
+				'woocommerce_wcsdm_gmaps_api_key',
+				'woocommerce_wcsdm_origin_lat_dummy',
+				'woocommerce_wcsdm_origin_lng_dummy',
+			];
+
+			for (let i = 0; i < requiredFields.length; i++) {
+				var requiredFieldKey = requiredFields[i];
+				var $requiredField = $('#' + requiredFieldKey);
+				if (!$requiredField.val().length) {
+					errors[requiredFieldKey] = wcsdmMap.params.i18n.errors.field_required.replace('%s', $requiredField.data('title'));
+				}
+			}
+
+			if (Object.keys(errors).length) {
+				var errorMessage = '';
+				Object.keys(errors).forEach(function (key) {
+					$('.wcsdm-rate-field--advanced--' + key).closest('tr').addClass('error');
+					errorMessage += '<p id="wcsdm-rate-field--error--' + key + '">' + errors[key] + '</p>';
+				});
+
+				$('#wcsdm-table-map-picker').before(wp.template('wcsdm-error')({
+					title: wcsdmMap.params.i18n.errors.error_title,
+					content: errorMessage,
+				}));
+				return;
+			}
+
+			var testService = new google.maps.DistanceMatrixService();
+			testService.getDistanceMatrix(
+				{
+					origins: [new google.maps.LatLng(-6.1762256, 106.82295120000003)],
+					destinations: [new google.maps.LatLng(-6.194891755155254, 106.81979692219852)],
+					travelMode: 'DRIVING',
+					unitSystem: google.maps.UnitSystem.METRIC
+				}, function (response, status) {
+					console.log('DistanceMatrixTestRequest', { status: status, response: response });
+					if (status === 'OK') {
+						$(e.currentTarget).closest('div').remove();
+
+						var newLat = $('#woocommerce_wcsdm_origin_lat_dummy').val();
+						var newLng = $('#woocommerce_wcsdm_origin_lng_dummy').val();
+
+						$('#wcsdm-col-store-location').empty().append(wp.template('wcsdm-lat-lng-table')({
+							origin_lat: newLat,
+							origin_lng: newLng,
+							hideButton: false,
+						}));
+
+						$('#wcsdm-row-api-key').hide().siblings().not('.wcsdm-row--hidden').show();
+						$('#btn-ok').after(wp.template('wcsdm-buttons-footer-primary'));
+						$('#woocommerce_wcsdm_origin_lat').val(newLat);
+						$('#woocommerce_wcsdm_origin_lng').val(newLng);
+						$('#wcsdm-map-picker-canvas').empty();
+					}
+				});
+		});
+
+		// Handle on API Key field setting changed.
+		$(document).on('input', '#woocommerce_wcsdm_gmaps_api_key', debounce(function () {
+			wcsdmMap.initGoogleMaps();
+		}, 500));
+	},
+	initGoogleMaps: function () {
+		$('#wcsdm-error').remove();
+		$('#wcsdm-map-picker-canvas').empty();
+
+		var apiKey = $('#woocommerce_wcsdm_gmaps_api_key').val();
+		if (!apiKey.length) {
+			$('#wcsdm-map-picker-canvas').append($('#wcsdm-map-picker-instruction').html());
+			return;
+		}
+
+		isMapError = false;
+
+		window.google = undefined;
+
+		var mapScriptUrl = 'https://maps.googleapis.com/maps/api/js?libraries=geometry,places&key=' + apiKey + '&language=' + wcsdmMap.params.language;
+		$.getScript(mapScriptUrl, function () {
+			wcsdmMap.buildGoogleMaps();
+		});
+	},
+	buildGoogleMaps: function () {
+		var regExp = /^[-+]?[0-9]{1,7}(\.[0-9]+)?$/;
+		var curLat = $('#woocommerce_wcsdm_origin_lat').val();
+		var curLng = $('#woocommerce_wcsdm_origin_lng').val();
+		curLat = curLat.length && regExp.exec(curLat) ? parseFloat(curLat) : wcsdmMap.defaultLat;
+		curLng = curLng.length && regExp.exec(curLng) ? parseFloat(curLng) : wcsdmMap.defaultLng;
+		var curLatLng = { lat: curLat, lng: curLng };
+		var markers = [];
+		var map = new google.maps.Map(
+			document.getElementById('wcsdm-map-picker-canvas'),
+			{
+				center: curLatLng,
+				zoom: wcsdmMap.zoomLevel,
+				mapTypeId: 'roadmap'
+			}
+		);
+
+		var marker = new google.maps.Marker({
+			map: map,
+			position: curLatLng,
+			draggable: true,
+			icon: wcsdmMap.params.marker
+		});
+
+		var infowindow = new google.maps.InfoWindow({ maxWidth: 350 });
+
+		if (curLat === wcsdmMap.defaultLat && curLng === wcsdmMap.defaultLng) {
+			infowindow.setContent(wcsdmMap.params.i18n.dragMarker);
+			infowindow.open(map, marker);
+		} else {
+			wcsdmMap.setLatLng(marker.position, marker, map, infowindow);
+		}
+
+		google.maps.event.addListener(marker, 'dragstart', function () {
+			infowindow.close();
+		});
+
+		google.maps.event.addListener(marker, 'dragend', function (event) {
+			wcsdmMap.setLatLng(event.latLng, marker, map, infowindow);
+		});
+
+		markers.push(marker);
+
+		$('#wcsdm-map-picker-canvas').append(wp.template('wcsdm-map-search'));
+
+		// Create the search box and link it to the UI element.
+		var inputAddress = document.getElementById('wcsdm-map-search');
+		var searchBox = new google.maps.places.SearchBox(inputAddress);
+		map.controls[google.maps.ControlPosition.TOP_LEFT].push(inputAddress);
+
+		// Bias the SearchBox results towards current map's viewport.
+		map.addListener('bounds_changed', function () {
+			searchBox.setBounds(map.getBounds());
+		});
+
+		// Listen for the event fired when the user selects a prediction and retrieve more details for that place.
+		searchBox.addListener('places_changed', function () {
+			var places = searchBox.getPlaces();
+			if (places.length === 0) {
+				return;
+			}
+
+			// Clear out the old markers.
+			markers.forEach(function (marker) {
+				marker.setMap(null);
+			});
+
+			markers = [];
+
+			// For each place, get the icon, name and location.
+			var bounds = new google.maps.LatLngBounds();
+			places.forEach(function (place) {
+				if (!place.geometry) {
+					console.log('Returned place contains no geometry');
+					return;
+				}
+				marker = new google.maps.Marker({
+					map: map,
+					position: place.geometry.location,
+					draggable: true,
+					icon: wcsdmMap.params.marker
+				});
+				wcsdmMap.setLatLng(place.geometry.location, marker, map, infowindow);
+				google.maps.event.addListener(marker, 'dragstart', function () {
+					infowindow.close();
+				});
+				google.maps.event.addListener(marker, 'dragend', function (event) {
+					wcsdmMap.setLatLng(event.latLng, marker, map, infowindow);
+				});
+				// Create a marker for each place.
+				markers.push(marker);
+				if (place.geometry.viewport) {
+					// Only geocodes have viewport.
+					bounds.union(place.geometry.viewport);
+				} else {
+					bounds.extend(place.geometry.location);
+				}
+			});
+			map.fitBounds(bounds);
+		});
+	},
+	setLatLng: function (location, marker, map, infowindow) {
+		var geocoder = new google.maps.Geocoder();
+		geocoder.geocode(
+			{
+				latLng: location
+			},
+			function (results, status) {
+				if (status === google.maps.GeocoderStatus.OK && results[0]) {
+					infowindow.setContent(results[0].formatted_address);
+					infowindow.open(map, marker);
+					marker.addListener('click', function () {
+						infowindow.open(map, marker);
+					});
+				}
+			}
+		);
+		map.setCenter(location);
+
+		$('#woocommerce_wcsdm_origin_lat_dummy').val(location.lat());
+		$('#woocommerce_wcsdm_origin_lng_dummy').val(location.lng());
+	},
+	showMapError: function (errorMsg) {
+		var regExpLink = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+		$('.gm-err-message').empty().append(errorMsg.replace(regExpLink, '<a href="$1" target="_blank">$1</a>'));
+		$('#woocommerce_wcsdm_origin_lat_dummy').val('');
+		$('#woocommerce_wcsdm_origin_lng_dummy').val('');
+	},
+};
 
 var rowIndex;
 var rowScrollTop = 0;
@@ -75,10 +361,12 @@ var wcsdmTableRates = {
 
 		// Handle setting link clicked.
 		$(document).on('click', '.wc-shipping-zone-method-settings', function () {
+			// Bail early if the link clicked others shipping method
 			var methodTitle = $(this).closest('tr').find('.wc-shipping-zone-method-type').text();
 			if (methodTitle !== wcsdmTableRates.params.methodTitle) {
 				return false;
 			}
+
 			$('.wcsdm-rate-field--hidden--select').each(function (i, input) {
 				var $input = $(input);
 				var inputKey = $input.data('key');
@@ -87,7 +375,7 @@ var wcsdmTableRates = {
 			});
 			$('#woocommerce_wcsdm_gmaps_api_units').trigger('change');
 			$('#woocommerce_wcsdm_gmaps_api_key').trigger('input');
-			$('#btn-ok').hide().after(wp.template('btn-save-changes'));
+			$('#btn-ok').hide().after(wp.template('wcsdm-buttons-footer-primary'));
 
 			setTimeout(function () {
 				$('.wcsdm-rate-field--dummy--select').trigger('change');
@@ -192,8 +480,9 @@ var wcsdmTableRates = {
 		});
 
 		// Handle on advanced rate settings link clicked.
-		$(document).on('click', '.advanced-rate-settings', function (e) {
+		$(document).on('click', '.wcsdm-btn-advanced-link', function (e) {
 			e.preventDefault();
+			$('#wcsdm-error').remove();
 			var $row = $(e.currentTarget).closest('tr').removeClass('applied');
 			$row.siblings().removeClass('applied');
 			$row.find('.wcsdm-rate-field--hidden').each(function (i, input) {
@@ -208,13 +497,16 @@ var wcsdmTableRates = {
 			rowIndex = $row.index();
 			rowScrollTop = Math.abs($row.closest('form').position().top);
 			var $section = $(e.currentTarget).closest('section');
-			$section.find('.wcsdm-table-row-advanced').show().siblings().hide();
-			$('#save-buttons').remove();
-			$('#btn-ok').hide().after(wp.template('btn-apply-changes'));
+			$section.find('.wcsdm-row-advanced').show().siblings().hide();
+			$('#wcsdm-buttons-footer-primary').remove();
+			$('#btn-ok').hide().after(wp.template('wcsdm-buttons-footer-advanced')({
+				id_cancel: 'wcsdm-btn-advanced-cancel',
+				id_apply: 'wcsdm-btn-advanced-apply',
+			}));
 		});
 
 		// Handle on Apply Changes button clicked.
-		$(document).on('click', '#btn-apply-changes', function (e) {
+		$(document).on('click', '#wcsdm-btn-advanced-apply', function (e) {
 			e.preventDefault();
 			$('#wcsdm-error').remove();
 			$('#wcsdm-table-advanced tbody').find('tr, td').removeClass('error');
@@ -235,7 +527,7 @@ var wcsdmTableRates = {
 				});
 
 				$('#wcsdm-table-advanced').before(wp.template('wcsdm-error')({
-					title: wcsdm_params.i18n.errors.error_title,
+					title: wcsdmTableRates.params.i18n.errors.error_title,
 					content: errorMessage,
 				}));
 				return;
@@ -249,9 +541,9 @@ var wcsdmTableRates = {
 					$('#wcsdm-table-rates tbody tr:eq(' + rowIndex + ')').removeClass('error').addClass('applied').find('.wcsdm-rate-field--hidden--' + key).val(formData[key]);
 				});
 
-				$(e.currentTarget).closest('section').find('.wcsdm-table-row-advanced').hide().siblings().show();
 				$(e.currentTarget).closest('div').remove();
-				$('#btn-ok').after(wp.template('btn-save-changes'));
+				$('#wcsdm-row-advanced').hide().siblings().not('.wcsdm-row--hidden').show();
+				$('#btn-ok').after(wp.template('wcsdm-buttons-footer-primary'));
 
 				$('.wc-modal-shipping-method-settings').animate({
 					scrollTop: rowScrollTop,
@@ -265,11 +557,12 @@ var wcsdmTableRates = {
 		});
 
 		// Handle on Cancel Changes button clicked.
-		$(document).on('click', '#btn-cancel-changes', function (e) {
-			$(e.currentTarget).closest('section').find('.wcsdm-table-row-advanced').hide().siblings().show();
+		$(document).on('click', '#wcsdm-btn-advanced-cancel', function (e) {
+			e.preventDefault();
 			$(e.currentTarget).closest('div').remove();
+			$('#wcsdm-row-advanced').hide().siblings().not('.wcsdm-row--hidden').show();
 			$('#wcsdm-table-advanced tr').removeClass('error');
-			$('#btn-ok').after(wp.template('btn-save-changes'));
+			$('#btn-ok').after(wp.template('wcsdm-buttons-footer-primary'));
 			$('#wcsdm-table-rates tbody tr:eq(' + rowIndex + ')').addClass('applied');
 
 			$('.wc-modal-shipping-method-settings').animate({
@@ -284,7 +577,7 @@ var wcsdmTableRates = {
 		});
 
 		// Handle on Save Changes button clicked.
-		$(document).on('click', '#btn-save-changes', function (e) {
+		$(document).on('click', '#wcsdm-btn-primary-save-changes', function (e) {
 			e.preventDefault();
 			if (wcsdmTableRates._validateRatesList().length) {
 				return;
@@ -294,13 +587,13 @@ var wcsdmTableRates = {
 		});
 
 		// Handle add rate rows.
-		$(document).on('click', '#btn-add-rate', wcsdmTableRates._addRateRows);
+		$(document).on('click', '#wcsdm-btn-primary-add-rate', wcsdmTableRates._addRateRows);
 
 		// Handle remove rate rows.
 		$(document).on('click', '.btn-delete-rate', wcsdmTableRates._removeRateRows);
 	},
 	_sortRates: function () {
-		$('#btn-save-changes').prop('disabled', true);
+		$('#wcsdm-btn-primary-save-changes').prop('disabled', true);
 		var rows = $('#wcsdm-table-rates > tbody > tr').addClass('sorting').get().sort(function (a, b) {
 			var valueADistance = $(a).find('.wcsdm-rate-field--dummy--distance').val();
 			var valueBDistance = $(b).find('.wcsdm-rate-field--dummy--distance').val();
@@ -328,7 +621,7 @@ var wcsdmTableRates = {
 		});
 
 		setTimeout(function () {
-			$('#btn-save-changes').prop('disabled', false);
+			$('#wcsdm-btn-primary-save-changes').prop('disabled', false);
 			$('#wcsdm-table-rates > tbody > tr').removeClass('changed sorting applied');
 			$('#wcsdm-table-rates .wcsdm-rate-field--dummy--distance').removeClass('changed');
 		}, 800);
@@ -392,7 +685,7 @@ var wcsdmTableRates = {
 						var rowRequired = dataRow.required || false;
 
 						if (!rowValue.length && rowRequired) {
-							throw new Error(wcsdm_params.i18n.errors.field_required.replace('%s', dataRow.title));
+							throw new Error(wcsdmTableRates.params.i18n.errors.field_required.replace('%s', dataRow.title));
 						}
 
 						if (rowValue.length) {
@@ -402,37 +695,37 @@ var wcsdmTableRates = {
 								if (costType === 'formula' && costField) {
 									var matches = rowValue.match(/([0-9]|[\*\+\-\/\(\)]|\{d\}|\{w\}|\{a\}|\{q\})+/gs);
 									if (!matches.length || matches[0] !== rowValue) {
-										throw new Error(wcsdm_params.i18n.errors.field_invalid.replace('%s', dataRow.title));
+										throw new Error(wcsdmTableRates.params.i18n.errors.field_invalid.replace('%s', dataRow.title));
 									}
 
 									if (rowValue.indexOf('(') !== -1 || rowValue.indexOf(')') !== -1) {
 										var opening = rowValue.replace(/[^\(]+/g, '');
 										var closing = rowValue.replace(/[^\)]+/g, '');
 										if (opening.length !== closing.length) {
-											throw new Error(wcsdm_params.i18n.errors.field_invalid.replace('%s', dataRow.title));
+											throw new Error(wcsdmTableRates.params.i18n.errors.field_invalid.replace('%s', dataRow.title));
 										}
 
 										var cleaned = rowValue.replace(/\((?:[^()]|\([^()]*\))*\)/g, '');
 										if (cleaned && (cleaned.indexOf('(') !== -1 || cleaned.indexOf(')'))) {
-											throw new Error(wcsdm_params.i18n.errors.field_invalid.replace('%s', dataRow.title));
+											throw new Error(wcsdmTableRates.params.i18n.errors.field_invalid.replace('%s', dataRow.title));
 										}
 									}
 								} else {
 									if (isNaN(rowValue)) {
-										throw new Error(wcsdm_params.i18n.errors.field_invalid.replace('%s', dataRow.title));
+										throw new Error(wcsdmTableRates.params.i18n.errors.field_invalid.replace('%s', dataRow.title));
 									}
 
 									if (!isNaN(dataRow.min) && parseFloat(rowValue) < parseFloat(dataRow.min)) {
-										throw new Error(wcsdm_params.i18n.errors.field_min_value.replace('%$1s', dataRow.title).replace('%$2d', dataRow.min));
+										throw new Error(wcsdmTableRates.params.i18n.errors.field_min_value.replace('%$1s', dataRow.title).replace('%$2d', dataRow.min));
 									}
 
 									if (!isNaN(dataRow.max) && parseFloat(rowValue) < parseFloat(dataRow.max)) {
-										throw new Error(wcsdm_params.i18n.errors.field_max_value.replace('%$1s', dataRow.title).replace('%$2d', dataRow.max));
+										throw new Error(wcsdmTableRates.params.i18n.errors.field_max_value.replace('%$1s', dataRow.title).replace('%$2d', dataRow.max));
 									}
 								}
 							} else if (dataRow.type === 'object') {
 								if (typeof dataRow.options[rowValue] === 'undefined') {
-									throw new Error(wcsdm_params.i18n.errors.field_invalid.replace('%s', dataRow.title));
+									throw new Error(wcsdmTableRates.params.i18n.errors.field_invalid.replace('%s', dataRow.title));
 								}
 							}
 						}
@@ -476,13 +769,8 @@ var wcsdmTableRates = {
 	},
 };
 
-var wcsdmBackend = {
-	init: function(params){
-		wcsdmTableRates.init(params);
-	}
-};
-
 $(document).ready(function () {
-	wcsdmBackend.init(wcsdm_params);
+	wcsdmMap.init(wcsdm_params);
+	wcsdmTableRates.init(wcsdm_params);
 });
 }(jQuery));

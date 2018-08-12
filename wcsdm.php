@@ -175,7 +175,7 @@ function wcsdm_admin_enqueue_scripts( $hook ) {
 				'methodId'     => WCSDM_METHOD_ID,
 				'methodTitle'  => WCSDM_METHOD_TITLE,
 				'i18n'         => array(
-					'dragMarker' => __( 'Drag this marker or search your address at the input above.', 'wcsdm' ),
+					'dragMarker' => __( 'Drag this marker or search your address in the input above.', 'wcsdm' ),
 					'distance'   => array(
 						'metric'   => array(
 							'perUnit' => __( 'Per Kilometer', 'wcsdm' ),

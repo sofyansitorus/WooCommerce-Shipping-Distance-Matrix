@@ -7,10 +7,12 @@ var wcsdmTableRates = {
 
 		// Handle setting link clicked.
 		$(document).on('click', '.wc-shipping-zone-method-settings', function () {
+			// Bail early if the link clicked others shipping method
 			var methodTitle = $(this).closest('tr').find('.wc-shipping-zone-method-type').text();
 			if (methodTitle !== wcsdmTableRates.params.methodTitle) {
 				return false;
 			}
+
 			$('.wcsdm-rate-field--hidden--select').each(function (i, input) {
 				var $input = $(input);
 				var inputKey = $input.data('key');
@@ -19,7 +21,7 @@ var wcsdmTableRates = {
 			});
 			$('#woocommerce_wcsdm_gmaps_api_units').trigger('change');
 			$('#woocommerce_wcsdm_gmaps_api_key').trigger('input');
-			$('#btn-ok').hide().after(wp.template('btn-save-changes'));
+			$('#btn-ok').hide().after(wp.template('wcsdm-buttons-footer-primary'));
 
 			setTimeout(function () {
 				$('.wcsdm-rate-field--dummy--select').trigger('change');
@@ -124,8 +126,9 @@ var wcsdmTableRates = {
 		});
 
 		// Handle on advanced rate settings link clicked.
-		$(document).on('click', '.advanced-rate-settings', function (e) {
+		$(document).on('click', '.wcsdm-btn-advanced-link', function (e) {
 			e.preventDefault();
+			$('#wcsdm-error').remove();
 			var $row = $(e.currentTarget).closest('tr').removeClass('applied');
 			$row.siblings().removeClass('applied');
 			$row.find('.wcsdm-rate-field--hidden').each(function (i, input) {
@@ -140,13 +143,16 @@ var wcsdmTableRates = {
 			rowIndex = $row.index();
 			rowScrollTop = Math.abs($row.closest('form').position().top);
 			var $section = $(e.currentTarget).closest('section');
-			$section.find('.wcsdm-table-row-advanced').show().siblings().hide();
-			$('#save-buttons').remove();
-			$('#btn-ok').hide().after(wp.template('btn-apply-changes'));
+			$section.find('.wcsdm-row-advanced').show().siblings().hide();
+			$('#wcsdm-buttons-footer-primary').remove();
+			$('#btn-ok').hide().after(wp.template('wcsdm-buttons-footer-advanced')({
+				id_cancel: 'wcsdm-btn-advanced-cancel',
+				id_apply: 'wcsdm-btn-advanced-apply',
+			}));
 		});
 
 		// Handle on Apply Changes button clicked.
-		$(document).on('click', '#btn-apply-changes', function (e) {
+		$(document).on('click', '#wcsdm-btn-advanced-apply', function (e) {
 			e.preventDefault();
 			$('#wcsdm-error').remove();
 			$('#wcsdm-table-advanced tbody').find('tr, td').removeClass('error');
@@ -167,7 +173,7 @@ var wcsdmTableRates = {
 				});
 
 				$('#wcsdm-table-advanced').before(wp.template('wcsdm-error')({
-					title: wcsdm_params.i18n.errors.error_title,
+					title: wcsdmTableRates.params.i18n.errors.error_title,
 					content: errorMessage,
 				}));
 				return;
@@ -181,9 +187,9 @@ var wcsdmTableRates = {
 					$('#wcsdm-table-rates tbody tr:eq(' + rowIndex + ')').removeClass('error').addClass('applied').find('.wcsdm-rate-field--hidden--' + key).val(formData[key]);
 				});
 
-				$(e.currentTarget).closest('section').find('.wcsdm-table-row-advanced').hide().siblings().show();
 				$(e.currentTarget).closest('div').remove();
-				$('#btn-ok').after(wp.template('btn-save-changes'));
+				$('#wcsdm-row-advanced').hide().siblings().not('.wcsdm-row--hidden').show();
+				$('#btn-ok').after(wp.template('wcsdm-buttons-footer-primary'));
 
 				$('.wc-modal-shipping-method-settings').animate({
 					scrollTop: rowScrollTop,
@@ -197,11 +203,12 @@ var wcsdmTableRates = {
 		});
 
 		// Handle on Cancel Changes button clicked.
-		$(document).on('click', '#btn-cancel-changes', function (e) {
-			$(e.currentTarget).closest('section').find('.wcsdm-table-row-advanced').hide().siblings().show();
+		$(document).on('click', '#wcsdm-btn-advanced-cancel', function (e) {
+			e.preventDefault();
 			$(e.currentTarget).closest('div').remove();
+			$('#wcsdm-row-advanced').hide().siblings().not('.wcsdm-row--hidden').show();
 			$('#wcsdm-table-advanced tr').removeClass('error');
-			$('#btn-ok').after(wp.template('btn-save-changes'));
+			$('#btn-ok').after(wp.template('wcsdm-buttons-footer-primary'));
 			$('#wcsdm-table-rates tbody tr:eq(' + rowIndex + ')').addClass('applied');
 
 			$('.wc-modal-shipping-method-settings').animate({
@@ -216,7 +223,7 @@ var wcsdmTableRates = {
 		});
 
 		// Handle on Save Changes button clicked.
-		$(document).on('click', '#btn-save-changes', function (e) {
+		$(document).on('click', '#wcsdm-btn-primary-save-changes', function (e) {
 			e.preventDefault();
 			if (wcsdmTableRates._validateRatesList().length) {
 				return;
@@ -226,13 +233,13 @@ var wcsdmTableRates = {
 		});
 
 		// Handle add rate rows.
-		$(document).on('click', '#btn-add-rate', wcsdmTableRates._addRateRows);
+		$(document).on('click', '#wcsdm-btn-primary-add-rate', wcsdmTableRates._addRateRows);
 
 		// Handle remove rate rows.
 		$(document).on('click', '.btn-delete-rate', wcsdmTableRates._removeRateRows);
 	},
 	_sortRates: function () {
-		$('#btn-save-changes').prop('disabled', true);
+		$('#wcsdm-btn-primary-save-changes').prop('disabled', true);
 		var rows = $('#wcsdm-table-rates > tbody > tr').addClass('sorting').get().sort(function (a, b) {
 			var valueADistance = $(a).find('.wcsdm-rate-field--dummy--distance').val();
 			var valueBDistance = $(b).find('.wcsdm-rate-field--dummy--distance').val();
@@ -260,7 +267,7 @@ var wcsdmTableRates = {
 		});
 
 		setTimeout(function () {
-			$('#btn-save-changes').prop('disabled', false);
+			$('#wcsdm-btn-primary-save-changes').prop('disabled', false);
 			$('#wcsdm-table-rates > tbody > tr').removeClass('changed sorting applied');
 			$('#wcsdm-table-rates .wcsdm-rate-field--dummy--distance').removeClass('changed');
 		}, 800);
@@ -324,7 +331,7 @@ var wcsdmTableRates = {
 						var rowRequired = dataRow.required || false;
 
 						if (!rowValue.length && rowRequired) {
-							throw new Error(wcsdm_params.i18n.errors.field_required.replace('%s', dataRow.title));
+							throw new Error(wcsdmTableRates.params.i18n.errors.field_required.replace('%s', dataRow.title));
 						}
 
 						if (rowValue.length) {
@@ -334,37 +341,37 @@ var wcsdmTableRates = {
 								if (costType === 'formula' && costField) {
 									var matches = rowValue.match(/([0-9]|[\*\+\-\/\(\)]|\{d\}|\{w\}|\{a\}|\{q\})+/gs);
 									if (!matches.length || matches[0] !== rowValue) {
-										throw new Error(wcsdm_params.i18n.errors.field_invalid.replace('%s', dataRow.title));
+										throw new Error(wcsdmTableRates.params.i18n.errors.field_invalid.replace('%s', dataRow.title));
 									}
 
 									if (rowValue.indexOf('(') !== -1 || rowValue.indexOf(')') !== -1) {
 										var opening = rowValue.replace(/[^\(]+/g, '');
 										var closing = rowValue.replace(/[^\)]+/g, '');
 										if (opening.length !== closing.length) {
-											throw new Error(wcsdm_params.i18n.errors.field_invalid.replace('%s', dataRow.title));
+											throw new Error(wcsdmTableRates.params.i18n.errors.field_invalid.replace('%s', dataRow.title));
 										}
 
 										var cleaned = rowValue.replace(/\((?:[^()]|\([^()]*\))*\)/g, '');
 										if (cleaned && (cleaned.indexOf('(') !== -1 || cleaned.indexOf(')'))) {
-											throw new Error(wcsdm_params.i18n.errors.field_invalid.replace('%s', dataRow.title));
+											throw new Error(wcsdmTableRates.params.i18n.errors.field_invalid.replace('%s', dataRow.title));
 										}
 									}
 								} else {
 									if (isNaN(rowValue)) {
-										throw new Error(wcsdm_params.i18n.errors.field_invalid.replace('%s', dataRow.title));
+										throw new Error(wcsdmTableRates.params.i18n.errors.field_invalid.replace('%s', dataRow.title));
 									}
 
 									if (!isNaN(dataRow.min) && parseFloat(rowValue) < parseFloat(dataRow.min)) {
-										throw new Error(wcsdm_params.i18n.errors.field_min_value.replace('%$1s', dataRow.title).replace('%$2d', dataRow.min));
+										throw new Error(wcsdmTableRates.params.i18n.errors.field_min_value.replace('%$1s', dataRow.title).replace('%$2d', dataRow.min));
 									}
 
 									if (!isNaN(dataRow.max) && parseFloat(rowValue) < parseFloat(dataRow.max)) {
-										throw new Error(wcsdm_params.i18n.errors.field_max_value.replace('%$1s', dataRow.title).replace('%$2d', dataRow.max));
+										throw new Error(wcsdmTableRates.params.i18n.errors.field_max_value.replace('%$1s', dataRow.title).replace('%$2d', dataRow.max));
 									}
 								}
 							} else if (dataRow.type === 'object') {
 								if (typeof dataRow.options[rowValue] === 'undefined') {
-									throw new Error(wcsdm_params.i18n.errors.field_invalid.replace('%s', dataRow.title));
+									throw new Error(wcsdmTableRates.params.i18n.errors.field_invalid.replace('%s', dataRow.title));
 								}
 							}
 						}

@@ -1,9 +1,4 @@
-var wcsdmBackend = {
-	init: function(params){
-		wcsdmTableRates.init(params);
-	}
-};
-
 $(document).ready(function () {
-	wcsdmBackend.init(wcsdm_params);
+	wcsdmMap.init(wcsdm_params);
+	wcsdmTableRates.init(wcsdm_params);
 });
