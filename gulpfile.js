@@ -12,8 +12,9 @@ var wpPot = require('gulp-wp-pot');
 var browserSync = require('browser-sync').create();
 var argv = require('yargs').argv;
 var zip = require('gulp-zip');
+var concat = require('gulp-concat');
 
-var scriptsSrc = ['assets/src/js/*.js'];
+var scriptsSrc = ['assets/src/js/shared.js', 'assets/src/js/map.js', 'assets/src/js/table-rates.js', 'assets/src/js/backend.js'];
 var scriptsDest = 'assets/js';
 
 var minifyScriptsSrc = ['assets/js/*.js', '!assets/js/*.min.js'];
@@ -40,7 +41,8 @@ var errorHandler = function () {
 // Scripts
 gulp.task('scripts', function () {
     return gulp.src(scriptsSrc)
-        .pipe(errorHandler())
+		.pipe(errorHandler())
+		.pipe(concat('wcsdm-backend.js'))
         .pipe(iife({
             useStrict: true,
             trimCode: true,

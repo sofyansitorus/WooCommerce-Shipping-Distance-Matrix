@@ -159,7 +159,7 @@ function wcsdm_admin_enqueue_scripts( $hook ) {
 		);
 
 		// Enqueue admin scripts.
-		$wcsdm_admin_js = ( defined( 'WCSDM_DEV' ) && WCSDM_DEV ) ? add_query_arg( array( 't' => time() ), WCSDM_URL . 'assets/js/wcsdm.js' ) : WCSDM_URL . 'assets/js/wcsdm.min.js';
+		$wcsdm_admin_js = ( defined( 'WCSDM_DEV' ) && WCSDM_DEV ) ? add_query_arg( array( 't' => time() ), WCSDM_URL . 'assets/js/wcsdm-backend.js' ) : WCSDM_URL . 'assets/js/wcsdm-backend.min.js';
 		wp_enqueue_script(
 			'wcsdm', // Give the script a unique ID.
 			$wcsdm_admin_js, // Define the path to the JS file.
