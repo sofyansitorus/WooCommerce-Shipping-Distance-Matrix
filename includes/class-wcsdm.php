@@ -915,7 +915,7 @@ class Wcsdm extends WC_Shipping_Method {
 				$field_classes[] = $field['class'];
 			}
 
-			$custom_attributes = is_array( $field['custom_attributes'] ) ? $field['custom_attributes'] : array();
+			$custom_attributes = ! empty( $field['custom_attributes'] ) && is_array( $field['custom_attributes'] ) ? $field['custom_attributes'] : array();
 
 			$populated_fields[ $key ] = array_merge(
 				$field, array(
@@ -1099,13 +1099,7 @@ class Wcsdm extends WC_Shipping_Method {
 			$rates_filtered = array();
 
 			foreach ( $rates as $index => $rate ) {
-				$index_array = array( $rate['class_0'] );
-
-				foreach ( $this->get_shipping_classes() as $class_id => $class_object ) {
-					$index_array[] = isset( $rate[ 'class_' . $class_id ] ) ? $rate[ 'class_' . $class_id ] : 0;
-				}
-
-				$rates_filtered[ implode( $index_array, '_' ) ] = $rate;
+				$rates_filtered[ $rate['distance'] . '_' . $rate['min_order_amt'] . '_' . $rate['min_order_qty'] ] = $rate;
 			}
 
 			if ( empty( $rates_filtered ) ) {
