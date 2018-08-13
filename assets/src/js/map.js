@@ -71,9 +71,12 @@ var wcsdmMap = {
 
 		$(document).on('click', '#wcsdm-btn-map-apply', function (e) {
 			e.preventDefault();
-			var $button = $(e.currentTarget).prop('disable', true);
 			$('#wcsdm-error').remove();
+			$('#wcsdm-table-map-picker td').removeClass('error');
+
 			var errors = {};
+			var $button = $(e.currentTarget).prop('disable', true);
+
 			var requiredFields = [
 				'woocommerce_wcsdm_gmaps_api_key_dummy',
 				'woocommerce_wcsdm_origin_lat_dummy',
@@ -93,6 +96,7 @@ var wcsdmMap = {
 				Object.keys(errors).forEach(function (key) {
 					$('.wcsdm-rate-field--advanced--' + key).closest('tr').addClass('error');
 					errorMessage += '<p id="wcsdm-rate-field--error--' + key + '">' + errors[key] + '</p>';
+					$('#' + key).closest('td').addClass('error');
 				});
 
 				$('#wcsdm-table-map-picker').before(wp.template('wcsdm-error')({

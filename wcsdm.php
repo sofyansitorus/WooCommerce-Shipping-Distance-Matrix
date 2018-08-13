@@ -198,6 +198,8 @@ function wcsdm_admin_enqueue_scripts( $hook ) {
 						'field_min_value'        => __( '%$1s field value must be equal or greater than %$2d', 'wcsdm' ),
 						// translators: %$1s is shipping destination field label, %$1d is maximum value rule.
 						'field_max_value'        => __( '%$1s field value must be equal or lower than %$2d', 'wcsdm' ),
+						'rates_empty'            => __( 'Table rates cannot be empty', 'wcsdm' ),
+						'location_empty'         => __( 'Store location cannot be empty', 'wcsdm' ),
 					),
 				),
 				'marker'       => WCSDM_URL . 'assets/img/marker.png',

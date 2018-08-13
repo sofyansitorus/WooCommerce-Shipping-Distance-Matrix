@@ -105,9 +105,8 @@
       width: 60px !important; }
   .wcsdm-row .wcsdm-table.wcsdm-table-store-location thead td {
     font-weight: bold; }
-  .wcsdm-row .wcsdm-table.wcsdm-table-store-location tbody td {
-    padding-top: 5px;
-    padding-top: 5px; }
+  .wcsdm-row .wcsdm-table.wcsdm-table-store-location tbody td.error {
+    padding: 1em !important; }
 
 .wcsdm-row.wcsdm-row--hidden {
   display: none; }

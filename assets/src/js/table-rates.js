@@ -225,6 +225,34 @@ var wcsdmTableRates = {
 		$(document).on('click', '#wcsdm-btn-primary-save-changes', function (e) {
 			e.preventDefault();
 			$('#wcsdm-error').remove();
+
+			var locationErrorMessage = '';
+			var locationFields = ['woocommerce_wcsdm_origin_lat', 'woocommerce_wcsdm_origin_lng'];
+			for (var i = 0; i < locationFields.length; i++) {
+				var locationFieldKey = locationFields[i];
+				var $locationField = $('#' + locationFieldKey);
+				if (!$locationField.val().length) {
+					locationErrorMessage += '<p id="wcsdm-rate-field--error--' + locationFieldKey + '">' + wcsdmTableRates.params.i18n.errors.field_required.replace('%s', $locationField.data('title')) + '</p>';
+					$('#' + locationFieldKey + '_dummy').closest('td').addClass('error');
+				}
+			}
+
+			if (locationErrorMessage.length) {
+				$('#wcsdm-col-store-location').before(wp.template('wcsdm-error')({
+					title: wcsdmTableRates.params.i18n.errors.error_title,
+					content: locationErrorMessage
+				}));
+				return;
+			}
+
+			if (!$('#wcsdm-table-rates tbody tr').length) {
+				$('#wcsdm-table-rates').before(wp.template('wcsdm-error')({
+					title: wcsdmTableRates.params.i18n.errors.error_title,
+					content: wcsdmTableRates.params.i18n.errors.rates_empty
+				}));
+				return;
+			}
+
 			var errors = wcsdmTableRates._validateRatesList();
 			if (errors.length) {
 				var errorMessages = {};
