@@ -184,7 +184,10 @@
         -webkit-animation: infinite-spinning 1.08s linear infinite;
         animation: infinite-spinning 1.08s linear infinite;
         padding: 5px;
-    }
+	}
+	&.has-error{
+		height: auto;;
+	}
     .description {
         position: absolute;
 		top: 50%;

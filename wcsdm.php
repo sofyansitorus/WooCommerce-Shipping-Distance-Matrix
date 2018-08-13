@@ -61,6 +61,11 @@ define( 'WCSDM_VERSION', '1.4.7' );
 define( 'WCSDM_METHOD_ID', 'wcsdm' );
 define( 'WCSDM_METHOD_TITLE', 'Shipping Distance Matrix' );
 
+define( 'WCSDM_TEST_ORIGIN_LAT', -6.1762256 );
+define( 'WCSDM_TEST_ORIGIN_LNG', 106.82295120000003 );
+define( 'WCSDM_TEST_DESTINATION_LAT', -6.194891755155254 );
+define( 'WCSDM_TEST_DESTINATION_LNG', 106.81979692219852 );
+
 /**
  * Load plugin textdomain.
  *

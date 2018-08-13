@@ -148,7 +148,7 @@ var wcsdmMap = {
 	},
 	initGoogleMaps: function () {
 		$('#wcsdm-error').remove();
-		$('#wcsdm-map-picker-canvas').removeClass('empty').empty();
+		$('#wcsdm-map-picker-canvas').removeClass('has-error empty').empty();
 
 		var apiKey = $('#woocommerce_wcsdm_gmaps_api_key_dummy').val();
 		if (!apiKey.length) {
@@ -289,7 +289,16 @@ var wcsdmMap = {
 	},
 	showMapError: function (errorMsg) {
 		var regExpLink = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
-		$('.gm-err-message').empty().append(errorMsg.replace(regExpLink, '<a href="$1" target="_blank">$1</a>'));
+		if ($('.gm-err-message').length) {
+			$('.gm-err-message').empty().append(errorMsg.replace(regExpLink, '<a href="$1" target="_blank">$1</a>'));
+		} else {
+			setTimeout(function () {
+				$('#wcsdm-map-picker-canvas').addClass('empty has-error').empty().append(wp.template('wcsdm-error')({
+					title: wcsdmMap.params.i18n.errors.error_title,
+					content: errorMsg.replace(regExpLink, '<a href="$1" target="_blank">$1</a>')
+				}));
+			}, 0);
+		}
 		$('#woocommerce_wcsdm_origin_lat_dummy').val('');
 		$('#woocommerce_wcsdm_origin_lng_dummy').val('');
 	}
