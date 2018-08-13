@@ -20,7 +20,6 @@ var wcsdmTableRates = {
 				$input.closest('tr').find('.wcsdm-rate-field--dummy--' + inputKey).val(inputValue);
 			});
 			$('#woocommerce_wcsdm_gmaps_api_units').trigger('change');
-			$('#woocommerce_wcsdm_gmaps_api_key').trigger('input');
 			$('#btn-ok').hide().after(wp.template('wcsdm-buttons-footer-primary'));
 
 			setTimeout(function () {
