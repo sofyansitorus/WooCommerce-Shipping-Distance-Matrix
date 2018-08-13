@@ -146,7 +146,7 @@ var wcsdmTableRates = {
 			$('#wcsdm-buttons-footer-primary').remove();
 			$('#btn-ok').hide().after(wp.template('wcsdm-buttons-footer-advanced')({
 				id_cancel: 'wcsdm-btn-advanced-cancel',
-				id_apply: 'wcsdm-btn-advanced-apply',
+				id_apply: 'wcsdm-btn-advanced-apply'
 			}));
 		});
 
@@ -173,7 +173,7 @@ var wcsdmTableRates = {
 
 				$('#wcsdm-table-advanced').before(wp.template('wcsdm-error')({
 					title: wcsdmTableRates.params.i18n.errors.error_title,
-					content: errorMessage,
+					content: errorMessage
 				}));
 				return;
 			}
@@ -191,7 +191,7 @@ var wcsdmTableRates = {
 				$('#btn-ok').after(wp.template('wcsdm-buttons-footer-primary'));
 
 				$('.wc-modal-shipping-method-settings').animate({
-					scrollTop: rowScrollTop,
+					scrollTop: rowScrollTop
 				}, 500);
 
 				setTimeout(function () {
@@ -211,12 +211,12 @@ var wcsdmTableRates = {
 			$('#wcsdm-table-rates tbody tr:eq(' + rowIndex + ')').addClass('applied');
 
 			$('.wc-modal-shipping-method-settings').animate({
-				scrollTop: rowScrollTop,
+				scrollTop: rowScrollTop
 			}, 500);
 
 			wcsdmTableRates._validateRatesList();
 
-			setTimeout(() => {
+			setTimeout(function () {
 				$('#wcsdm-table-rates tbody tr:eq(' + rowIndex + ')').removeClass('applied');
 			}, 800);
 		});
@@ -224,7 +224,25 @@ var wcsdmTableRates = {
 		// Handle on Save Changes button clicked.
 		$(document).on('click', '#wcsdm-btn-primary-save-changes', function (e) {
 			e.preventDefault();
-			if (wcsdmTableRates._validateRatesList().length) {
+			$('#wcsdm-error').remove();
+			var errors = wcsdmTableRates._validateRatesList();
+			if (errors.length) {
+				var errorMessages = {};
+
+				for (var index = 0; index < errors.length; index++) {
+					errorMessages[errors[index].key] = errors[index].message;
+				}
+
+				var errorMessage = '';
+				Object.keys(errorMessages).forEach(function (key) {
+					$('.wcsdm-rate-field--advanced--' + key).closest('tr').addClass('error');
+					errorMessage += '<p id="wcsdm-rate-field--error--' + key + '">' + errorMessages[key] + '</p>';
+				});
+
+				$('#wcsdm-table-rates').before(wp.template('wcsdm-error')({
+					title: wcsdmTableRates.params.i18n.errors.error_title,
+					content: errorMessage
+				}));
 				return;
 			}
 
@@ -294,7 +312,7 @@ var wcsdmTableRates = {
 			}
 			fields[fieldKey].push(Object.assign({}, $(field).attrs(), $(field).data(), {
 				value: $(field).val(),
-				rowIndex: $(field).closest('tr').index(),
+				rowIndex: $(field).closest('tr').index()
 			}));
 		});
 
@@ -309,7 +327,8 @@ var wcsdmTableRates = {
 				if (showIf) {
 					Object.keys(showIf).forEach(function (showIfKey) {
 						var showIfTarget = fields[showIfKey][index].value;
-						if (showIf[showIfKey].indexOf(showIfTarget) === -1) {
+						var showIfField = showIf[showIfKey];
+						if (showIfField.indexOf(showIfTarget) === -1) {
 							ignoreField = true;
 						}
 					});
@@ -318,7 +337,8 @@ var wcsdmTableRates = {
 				if (hideIf) {
 					Object.keys(hideIf).forEach(function (hideIfKey) {
 						var hideIfTarget = fields[hideIfKey][index].value;
-						if (hideIf[hideIfKey].indexOf(hideIfTarget) !== -1) {
+						var hideIfField = hideIf[hideIfKey];
+						if (hideIfField.indexOf(hideIfTarget) !== -1) {
 							ignoreField = true;
 						}
 					});
@@ -335,10 +355,10 @@ var wcsdmTableRates = {
 
 						if (rowValue.length) {
 							if (dataRow.type === 'number') {
-								var costType = fields['cost_type'][index].value;
+								var costType = fields.cost_type[index].value;
 								var costField = dataRow.cost_field || false;
 								if (costType === 'formula' && costField) {
-									var matches = rowValue.match(/([0-9]|[\*\+\-\/\(\)]|\{d\}|\{w\}|\{a\}|\{q\})+/gs);
+									var matches = rowValue.match(/([0-9]|[\*\+\-\/\(\)]|\{d\}|\{w\}|\{a\}|\{q\})+/g);
 									if (!matches.length || matches[0] !== rowValue) {
 										throw new Error(wcsdmTableRates.params.i18n.errors.field_invalid.replace('%s', dataRow.title));
 									}
@@ -378,7 +398,7 @@ var wcsdmTableRates = {
 						errors.push({
 							key: key,
 							message: error.message,
-							rowIndex: dataRow.rowIndex,
+							rowIndex: dataRow.rowIndex
 						});
 					}
 				}
@@ -411,5 +431,5 @@ var wcsdmTableRates = {
 	_removeRateRows: function (e) {
 		e.preventDefault();
 		$(e.currentTarget).closest('tr').remove();
-	},
+	}
 };

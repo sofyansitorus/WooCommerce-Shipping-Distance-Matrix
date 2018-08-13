@@ -52,21 +52,16 @@
     font-size: 2em;
     padding: 10px 50px;
     height: auto; }
-  .wcsdm-row .wcsdm-table tbody tr.selected td,
-  .wcsdm-row .wcsdm-table tbody tr.selected th {
-    background-color: #fefbcc; }
   .wcsdm-row .wcsdm-table tbody tr.applied td,
   .wcsdm-row .wcsdm-table tbody tr.applied th {
     background-color: #ccf9ff !important; }
-    .wcsdm-row .wcsdm-table tbody tr.applied td .wcsdm-btn-advanced-link,
-    .wcsdm-row .wcsdm-table tbody tr.applied th .wcsdm-btn-advanced-link {
+    .wcsdm-row .wcsdm-table tbody tr.applied td a,
+    .wcsdm-row .wcsdm-table tbody tr.applied th a {
       display: none; }
   .wcsdm-row .wcsdm-table tbody tr.changed.sorting td,
   .wcsdm-row .wcsdm-table tbody tr.changed.sorting th {
     background-color: #d2ffd4 !important; }
-  .wcsdm-row .wcsdm-table tbody tr.error td,
-  .wcsdm-row .wcsdm-table tbody tr.error th {
-    background-color: #f5cbcb !important; }
+  .wcsdm-row .wcsdm-table tbody tr.error,
   .wcsdm-row .wcsdm-table tbody td.error,
   .wcsdm-row .wcsdm-table tbody th.error {
     background-color: #f5cbcb !important; }
@@ -129,7 +124,7 @@
   padding: 0;
   height: 360px;
   background-color: #eee; }
-  #wcsdm-map-picker-canvas:before {
+  #wcsdm-map-picker-canvas:not(.empty):before {
     content: ".";
     font-style: 30px;
     color: #ffffff;
@@ -146,7 +141,11 @@
     animation: infinite-spinning 1.08s linear infinite;
     padding: 5px; }
   #wcsdm-map-picker-canvas .description {
-    margin-top: 240px;
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    width: 100%;
     text-align: center; }
 
 #wcsdm-error {

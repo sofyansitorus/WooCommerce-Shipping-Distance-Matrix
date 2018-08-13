@@ -146,9 +146,15 @@ class Wcsdm extends WC_Shipping_Method {
 					'none'    => __( 'None', 'wcsdm' ),
 				),
 			),
-			'gmaps_api_key'           => array(
+			'gmaps_api_key_dummy'     => array(
 				'title'       => __( 'Google API Key', 'wcsdm' ),
 				'type'        => 'api_key',
+				'description' => __( 'This plugin makes use of the Google Maps and Google Distance Matrix APIs. <a href="https://developers.google.com/maps/documentation/distance-matrix/get-api-key" target="_blank">Click here</a> obtain a Google API Key.', 'wcsdm' ),
+				'default'     => '',
+			),
+			'gmaps_api_key'           => array(
+				'title'       => __( 'Google API Key', 'wcsdm' ),
+				'type'        => 'custom',
 				'description' => __( 'This plugin makes use of the Google Maps and Google Distance Matrix APIs. <a href="https://developers.google.com/maps/documentation/distance-matrix/get-api-key" target="_blank">Click here</a> obtain a Google API Key.', 'wcsdm' ),
 				'default'     => '',
 			),
@@ -353,8 +359,7 @@ class Wcsdm extends WC_Shipping_Method {
 							<td class="forminp">
 								<fieldset>
 									<legend class="screen-reader-text"><span><?php echo wp_kses_post( $data['title'] ); ?></span></legend>
-									<input class="input-text regular-input <?php echo esc_attr( $data['class'] ); ?>" type="<?php echo esc_attr( $data['type'] ); ?>" name="<?php echo esc_attr( $field_key ); ?>" id="<?php echo esc_attr( $field_key ); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" value="<?php echo esc_attr( $this->get_option( $key ) ); ?>" placeholder="<?php echo esc_attr( $data['placeholder'] ); ?>" <?php disabled( $data['disabled'], true ); ?> data-title="<?php echo esc_attr( $data['title'] ); ?>" <?php echo $this->get_custom_attribute_html( $data ); // WPCS: XSS ok. ?> />
-
+									<input class="input-text regular-input <?php echo esc_attr( $data['class'] ); ?>" type="text" id="<?php echo esc_attr( $field_key ); ?>" value="" placeholder="<?php echo esc_attr( $data['placeholder'] ); ?>" <?php disabled( $data['disabled'], true ); ?> data-title="<?php echo esc_attr( $data['title'] ); ?>" <?php echo $this->get_custom_attribute_html( $data ); // WPCS: XSS ok. ?> />
 								</fieldset>
 							</td>
 						</tr>

@@ -187,7 +187,7 @@ function wcsdm_admin_enqueue_scripts( $hook ) {
 						),
 					),
 					'errors'     => array(
-						'error_title'            => __( 'Error occurred while processing the form. Please check the details below:', 'wcsdm' ),
+						'error_title'            => __( 'Oops! Something went wrong', 'wcsdm' ),
 						// translators: %s is shipping destination field label.
 						'field_required'         => __( '%s field is required', 'wcsdm' ),
 						// translators: %s is shipping destination field label.
