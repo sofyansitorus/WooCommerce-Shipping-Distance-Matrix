@@ -1,14 +1,15 @@
 // Taking Over window.console.error
-var isMapError = false;
 var windowConsoleError = window.console.error;
 window.console.error = function () {
-	if (!isMapError && arguments[0].toLowerCase().indexOf('google') !== 1) {
-		isMapError = true;
+	if (arguments[0].toLowerCase().indexOf('google.com') !== 1) {
 		wcsdmMap.showMapError(arguments[0]);
+		return;
 	}
+
 	windowConsoleError.apply(windowConsoleError, arguments);
 };
 
+var isMapError = false;
 var currentLat;
 var currentLng;
 
@@ -71,11 +72,15 @@ var wcsdmMap = {
 
 		$(document).on('click', '#wcsdm-btn-map-apply', function (e) {
 			e.preventDefault();
+			if (isMapError) {
+				return;
+			}
+
 			$('#wcsdm-error').remove();
 			$('#wcsdm-table-map-picker td').removeClass('error');
 
 			var errors = {};
-			var $button = $(e.currentTarget).prop('disable', true);
+			var $button = $(e.currentTarget).prop('disabled', true);
 
 			var requiredFields = [
 				'woocommerce_wcsdm_gmaps_api_key_dummy',
@@ -94,7 +99,6 @@ var wcsdmMap = {
 			if (Object.keys(errors).length) {
 				var errorMessage = '';
 				Object.keys(errors).forEach(function (key) {
-					$('.wcsdm-rate-field--advanced--' + key).closest('tr').addClass('error');
 					errorMessage += '<p id="wcsdm-rate-field--error--' + key + '">' + errors[key] + '</p>';
 					$('#' + key).closest('td').addClass('error');
 				});
@@ -103,7 +107,7 @@ var wcsdmMap = {
 					title: wcsdmMap.params.i18n.errors.error_title,
 					content: errorMessage
 				}));
-				$button.prop('disable', false);
+				$button.prop('disabled', false);
 				return;
 			}
 
@@ -136,7 +140,7 @@ var wcsdmMap = {
 						$('#woocommerce_wcsdm_origin_lng').val(newLng);
 						$('#wcsdm-map-picker-canvas').empty();
 					} else {
-						$button.prop('disable', false);
+						$button.prop('disabled', false);
 					}
 				});
 		});
@@ -153,8 +157,11 @@ var wcsdmMap = {
 		var apiKey = $('#woocommerce_wcsdm_gmaps_api_key_dummy').val();
 		if (!apiKey.length) {
 			$('#wcsdm-map-picker-canvas').addClass('empty').append($('#wcsdm-map-picker-instruction').html());
+			$('#wcsdm-btn-map-apply').prop('disabled', true);
 			return;
 		}
+
+		$('#wcsdm-btn-map-apply').prop('disabled', false);
 
 		isMapError = false;
 
@@ -288,6 +295,7 @@ var wcsdmMap = {
 		$('#woocommerce_wcsdm_origin_lng_dummy').val(location.lng());
 	},
 	showMapError: function (errorMsg) {
+		isMapError = true;
 		var regExpLink = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
 		if ($('.gm-err-message').length) {
 			$('.gm-err-message').empty().append(errorMsg.replace(regExpLink, '<a href="$1" target="_blank">$1</a>'));
@@ -299,7 +307,6 @@ var wcsdmMap = {
 				}));
 			}, 0);
 		}
-		$('#woocommerce_wcsdm_origin_lat_dummy').val('');
-		$('#woocommerce_wcsdm_origin_lng_dummy').val('');
+		$('#wcsdm-btn-map-apply').prop('disabled', true);
 	}
 };
