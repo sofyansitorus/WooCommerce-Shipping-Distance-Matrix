@@ -961,8 +961,9 @@ class Wcsdm extends WC_Shipping_Method {
 
 			$api_response = $this->api_request(
 				array(
-					'origin_info'      => array( WCSDM_TEST_ORIGIN_LAT, WCSDM_TEST_ORIGIN_LNG ),
+					'origin_info'      => array( WCSDM_DEFAULT_LAT, WCSDM_DEFAULT_LNG ),
 					'destination_info' => array( WCSDM_TEST_DESTINATION_LAT, WCSDM_TEST_DESTINATION_LNG ),
+					'api_key'          => $value,
 				), false, true
 			);
 
@@ -1420,11 +1421,12 @@ class Wcsdm extends WC_Shipping_Method {
 			$params, array(
 				'origin_info'      => '',
 				'destination_info' => '',
+				'api_key' => $this->gmaps_api_key,
 			)
 		);
 
 		try {
-			if ( empty( $this->gmaps_api_key ) ) {
+			if ( empty( $request_data['api_key'] ) ) {
 				throw new Exception( __( 'API Key is empty', 'wcsdm' ) );
 			}
 
@@ -1453,7 +1455,7 @@ class Wcsdm extends WC_Shipping_Method {
 			$destinations = is_array( $request_data['destination_info'] ) ? implode( ',', $request_data['destination_info'] ) : $request_data['destination_info'];
 
 			$request_url_args = array(
-				'key'          => rawurlencode( $this->gmaps_api_key ),
+				'key'          => rawurlencode( $request_data['api_key'] ),
 				'mode'         => rawurlencode( $this->gmaps_api_mode ),
 				'avoid'        => is_string( $this->gmaps_api_avoid ) ? rawurlencode( $this->gmaps_api_avoid ) : '',
 				'units'        => rawurlencode( $this->gmaps_api_units ),

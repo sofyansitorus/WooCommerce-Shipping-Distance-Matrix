@@ -20,9 +20,6 @@
     }
     .wcsdm-table {
         width: 100%;
-        * {
-            box-sizing: border-box;
-        }
         input[type="text"],
         input[type="number"] {
             min-width: 60px !important;
@@ -167,7 +164,7 @@
     margin: 0;
     padding: 0;
     height: 360px;
-    background-color: #eee;
+	background-color: #eee;
     &:not(.empty):before {
         content: ".";
         font-style: 30px;
@@ -205,8 +202,10 @@
 }
 
 #wcsdm-map-search {
-    margin-top: 10px;
-    height: 30px;
+	margin: 10px;
+	height: 40px;
+	width: 320px;
+	max-width: 100%;
 }
 
 .wcsdm-buttons-footer {

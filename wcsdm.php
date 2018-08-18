@@ -61,10 +61,10 @@ define( 'WCSDM_VERSION', '1.4.7' );
 define( 'WCSDM_METHOD_ID', 'wcsdm' );
 define( 'WCSDM_METHOD_TITLE', 'Shipping Distance Matrix' );
 
-define( 'WCSDM_TEST_ORIGIN_LAT', -6.1762256 );
-define( 'WCSDM_TEST_ORIGIN_LNG', 106.82295120000003 );
-define( 'WCSDM_TEST_DESTINATION_LAT', -6.194891755155254 );
-define( 'WCSDM_TEST_DESTINATION_LNG', 106.81979692219852 );
+define( 'WCSDM_DEFAULT_LAT', -6.1754362737800905 );
+define( 'WCSDM_DEFAULT_LNG', 106.82715690373539 );
+define( 'WCSDM_TEST_DESTINATION_LAT', -6.2185701 );
+define( 'WCSDM_TEST_DESTINATION_LNG', 106.8017969 );
 
 /**
  * Load plugin textdomain.
@@ -207,8 +207,12 @@ function wcsdm_admin_enqueue_scripts( $hook ) {
 						'location_empty'         => __( 'Store location cannot be empty', 'wcsdm' ),
 					),
 				),
-				'marker'       => WCSDM_URL . 'assets/img/marker.png',
-				'language'     => get_locale(),
+				'marker'               => WCSDM_URL . 'assets/img/marker.png',
+				'language'             => get_locale(),
+				'default_lat'          => WCSDM_DEFAULT_LAT,
+				'default_lng'          => WCSDM_DEFAULT_LNG,
+				'test_destination_lat' => WCSDM_TEST_DESTINATION_LAT,
+				'test_destination_lng' => WCSDM_TEST_DESTINATION_LNG,
 			)
 		);
 	}

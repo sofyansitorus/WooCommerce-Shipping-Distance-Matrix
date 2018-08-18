@@ -15,9 +15,6 @@
 
 .wcsdm-row .wcsdm-table {
   width: 100%; }
-  .wcsdm-row .wcsdm-table * {
-    -webkit-box-sizing: border-box;
-            box-sizing: border-box; }
   .wcsdm-row .wcsdm-table input[type="text"],
   .wcsdm-row .wcsdm-table input[type="number"] {
     min-width: 60px !important;
@@ -155,8 +152,10 @@
   padding-bottom: 10px; }
 
 #wcsdm-map-search {
-  margin-top: 10px;
-  height: 30px; }
+  margin: 10px;
+  height: 40px;
+  width: 320px;
+  max-width: 100%; }
 
 .wcsdm-buttons-footer .dashicons {
   margin-top: 5px; }

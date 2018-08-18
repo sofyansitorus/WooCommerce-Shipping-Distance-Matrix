@@ -14,11 +14,23 @@ var currentLat;
 var currentLng;
 
 var wcsdmMap = {
-	zoomLevel: 16,
-	defaultLat: -6.175392,
-	defaultLng: 106.827153,
 	init: function (params) {
-		wcsdmMap.params = params;
+		wcsdmMap.params = {};
+
+		Object.keys(params).forEach(function (paramkey) {
+			switch (paramkey) {
+				case 'default_lat':
+				case 'default_lng':
+				case 'test_destination_lat':
+				case 'test_destination_lng':
+					wcsdmMap.params[paramkey] = parseFloat(params[paramkey]);
+					break;
+
+				default:
+					wcsdmMap.params[paramkey] = params[paramkey];
+					break;
+			}
+		});
 
 		// Handle setting link clicked.
 		$(document).on('click', '.wc-shipping-zone-method-settings', function () {
@@ -43,16 +55,19 @@ var wcsdmMap = {
 			$('#wcsdm-map-picker-canvas').empty();
 			$('#wcsdm-row-api-key').show().siblings().hide();
 			$('#wcsdm-col-store-location').empty();
+
 			$('#map-picker-lat-lng').empty().append(wp.template('wcsdm-lat-lng-table')({
 				origin_lat: currentLat,
 				origin_lng: currentLng,
 				hideButton: true
 			}));
+
 			$('#wcsdm-buttons-footer-primary').remove();
 			$('#btn-ok').after(wp.template('wcsdm-buttons-footer-advanced')({
 				id_cancel: 'wcsdm-btn-map-cancel',
 				id_apply: 'wcsdm-btn-map-apply'
 			}));
+
 			$('#woocommerce_wcsdm_gmaps_api_key_dummy').val($('#woocommerce_wcsdm_gmaps_api_key').val()).trigger('input');
 		});
 
@@ -114,8 +129,8 @@ var wcsdmMap = {
 			var testService = new google.maps.DistanceMatrixService();
 			testService.getDistanceMatrix(
 				{
-					origins: [new google.maps.LatLng(-6.1762256, 106.82295120000003)],
-					destinations: [new google.maps.LatLng(-6.194891755155254, 106.81979692219852)],
+					origins: [new google.maps.LatLng(wcsdmMap.params.default_lat, wcsdmMap.params.default_lng)],
+					destinations: [new google.maps.LatLng(wcsdmMap.params.test_destination_lat, wcsdmMap.params.test_destination_lng)],
 					travelMode: 'DRIVING',
 					unitSystem: google.maps.UnitSystem.METRIC
 				}, function (response, status) {
@@ -139,8 +154,6 @@ var wcsdmMap = {
 						$('#woocommerce_wcsdm_origin_lat').val(newLat);
 						$('#woocommerce_wcsdm_origin_lng').val(newLng);
 						$('#wcsdm-map-picker-canvas').empty();
-					} else {
-						$button.prop('disabled', false);
 					}
 				});
 		});
@@ -161,8 +174,6 @@ var wcsdmMap = {
 			return;
 		}
 
-		$('#wcsdm-btn-map-apply').prop('disabled', false);
-
 		isMapError = false;
 
 		window.google = undefined;
@@ -173,18 +184,27 @@ var wcsdmMap = {
 		});
 	},
 	buildGoogleMaps: function () {
-		var regExp = /^[-+]?[0-9]{1,7}(\.[0-9]+)?$/;
+		var pattern = /^[-]?[0-9]{1,7}(\.[0-9]+)?$/;
+
 		var curLat = $('#woocommerce_wcsdm_origin_lat').val();
 		var curLng = $('#woocommerce_wcsdm_origin_lng').val();
-		curLat = curLat.length && regExp.exec(curLat) ? parseFloat(curLat) : wcsdmMap.defaultLat;
-		curLng = curLng.length && regExp.exec(curLng) ? parseFloat(curLng) : wcsdmMap.defaultLng;
-		var curLatLng = { lat: curLat, lng: curLng };
+
+		var curLatLng = {
+			lat: curLat.length && pattern.exec(curLat) ? parseFloat(curLat) : wcsdmMap.params.default_lat,
+			lng: curLng.length && pattern.exec(curLng) ? parseFloat(curLng) : wcsdmMap.params.default_lng,
+		};
+
 		var markers = [];
+
+		// Initiate map
 		var map = new google.maps.Map(
 			document.getElementById('wcsdm-map-picker-canvas'),
 			{
 				center: curLatLng,
-				zoom: wcsdmMap.zoomLevel,
+				zoom: 16,
+				mapTypeControl: false,
+				streetViewControl: false,
+				fullscreenControl: false,
 				mapTypeId: 'roadmap'
 			}
 		);
@@ -198,7 +218,7 @@ var wcsdmMap = {
 
 		var infowindow = new google.maps.InfoWindow({ maxWidth: 350 });
 
-		if (curLat === wcsdmMap.defaultLat && curLng === wcsdmMap.defaultLng) {
+		if (!curLat.length || !pattern.exec(curLat) || !curLng.length || !pattern.exec(curLng)) {
 			infowindow.setContent(wcsdmMap.params.i18n.dragMarker);
 			infowindow.open(map, marker);
 		} else {
@@ -248,21 +268,27 @@ var wcsdmMap = {
 					console.log('Returned place contains no geometry');
 					return;
 				}
+
 				marker = new google.maps.Marker({
 					map: map,
 					position: place.geometry.location,
 					draggable: true,
 					icon: wcsdmMap.params.marker
 				});
+
 				wcsdmMap.setLatLng(place.geometry.location, marker, map, infowindow);
+
 				google.maps.event.addListener(marker, 'dragstart', function () {
 					infowindow.close();
 				});
+
 				google.maps.event.addListener(marker, 'dragend', function (event) {
 					wcsdmMap.setLatLng(event.latLng, marker, map, infowindow);
 				});
+
 				// Create a marker for each place.
 				markers.push(marker);
+
 				if (place.geometry.viewport) {
 					// Only geocodes have viewport.
 					bounds.union(place.geometry.viewport);
@@ -291,22 +317,27 @@ var wcsdmMap = {
 		);
 		map.setCenter(location);
 
-		$('#woocommerce_wcsdm_origin_lat_dummy').val(location.lat());
-		$('#woocommerce_wcsdm_origin_lng_dummy').val(location.lng());
+		if (!isMapError) {
+			$('#wcsdm-btn-map-apply').prop('disabled', false);
+			$('#woocommerce_wcsdm_origin_lat_dummy').val(location.lat());
+			$('#woocommerce_wcsdm_origin_lng_dummy').val(location.lng());
+		}
 	},
 	showMapError: function (errorMsg) {
 		isMapError = true;
-		var regExpLink = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+		var patternLink = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
 		if ($('.gm-err-message').length) {
-			$('.gm-err-message').empty().append(errorMsg.replace(regExpLink, '<a href="$1" target="_blank">$1</a>'));
+			$('.gm-err-message').empty().append(errorMsg.replace(patternLink, '<a href="$1" target="_blank">$1</a>'));
 		} else {
 			setTimeout(function () {
 				$('#wcsdm-map-picker-canvas').addClass('empty has-error').empty().append(wp.template('wcsdm-error')({
 					title: wcsdmMap.params.i18n.errors.error_title,
-					content: errorMsg.replace(regExpLink, '<a href="$1" target="_blank">$1</a>')
+					content: errorMsg.replace(patternLink, '<a href="$1" target="_blank">$1</a>')
 				}));
 			}, 0);
 		}
 		$('#wcsdm-btn-map-apply').prop('disabled', true);
+		$('#woocommerce_wcsdm_origin_lat_dummy').val('');
+		$('#woocommerce_wcsdm_origin_lng_dummy').val('');
 	}
 };
