@@ -102,7 +102,6 @@ class Wcsdm extends WC_Shipping_Method {
 		$this->all_options['gmaps_api_avoid']         = $this->get_option( 'gmaps_api_avoid' );
 		$this->all_options['prefered_route']          = $this->get_option( 'prefered_route', 'prefered_route' );
 		$this->all_options['calc_type']               = $this->get_option( 'calc_type', 'per_item' );
-		$this->all_options['enable_fallback_request'] = $this->get_option( 'enable_fallback_request', 'no' );
 		$this->all_options['show_distance']           = $this->get_option( 'show_distance' );
 		$this->all_options['ceil_distance']           = $this->get_option( 'ceil_distance', 'no' );
 		$this->all_options['table_rates']             = $this->get_option( 'table_rates' );
@@ -235,13 +234,6 @@ class Wcsdm extends WC_Shipping_Method {
 				'label'       => __( 'Yes', 'wcsdm' ),
 				'type'        => 'checkbox',
 				'description' => __( 'Round up distance to the nearest integer.', 'wcsdm' ),
-				'desc_tip'    => true,
-			),
-			'enable_fallback_request' => array(
-				'title'       => __( 'Enable Fallback Request', 'wcsdm' ),
-				'label'       => __( 'Yes', 'wcsdm' ),
-				'type'        => 'checkbox',
-				'description' => __( 'If there is no results for API request using full address, the system will attempt to make another API request to the Google API server without "Address Line 1" parameter. The fallback request will only using "Address Line 2", "City", "State/Province", "Postal Code" and "Country" parameters.', 'wcsdm' ),
 				'desc_tip'    => true,
 			),
 			'calc_type'               => array(
