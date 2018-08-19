@@ -6,64 +6,105 @@
 // N milliseconds. If `immediate` is passed, trigger the function on the
 // leading edge, instead of the trailing.
 function debounce(func, wait, immediate) {
-    var timeout;
-    return function () {
-        var context = this, args = arguments;
-        var later = function () {
-            timeout = null;
-            if (!immediate) {
-                func.apply(context, args);
-            }
-        };
-        var callNow = immediate && !timeout;
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-        if (callNow) {
-            func.apply(context, args);
-        }
-    };
+	var timeout;
+	return function () {
+		var context = this, args = arguments;
+		var later = function () {
+			timeout = null;
+			if (!immediate) {
+				func.apply(context, args);
+			}
+		};
+		var callNow = immediate && !timeout;
+		clearTimeout(timeout);
+		timeout = setTimeout(later, wait);
+		if (callNow) {
+			func.apply(context, args);
+		}
+	};
 }
 
 // jQuery Function to get element attributes
 $.fn.attrs = function (attrs) {
-    var t = $(this);
-    var results = {};
-    if (attrs) {
-        // Set attributes
-        t.each(function (i, e) {
-            var j = $(e);
-            for (var attr in attrs) {
-                j.attr(attr, attrs[attr]);
-            }
-        });
-        result = t;
-    } else {
-        // Get attributes
-        var a = {},
-            r = t.get(0);
-        if (r) {
-            r = r.attributes;
-            for (var i in r) {
-                var p = r[i];
-                if (typeof p.nodeValue !== 'undefined') a[p.nodeName] = p.nodeValue;
-            }
-        }
-        results = a;
-    }
+	var t = $(this);
+	var results = {};
+	if (attrs) {
+		// Set attributes
+		t.each(function (i, e) {
+			var j = $(e);
+			for (var attr in attrs) {
+				j.attr(attr, attrs[attr]);
+			}
+		});
+		result = t;
+	} else {
+		// Get attributes
+		var a = {},
+			r = t.get(0);
+		if (r) {
+			r = r.attributes;
+			for (var i in r) {
+				var p = r[i];
+				if (typeof p.nodeValue !== 'undefined') a[p.nodeName] = p.nodeValue;
+			}
+		}
+		results = a;
+	}
 
-    if (!Object.keys(results).length) {
-        return results;
-    }
+	if (!Object.keys(results).length) {
+		return results;
+	}
 
-    var data = {};
-    Object.keys(results).forEach(function (key) {
-        if (key.indexOf('data-') !== 0) {
-            data[key] = results[key];
-        }
-    });
+	var data = {};
+	Object.keys(results).forEach(function (key) {
+		if (key.indexOf('data-') !== 0) {
+			data[key] = results[key];
+		}
+	});
 
-    return data;
+	return data;
 };
+
+function showError(args) {
+	var params = $.extend({
+		selector: '',
+		method: 'before',
+		title: wcsdm_params.i18n.errors.error_title,
+		content: ''
+	}, args);
+
+	if (params.selector.length) {
+		var $selector = $(params.selector);
+		if (!$selector.length) {
+			return;
+		}
+
+		switch (params.method) {
+			case 'before':
+				$selector.before(wp.template('wcsdm-error')(params));
+				break;
+
+			case 'after':
+				$selector.after(wp.template('wcsdm-error')(params));
+				break;
+
+			default:
+				$selector.append(wp.template('wcsdm-error')(params));
+				break;
+		}
+
+		$('.wc-modal-shipping-method-settings').animate({
+			scrollTop: $('#wcsdm-error').position().top
+		}, 500);
+
+		return $selector;
+	}
+}
+
+function hideError() {
+	$('#wcsdm-error').remove();
+	$('.wc-modal-shipping-method-settings').children().removeClass('error');
+}
 
 // Taking Over window.console.error
 var windowConsoleError = window.console.error;
@@ -140,7 +181,7 @@ var wcsdmMap = {
 
 		$(document).on('click', '#wcsdm-btn-map-cancel', function (e) {
 			e.preventDefault();
-			$('#wcsdm-error').remove();
+			hideError();
 			$(e.currentTarget).closest('div').remove();
 			$('#wcsdm-col-store-location').empty().append(wp.template('wcsdm-lat-lng-table')({
 				origin_lat: currentLat,
@@ -158,8 +199,7 @@ var wcsdmMap = {
 				return;
 			}
 
-			$('#wcsdm-error').remove();
-			$('#wcsdm-table-map-picker td').removeClass('error');
+			hideError();
 
 			var errors = {};
 			var $button = $(e.currentTarget).prop('disabled', true);
@@ -185,10 +225,11 @@ var wcsdmMap = {
 					$('#' + key).closest('td').addClass('error');
 				});
 
-				$('#wcsdm-table-map-picker').before(wp.template('wcsdm-error')({
-					title: wcsdmMap.params.i18n.errors.error_title,
+				showError({
+					selector: '#wcsdm-table-map-picker',
 					content: errorMessage
-				}));
+				});
+
 				$button.prop('disabled', false);
 				return;
 			}
@@ -231,7 +272,7 @@ var wcsdmMap = {
 		}, 500));
 	},
 	initGoogleMaps: function () {
-		$('#wcsdm-error').remove();
+		hideError();
 		$('#wcsdm-map-picker-canvas').removeClass('has-error empty').empty();
 
 		var apiKey = $('#woocommerce_wcsdm_gmaps_api_key_dummy').val();
@@ -397,10 +438,12 @@ var wcsdmMap = {
 			$('.gm-err-message').empty().append(errorMsg.replace(patternLink, '<a href="$1" target="_blank">$1</a>'));
 		} else {
 			setTimeout(function () {
-				$('#wcsdm-map-picker-canvas').addClass('empty has-error').empty().append(wp.template('wcsdm-error')({
-					title: wcsdmMap.params.i18n.errors.error_title,
+				$('#wcsdm-map-picker-canvas').addClass('empty has-error').empty();
+				showError({
+					selector: '#wcsdm-map-picker-canvas',
+					method: 'append',
 					content: errorMsg.replace(patternLink, '<a href="$1" target="_blank">$1</a>')
-				}));
+				});
 			}, 0);
 		}
 		$('#wcsdm-btn-map-apply').prop('disabled', true);
@@ -538,7 +581,7 @@ var wcsdmTableRates = {
 		// Handle on advanced rate settings link clicked.
 		$(document).on('click', '.wcsdm-btn-advanced-link', function (e) {
 			e.preventDefault();
-			$('#wcsdm-error').remove();
+			hideError();
 			var $row = $(e.currentTarget).closest('tr').removeClass('applied');
 			$row.siblings().removeClass('applied');
 			$row.find('.wcsdm-rate-field--hidden').each(function (i, input) {
@@ -564,8 +607,7 @@ var wcsdmTableRates = {
 		// Handle on Apply Changes button clicked.
 		$(document).on('click', '#wcsdm-btn-advanced-apply', function (e) {
 			e.preventDefault();
-			$('#wcsdm-error').remove();
-			$('#wcsdm-table-advanced tbody').find('tr, td').removeClass('error');
+			hideError();
 
 			var errors = wcsdmTableRates._getRateFormErrors($('.wcsdm-rate-field--advanced'));
 
@@ -582,10 +624,11 @@ var wcsdmTableRates = {
 					errorMessage += '<p id="wcsdm-rate-field--error--' + key + '">' + errorMessages[key] + '</p>';
 				});
 
-				$('#wcsdm-table-advanced').before(wp.template('wcsdm-error')({
+				wcsdmTableRates._showError({
+					selector: '#wcsdm-table-advanced',
 					title: wcsdmTableRates.params.i18n.errors.error_title,
 					content: errorMessage
-				}));
+				});
 				return;
 			}
 
@@ -635,7 +678,7 @@ var wcsdmTableRates = {
 		// Handle on Save Changes button clicked.
 		$(document).on('click', '#wcsdm-btn-primary-save-changes', function (e) {
 			e.preventDefault();
-			$('#wcsdm-error').remove();
+			hideError();
 
 			var locationErrorMessage = '';
 			var locationFields = ['woocommerce_wcsdm_origin_lat', 'woocommerce_wcsdm_origin_lng'];
@@ -649,18 +692,19 @@ var wcsdmTableRates = {
 			}
 
 			if (locationErrorMessage.length) {
-				$('#wcsdm-col-store-location').before(wp.template('wcsdm-error')({
+				wcsdmTableRates._showError({
+					selector: '#wcsdm-col-store-location',
 					title: wcsdmTableRates.params.i18n.errors.error_title,
 					content: locationErrorMessage
-				}));
+				});
 				return;
 			}
 
 			if (!$('#wcsdm-table-rates tbody tr').length) {
-				$('#wcsdm-table-rates').before(wp.template('wcsdm-error')({
+				wcsdmTableRates._showError({
 					title: wcsdmTableRates.params.i18n.errors.error_title,
 					content: wcsdmTableRates.params.i18n.errors.rates_empty
-				}));
+				});
 				return;
 			}
 
@@ -678,10 +722,10 @@ var wcsdmTableRates = {
 					errorMessage += '<p id="wcsdm-rate-field--error--' + key + '">' + errorMessages[key] + '</p>';
 				});
 
-				$('#wcsdm-table-rates').before(wp.template('wcsdm-error')({
+				wcsdmTableRates._showError({
 					title: wcsdmTableRates.params.i18n.errors.error_title,
 					content: errorMessage
-				}));
+				});
 				return;
 			}
 
@@ -729,8 +773,7 @@ var wcsdmTableRates = {
 		}, 800);
 	},
 	_validateRatesList: function () {
-		// $('#wcsdm-error').remove();
-		$('#wcsdm-table-rates tbody').find('tr, td').removeClass('error');
+		hideError();
 		var errors = wcsdmTableRates._getRateFormErrors($('.wcsdm-rate-field--hidden'));
 		if (errors.length) {
 			for (var index = 0; index < errors.length; index++) {
@@ -870,6 +913,12 @@ var wcsdmTableRates = {
 	_removeRateRows: function (e) {
 		e.preventDefault();
 		$(e.currentTarget).closest('tr').remove();
+	},
+	_showError: function (args) {
+		var params = $.extend({
+			selector: '#wcsdm-table-rates',
+		}, args);
+		return showError(params);
 	}
 };
 

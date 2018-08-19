@@ -73,7 +73,7 @@ var wcsdmMap = {
 
 		$(document).on('click', '#wcsdm-btn-map-cancel', function (e) {
 			e.preventDefault();
-			$('#wcsdm-error').remove();
+			hideError();
 			$(e.currentTarget).closest('div').remove();
 			$('#wcsdm-col-store-location').empty().append(wp.template('wcsdm-lat-lng-table')({
 				origin_lat: currentLat,
@@ -91,8 +91,7 @@ var wcsdmMap = {
 				return;
 			}
 
-			$('#wcsdm-error').remove();
-			$('#wcsdm-table-map-picker td').removeClass('error');
+			hideError();
 
 			var errors = {};
 			var $button = $(e.currentTarget).prop('disabled', true);
@@ -118,10 +117,11 @@ var wcsdmMap = {
 					$('#' + key).closest('td').addClass('error');
 				});
 
-				$('#wcsdm-table-map-picker').before(wp.template('wcsdm-error')({
-					title: wcsdmMap.params.i18n.errors.error_title,
+				showError({
+					selector: '#wcsdm-table-map-picker',
 					content: errorMessage
-				}));
+				});
+
 				$button.prop('disabled', false);
 				return;
 			}
@@ -164,7 +164,7 @@ var wcsdmMap = {
 		}, 500));
 	},
 	initGoogleMaps: function () {
-		$('#wcsdm-error').remove();
+		hideError();
 		$('#wcsdm-map-picker-canvas').removeClass('has-error empty').empty();
 
 		var apiKey = $('#woocommerce_wcsdm_gmaps_api_key_dummy').val();
@@ -330,10 +330,12 @@ var wcsdmMap = {
 			$('.gm-err-message').empty().append(errorMsg.replace(patternLink, '<a href="$1" target="_blank">$1</a>'));
 		} else {
 			setTimeout(function () {
-				$('#wcsdm-map-picker-canvas').addClass('empty has-error').empty().append(wp.template('wcsdm-error')({
-					title: wcsdmMap.params.i18n.errors.error_title,
+				$('#wcsdm-map-picker-canvas').addClass('empty has-error').empty();
+				showError({
+					selector: '#wcsdm-map-picker-canvas',
+					method: 'append',
 					content: errorMsg.replace(patternLink, '<a href="$1" target="_blank">$1</a>')
-				}));
+				});
 			}, 0);
 		}
 		$('#wcsdm-btn-map-apply').prop('disabled', true);

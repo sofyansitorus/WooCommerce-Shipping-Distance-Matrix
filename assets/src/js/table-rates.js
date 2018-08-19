@@ -127,7 +127,7 @@ var wcsdmTableRates = {
 		// Handle on advanced rate settings link clicked.
 		$(document).on('click', '.wcsdm-btn-advanced-link', function (e) {
 			e.preventDefault();
-			$('#wcsdm-error').remove();
+			hideError();
 			var $row = $(e.currentTarget).closest('tr').removeClass('applied');
 			$row.siblings().removeClass('applied');
 			$row.find('.wcsdm-rate-field--hidden').each(function (i, input) {
@@ -153,8 +153,7 @@ var wcsdmTableRates = {
 		// Handle on Apply Changes button clicked.
 		$(document).on('click', '#wcsdm-btn-advanced-apply', function (e) {
 			e.preventDefault();
-			$('#wcsdm-error').remove();
-			$('#wcsdm-table-advanced tbody').find('tr, td').removeClass('error');
+			hideError();
 
 			var errors = wcsdmTableRates._getRateFormErrors($('.wcsdm-rate-field--advanced'));
 
@@ -171,10 +170,11 @@ var wcsdmTableRates = {
 					errorMessage += '<p id="wcsdm-rate-field--error--' + key + '">' + errorMessages[key] + '</p>';
 				});
 
-				$('#wcsdm-table-advanced').before(wp.template('wcsdm-error')({
+				wcsdmTableRates._showError({
+					selector: '#wcsdm-table-advanced',
 					title: wcsdmTableRates.params.i18n.errors.error_title,
 					content: errorMessage
-				}));
+				});
 				return;
 			}
 
@@ -224,7 +224,7 @@ var wcsdmTableRates = {
 		// Handle on Save Changes button clicked.
 		$(document).on('click', '#wcsdm-btn-primary-save-changes', function (e) {
 			e.preventDefault();
-			$('#wcsdm-error').remove();
+			hideError();
 
 			var locationErrorMessage = '';
 			var locationFields = ['woocommerce_wcsdm_origin_lat', 'woocommerce_wcsdm_origin_lng'];
@@ -238,18 +238,19 @@ var wcsdmTableRates = {
 			}
 
 			if (locationErrorMessage.length) {
-				$('#wcsdm-col-store-location').before(wp.template('wcsdm-error')({
+				wcsdmTableRates._showError({
+					selector: '#wcsdm-col-store-location',
 					title: wcsdmTableRates.params.i18n.errors.error_title,
 					content: locationErrorMessage
-				}));
+				});
 				return;
 			}
 
 			if (!$('#wcsdm-table-rates tbody tr').length) {
-				$('#wcsdm-table-rates').before(wp.template('wcsdm-error')({
+				wcsdmTableRates._showError({
 					title: wcsdmTableRates.params.i18n.errors.error_title,
 					content: wcsdmTableRates.params.i18n.errors.rates_empty
-				}));
+				});
 				return;
 			}
 
@@ -267,10 +268,10 @@ var wcsdmTableRates = {
 					errorMessage += '<p id="wcsdm-rate-field--error--' + key + '">' + errorMessages[key] + '</p>';
 				});
 
-				$('#wcsdm-table-rates').before(wp.template('wcsdm-error')({
+				wcsdmTableRates._showError({
 					title: wcsdmTableRates.params.i18n.errors.error_title,
 					content: errorMessage
-				}));
+				});
 				return;
 			}
 
@@ -318,8 +319,7 @@ var wcsdmTableRates = {
 		}, 800);
 	},
 	_validateRatesList: function () {
-		// $('#wcsdm-error').remove();
-		$('#wcsdm-table-rates tbody').find('tr, td').removeClass('error');
+		hideError();
 		var errors = wcsdmTableRates._getRateFormErrors($('.wcsdm-rate-field--hidden'));
 		if (errors.length) {
 			for (var index = 0; index < errors.length; index++) {
@@ -459,5 +459,11 @@ var wcsdmTableRates = {
 	_removeRateRows: function (e) {
 		e.preventDefault();
 		$(e.currentTarget).closest('tr').remove();
+	},
+	_showError: function (args) {
+		var params = $.extend({
+			selector: '#wcsdm-table-rates',
+		}, args);
+		return showError(params);
 	}
 };
