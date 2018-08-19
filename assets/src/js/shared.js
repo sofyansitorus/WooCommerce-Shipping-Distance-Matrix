@@ -48,12 +48,12 @@ $.fn.attrs = function (attrs) {
 		results = a;
 	}
 
-	if (!Object.keys(results).length) {
+	if (!_.keys(results).length) {
 		return results;
 	}
 
 	var data = {};
-	Object.keys(results).forEach(function (key) {
+	_.keys(results).forEach(function (key) {
 		if (key.indexOf('data-') !== 0) {
 			data[key] = results[key];
 		}
@@ -63,7 +63,7 @@ $.fn.attrs = function (attrs) {
 };
 
 function showError(args) {
-	var params = $.extend({
+	var params = _.extend({
 		selector: '',
 		method: 'before',
 		title: wcsdm_params.i18n.errors.error_title,

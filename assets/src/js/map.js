@@ -17,7 +17,7 @@ var wcsdmMap = {
 	init: function (params) {
 		wcsdmMap.params = {};
 
-		Object.keys(params).forEach(function (paramkey) {
+		_.keys(params).forEach(function (paramkey) {
 			switch (paramkey) {
 				case 'default_lat':
 				case 'default_lng':
@@ -110,9 +110,9 @@ var wcsdmMap = {
 				}
 			}
 
-			if (Object.keys(errors).length) {
+			if (_.keys(errors).length) {
 				var errorMessage = '';
-				Object.keys(errors).forEach(function (key) {
+				_.keys(errors).forEach(function (key) {
 					errorMessage += '<p id="wcsdm-rate-field--error--' + key + '">' + errors[key] + '</p>';
 					$('#' + key).closest('td').addClass('error');
 				});

@@ -51,7 +51,7 @@ var wcsdmTableRates = {
 				var showField = true;
 				var fieldShowIf = $(field).data('show_if');
 				if (fieldShowIf) {
-					Object.keys(fieldShowIf).forEach(function (key) {
+					_.keys(fieldShowIf).forEach(function (key) {
 						var fieldShowIfTarget = $('.wcsdm-rate-field--advanced--' + key).val();
 						if (fieldShowIf[key].indexOf(fieldShowIfTarget) === -1) {
 							showField = false;
@@ -62,7 +62,7 @@ var wcsdmTableRates = {
 				if (showField) {
 					var fieldHideIf = $(field).data('hide_if');
 					if (fieldHideIf) {
-						Object.keys(fieldHideIf).forEach(function (key) {
+						_.keys(fieldHideIf).forEach(function (key) {
 							var fieldHideIfTarget = $('.wcsdm-rate-field--advanced--' + key).val();
 							if (fieldHideIf[key].indexOf(fieldHideIfTarget) !== -1) {
 								showField = false;
@@ -165,7 +165,7 @@ var wcsdmTableRates = {
 				}
 
 				var errorMessage = '';
-				Object.keys(errorMessages).forEach(function (key) {
+				_.keys(errorMessages).forEach(function (key) {
 					$('.wcsdm-rate-field--advanced--' + key).closest('tr').addClass('error');
 					errorMessage += '<p id="wcsdm-rate-field--error--' + key + '">' + errorMessages[key] + '</p>';
 				});
@@ -179,8 +179,8 @@ var wcsdmTableRates = {
 
 			var formData = wcsdmTableRates._populateFormData($('.wcsdm-rate-field--advanced'));
 
-			if (Object.keys(formData).length) {
-				Object.keys(formData).forEach(function (key) {
+			if (_.keys(formData).length) {
+				_.keys(formData).forEach(function (key) {
 					$('#wcsdm-table-rates tbody tr:eq(' + rowIndex + ')').removeClass('error').addClass('applied').find('.wcsdm-rate-field--dummy--' + key).val(formData[key]);
 					$('#wcsdm-table-rates tbody tr:eq(' + rowIndex + ')').removeClass('error').addClass('applied').find('.wcsdm-rate-field--hidden--' + key).val(formData[key]);
 				});
@@ -261,12 +261,12 @@ var wcsdmTableRates = {
 				}
 
 				var errorMessage = '';
-				Object.keys(errorMessages).forEach(function (key) {
+				_.keys(errorMessages).forEach(function (key) {
 					$('.wcsdm-rate-field--advanced--' + key).closest('tr').addClass('error');
 					errorMessage += '<p id="wcsdm-rate-field--error--' + key + '">' + errorMessages[key] + '</p>';
 				});
 
-				wcsdmTableRates._showError({
+				showError({
 					selector: '#wcsdm-table-rates',
 					content: errorMessage
 				});
@@ -336,13 +336,13 @@ var wcsdmTableRates = {
 			if (typeof fields[fieldKey] === 'undefined') {
 				fields[fieldKey] = [];
 			}
-			fields[fieldKey].push(Object.assign({}, $(field).attrs(), $(field).data(), {
+			fields[fieldKey].push(_.extend({}, $(field).attrs(), $(field).data(), {
 				value: $(field).val(),
 				rowIndex: $(field).closest('tr').index()
 			}));
 		});
 
-		Object.keys(fields).forEach(function (key) {
+		_.keys(fields).forEach(function (key) {
 			var dataRows = fields[key];
 			for (var index = 0; index < dataRows.length; index++) {
 				var dataRow = dataRows[index];
@@ -351,7 +351,7 @@ var wcsdmTableRates = {
 				var hideIf = dataRow.hide_if || false;
 
 				if (showIf) {
-					Object.keys(showIf).forEach(function (showIfKey) {
+					_.keys(showIf).forEach(function (showIfKey) {
 						var showIfTarget = fields[showIfKey][index].value;
 						var showIfField = showIf[showIfKey];
 						if (showIfField.indexOf(showIfTarget) === -1) {
@@ -361,7 +361,7 @@ var wcsdmTableRates = {
 				}
 
 				if (hideIf) {
-					Object.keys(hideIf).forEach(function (hideIfKey) {
+					_.keys(hideIf).forEach(function (hideIfKey) {
 						var hideIfTarget = fields[hideIfKey][index].value;
 						var hideIfField = hideIf[hideIfKey];
 						if (hideIfField.indexOf(hideIfTarget) !== -1) {
