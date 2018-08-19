@@ -624,9 +624,8 @@ var wcsdmTableRates = {
 					errorMessage += '<p id="wcsdm-rate-field--error--' + key + '">' + errorMessages[key] + '</p>';
 				});
 
-				wcsdmTableRates._showError({
+				showError({
 					selector: '#wcsdm-table-advanced',
-					title: wcsdmTableRates.params.i18n.errors.error_title,
 					content: errorMessage
 				});
 				return;
@@ -692,17 +691,16 @@ var wcsdmTableRates = {
 			}
 
 			if (locationErrorMessage.length) {
-				wcsdmTableRates._showError({
+				showError({
 					selector: '#wcsdm-col-store-location',
-					title: wcsdmTableRates.params.i18n.errors.error_title,
 					content: locationErrorMessage
 				});
 				return;
 			}
 
 			if (!$('#wcsdm-table-rates tbody tr').length) {
-				wcsdmTableRates._showError({
-					title: wcsdmTableRates.params.i18n.errors.error_title,
+				showError({
+					selector: '#wcsdm-table-rates',
 					content: wcsdmTableRates.params.i18n.errors.rates_empty
 				});
 				return;
@@ -723,7 +721,7 @@ var wcsdmTableRates = {
 				});
 
 				wcsdmTableRates._showError({
-					title: wcsdmTableRates.params.i18n.errors.error_title,
+					selector: '#wcsdm-table-rates',
 					content: errorMessage
 				});
 				return;
@@ -913,12 +911,6 @@ var wcsdmTableRates = {
 	_removeRateRows: function (e) {
 		e.preventDefault();
 		$(e.currentTarget).closest('tr').remove();
-	},
-	_showError: function (args) {
-		var params = $.extend({
-			selector: '#wcsdm-table-rates',
-		}, args);
-		return showError(params);
 	}
 };
 
