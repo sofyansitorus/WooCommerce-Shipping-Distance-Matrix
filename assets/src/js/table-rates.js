@@ -24,6 +24,7 @@ var wcsdmTableRates = {
 
 			setTimeout(function () {
 				$('.wcsdm-rate-field--dummy--select').trigger('change');
+				wcsdmTableRates._toggleTableRates();
 			}, 100);
 		});
 
@@ -453,9 +454,18 @@ var wcsdmTableRates = {
 		});
 		$('#woocommerce_wcsdm_gmaps_api_units').trigger('change');
 		$('.wc-modal-shipping-method-settings').scrollTop($('.wc-modal-shipping-method-settings').find('form').outerHeight());
+		wcsdmTableRates._toggleTableRates();
 	},
 	_removeRateRows: function (e) {
 		e.preventDefault();
 		$(e.currentTarget).closest('tr').remove();
+		wcsdmTableRates._toggleTableRates();
+	},
+	_toggleTableRates: function (e) {
+		$('#wcsdm-table-rates').find('thead, tfoot').show();
+
+		if (!$('#wcsdm-table-rates tbody tr').length) {
+			$('#wcsdm-table-rates').find('thead, tfoot').hide();
+		}
 	}
 };
