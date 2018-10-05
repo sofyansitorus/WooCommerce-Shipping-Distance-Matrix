@@ -61,11 +61,6 @@ define( 'WCSDM_VERSION', '1.4.7' );
 define( 'WCSDM_METHOD_ID', 'wcsdm' );
 define( 'WCSDM_METHOD_TITLE', 'Shipping Distance Matrix' );
 
-define( 'WCSDM_DEFAULT_LAT', -6.1754362737800905 );
-define( 'WCSDM_DEFAULT_LNG', 106.82715690373539 );
-define( 'WCSDM_TEST_DESTINATION_LAT', -6.2185701 );
-define( 'WCSDM_TEST_DESTINATION_LNG', 106.8017969 );
-
 /**
  * Load plugin textdomain.
  *
@@ -164,7 +159,7 @@ function wcsdm_admin_enqueue_scripts( $hook ) {
 		);
 
 		// Enqueue admin scripts.
-		$wcsdm_admin_js = ( defined( 'WCSDM_DEV' ) && WCSDM_DEV ) ? add_query_arg( array( 't' => time() ), WCSDM_URL . 'assets/js/wcsdm-backend.js' ) : WCSDM_URL . 'assets/js/wcsdm-backend.min.js';
+		$wcsdm_admin_js = ( defined( 'WCSDM_DEV' ) && WCSDM_DEV ) ? add_query_arg( array( 't' => time() ), WCSDM_URL . 'assets/js/wcsdm.js' ) : WCSDM_URL . 'assets/js/wcsdm.min.js';
 		wp_enqueue_script(
 			'wcsdm', // Give the script a unique ID.
 			$wcsdm_admin_js, // Define the path to the JS file.
@@ -180,7 +175,7 @@ function wcsdm_admin_enqueue_scripts( $hook ) {
 				'methodId'     => WCSDM_METHOD_ID,
 				'methodTitle'  => WCSDM_METHOD_TITLE,
 				'i18n'         => array(
-					'dragMarker' => __( 'Drag this marker or search your address in the input above.', 'wcsdm' ),
+					'dragMarker' => __( 'Drag this marker or search your address at the input above.', 'wcsdm' ),
 					'distance'   => array(
 						'metric'   => array(
 							'perUnit' => __( 'Per Kilometer', 'wcsdm' ),
@@ -191,28 +186,9 @@ function wcsdm_admin_enqueue_scripts( $hook ) {
 							'unit'    => __( 'MI', 'wcsdm' ),
 						),
 					),
-					'errors'     => array(
-						'error_title'            => __( 'Oops! Something went wrong', 'wcsdm' ),
-						// translators: %s is shipping destination field label.
-						'field_required'         => __( '%s field is required', 'wcsdm' ),
-						// translators: %s is shipping destination field label.
-						'field_invalid'          => __( '%s field value is invalid', 'wcsdm' ),
-						// translators: %s is shipping destination field label.
-						'field_selected_invalid' => __( '%s field selected option is invalid', 'wcsdm' ),
-						// translators: %$1s is shipping destination field label, %$1d is minimum value rule.
-						'field_min_value'        => __( '%$1s field value must be equal or greater than %$2d', 'wcsdm' ),
-						// translators: %$1s is shipping destination field label, %$1d is maximum value rule.
-						'field_max_value'        => __( '%$1s field value must be equal or lower than %$2d', 'wcsdm' ),
-						'rates_empty'            => __( 'Table rates cannot be empty', 'wcsdm' ),
-						'location_empty'         => __( 'Store location cannot be empty', 'wcsdm' ),
-					),
 				),
-				'marker'               => WCSDM_URL . 'assets/img/marker.png',
-				'language'             => get_locale(),
-				'default_lat'          => WCSDM_DEFAULT_LAT,
-				'default_lng'          => WCSDM_DEFAULT_LNG,
-				'test_destination_lat' => WCSDM_TEST_DESTINATION_LAT,
-				'test_destination_lng' => WCSDM_TEST_DESTINATION_LNG,
+				'marker'       => WCSDM_URL . 'assets/img/marker.png',
+				'language'     => get_locale(),
 			)
 		);
 	}

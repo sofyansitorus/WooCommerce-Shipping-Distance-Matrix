@@ -6,450 +6,436 @@
 // N milliseconds. If `immediate` is passed, trigger the function on the
 // leading edge, instead of the trailing.
 function debounce(func, wait, immediate) {
-	var timeout;
-	return function () {
-		var context = this, args = arguments;
-		var later = function () {
-			timeout = null;
-			if (!immediate) {
-				func.apply(context, args);
-			}
-		};
-		var callNow = immediate && !timeout;
-		clearTimeout(timeout);
-		timeout = setTimeout(later, wait);
-		if (callNow) {
-			func.apply(context, args);
-		}
-	};
+    var timeout;
+    return function () {
+        var context = this, args = arguments;
+        var later = function () {
+            timeout = null;
+            if (!immediate) {
+                func.apply(context, args);
+            }
+        };
+        var callNow = immediate && !timeout;
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+        if (callNow) {
+            func.apply(context, args);
+        }
+    };
 }
 
 // jQuery Function to get element attributes
 $.fn.attrs = function (attrs) {
-	var t = $(this);
-	var results = {};
-	if (attrs) {
-		// Set attributes
-		t.each(function (i, e) {
-			var j = $(e);
-			for (var attr in attrs) {
-				j.attr(attr, attrs[attr]);
-			}
-		});
-		result = t;
-	} else {
-		// Get attributes
-		var a = {},
-			r = t.get(0);
-		if (r) {
-			r = r.attributes;
-			for (var i in r) {
-				var p = r[i];
-				if (typeof p.nodeValue !== 'undefined') a[p.nodeName] = p.nodeValue;
-			}
-		}
-		results = a;
-	}
+    var t = $(this);
+    var results = {};
+    if (attrs) {
+        // Set attributes
+        t.each(function (i, e) {
+            var j = $(e);
+            for (var attr in attrs) {
+                j.attr(attr, attrs[attr]);
+            }
+        });
+        result = t;
+    } else {
+        // Get attributes
+        var a = {},
+            r = t.get(0);
+        if (r) {
+            r = r.attributes;
+            for (var i in r) {
+                var p = r[i];
+                if (typeof p.nodeValue !== 'undefined') a[p.nodeName] = p.nodeValue;
+            }
+        }
+        results = a;
+    }
 
-	if (!_.keys(results).length) {
-		return results;
-	}
+    if (!_.keys(results).length) {
+        return results;
+    }
 
-	var data = {};
-	_.keys(results).forEach(function (key) {
-		if (key.indexOf('data-') !== 0) {
-			data[key] = results[key];
-		}
-	});
+    var data = {};
+    _.keys(results).forEach(function (key) {
+        if (key.indexOf('data-') !== 0) {
+            data[key] = results[key];
+        }
+    });
 
-	return data;
+    return data;
 };
 
 function showError(args) {
-	var params = _.extend({
-		selector: '',
-		method: 'before',
-		title: wcsdm_params.i18n.errors.error_title,
-		content: ''
-	}, args);
+    var params = _.extend({
+        selector: '',
+        method: 'before',
+        title: wcsdm_params.i18n.errors.error_title,
+        content: ''
+    }, args);
 
-	if (params.selector.length) {
-		var $selector = $(params.selector);
-		if (!$selector.length) {
-			return;
-		}
+    if (params.selector.length) {
+        var $selector = $(params.selector);
+        if (!$selector.length) {
+            return;
+        }
 
-		switch (params.method) {
-			case 'before':
-				$selector.before(wp.template('wcsdm-error')(params));
-				break;
+        switch (params.method) {
+            case 'before':
+                $selector.before(wp.template('wcsdm-error')(params));
+                break;
 
-			case 'after':
-				$selector.after(wp.template('wcsdm-error')(params));
-				break;
+            case 'after':
+                $selector.after(wp.template('wcsdm-error')(params));
+                break;
 
-			default:
-				$selector.append(wp.template('wcsdm-error')(params));
-				break;
-		}
+            default:
+                $selector.append(wp.template('wcsdm-error')(params));
+                break;
+        }
 
-		$('.wc-modal-shipping-method-settings').animate({
-			scrollTop: $('#wcsdm-error').position().top
-		}, 500);
+        $('.wc-modal-shipping-method-settings').animate({
+            scrollTop: $('#wcsdm-error').position().top
+        }, 500);
 
-		return $selector;
-	}
+        return $selector;
+    }
 }
 
 function hideError() {
-	$('#wcsdm-error').remove();
-	$('.wc-modal-shipping-method-settings').children().removeClass('error');
+    $('#wcsdm-error').remove();
+    $('.wc-modal-shipping-method-settings').children().removeClass('error');
 }
 
 // Taking Over window.console.error
 var windowConsoleError = window.console.error;
 window.console.error = function () {
-	if (arguments[0].toLowerCase().indexOf('google.com') !== 1) {
-		wcsdmMap.showMapError(arguments[0]);
-		return;
-	}
+    if (arguments[0].toLowerCase().indexOf('google.com') !== 1) {
+        wcsdmMapPicker.showMapError(arguments[0]);
+        return;
+    }
 
-	windowConsoleError.apply(windowConsoleError, arguments);
+    windowConsoleError.apply(windowConsoleError, arguments);
 };
 
 var isMapError = false;
-var currentLat;
-var currentLng;
 
-var wcsdmMap = {
-	init: function (params) {
-		wcsdmMap.params = {};
+var wcsdmMapPicker = {
+    init: function (params) {
+        wcsdmMapPicker.params = params;
 
-		_.keys(params).forEach(function (paramkey) {
-			switch (paramkey) {
-				case 'default_lat':
-				case 'default_lng':
-				case 'test_destination_lat':
-				case 'test_destination_lng':
-					wcsdmMap.params[paramkey] = parseFloat(params[paramkey]);
-					break;
+        $(document).on('click', '#wcsdm-btn-map-picker', function (e) {
+            e.preventDefault();
 
-				default:
-					wcsdmMap.params[paramkey] = params[paramkey];
-					break;
-			}
-		});
+            wcsdmMapPicker.setFooterButtons();
+            $('#wcsdm-map-picker-canvas').empty();
+            $('#woocommerce_wcsdm_gmaps_api_key_dummy').val($('#woocommerce_wcsdm_gmaps_api_key').val()).trigger('input');
+            $('#wcsdm-row-api-key').show().siblings().hide();
+        });
 
-		// Handle setting link clicked.
-		$(document).on('click', '.wc-shipping-zone-method-settings', function () {
-			// Bail early if the link clicked others shipping method
-			var methodTitle = $(this).closest('tr').find('.wc-shipping-zone-method-type').text();
-			if (methodTitle !== wcsdmMap.params.methodTitle) {
-				return false;
-			}
+        $(document).on('click', '#wcsdm-btn-map-cancel', wcsdmMapPicker.cancelChanges);
 
-			currentLat = $('#woocommerce_wcsdm_origin_lat').val();
-			currentLng = $('#woocommerce_wcsdm_origin_lng').val();
+        $(document).on('click', '#wcsdm-btn-map-apply', wcsdmMapPicker.applyChanges);
 
-			$('#wcsdm-col-store-location').empty().append(wp.template('wcsdm-lat-lng-table')({
-				origin_lat: currentLat,
-				origin_lng: currentLng,
-				hideButton: false
-			}));
-		});
+        $(document).on('input', '#woocommerce_wcsdm_gmaps_api_key_dummy', debounce(wcsdmMapPicker.initGoogleMap, 500));
+    },
+    addFooterButtons: function (buttons) {
+        $('#wcsdm-footer-buttons').remove();
+        $('#btn-ok').after(wp.template('wcsdm-footer-buttons')(buttons));
+    },
+    setFooterButtons: function () {
+        $('#wcsdm-footer-buttons').remove();
+        $('#btn-ok').after(wp.template('wcsdm-footer-buttons')({
+            btn_left: {
+                label: wcsdmMapPicker.params.i18n.cancel,
+                id: 'wcsdm-btn-map-cancel',
+                icon: 'undo'
+            },
+            btn_right: {
+                label: wcsdmMapPicker.params.i18n.apply_changes,
+                id: 'wcsdm-btn-map-apply',
+                icon: 'yes'
+            }
+        }));
+    },
+    restoreFooterButtons: function () {
+        $('#wcsdm-footer-buttons').remove();
+        $('#btn-ok').after(wp.template('wcsdm-footer-buttons')({
+            btn_left: {
+                label: wcsdmMapPicker.params.i18n.add_rate,
+                id: 'wcsdm-btn-add-rate',
+                icon: 'plus'
+            },
+            btn_right: {
+                label: wcsdmMapPicker.params.i18n.save_changes,
+                id: 'wcsdm-btn-save',
+                icon: 'yes'
+            }
+        }));
+    },
+    cancelChanges: function (e) {
+        e.preventDefault();
 
-		$(document).on('click', '#wcsdm-btn-map-picker', function (e) {
-			e.preventDefault();
-			$('#wcsdm-map-picker-canvas').empty();
-			$('#wcsdm-row-api-key').show().siblings().hide();
-			$('#wcsdm-col-store-location').empty();
+        hideError();
 
-			$('#map-picker-lat-lng').empty().append(wp.template('wcsdm-lat-lng-table')({
-				origin_lat: currentLat,
-				origin_lng: currentLng,
-				hideButton: true
-			}));
+        $('#wcsdm-map-picker-canvas').empty();
 
-			$('#wcsdm-buttons-footer-primary').remove();
-			$('#btn-ok').after(wp.template('wcsdm-buttons-footer-advanced')({
-				id_cancel: 'wcsdm-btn-map-cancel',
-				id_apply: 'wcsdm-btn-map-apply'
-			}));
+        wcsdmMapPicker.restoreFooterButtons();
 
-			$('#woocommerce_wcsdm_gmaps_api_key_dummy').val($('#woocommerce_wcsdm_gmaps_api_key').val()).trigger('input');
-		});
+        $('#woocommerce_wcsdm_gmaps_api_key_dummy').val($('#woocommerce_wcsdm_gmaps_api_key').val());
+        $('#woocommerce_wcsdm_origin_lat_dummy').val($('#woocommerce_wcsdm_origin_lat').val());
+        $('#woocommerce_wcsdm_origin_lng_dummy').val($('#woocommerce_wcsdm_origin_lng').val());
 
-		$(document).on('click', '#wcsdm-btn-map-cancel', function (e) {
-			e.preventDefault();
-			hideError();
-			$(e.currentTarget).closest('div').remove();
-			$('#wcsdm-col-store-location').empty().append(wp.template('wcsdm-lat-lng-table')({
-				origin_lat: currentLat,
-				origin_lng: currentLng,
-				hideButton: false
-			}));
-			$('#wcsdm-map-picker-canvas').empty();
-			$('#wcsdm-row-api-key').hide().siblings().not('.wcsdm-row--hidden').show();
-			$('#btn-ok').after(wp.template('wcsdm-buttons-footer-primary'));
-		});
+        $('#wcsdm-row-api-key').hide().siblings().not('.wcsdm-row--hidden').show();
+    },
+    applyChanges: function (e) {
+        e.preventDefault();
+        if (isMapError) {
+            return;
+        }
 
-		$(document).on('click', '#wcsdm-btn-map-apply', function (e) {
-			e.preventDefault();
-			if (isMapError) {
-				return;
-			}
+        hideError();
 
-			hideError();
+        var errors = {};
+        var $button = $(e.currentTarget).prop('disabled', true);
 
-			var errors = {};
-			var $button = $(e.currentTarget).prop('disabled', true);
+        var requiredFields = [
+            'woocommerce_wcsdm_gmaps_api_key_dummy',
+            'woocommerce_wcsdm_origin_lat_dummy',
+            'woocommerce_wcsdm_origin_lng_dummy'
+        ];
 
-			var requiredFields = [
-				'woocommerce_wcsdm_gmaps_api_key_dummy',
-				'woocommerce_wcsdm_origin_lat_dummy',
-				'woocommerce_wcsdm_origin_lng_dummy'
-			];
+        for (var i = 0; i < requiredFields.length; i++) {
+            var requiredFieldKey = requiredFields[i];
+            var $requiredField = $('#' + requiredFieldKey);
+            if (!$requiredField.val().length) {
+                errors[requiredFieldKey] = wcsdmMapPicker.params.i18n.errors.field_required.replace('%s', $requiredField.data('title'));
+            }
+        }
 
-			for (var i = 0; i < requiredFields.length; i++) {
-				var requiredFieldKey = requiredFields[i];
-				var $requiredField = $('#' + requiredFieldKey);
-				if (!$requiredField.val().length) {
-					errors[requiredFieldKey] = wcsdmMap.params.i18n.errors.field_required.replace('%s', $requiredField.data('title'));
-				}
-			}
+        if (_.keys(errors).length) {
+            var errorMessage = '';
+            _.keys(errors).forEach(function (key) {
+                errorMessage += '<p id="wcsdm-rate-field--error--' + key + '">' + errors[key] + '</p>';
+                $('#' + key).closest('td').addClass('error');
+            });
 
-			if (_.keys(errors).length) {
-				var errorMessage = '';
-				_.keys(errors).forEach(function (key) {
-					errorMessage += '<p id="wcsdm-rate-field--error--' + key + '">' + errors[key] + '</p>';
-					$('#' + key).closest('td').addClass('error');
-				});
+            showError({
+                selector: '#wcsdm-table-map-picker',
+                content: errorMessage
+            });
 
-				showError({
-					selector: '#wcsdm-table-map-picker',
-					content: errorMessage
-				});
+            $button.prop('disabled', false);
+            return;
+        }
 
-				$button.prop('disabled', false);
-				return;
-			}
+        var testService = new google.maps.DistanceMatrixService();
+        testService.getDistanceMatrix(
+            {
+                origins: [new google.maps.LatLng(wcsdmMapPicker.params.default_lat, wcsdmMapPicker.params.default_lng)],
+                destinations: [new google.maps.LatLng(wcsdmMapPicker.params.test_destination_lat, wcsdmMapPicker.params.test_destination_lng)],
+                travelMode: 'DRIVING',
+                unitSystem: google.maps.UnitSystem.METRIC
+            }, function (response, status) {
+                console.log('DistanceMatrixTestRequest', { status: status, response: response });
+                if (status === 'OK') {
 
-			var testService = new google.maps.DistanceMatrixService();
-			testService.getDistanceMatrix(
-				{
-					origins: [new google.maps.LatLng(wcsdmMap.params.default_lat, wcsdmMap.params.default_lng)],
-					destinations: [new google.maps.LatLng(wcsdmMap.params.test_destination_lat, wcsdmMap.params.test_destination_lng)],
-					travelMode: 'DRIVING',
-					unitSystem: google.maps.UnitSystem.METRIC
-				}, function (response, status) {
-					console.log('DistanceMatrixTestRequest', { status: status, response: response });
-					if (status === 'OK') {
-						$button.closest('div').remove();
+                    wcsdmMapPicker.restoreFooterButtons();
 
-						var newApiKey = $('#woocommerce_wcsdm_gmaps_api_key_dummy').val();
-						var newLat = $('#woocommerce_wcsdm_origin_lat_dummy').val();
-						var newLng = $('#woocommerce_wcsdm_origin_lng_dummy').val();
+                    var newApiKey = $('#woocommerce_wcsdm_gmaps_api_key_dummy').val();
+                    var newLat = $('#woocommerce_wcsdm_origin_lat_dummy').val();
+                    var newLng = $('#woocommerce_wcsdm_origin_lng_dummy').val();
 
-						$('#wcsdm-col-store-location').empty().append(wp.template('wcsdm-lat-lng-table')({
-							origin_lat: newLat,
-							origin_lng: newLng,
-							hideButton: false
-						}));
+                    $('#wcsdm-map-picker-canvas').empty();
 
-						$('#wcsdm-row-api-key').hide().siblings().not('.wcsdm-row--hidden').show();
-						$('#btn-ok').after(wp.template('wcsdm-buttons-footer-primary'));
-						$('#woocommerce_wcsdm_gmaps_api_key').val(newApiKey);
-						$('#woocommerce_wcsdm_origin_lat').val(newLat);
-						$('#woocommerce_wcsdm_origin_lng').val(newLng);
-						$('#wcsdm-map-picker-canvas').empty();
-					}
-				});
-		});
+                    $('#woocommerce_wcsdm_gmaps_api_key').val(newApiKey);
+                    $('#woocommerce_wcsdm_origin_lat').val(newLat);
+                    $('#woocommerce_wcsdm_origin_lng').val(newLng);
 
-		// Handle on API Key field setting changed.
-		$(document).on('input', '#woocommerce_wcsdm_gmaps_api_key_dummy', debounce(function () {
-			wcsdmMap.initGoogleMaps();
-		}, 500));
-	},
-	initGoogleMaps: function () {
-		hideError();
-		$('#wcsdm-map-picker-canvas').removeClass('has-error empty').empty();
+                    $('#wcsdm-row-api-key').hide().siblings().not('.wcsdm-row--hidden').show();
+                }
+            });
+    },
+    initGoogleMap: function () {
+        hideError();
 
-		var apiKey = $('#woocommerce_wcsdm_gmaps_api_key_dummy').val();
-		if (!apiKey.length) {
-			$('#wcsdm-map-picker-canvas').addClass('empty').append($('#wcsdm-map-picker-instruction').html());
-			$('#wcsdm-btn-map-apply').prop('disabled', true);
-			return;
-		}
+        $('#wcsdm-map-picker-canvas').removeClass('has-error empty').empty();
 
-		isMapError = false;
+        var apiKey = $('#woocommerce_wcsdm_gmaps_api_key_dummy').val();
+        if (!apiKey.length) {
+            $('#wcsdm-map-picker-canvas').addClass('empty').append($('#wcsdm-map-picker-instruction').html());
+            $('#wcsdm-btn-map-apply').prop('disabled', true);
+            return;
+        }
 
-		window.google = undefined;
+        isMapError = false;
 
-		var mapScriptUrl = 'https://maps.googleapis.com/maps/api/js?libraries=geometry,places&key=' + apiKey + '&language=' + wcsdmMap.params.language;
-		$.getScript(mapScriptUrl, function () {
-			wcsdmMap.buildGoogleMaps();
-		});
-	},
-	buildGoogleMaps: function () {
-		var pattern = /^[-]?[0-9]{1,7}(\.[0-9]+)?$/;
+        window.google = undefined;
 
-		var curLat = $('#woocommerce_wcsdm_origin_lat').val();
-		var curLng = $('#woocommerce_wcsdm_origin_lng').val();
+        var mapScriptUrl = 'https://maps.googleapis.com/maps/api/js?libraries=geometry,places&key=' + apiKey + '&language=' + wcsdmMapPicker.params.language;
+        $.getScript(mapScriptUrl, function () {
+            wcsdmMapPicker.buildGoogleMaps();
+        });
+    },
+    buildGoogleMaps: function () {
+        var pattern = /^[-]?[0-9]{1,7}(\.[0-9]+)?$/;
 
-		var curLatLng = {
-			lat: curLat.length && pattern.exec(curLat) ? parseFloat(curLat) : wcsdmMap.params.default_lat,
-			lng: curLng.length && pattern.exec(curLng) ? parseFloat(curLng) : wcsdmMap.params.default_lng,
-		};
+        var curLat = $('#woocommerce_wcsdm_origin_lat').val();
+        var curLng = $('#woocommerce_wcsdm_origin_lng').val();
 
-		var markers = [];
+        var curLatLng = {
+            lat: curLat.length && pattern.exec(curLat) ? parseFloat(curLat) : wcsdmMapPicker.params.default_lat,
+            lng: curLng.length && pattern.exec(curLng) ? parseFloat(curLng) : wcsdmMapPicker.params.default_lng,
+        };
 
-		// Initiate map
-		var map = new google.maps.Map(
-			document.getElementById('wcsdm-map-picker-canvas'),
-			{
-				center: curLatLng,
-				zoom: 16,
-				mapTypeControl: false,
-				streetViewControl: false,
-				fullscreenControl: false,
-				mapTypeId: 'roadmap'
-			}
-		);
+        var markers = [];
 
-		var marker = new google.maps.Marker({
-			map: map,
-			position: curLatLng,
-			draggable: true,
-			icon: wcsdmMap.params.marker
-		});
+        // Initiate map
+        var map = new google.maps.Map(
+            document.getElementById('wcsdm-map-picker-canvas'),
+            {
+                center: curLatLng,
+                zoom: 16,
+                mapTypeControl: false,
+                streetViewControl: false,
+                fullscreenControl: false,
+                mapTypeId: 'roadmap'
+            }
+        );
 
-		var infowindow = new google.maps.InfoWindow({ maxWidth: 350 });
+        var marker = new google.maps.Marker({
+            map: map,
+            position: curLatLng,
+            draggable: true,
+            icon: wcsdmMapPicker.params.marker
+        });
 
-		if (!curLat.length || !pattern.exec(curLat) || !curLng.length || !pattern.exec(curLng)) {
-			infowindow.setContent(wcsdmMap.params.i18n.dragMarker);
-			infowindow.open(map, marker);
-		} else {
-			wcsdmMap.setLatLng(marker.position, marker, map, infowindow);
-		}
+        var infowindow = new google.maps.InfoWindow({ maxWidth: 350 });
 
-		google.maps.event.addListener(marker, 'dragstart', function () {
-			infowindow.close();
-		});
+        if (!curLat.length || !pattern.exec(curLat) || !curLng.length || !pattern.exec(curLng)) {
+            infowindow.setContent(wcsdmMapPicker.params.i18n.dragMarker);
+            infowindow.open(map, marker);
+        } else {
+            wcsdmMapPicker.setLatLng(marker.position, marker, map, infowindow);
+        }
 
-		google.maps.event.addListener(marker, 'dragend', function (event) {
-			wcsdmMap.setLatLng(event.latLng, marker, map, infowindow);
-		});
+        google.maps.event.addListener(marker, 'dragstart', function () {
+            infowindow.close();
+        });
 
-		markers.push(marker);
+        google.maps.event.addListener(marker, 'dragend', function (event) {
+            wcsdmMapPicker.setLatLng(event.latLng, marker, map, infowindow);
+        });
 
-		$('#wcsdm-map-picker-canvas').append(wp.template('wcsdm-map-search'));
+        markers.push(marker);
 
-		// Create the search box and link it to the UI element.
-		var inputAddress = document.getElementById('wcsdm-map-search');
-		var searchBox = new google.maps.places.SearchBox(inputAddress);
-		map.controls[google.maps.ControlPosition.TOP_LEFT].push(inputAddress);
+        $('#wcsdm-map-picker-canvas').append(wp.template('wcsdm-map-search'));
 
-		// Bias the SearchBox results towards current map's viewport.
-		map.addListener('bounds_changed', function () {
-			searchBox.setBounds(map.getBounds());
-		});
+        // Create the search box and link it to the UI element.
+        var inputAddress = document.getElementById('wcsdm-map-search');
+        var searchBox = new google.maps.places.SearchBox(inputAddress);
+        map.controls[google.maps.ControlPosition.TOP_LEFT].push(inputAddress);
 
-		// Listen for the event fired when the user selects a prediction and retrieve more details for that place.
-		searchBox.addListener('places_changed', function () {
-			var places = searchBox.getPlaces();
-			if (places.length === 0) {
-				return;
-			}
+        // Bias the SearchBox results towards current map's viewport.
+        map.addListener('bounds_changed', function () {
+            searchBox.setBounds(map.getBounds());
+        });
 
-			// Clear out the old markers.
-			markers.forEach(function (marker) {
-				marker.setMap(null);
-			});
+        // Listen for the event fired when the user selects a prediction and retrieve more details for that place.
+        searchBox.addListener('places_changed', function () {
+            var places = searchBox.getPlaces();
+            if (places.length === 0) {
+                return;
+            }
 
-			markers = [];
+            // Clear out the old markers.
+            markers.forEach(function (marker) {
+                marker.setMap(null);
+            });
 
-			// For each place, get the icon, name and location.
-			var bounds = new google.maps.LatLngBounds();
-			places.forEach(function (place) {
-				if (!place.geometry) {
-					console.log('Returned place contains no geometry');
-					return;
-				}
+            markers = [];
 
-				marker = new google.maps.Marker({
-					map: map,
-					position: place.geometry.location,
-					draggable: true,
-					icon: wcsdmMap.params.marker
-				});
+            // For each place, get the icon, name and location.
+            var bounds = new google.maps.LatLngBounds();
+            places.forEach(function (place) {
+                if (!place.geometry) {
+                    console.log('Returned place contains no geometry');
+                    return;
+                }
 
-				wcsdmMap.setLatLng(place.geometry.location, marker, map, infowindow);
+                marker = new google.maps.Marker({
+                    map: map,
+                    position: place.geometry.location,
+                    draggable: true,
+                    icon: wcsdmMapPicker.params.marker
+                });
 
-				google.maps.event.addListener(marker, 'dragstart', function () {
-					infowindow.close();
-				});
+                wcsdmMapPicker.setLatLng(place.geometry.location, marker, map, infowindow);
 
-				google.maps.event.addListener(marker, 'dragend', function (event) {
-					wcsdmMap.setLatLng(event.latLng, marker, map, infowindow);
-				});
+                google.maps.event.addListener(marker, 'dragstart', function () {
+                    infowindow.close();
+                });
 
-				// Create a marker for each place.
-				markers.push(marker);
+                google.maps.event.addListener(marker, 'dragend', function (event) {
+                    wcsdmMapPicker.setLatLng(event.latLng, marker, map, infowindow);
+                });
 
-				if (place.geometry.viewport) {
-					// Only geocodes have viewport.
-					bounds.union(place.geometry.viewport);
-				} else {
-					bounds.extend(place.geometry.location);
-				}
-			});
-			map.fitBounds(bounds);
-		});
-	},
-	setLatLng: function (location, marker, map, infowindow) {
-		var geocoder = new google.maps.Geocoder();
-		geocoder.geocode(
-			{
-				latLng: location
-			},
-			function (results, status) {
-				if (status === google.maps.GeocoderStatus.OK && results[0]) {
-					infowindow.setContent(results[0].formatted_address);
-					infowindow.open(map, marker);
-					marker.addListener('click', function () {
-						infowindow.open(map, marker);
-					});
-				}
-			}
-		);
-		map.setCenter(location);
+                // Create a marker for each place.
+                markers.push(marker);
 
-		if (!isMapError) {
-			$('#wcsdm-btn-map-apply').prop('disabled', false);
-			$('#woocommerce_wcsdm_origin_lat_dummy').val(location.lat());
-			$('#woocommerce_wcsdm_origin_lng_dummy').val(location.lng());
-		}
-	},
-	showMapError: function (errorMsg) {
-		isMapError = true;
-		var patternLink = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
-		if ($('.gm-err-message').length) {
-			$('.gm-err-message').empty().append(errorMsg.replace(patternLink, '<a href="$1" target="_blank">$1</a>'));
-		} else {
-			setTimeout(function () {
-				$('#wcsdm-map-picker-canvas').addClass('empty has-error').empty();
-				showError({
-					selector: '#wcsdm-map-picker-canvas',
-					method: 'append',
-					content: errorMsg.replace(patternLink, '<a href="$1" target="_blank">$1</a>')
-				});
-			}, 0);
-		}
-		$('#wcsdm-btn-map-apply').prop('disabled', true);
-		$('#woocommerce_wcsdm_origin_lat_dummy').val('');
-		$('#woocommerce_wcsdm_origin_lng_dummy').val('');
-	}
+                if (place.geometry.viewport) {
+                    // Only geocodes have viewport.
+                    bounds.union(place.geometry.viewport);
+                } else {
+                    bounds.extend(place.geometry.location);
+                }
+            });
+            map.fitBounds(bounds);
+        });
+    },
+    setLatLng: function (location, marker, map, infowindow) {
+        var geocoder = new google.maps.Geocoder();
+        geocoder.geocode(
+            {
+                latLng: location
+            },
+            function (results, status) {
+                if (status === google.maps.GeocoderStatus.OK && results[0]) {
+                    var infowindowContent = results[0].formatted_address +
+                        '<hr /><span class="lat-lng-label"><strong>' + wcsdmMapPicker.params.i18n.latitude + '</strong>: ' + location.lat() + '</span>' +
+                        '<br /><span class="lat-lng-label"><strong>' + wcsdmMapPicker.params.i18n.longitude + '</strong>: ' + location.lng() + '</span>';
+                    infowindow.setContent(infowindowContent);
+                    infowindow.open(map, marker);
+                    marker.addListener('click', function () {
+                        infowindow.open(map, marker);
+                    });
+                }
+            }
+        );
+        map.setCenter(location);
+
+        if (!isMapError) {
+            $('#wcsdm-btn-map-apply').prop('disabled', false);
+            $('#woocommerce_wcsdm_origin_lat_dummy').val(location.lat());
+            $('#woocommerce_wcsdm_origin_lng_dummy').val(location.lng());
+        }
+    },
+    showMapError: function (errorMsg) {
+        isMapError = true;
+        var patternLink = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+        if ($('.gm-err-message').length) {
+            $('.gm-err-message').empty().append(errorMsg.replace(patternLink, '<a href="$1" target="_blank">$1</a>'));
+        } else {
+            setTimeout(function () {
+                $('#wcsdm-map-picker-canvas').addClass('empty has-error').empty();
+                showError({
+                    selector: '#wcsdm-map-picker-canvas',
+                    method: 'append',
+                    content: errorMsg.replace(patternLink, '<a href="$1" target="_blank">$1</a>')
+                });
+            }, 0);
+        }
+        $('#wcsdm-btn-map-apply').prop('disabled', true);
+    }
 };
 
 var rowIndex;
@@ -459,28 +445,16 @@ var wcsdmTableRates = {
     init: function (params) {
         wcsdmTableRates.params = params;
 
-        // Handle setting link clicked.
-        $(document).on('click', '.wc-shipping-zone-method-settings', function () {
-            // Bail early if the link clicked others shipping method
-            var methodTitle = $(this).closest('tr').find('.wc-shipping-zone-method-type').text();
-            if (methodTitle !== wcsdmTableRates.params.methodTitle) {
-                return false;
-            }
-
-            $('.wcsdm-rate-field--hidden--select').each(function (i, input) {
-                var $input = $(input);
-                var inputKey = $input.data('key');
-                var inputValue = $input.val();
-                $input.closest('tr').find('.wcsdm-rate-field--dummy--' + inputKey).val(inputValue);
-            });
-            $('#woocommerce_wcsdm_gmaps_api_units').trigger('change');
-            $('#btn-ok').hide().after(wp.template('wcsdm-buttons-footer-primary'));
-
-            setTimeout(function () {
-                $('.wcsdm-rate-field--dummy--select').trigger('change');
-                wcsdmTableRates._toggleTableRates();
-            }, 100);
+        $('.wcsdm-rate-field--hidden').each(function (i, input) {
+            var $input = $(input);
+            $input.closest('tr').find('.wcsdm-rate-field--dummy--' + $input.data('key')).val($input.val());
         });
+
+        $('#woocommerce_wcsdm_gmaps_api_units').trigger('change');
+
+        setTimeout(function () {
+            wcsdmTableRates.toggleTableRates();
+        }, 100);
 
         // Handle on distance field changed.
         $(document).on('change input', '.wcsdm-rate-field--dummy--distance', function (e) {
@@ -495,8 +469,8 @@ var wcsdmTableRates = {
         });
 
         // Handle on distance unit field setting changed.
-        $(document).on('change', '#woocommerce_wcsdm_gmaps_api_units.changed', function () {
-            $('option[value="per_unit"]').text(wcsdmTableRates.params.i18n.distance[$(this).val()].perUnit);
+        $(document).on('change', '#woocommerce_wcsdm_gmaps_api_units.changed', function (e) {
+            $('option[value="per_unit"]').text(wcsdmTableRates.params.i18n.distance[$(e.currentTarget).val()].perUnit);
         });
 
         // Handle on Rates per Shipping CLass option field value changed.
@@ -569,20 +543,22 @@ var wcsdmTableRates = {
             var inputKey = $input.attr('data-key');
             $input.closest('tr').find('.wcsdm-rate-field--hidden--' + inputKey).val(inputVal);
 
-            wcsdmTableRates._validateRatesList();
+            wcsdmTableRates.validateRatesList();
         }, 500));
 
-        // Sort rows based distance field on blur.
+        // // Sort rows based distance field on blur.
         $(document).on('blur', '.wcsdm-rate-field--dummy--distance', function (e) {
             if ($(e.currentTarget).val().length) {
-                wcsdmTableRates._sortRates();
+                wcsdmTableRates.sortRates();
             }
         });
 
         // Handle on advanced rate settings link clicked.
-        $(document).on('click', '.wcsdm-btn-advanced-link', function (e) {
+        $(document).on('click', '.wcsdm-btn-advanced-rate', function (e) {
             e.preventDefault();
+
             hideError();
+
             var $row = $(e.currentTarget).closest('tr').removeClass('applied');
             $row.siblings().removeClass('applied');
             $row.find('.wcsdm-rate-field--hidden').each(function (i, input) {
@@ -594,23 +570,47 @@ var wcsdmTableRates = {
                     $inputTarget.closest('tr').addClass('error');
                 }
             });
+
             rowIndex = $row.index();
             rowScrollTop = Math.abs($row.closest('form').position().top);
-            var $section = $(e.currentTarget).closest('section');
-            $section.find('.wcsdm-row-advanced').show().siblings().hide();
-            $('#wcsdm-buttons-footer-primary').remove();
-            $('#btn-ok').hide().after(wp.template('wcsdm-buttons-footer-advanced')({
-                id_cancel: 'wcsdm-btn-advanced-cancel',
-                id_apply: 'wcsdm-btn-advanced-apply'
-            }));
+
+            wcsdmTableRates.setFooterButtons();
+
+            $('#wcsdm-row-advanced').show().siblings().hide();
+
+        });
+
+        // Handle on Cancel Changes button clicked.
+        $(document).on('click', '#wcsdm-btn-advanced-rate-cancel', function (e) {
+            e.preventDefault();
+
+            hideError();
+
+            wcsdmTableRates.restoreFooterButtons();
+
+            $('#wcsdm-row-advanced').hide().siblings().not('.wcsdm-row--hidden').show();
+
+            $('#wcsdm-table-advanced tr').removeClass('error');
+
+            $('#wcsdm-table-rates tbody tr:eq(' + rowIndex + ')').addClass('applied');
+
+            wcsdmTableRates.validateRatesList();
+
+            $('.wc-modal-shipping-method-settings').animate({
+                scrollTop: rowScrollTop
+            }, 500, function () {
+                setTimeout(function () {
+                    $('#wcsdm-table-rates tbody tr').removeClass('applied');
+                }, 800);
+            });
         });
 
         // Handle on Apply Changes button clicked.
-        $(document).on('click', '#wcsdm-btn-advanced-apply', function (e) {
+        $(document).on('click', '#wcsdm-btn-advanced-rate-apply', function (e) {
             e.preventDefault();
             hideError();
 
-            var errors = wcsdmTableRates._getRateFormErrors($('.wcsdm-rate-field--advanced'));
+            var errors = wcsdmTableRates.getRateFormErrors($('.wcsdm-rate-field--advanced'));
 
             if (errors.length) {
                 var errorMessages = {};
@@ -636,108 +636,117 @@ var wcsdmTableRates = {
 
             if (_.keys(formData).length) {
                 _.keys(formData).forEach(function (key) {
-                    $('#wcsdm-table-rates tbody tr:eq(' + rowIndex + ')').removeClass('error').addClass('applied').find('.wcsdm-rate-field--dummy--' + key).val(formData[key]);
-                    $('#wcsdm-table-rates tbody tr:eq(' + rowIndex + ')').removeClass('error').addClass('applied').find('.wcsdm-rate-field--hidden--' + key).val(formData[key]);
+                    $('#wcsdm-table-rates tbody tr:eq(' + rowIndex + ')').removeClass('error').addClass('applied').find('.wcsdm-rate-field--dummy--' + key + ', .wcsdm-rate-field--hidden--' + key).val(formData[key]);
                 });
 
-                $(e.currentTarget).closest('div').remove();
+                wcsdmTableRates.restoreFooterButtons();
+
                 $('#wcsdm-row-advanced').hide().siblings().not('.wcsdm-row--hidden').show();
-                $('#btn-ok').after(wp.template('wcsdm-buttons-footer-primary'));
 
                 $('.wc-modal-shipping-method-settings').animate({
                     scrollTop: rowScrollTop
-                }, 500);
-
-                setTimeout(function () {
-                    wcsdmTableRates._sortRates();
-                    wcsdmTableRates._validateRatesList();
-                }, 100);
+                }, 500, function () {
+                    setTimeout(function () {
+                        wcsdmTableRates.sortRates();
+                        wcsdmTableRates.validateRatesList();
+                    }, 100);
+                });
             }
         });
 
-        // Handle on Cancel Changes button clicked.
-        $(document).on('click', '#wcsdm-btn-advanced-cancel', function (e) {
-            e.preventDefault();
-            $(e.currentTarget).closest('div').remove();
-            $('#wcsdm-row-advanced').hide().siblings().not('.wcsdm-row--hidden').show();
-            $('#wcsdm-table-advanced tr').removeClass('error');
-            $('#btn-ok').after(wp.template('wcsdm-buttons-footer-primary'));
-            $('#wcsdm-table-rates tbody tr:eq(' + rowIndex + ')').addClass('applied');
+        // // Handle on Save Changes button clicked.
+        // $(document).on('click', '#wcsdm-btn-primary-save-changes', function (e) {
+        //     e.preventDefault();
+        //     hideError();
 
-            $('.wc-modal-shipping-method-settings').animate({
-                scrollTop: rowScrollTop
-            }, 500);
+        //     var locationErrorMessage = '';
+        //     var locationFields = ['woocommerce_wcsdm_origin_lat', 'woocommerce_wcsdm_origin_lng'];
+        //     for (var i = 0; i < locationFields.length; i++) {
+        //         var locationFieldKey = locationFields[i];
+        //         var $locationField = $('#' + locationFieldKey);
+        //         if (!$locationField.val().length) {
+        //             locationErrorMessage += '<p id="wcsdm-rate-field--error--' + locationFieldKey + '">' + wcsdmTableRates.params.i18n.errors.field_required.replace('%s', $locationField.data('title')) + '</p>';
+        //             $('#' + locationFieldKey + '_dummy').closest('td').addClass('error');
+        //         }
+        //     }
 
-            wcsdmTableRates._validateRatesList();
+        //     if (locationErrorMessage.length) {
+        //         showError({
+        //             selector: '#wcsdm-col-store-location',
+        //             content: locationErrorMessage
+        //         });
+        //         return;
+        //     }
 
-            setTimeout(function () {
-                $('#wcsdm-table-rates tbody tr:eq(' + rowIndex + ')').removeClass('applied');
-            }, 800);
-        });
+        //     if (!$('#wcsdm-table-rates tbody tr').length) {
+        //         showError({
+        //             selector: '#wcsdm-table-rates',
+        //             content: wcsdmTableRates.params.i18n.errors.rates_empty
+        //         });
+        //         return;
+        //     }
 
-        // Handle on Save Changes button clicked.
-        $(document).on('click', '#wcsdm-btn-primary-save-changes', function (e) {
-            e.preventDefault();
-            hideError();
+        //     var errors = wcsdmTableRates.validateRatesList();
+        //     if (errors.length) {
+        //         var errorMessages = {};
 
-            var locationErrorMessage = '';
-            var locationFields = ['woocommerce_wcsdm_origin_lat', 'woocommerce_wcsdm_origin_lng'];
-            for (var i = 0; i < locationFields.length; i++) {
-                var locationFieldKey = locationFields[i];
-                var $locationField = $('#' + locationFieldKey);
-                if (!$locationField.val().length) {
-                    locationErrorMessage += '<p id="wcsdm-rate-field--error--' + locationFieldKey + '">' + wcsdmTableRates.params.i18n.errors.field_required.replace('%s', $locationField.data('title')) + '</p>';
-                    $('#' + locationFieldKey + '_dummy').closest('td').addClass('error');
-                }
-            }
+        //         for (var index = 0; index < errors.length; index++) {
+        //             errorMessages[errors[index].key] = errors[index].message;
+        //         }
 
-            if (locationErrorMessage.length) {
-                showError({
-                    selector: '#wcsdm-col-store-location',
-                    content: locationErrorMessage
-                });
-                return;
-            }
+        //         var errorMessage = '';
+        //         _.keys(errorMessages).forEach(function (key) {
+        //             $('.wcsdm-rate-field--advanced--' + key).closest('tr').addClass('error');
+        //             errorMessage += '<p id="wcsdm-rate-field--error--' + key + '">' + errorMessages[key] + '</p>';
+        //         });
 
-            if (!$('#wcsdm-table-rates tbody tr').length) {
-                showError({
-                    selector: '#wcsdm-table-rates',
-                    content: wcsdmTableRates.params.i18n.errors.rates_empty
-                });
-                return;
-            }
+        //         showError({
+        //             selector: '#wcsdm-table-rates',
+        //             content: errorMessage
+        //         });
+        //         return;
+        //     }
 
-            var errors = wcsdmTableRates._validateRatesList();
-            if (errors.length) {
-                var errorMessages = {};
-
-                for (var index = 0; index < errors.length; index++) {
-                    errorMessages[errors[index].key] = errors[index].message;
-                }
-
-                var errorMessage = '';
-                _.keys(errorMessages).forEach(function (key) {
-                    $('.wcsdm-rate-field--advanced--' + key).closest('tr').addClass('error');
-                    errorMessage += '<p id="wcsdm-rate-field--error--' + key + '">' + errorMessages[key] + '</p>';
-                });
-
-                showError({
-                    selector: '#wcsdm-table-rates',
-                    content: errorMessage
-                });
-                return;
-            }
-
-            $('#btn-ok').trigger('click');
-        });
+        //     $('#btn-ok').trigger('click');
+        // });
 
         // Handle add rate rows.
-        $(document).on('click', '#wcsdm-btn-primary-add-rate', wcsdmTableRates._addRateRows);
+        $(document).on('click', '#wcsdm-btn-add-rate', wcsdmTableRates.addRateRows);
 
         // Handle remove rate rows.
-        $(document).on('click', '.btn-delete-rate', wcsdmTableRates._removeRateRows);
+        $(document).on('click', '.btn-delete-rate', wcsdmTableRates.removeRateRows);
     },
-    _sortRates: function () {
+    setFooterButtons: function () {
+        $('#wcsdm-footer-buttons').remove();
+        $('#btn-ok').after(wp.template('wcsdm-footer-buttons')({
+            btn_left: {
+                label: wcsdmMapPicker.params.i18n.cancel,
+                id: 'wcsdm-btn-advanced-rate-cancel',
+                icon: 'undo'
+            },
+            btn_right: {
+                label: wcsdmMapPicker.params.i18n.apply_changes,
+                id: 'wcsdm-btn-advanced-rate-apply',
+                icon: 'yes'
+            }
+        }));
+    },
+    restoreFooterButtons: function () {
+        $('#wcsdm-footer-buttons').remove();
+        $('#btn-ok').after(wp.template('wcsdm-footer-buttons')({
+            btn_left: {
+                label: wcsdmMapPicker.params.i18n.add_rate,
+                id: 'wcsdm-btn-add-rate',
+                icon: 'plus'
+            },
+            btn_right: {
+                label: wcsdmMapPicker.params.i18n.save_changes,
+                id: 'wcsdm-btn-save',
+                icon: 'yes'
+            }
+        }));
+    },
+    sortRates: function () {
         $('#wcsdm-btn-primary-save-changes').prop('disabled', true);
         var rows = $('#wcsdm-table-rates > tbody > tr').addClass('sorting').get().sort(function (a, b) {
             var valueADistance = $(a).find('.wcsdm-rate-field--dummy--distance').val();
@@ -771,9 +780,9 @@ var wcsdmTableRates = {
             $('#wcsdm-table-rates .wcsdm-rate-field--dummy--distance').removeClass('changed');
         }, 800);
     },
-    _validateRatesList: function () {
+    validateRatesList: function () {
         hideError();
-        var errors = wcsdmTableRates._getRateFormErrors($('.wcsdm-rate-field--hidden'));
+        var errors = wcsdmTableRates.getRateFormErrors($('.wcsdm-rate-field--hidden'));
         if (errors.length) {
             for (var index = 0; index < errors.length; index++) {
                 $('#wcsdm-table-rates tbody tr:eq(' + errors[index].rowIndex + ')').find('.col-' + errors[index].key).addClass('error');
@@ -781,7 +790,7 @@ var wcsdmTableRates = {
         }
         return errors;
     },
-    _getRateFormErrors: function ($fields) {
+    getRateFormErrors: function ($fields) {
         var errors = [];
         var fields = {};
 
@@ -898,7 +907,7 @@ var wcsdmTableRates = {
 
         return dataForm;
     },
-    _addRateRows: function (e) {
+    addRateRows: function (e) {
         e.preventDefault();
         $('#wcsdm-table-rates tbody').append(wp.template('rates-list-input-table-row')).find('tr:last-child .wcsdm-rate-field').each(function (i, input) {
             $(input).trigger('change');
@@ -908,14 +917,14 @@ var wcsdmTableRates = {
         });
         $('#woocommerce_wcsdm_gmaps_api_units').trigger('change');
         $('.wc-modal-shipping-method-settings').scrollTop($('.wc-modal-shipping-method-settings').find('form').outerHeight());
-        wcsdmTableRates._toggleTableRates();
+        wcsdmTableRates.toggleTableRates();
     },
-    _removeRateRows: function (e) {
+    removeRateRows: function (e) {
         e.preventDefault();
         $(e.currentTarget).closest('tr').remove();
-        wcsdmTableRates._toggleTableRates();
+        wcsdmTableRates.toggleTableRates();
     },
-    _toggleTableRates: function (e) {
+    toggleTableRates: function (e) {
         $('#wcsdm-table-rates').find('thead, tfoot').show();
 
         if (!$('#wcsdm-table-rates tbody tr').length) {
@@ -925,27 +934,62 @@ var wcsdmTableRates = {
 };
 
 $(document).ready(function () {
-	wcsdmMap.init(wcsdm_params);
-	wcsdmTableRates.init(wcsdm_params);
-	// Try show settings modal on settings page.
-	if (wcsdm_params.showSettings) {
-		setTimeout(function () {
-			var isMethodAdded = false;
-			var methods = $(document).find('.wc-shipping-zone-method-type');
-			for (var i = 0; i < methods.length; i++) {
-				var method = methods[i];
-				if ($(method).text() === wcsdm_params.methodTitle) {
-					$(method).closest('tr').find('.row-actions .wc-shipping-zone-method-settings').trigger('click');
-					isMethodAdded = true;
-					return;
-				}
-			}
-			// Show Add shipping method modal if the shipping is not added.
-			if (!isMethodAdded) {
-				$('.wc-shipping-zone-add-method').trigger('click');
-				$('select[name="add_method_id"]').val(wcsdm_params.methodId).trigger('change');
-			}
-		}, 200);
-	}
+    // Try show settings modal on settings page.
+    if (wcsdm_params.showSettings) {
+        setTimeout(function () {
+            var isMethodAdded = false;
+            var methods = $(document).find('.wc-shipping-zone-method-type');
+            for (var i = 0; i < methods.length; i++) {
+                var method = methods[i];
+                if ($(method).text() === wcsdm_params.methodTitle) {
+                    $(method).closest('tr').find('.row-actions .wc-shipping-zone-method-settings').trigger('click');
+                    isMethodAdded = true;
+                    return;
+                }
+            }
+            // Show Add shipping method modal if the shipping is not added.
+            if (!isMethodAdded) {
+                $('.wc-shipping-zone-add-method').trigger('click');
+                $('select[name="add_method_id"]').val(wcsdm_params.methodId).trigger('change');
+            }
+        }, 400);
+    }
+
+    $(document).on('click', '.wc-shipping-zone-method-settings', function () {
+        var params = _.mapObject(wcsdm_params, function (val, key) {
+            switch (key) {
+                case 'default_lat':
+                case 'default_lng':
+                case 'test_destination_lat':
+                case 'test_destination_lng':
+                    return parseFloat(val);
+
+                default:
+                    return val;
+            }
+        });
+
+        // Bail early if the link clicked others shipping method
+        var methodTitle = $(this).closest('tr').find('.wc-shipping-zone-method-type').text();
+        if (methodTitle !== params.methodTitle) {
+            return;
+        }
+
+        $('#btn-ok').hide().after(wp.template('wcsdm-footer-buttons')({
+            btn_left: {
+                label: params.i18n.add_rate,
+                id: 'wcsdm-btn-add-rate',
+                icon: 'plus'
+            },
+            btn_right: {
+                label: params.i18n.save_changes,
+                id: 'wcsdm-btn-save',
+                icon: 'yes'
+            }
+        }));
+
+        wcsdmTableRates.init(params);
+        wcsdmMapPicker.init(params);
+    });
 });
 }(jQuery));

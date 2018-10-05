@@ -5,28 +5,16 @@ var wcsdmTableRates = {
     init: function (params) {
         wcsdmTableRates.params = params;
 
-        // Handle setting link clicked.
-        $(document).on('click', '.wc-shipping-zone-method-settings', function () {
-            // Bail early if the link clicked others shipping method
-            var methodTitle = $(this).closest('tr').find('.wc-shipping-zone-method-type').text();
-            if (methodTitle !== wcsdmTableRates.params.methodTitle) {
-                return false;
-            }
-
-            $('.wcsdm-rate-field--hidden--select').each(function (i, input) {
-                var $input = $(input);
-                var inputKey = $input.data('key');
-                var inputValue = $input.val();
-                $input.closest('tr').find('.wcsdm-rate-field--dummy--' + inputKey).val(inputValue);
-            });
-            $('#woocommerce_wcsdm_gmaps_api_units').trigger('change');
-            $('#btn-ok').hide().after(wp.template('wcsdm-buttons-footer-primary'));
-
-            setTimeout(function () {
-                $('.wcsdm-rate-field--dummy--select').trigger('change');
-                wcsdmTableRates._toggleTableRates();
-            }, 100);
+        $('.wcsdm-rate-field--hidden').each(function (i, input) {
+            var $input = $(input);
+            $input.closest('tr').find('.wcsdm-rate-field--dummy--' + $input.data('key')).val($input.val());
         });
+
+        $('#woocommerce_wcsdm_gmaps_api_units').trigger('change');
+
+        setTimeout(function () {
+            wcsdmTableRates.toggleTableRates();
+        }, 100);
 
         // Handle on distance field changed.
         $(document).on('change input', '.wcsdm-rate-field--dummy--distance', function (e) {
@@ -41,8 +29,8 @@ var wcsdmTableRates = {
         });
 
         // Handle on distance unit field setting changed.
-        $(document).on('change', '#woocommerce_wcsdm_gmaps_api_units.changed', function () {
-            $('option[value="per_unit"]').text(wcsdmTableRates.params.i18n.distance[$(this).val()].perUnit);
+        $(document).on('change', '#woocommerce_wcsdm_gmaps_api_units.changed', function (e) {
+            $('option[value="per_unit"]').text(wcsdmTableRates.params.i18n.distance[$(e.currentTarget).val()].perUnit);
         });
 
         // Handle on Rates per Shipping CLass option field value changed.
@@ -115,20 +103,22 @@ var wcsdmTableRates = {
             var inputKey = $input.attr('data-key');
             $input.closest('tr').find('.wcsdm-rate-field--hidden--' + inputKey).val(inputVal);
 
-            wcsdmTableRates._validateRatesList();
+            wcsdmTableRates.validateRatesList();
         }, 500));
 
-        // Sort rows based distance field on blur.
+        // // Sort rows based distance field on blur.
         $(document).on('blur', '.wcsdm-rate-field--dummy--distance', function (e) {
             if ($(e.currentTarget).val().length) {
-                wcsdmTableRates._sortRates();
+                wcsdmTableRates.sortRates();
             }
         });
 
         // Handle on advanced rate settings link clicked.
-        $(document).on('click', '.wcsdm-btn-advanced-link', function (e) {
+        $(document).on('click', '.wcsdm-btn-advanced-rate', function (e) {
             e.preventDefault();
+
             hideError();
+
             var $row = $(e.currentTarget).closest('tr').removeClass('applied');
             $row.siblings().removeClass('applied');
             $row.find('.wcsdm-rate-field--hidden').each(function (i, input) {
@@ -140,23 +130,47 @@ var wcsdmTableRates = {
                     $inputTarget.closest('tr').addClass('error');
                 }
             });
+
             rowIndex = $row.index();
             rowScrollTop = Math.abs($row.closest('form').position().top);
-            var $section = $(e.currentTarget).closest('section');
-            $section.find('.wcsdm-row-advanced').show().siblings().hide();
-            $('#wcsdm-buttons-footer-primary').remove();
-            $('#btn-ok').hide().after(wp.template('wcsdm-buttons-footer-advanced')({
-                id_cancel: 'wcsdm-btn-advanced-cancel',
-                id_apply: 'wcsdm-btn-advanced-apply'
-            }));
+
+            wcsdmTableRates.setFooterButtons();
+
+            $('#wcsdm-row-advanced').show().siblings().hide();
+
+        });
+
+        // Handle on Cancel Changes button clicked.
+        $(document).on('click', '#wcsdm-btn-advanced-rate-cancel', function (e) {
+            e.preventDefault();
+
+            hideError();
+
+            wcsdmTableRates.restoreFooterButtons();
+
+            $('#wcsdm-row-advanced').hide().siblings().not('.wcsdm-row--hidden').show();
+
+            $('#wcsdm-table-advanced tr').removeClass('error');
+
+            $('#wcsdm-table-rates tbody tr:eq(' + rowIndex + ')').addClass('applied');
+
+            wcsdmTableRates.validateRatesList();
+
+            $('.wc-modal-shipping-method-settings').animate({
+                scrollTop: rowScrollTop
+            }, 500, function () {
+                setTimeout(function () {
+                    $('#wcsdm-table-rates tbody tr').removeClass('applied');
+                }, 800);
+            });
         });
 
         // Handle on Apply Changes button clicked.
-        $(document).on('click', '#wcsdm-btn-advanced-apply', function (e) {
+        $(document).on('click', '#wcsdm-btn-advanced-rate-apply', function (e) {
             e.preventDefault();
             hideError();
 
-            var errors = wcsdmTableRates._getRateFormErrors($('.wcsdm-rate-field--advanced'));
+            var errors = wcsdmTableRates.getRateFormErrors($('.wcsdm-rate-field--advanced'));
 
             if (errors.length) {
                 var errorMessages = {};
@@ -182,108 +196,117 @@ var wcsdmTableRates = {
 
             if (_.keys(formData).length) {
                 _.keys(formData).forEach(function (key) {
-                    $('#wcsdm-table-rates tbody tr:eq(' + rowIndex + ')').removeClass('error').addClass('applied').find('.wcsdm-rate-field--dummy--' + key).val(formData[key]);
-                    $('#wcsdm-table-rates tbody tr:eq(' + rowIndex + ')').removeClass('error').addClass('applied').find('.wcsdm-rate-field--hidden--' + key).val(formData[key]);
+                    $('#wcsdm-table-rates tbody tr:eq(' + rowIndex + ')').removeClass('error').addClass('applied').find('.wcsdm-rate-field--dummy--' + key + ', .wcsdm-rate-field--hidden--' + key).val(formData[key]);
                 });
 
-                $(e.currentTarget).closest('div').remove();
+                wcsdmTableRates.restoreFooterButtons();
+
                 $('#wcsdm-row-advanced').hide().siblings().not('.wcsdm-row--hidden').show();
-                $('#btn-ok').after(wp.template('wcsdm-buttons-footer-primary'));
 
                 $('.wc-modal-shipping-method-settings').animate({
                     scrollTop: rowScrollTop
-                }, 500);
-
-                setTimeout(function () {
-                    wcsdmTableRates._sortRates();
-                    wcsdmTableRates._validateRatesList();
-                }, 100);
+                }, 500, function () {
+                    setTimeout(function () {
+                        wcsdmTableRates.sortRates();
+                        wcsdmTableRates.validateRatesList();
+                    }, 100);
+                });
             }
         });
 
-        // Handle on Cancel Changes button clicked.
-        $(document).on('click', '#wcsdm-btn-advanced-cancel', function (e) {
-            e.preventDefault();
-            $(e.currentTarget).closest('div').remove();
-            $('#wcsdm-row-advanced').hide().siblings().not('.wcsdm-row--hidden').show();
-            $('#wcsdm-table-advanced tr').removeClass('error');
-            $('#btn-ok').after(wp.template('wcsdm-buttons-footer-primary'));
-            $('#wcsdm-table-rates tbody tr:eq(' + rowIndex + ')').addClass('applied');
+        // // Handle on Save Changes button clicked.
+        // $(document).on('click', '#wcsdm-btn-primary-save-changes', function (e) {
+        //     e.preventDefault();
+        //     hideError();
 
-            $('.wc-modal-shipping-method-settings').animate({
-                scrollTop: rowScrollTop
-            }, 500);
+        //     var locationErrorMessage = '';
+        //     var locationFields = ['woocommerce_wcsdm_origin_lat', 'woocommerce_wcsdm_origin_lng'];
+        //     for (var i = 0; i < locationFields.length; i++) {
+        //         var locationFieldKey = locationFields[i];
+        //         var $locationField = $('#' + locationFieldKey);
+        //         if (!$locationField.val().length) {
+        //             locationErrorMessage += '<p id="wcsdm-rate-field--error--' + locationFieldKey + '">' + wcsdmTableRates.params.i18n.errors.field_required.replace('%s', $locationField.data('title')) + '</p>';
+        //             $('#' + locationFieldKey + '_dummy').closest('td').addClass('error');
+        //         }
+        //     }
 
-            wcsdmTableRates._validateRatesList();
+        //     if (locationErrorMessage.length) {
+        //         showError({
+        //             selector: '#wcsdm-col-store-location',
+        //             content: locationErrorMessage
+        //         });
+        //         return;
+        //     }
 
-            setTimeout(function () {
-                $('#wcsdm-table-rates tbody tr:eq(' + rowIndex + ')').removeClass('applied');
-            }, 800);
-        });
+        //     if (!$('#wcsdm-table-rates tbody tr').length) {
+        //         showError({
+        //             selector: '#wcsdm-table-rates',
+        //             content: wcsdmTableRates.params.i18n.errors.rates_empty
+        //         });
+        //         return;
+        //     }
 
-        // Handle on Save Changes button clicked.
-        $(document).on('click', '#wcsdm-btn-primary-save-changes', function (e) {
-            e.preventDefault();
-            hideError();
+        //     var errors = wcsdmTableRates.validateRatesList();
+        //     if (errors.length) {
+        //         var errorMessages = {};
 
-            var locationErrorMessage = '';
-            var locationFields = ['woocommerce_wcsdm_origin_lat', 'woocommerce_wcsdm_origin_lng'];
-            for (var i = 0; i < locationFields.length; i++) {
-                var locationFieldKey = locationFields[i];
-                var $locationField = $('#' + locationFieldKey);
-                if (!$locationField.val().length) {
-                    locationErrorMessage += '<p id="wcsdm-rate-field--error--' + locationFieldKey + '">' + wcsdmTableRates.params.i18n.errors.field_required.replace('%s', $locationField.data('title')) + '</p>';
-                    $('#' + locationFieldKey + '_dummy').closest('td').addClass('error');
-                }
-            }
+        //         for (var index = 0; index < errors.length; index++) {
+        //             errorMessages[errors[index].key] = errors[index].message;
+        //         }
 
-            if (locationErrorMessage.length) {
-                showError({
-                    selector: '#wcsdm-col-store-location',
-                    content: locationErrorMessage
-                });
-                return;
-            }
+        //         var errorMessage = '';
+        //         _.keys(errorMessages).forEach(function (key) {
+        //             $('.wcsdm-rate-field--advanced--' + key).closest('tr').addClass('error');
+        //             errorMessage += '<p id="wcsdm-rate-field--error--' + key + '">' + errorMessages[key] + '</p>';
+        //         });
 
-            if (!$('#wcsdm-table-rates tbody tr').length) {
-                showError({
-                    selector: '#wcsdm-table-rates',
-                    content: wcsdmTableRates.params.i18n.errors.rates_empty
-                });
-                return;
-            }
+        //         showError({
+        //             selector: '#wcsdm-table-rates',
+        //             content: errorMessage
+        //         });
+        //         return;
+        //     }
 
-            var errors = wcsdmTableRates._validateRatesList();
-            if (errors.length) {
-                var errorMessages = {};
-
-                for (var index = 0; index < errors.length; index++) {
-                    errorMessages[errors[index].key] = errors[index].message;
-                }
-
-                var errorMessage = '';
-                _.keys(errorMessages).forEach(function (key) {
-                    $('.wcsdm-rate-field--advanced--' + key).closest('tr').addClass('error');
-                    errorMessage += '<p id="wcsdm-rate-field--error--' + key + '">' + errorMessages[key] + '</p>';
-                });
-
-                showError({
-                    selector: '#wcsdm-table-rates',
-                    content: errorMessage
-                });
-                return;
-            }
-
-            $('#btn-ok').trigger('click');
-        });
+        //     $('#btn-ok').trigger('click');
+        // });
 
         // Handle add rate rows.
-        $(document).on('click', '#wcsdm-btn-primary-add-rate', wcsdmTableRates._addRateRows);
+        $(document).on('click', '#wcsdm-btn-add-rate', wcsdmTableRates.addRateRows);
 
         // Handle remove rate rows.
-        $(document).on('click', '.btn-delete-rate', wcsdmTableRates._removeRateRows);
+        $(document).on('click', '.btn-delete-rate', wcsdmTableRates.removeRateRows);
     },
-    _sortRates: function () {
+    setFooterButtons: function () {
+        $('#wcsdm-footer-buttons').remove();
+        $('#btn-ok').after(wp.template('wcsdm-footer-buttons')({
+            btn_left: {
+                label: wcsdmMapPicker.params.i18n.cancel,
+                id: 'wcsdm-btn-advanced-rate-cancel',
+                icon: 'undo'
+            },
+            btn_right: {
+                label: wcsdmMapPicker.params.i18n.apply_changes,
+                id: 'wcsdm-btn-advanced-rate-apply',
+                icon: 'yes'
+            }
+        }));
+    },
+    restoreFooterButtons: function () {
+        $('#wcsdm-footer-buttons').remove();
+        $('#btn-ok').after(wp.template('wcsdm-footer-buttons')({
+            btn_left: {
+                label: wcsdmMapPicker.params.i18n.add_rate,
+                id: 'wcsdm-btn-add-rate',
+                icon: 'plus'
+            },
+            btn_right: {
+                label: wcsdmMapPicker.params.i18n.save_changes,
+                id: 'wcsdm-btn-save',
+                icon: 'yes'
+            }
+        }));
+    },
+    sortRates: function () {
         $('#wcsdm-btn-primary-save-changes').prop('disabled', true);
         var rows = $('#wcsdm-table-rates > tbody > tr').addClass('sorting').get().sort(function (a, b) {
             var valueADistance = $(a).find('.wcsdm-rate-field--dummy--distance').val();
@@ -317,9 +340,9 @@ var wcsdmTableRates = {
             $('#wcsdm-table-rates .wcsdm-rate-field--dummy--distance').removeClass('changed');
         }, 800);
     },
-    _validateRatesList: function () {
+    validateRatesList: function () {
         hideError();
-        var errors = wcsdmTableRates._getRateFormErrors($('.wcsdm-rate-field--hidden'));
+        var errors = wcsdmTableRates.getRateFormErrors($('.wcsdm-rate-field--hidden'));
         if (errors.length) {
             for (var index = 0; index < errors.length; index++) {
                 $('#wcsdm-table-rates tbody tr:eq(' + errors[index].rowIndex + ')').find('.col-' + errors[index].key).addClass('error');
@@ -327,7 +350,7 @@ var wcsdmTableRates = {
         }
         return errors;
     },
-    _getRateFormErrors: function ($fields) {
+    getRateFormErrors: function ($fields) {
         var errors = [];
         var fields = {};
 
@@ -444,7 +467,7 @@ var wcsdmTableRates = {
 
         return dataForm;
     },
-    _addRateRows: function (e) {
+    addRateRows: function (e) {
         e.preventDefault();
         $('#wcsdm-table-rates tbody').append(wp.template('rates-list-input-table-row')).find('tr:last-child .wcsdm-rate-field').each(function (i, input) {
             $(input).trigger('change');
@@ -454,14 +477,14 @@ var wcsdmTableRates = {
         });
         $('#woocommerce_wcsdm_gmaps_api_units').trigger('change');
         $('.wc-modal-shipping-method-settings').scrollTop($('.wc-modal-shipping-method-settings').find('form').outerHeight());
-        wcsdmTableRates._toggleTableRates();
+        wcsdmTableRates.toggleTableRates();
     },
-    _removeRateRows: function (e) {
+    removeRateRows: function (e) {
         e.preventDefault();
         $(e.currentTarget).closest('tr').remove();
-        wcsdmTableRates._toggleTableRates();
+        wcsdmTableRates.toggleTableRates();
     },
-    _toggleTableRates: function (e) {
+    toggleTableRates: function (e) {
         $('#wcsdm-table-rates').find('thead, tfoot').show();
 
         if (!$('#wcsdm-table-rates tbody tr').length) {
