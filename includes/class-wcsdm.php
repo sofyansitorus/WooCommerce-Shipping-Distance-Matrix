@@ -231,11 +231,11 @@ class Wcsdm extends WC_Shipping_Method {
 			),
 			'table_rates'     => array(
 				'type'  => 'table_rates',
-				'title' => __( 'Table Rates', 'wcsdm' ),
+				'title' => __( 'Table Rates Settings', 'wcsdm' ),
 			),
 			'table_advanced'  => array(
 				'type'  => 'table_advanced',
-				'title' => __( 'Advanced Rate Settings', 'wcsdm' ),
+				'title' => __( 'Advanced Table Rate Settings', 'wcsdm' ),
 			),
 		);
 	}
@@ -329,7 +329,7 @@ class Wcsdm extends WC_Shipping_Method {
 		?>
 		<tr valign="top" id="wcsdm-row-dummy" class="wcsdm-row wcsdm-row-dummy">
 			<td colspan="2" class="wcsdm-no-padding">
-				<h3 class="wcsdm-settings-sub-title"><?php echo wp_kses_post( $data['title'] ); ?></h3>
+				<h3 class="wcsdm-settings-form-title"><?php echo wp_kses_post( $data['title'] ); ?></h3>
 				<table id="wcsdm-table-dummy" class="form-table wcsdm-table wcsdm-table-dummy" cellspacing="0">
 					<thead>
 						<tr>

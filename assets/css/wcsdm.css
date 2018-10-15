@@ -7,6 +7,12 @@
   margin: 0 !important;
   background-color: #fff; }
 
+.wcsdm-settings-sub-title {
+  font-size: 1em;
+  padding: 0.5em 1em;
+  margin: 0;
+  background-color: #f1f1f1; }
+
 .wcsdm-table-dummy .wcsdm-col {
   padding: 10px !important; }
   .wcsdm-table-dummy .wcsdm-col--select-item {
@@ -43,7 +49,7 @@
   background-color: #d7fbd5; }
 
 .wcsdm-table-dummy tbody .deleted .wcsdm-col {
-  background-color: #ffd1d1; }
+  background-color: #ffe6e6; }
 
 .wcsdm-table-dummy tbody .hidden {
   display: none; }
@@ -54,11 +60,6 @@
 
 .wcsdm-row-advanced {
   display: none; }
-  .wcsdm-row-advanced .wcsdm-settings-sub-title {
-    font-size: 1em;
-    padding: 0.5em 1em;
-    margin: 0;
-    background-color: #f1f1f1; }
 
 .wcsdm-buttons-item--left {
   float: left; }

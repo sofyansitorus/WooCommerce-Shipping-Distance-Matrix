@@ -118,6 +118,7 @@ var wcsdmTableRates = {
         e.preventDefault();
 
         $('#wcsdm-table-dummy tbody .select-item:not(:checked)').closest('tr').addClass('hidden');
+        $('#wcsdm-table-dummy tbody .wcsdm-rate-field--dummy').prop('disabled', true);
         $('#wcsdm-table-dummy tbody .select-item:checked').closest('tr').addClass('deleted');
         $('.wcsdm-col--select-item, .wcsdm-col--advanced_link').hide();
         wcsdmTableRates.toggleBottons(wcsdmTableRates.getButtons('confirm_delete_rate'));
@@ -126,6 +127,7 @@ var wcsdmTableRates = {
         e.preventDefault();
 
         $('#wcsdm-table-dummy tbody tr').removeClass('hidden deleted');
+        $('#wcsdm-table-dummy tbody .wcsdm-rate-field--dummy').prop('disabled', false);
         $('.wcsdm-col--select-item, .wcsdm-col--advanced_link').show();
         wcsdmTableRates.toggleBottons(wcsdmTableRates.getButtons('delete_rate'));
     },
@@ -135,6 +137,7 @@ var wcsdmTableRates = {
         $('#wcsdm-table-dummy tbody .select-item:checked').closest('tr').remove();
         $('#wcsdm-table-dummy tbody tr').removeClass('hidden');
         $('#wcsdm-table-dummy thead .select-item').prop('checked', false);
+        $('#wcsdm-table-dummy tbody .wcsdm-rate-field--dummy').prop('disabled', false);
         $('.wcsdm-col--select-item, .wcsdm-col--advanced_link').show();
         wcsdmTableRates.toggleBottons(wcsdmTableRates.getButtons());
 

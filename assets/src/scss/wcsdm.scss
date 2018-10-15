@@ -7,7 +7,13 @@
         padding: 0.7em !important;
         margin: 0 !important;
         background-color: #fff;
-    }
+	}
+	&-settings-sub-title {
+		font-size: 1em;
+		padding: 0.5em 1em;
+		margin: 0;
+		background-color: #f1f1f1;
+	}
     &-table-dummy {
         .wcsdm-col {
             padding: 10px !important;
@@ -61,7 +67,7 @@
             }
             .deleted {
                 .wcsdm-col {
-                    background-color: #ffd1d1;
+                    background-color: #ffe6e6;
                 }
             }
             .hidden {
@@ -75,12 +81,6 @@
     }
     &-row-advanced {
         display: none;
-        .wcsdm-settings-sub-title {
-            font-size: 1em;
-            padding: 0.5em 1em;
-            margin: 0;
-            background-color: #f1f1f1;
-        }
     }
     &-buttons {
         &-item {
