@@ -1,18 +1,19 @@
 .wcsdm {
     &-no-padding {
         padding: 0 !important;
-	}
-	&-settings-sub-title{
-		text-align: center;
-		padding: 0.7em !important;
-		margin: 0 !important;
-		background-color: #fff;
-	}
+    }
+    &-settings-form-title {
+        text-align: center;
+        padding: 0.7em !important;
+        margin: 0 !important;
+        background-color: #fff;
+    }
     &-table-dummy {
         .wcsdm-col {
             padding: 10px !important;
             &--select-item {
-                width: 30px;
+                width: 50px;
+                text-align: center;
                 input[type=checkbox] {
                     margin: 0;
                     padding: 0;
@@ -48,13 +49,50 @@
                     border-right: 1px solid #f1f1f1;
                 }
             }
+            .selected {
+                .wcsdm-col {
+                    background-color: #fffddb;
+                }
+            }
+            .applied {
+                .wcsdm-col {
+                    background-color: #d7fbd5;
+                }
+            }
+            .deleted {
+                .wcsdm-col {
+                    background-color: #ffd1d1;
+                }
+            }
+            .hidden {
+                display: none;
+            }
         }
+    }
+    &-rate-field--dummy {
+        display: block;
+        width: 100% !important;
     }
     &-row-advanced {
         display: none;
-        .wc-settings-sub-title {
+        .wcsdm-settings-sub-title {
+            font-size: 1em;
             padding: 0.5em 1em;
+            margin: 0;
             background-color: #f1f1f1;
+        }
+    }
+    &-buttons {
+        &-item {
+            &--left {
+                float: left;
+            }
+            .dashicons {
+                margin-top: 5px;
+                &:before {
+                    font-size: 1em;
+                }
+            }
         }
     }
 }

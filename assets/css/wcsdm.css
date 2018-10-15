@@ -1,7 +1,7 @@
 .wcsdm-no-padding {
   padding: 0 !important; }
 
-.wcsdm-settings-sub-title {
+.wcsdm-settings-form-title {
   text-align: center;
   padding: 0.7em !important;
   margin: 0 !important;
@@ -10,7 +10,8 @@
 .wcsdm-table-dummy .wcsdm-col {
   padding: 10px !important; }
   .wcsdm-table-dummy .wcsdm-col--select-item {
-    width: 30px; }
+    width: 50px;
+    text-align: center; }
     .wcsdm-table-dummy .wcsdm-col--select-item input[type=checkbox] {
       margin: 0;
       padding: 0; }
@@ -35,8 +36,34 @@
   .wcsdm-table-dummy tbody .wcsdm-col:last-child {
     border-right: 1px solid #f1f1f1; }
 
+.wcsdm-table-dummy tbody .selected .wcsdm-col {
+  background-color: #fffddb; }
+
+.wcsdm-table-dummy tbody .applied .wcsdm-col {
+  background-color: #d7fbd5; }
+
+.wcsdm-table-dummy tbody .deleted .wcsdm-col {
+  background-color: #ffd1d1; }
+
+.wcsdm-table-dummy tbody .hidden {
+  display: none; }
+
+.wcsdm-rate-field--dummy {
+  display: block;
+  width: 100% !important; }
+
 .wcsdm-row-advanced {
   display: none; }
-  .wcsdm-row-advanced .wc-settings-sub-title {
+  .wcsdm-row-advanced .wcsdm-settings-sub-title {
+    font-size: 1em;
     padding: 0.5em 1em;
+    margin: 0;
     background-color: #f1f1f1; }
+
+.wcsdm-buttons-item--left {
+  float: left; }
+
+.wcsdm-buttons-item .dashicons {
+  margin-top: 5px; }
+  .wcsdm-buttons-item .dashicons:before {
+    font-size: 1em; }
