@@ -175,8 +175,8 @@ function wcsdm_admin_enqueue_scripts( $hook ) {
 				'methodId'     => WCSDM_METHOD_ID,
 				'methodTitle'  => WCSDM_METHOD_TITLE,
 				'i18n'         => array(
-					'dragMarker' => __( 'Drag this marker or search your address at the input above.', 'wcsdm' ),
-					'distance'   => array(
+					'dragMarker'          => __( 'Drag this marker or search your address at the input above.', 'wcsdm' ),
+					'distance'            => array(
 						'metric'   => array(
 							'perUnit' => __( 'Per Kilometer', 'wcsdm' ),
 							'unit'    => __( 'KM', 'wcsdm' ),
@@ -186,12 +186,12 @@ function wcsdm_admin_enqueue_scripts( $hook ) {
 							'unit'    => __( 'MI', 'wcsdm' ),
 						),
 					),
-					'cancel' => __( 'Cancel', 'wcsdm' ),
-					'add_rate' => __( 'Add Rate', 'wcsdm' ),
-					'delete' => __( 'Delete', 'wcsdm' ),
-					'confirm_delete' => __( 'Confirm Delete', 'wcsdm' ),
-					'save_changes' => __( 'Save Changes', 'wcsdm' ),
-					'apply_changes' => __( 'Apply Changes', 'wcsdm' ),
+					'cancel'              => __( 'Cancel', 'wcsdm' ),
+					'add_rate'            => __( 'Add Rate', 'wcsdm' ),
+					'delete_rate'         => __( 'Delete Selected Rates', 'wcsdm' ),
+					'delete_rate_confirm' => __( 'Confirm Delete', 'wcsdm' ),
+					'save_changes'        => __( 'Save Changes', 'wcsdm' ),
+					'apply_changes'       => __( 'Apply Changes', 'wcsdm' ),
 				),
 				'marker'       => WCSDM_URL . 'assets/img/marker.png',
 				'language'     => get_locale(),

@@ -391,9 +391,14 @@ class Wcsdm extends WC_Shipping_Method {
 				$field_value = isset( $rate[ $key ] ) ? $rate[ $key ] : $data['default'];
 
 				switch ( $data['type'] ) {
-					case 'advanced_link':
+					case 'link_duplicate':
 						?>
-						<a href="#" class="<?php echo esc_attr( $data['class'] ); ?>"><span class="dashicons dashicons-admin-generic"></span></a>
+						<a href="#" class="<?php echo esc_attr( $data['class'] ); ?>" title="<?php echo esc_attr( $data['title'] ); ?>"><span class="dashicons dashicons-admin-page"></span></a>
+						<?php
+						break;
+					case 'link_advanced':
+						?>
+						<a href="#" class="<?php echo esc_attr( $data['class'] ); ?>" title="<?php echo esc_attr( $data['title'] ); ?>"><span class="dashicons dashicons-admin-generic"></span></a>
 						<?php
 						$html_hidden = '';
 						foreach ( $this->rates_fields( 'hidden' ) as $hidden_key => $hidden_data ) {
@@ -498,29 +503,12 @@ class Wcsdm extends WC_Shipping_Method {
 	 */
 	public function rates_fields( $context = '' ) {
 		$fields = array(
-			'title_genaral'        => array(
-				'type'        => 'sub_title',
-				'title'       => __( 'General', 'wcsdm' ),
-				'is_advanced' => true,
-				'is_dummy'    => false,
-				'is_hidden'     => false,
-			),
-			'shipping_label'       => array_merge(
-				$this->instance_form_fields['title'], array(
-					'description' => $this->instance_form_fields['title']['description'] . ' ' . __( 'Leave blank to use the global title settings.', 'wcsdm' ),
-					'default'     => '',
-					'desc_tip'    => true,
-					'is_advanced' => true,
-					'is_dummy'    => false,
-					'is_hidden'     => true,
-				)
-			),
 			'title_shipping_rules' => array(
 				'type'        => 'sub_title',
 				'title'       => __( 'Shipping Rules', 'wcsdm' ),
 				'is_advanced' => true,
 				'is_dummy'    => false,
-				'is_hidden'     => false,
+				'is_hidden'   => false,
 			),
 			'max_distance'         => array(
 				'type'              => 'number',
@@ -529,7 +517,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'desc_tip'          => true,
 				'is_advanced'       => true,
 				'is_dummy'          => true,
-				'is_hidden'           => true,
+				'is_hidden'         => true,
 				'custom_attributes' => array(
 					'min' => '0',
 				),
@@ -541,7 +529,8 @@ class Wcsdm extends WC_Shipping_Method {
 				'desc_tip'          => true,
 				'is_advanced'       => true,
 				'is_dummy'          => false,
-				'is_hidden'           => true,
+				'is_hidden'         => true,
+				'default'           => '0',
 				'custom_attributes' => array(
 					'min' => '0',
 				),
@@ -553,7 +542,8 @@ class Wcsdm extends WC_Shipping_Method {
 				'desc_tip'          => true,
 				'is_advanced'       => true,
 				'is_dummy'          => false,
-				'is_hidden'           => true,
+				'is_hidden'         => true,
+				'default'           => '0',
 				'custom_attributes' => array(
 					'min' => '0',
 				),
@@ -565,7 +555,8 @@ class Wcsdm extends WC_Shipping_Method {
 				'desc_tip'          => true,
 				'is_advanced'       => true,
 				'is_dummy'          => false,
-				'is_hidden'           => true,
+				'is_hidden'         => true,
+				'default'           => '0',
 				'custom_attributes' => array(
 					'min' => '0',
 				),
@@ -577,7 +568,8 @@ class Wcsdm extends WC_Shipping_Method {
 				'desc_tip'          => true,
 				'is_advanced'       => true,
 				'is_dummy'          => false,
-				'is_hidden'           => true,
+				'is_hidden'         => true,
+				'default'           => '0',
 				'custom_attributes' => array(
 					'min' => '0',
 				),
@@ -587,7 +579,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'title'       => __( 'Shipping Rates', 'wcsdm' ),
 				'is_advanced' => true,
 				'is_dummy'    => false,
-				'is_hidden'     => false,
+				'is_hidden'   => false,
 			),
 			'calculation_type'     => array(
 				'type'        => 'select',
@@ -595,13 +587,14 @@ class Wcsdm extends WC_Shipping_Method {
 				'default'     => 'flat',
 				'options'     => array(
 					'flat'     => __( 'Flat', 'wcsdm' ),
-					'per_unit' => '',
+					'flexible' => __( 'Flexible', 'wcsdm' ),
+					'formula'  => __( 'Formula', 'wcsdm' ),
 				),
-				'description' => __( 'Determine wether to use flat price or flexible price per distances unit.', 'wcsdm' ),
+				'description' => __( 'Determine how to calculate the shipping rate either flat rate, flexible rate multiplied by distances or advanced rate by maths formula. This input is required.', 'wcsdm' ),
 				'desc_tip'    => true,
 				'is_advanced' => true,
 				'is_dummy'    => true,
-				'is_hidden'     => true,
+				'is_hidden'   => true,
 			),
 			'class_0'              => array(
 				'type'              => 'number',
@@ -610,7 +603,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'desc_tip'          => true,
 				'is_advanced'       => true,
 				'is_dummy'          => true,
-				'is_hidden'           => true,
+				'is_hidden'         => true,
 				'custom_attributes' => array(
 					'min' => '0',
 				),
@@ -623,17 +616,41 @@ class Wcsdm extends WC_Shipping_Method {
 				'desc_tip'          => true,
 				'is_advanced'       => true,
 				'is_dummy'          => false,
-				'is_hidden'           => true,
+				'is_hidden'         => true,
 				'custom_attributes' => array(
 					'min' => '0',
 				),
 			),
-			'advanced_link'        => array(
-				'type'        => 'advanced_link',
+			'title_miscellaneous'  => array(
+				'type'        => 'sub_title',
+				'title'       => __( 'Miscellaneous', 'wcsdm' ),
+				'is_advanced' => true,
+				'is_dummy'    => false,
+				'is_hidden'   => false,
+			),
+			'shipping_label'       => array_merge(
+				$this->instance_form_fields['title'], array(
+					'description' => $this->instance_form_fields['title']['description'] . ' ' . __( 'Leave blank to use the global title settings.', 'wcsdm' ),
+					'default'     => '',
+					'desc_tip'    => true,
+					'is_advanced' => true,
+					'is_dummy'    => true,
+					'is_hidden'   => true,
+				)
+			),
+			'link_duplicate'       => array(
+				'type'        => 'link_duplicate',
+				'title'       => __( 'Duplicate', 'wcsdm' ),
+				'is_advanced' => false,
+				'is_dummy'    => true,
+				'is_hidden'   => false,
+			),
+			'link_advanced'        => array(
+				'type'        => 'link_advanced',
 				'title'       => __( 'Advanced', 'wcsdm' ),
 				'is_advanced' => false,
 				'is_dummy'    => true,
-				'is_hidden'     => false,
+				'is_hidden'   => false,
 			),
 		);
 
@@ -657,7 +674,7 @@ class Wcsdm extends WC_Shipping_Method {
 								'desc_tip'    => true,
 								'is_advanced' => true,
 								'is_dummy'    => false,
-								'is_hidden'     => true,
+								'is_hidden'   => true,
 							)
 						);
 					}
