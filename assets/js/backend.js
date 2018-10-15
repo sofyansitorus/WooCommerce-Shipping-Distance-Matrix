@@ -1,3 +1,6 @@
+;(function($) {
+"use strict";
+
 $(document).ready(function () {
     // Try show settings modal on settings page.
     if (wcsdm_params.showSettings) {
@@ -57,3 +60,4 @@ $(document).ready(function () {
         // wcsdmMapPicker.init(params);
     });
 });
+}(jQuery));
