@@ -391,22 +391,18 @@ class Wcsdm extends WC_Shipping_Method {
 				$field_value = isset( $rate[ $key ] ) ? $rate[ $key ] : $data['default'];
 
 				switch ( $data['type'] ) {
-					case 'link_duplicate':
-						?>
-						<a href="#" class="<?php echo esc_attr( $data['class'] ); ?>" title="<?php echo esc_attr( $data['title'] ); ?>"><span class="dashicons dashicons-admin-page"></span></a>
-						<?php
-						break;
 					case 'link_advanced':
 						?>
 						<a href="#" class="<?php echo esc_attr( $data['class'] ); ?>" title="<?php echo esc_attr( $data['title'] ); ?>"><span class="dashicons dashicons-admin-generic"></span></a>
 						<?php
-						$html_hidden = '';
-						foreach ( $this->rates_fields( 'hidden' ) as $hidden_key => $hidden_data ) {
+						foreach ( $this->rates_fields( 'hidden' ) as $hidden_key => $hidden_data ) :
 							$hidden_field_value = isset( $rate[ $hidden_key ] ) ? $rate[ $hidden_key ] : $hidden_data['default'];
-							$html_hidden       .= '<input class="' . esc_attr( $hidden_data['class'] ) . '" type="hidden" name="' . esc_attr( $field_key ) . '[' . esc_attr( $hidden_key ) . '][]" value="' . esc_attr( $hidden_field_value ) . '" data-id="' . $this->get_field_key( $hidden_key ) . '" />';
-						}
-						echo $html_hidden; // WPCS: XSS ok.
+						?>
+						<input class="<?php echo esc_attr( $hidden_data['class'] ); ?>" type="hidden" name="<?php echo esc_attr( $field_key ); ?>[<?php echo esc_attr( $hidden_key ); ?>][]" value="<?php echo esc_attr( $hidden_field_value ); ?>" <?php echo $this->get_custom_attribute_html( $hidden_data ); // WPCS: XSS ok. ?> />
+						<?php
+						endforeach;
 						break;
+
 					case 'select':
 						?>
 						<select class="select <?php echo esc_attr( $data['class'] ); ?>" data-id="<?php echo esc_attr( $this->get_field_key( $key ) ); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" <?php disabled( $data['disabled'], true ); ?> <?php echo $this->get_custom_attribute_html( $data ); // WPCS: XSS ok. ?>>
@@ -518,8 +514,9 @@ class Wcsdm extends WC_Shipping_Method {
 				'is_advanced'       => true,
 				'is_dummy'          => true,
 				'is_hidden'         => true,
+				'is_required'       => true,
 				'custom_attributes' => array(
-					'min' => '0',
+					'min' => '1',
 				),
 			),
 			'min_order_quantity'   => array(
@@ -595,6 +592,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'is_advanced' => true,
 				'is_dummy'    => true,
 				'is_hidden'   => true,
+				'is_required' => true,
 			),
 			'class_0'              => array(
 				'type'              => 'number',
@@ -604,6 +602,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'is_advanced'       => true,
 				'is_dummy'          => true,
 				'is_hidden'         => true,
+				'is_required'       => true,
 				'custom_attributes' => array(
 					'min' => '0',
 				),
@@ -638,13 +637,6 @@ class Wcsdm extends WC_Shipping_Method {
 					'is_hidden'   => true,
 				)
 			),
-			'link_duplicate'       => array(
-				'type'        => 'link_duplicate',
-				'title'       => __( 'Duplicate', 'wcsdm' ),
-				'is_advanced' => false,
-				'is_dummy'    => true,
-				'is_hidden'   => false,
-			),
 			'link_advanced'        => array(
 				'type'        => 'link_advanced',
 				'title'       => __( 'Advanced', 'wcsdm' ),
@@ -675,6 +667,7 @@ class Wcsdm extends WC_Shipping_Method {
 								'is_advanced' => true,
 								'is_dummy'    => false,
 								'is_hidden'   => true,
+								'is_required' => false,
 							)
 						);
 					}
@@ -683,42 +676,53 @@ class Wcsdm extends WC_Shipping_Method {
 			$fields = $new_fields;
 		}
 
-		$populated_fields = array();
+		$rates_fields = array();
 
 		foreach ( $fields as $key => $field ) {
 			if ( ! empty( $context ) && ! $field[ 'is_' . $context ] ) {
 				continue;
 			}
 
-			$field_type = isset( $field['type'] ) ? $field['type'] : '';
+			$rate_field_default = array(
+				'title'             => '',
+				'disabled'          => false,
+				'class'             => '',
+				'css'               => '',
+				'placeholder'       => '',
+				'type'              => 'text',
+				'desc_tip'          => false,
+				'description'       => '',
+				'custom_attributes' => array(),
+				'options'           => array(),
+				'default'           => '',
+			);
 
-			$field_class = array(
+			$rate_field = wp_parse_args( $field, $rate_field_default );
+
+			$rate_field_class = array(
 				'wcsdm-rate-field',
-				'wcsdm-rate-field--' . $field_type,
+				'wcsdm-rate-field--' . $rate_field['type'],
 				'wcsdm-rate-field--' . $key,
 				'wcsdm-rate-field--' . $context,
-				'wcsdm-rate-field--' . $context . '--' . $field_type,
+				'wcsdm-rate-field--' . $context . '--' . $rate_field['type'],
 				'wcsdm-rate-field--' . $context . '--' . $key,
 			);
+			$rate_field['class'] = !empty( $rate_field['class'] ) ? $rate_field['class'] . ' ' . implode( ' ', $rate_field_class ) : implode( ' ', $rate_field_class );
 
-			$populated_fields[ $key ] = wp_parse_args(
-				$field, array(
-					'title'             => '',
-					'disabled'          => false,
-					'class'             => implode( ' ', $field_class ),
-					'css'               => '',
-					'placeholder'       => '',
-					'type'              => $field_type,
-					'desc_tip'          => false,
-					'description'       => '',
-					'custom_attributes' => array(),
-					'options'           => array(),
-					'default'           => '',
-				)
+			$custom_attributes = array(
+				'data-type'     => $rate_field['type'],
+				'data-id'       => $this->get_field_key( $key ),
+				'data-required' => empty( $rate_field['is_required'] ) ? '0' : '1',
+				'data-title'    => isset( $rate_field['title'] ) ? $rate_field['title'] : $key,
+				'data-options'    => isset( $rate_field['options'] ) ? wp_json_encode( $rate_field['options'] ) : wp_json_encode( array() ),
 			);
+
+			$rate_field['custom_attributes'] = isset( $rate_field['custom_attributes'] ) ? array_merge( $rate_field['custom_attributes'], $custom_attributes ) : $custom_attributes;
+
+			$rates_fields[ $key ] = $rate_field;
 		}
 
-		return $populated_fields;
+		return apply_filters( 'woocommerce_' . $this->id . '_rates_fields', $rates_fields );
 	}
 
 	/**
