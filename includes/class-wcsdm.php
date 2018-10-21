@@ -720,7 +720,7 @@ class Wcsdm extends WC_Shipping_Method {
 
 			$rate_field['custom_attributes'] = isset( $rate_field['custom_attributes'] ) ? array_merge( $rate_field['custom_attributes'], $custom_attributes ) : $custom_attributes;
 
-			if ( ! in_array( $rate_field['type'], array( 'link_advanced', 'select' ) ) ) {
+			if ( ! in_array( $rate_field['type'], array( 'link_advanced', 'select', 'sub_title' ) ) ) {
 				$rate_field['type'] = 'text';
 			}
 
