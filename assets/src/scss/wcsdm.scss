@@ -86,18 +86,20 @@
             }
         }
     }
-    &-rate-field {
-		&-errors{
-			margin-bottom: 2em;
-		}
-        &--error {
-            border: 1px solid #dc3232 !important;
-            background-color:rgba(255, 85, 85, 0.192) !important;
-        }
-        &--dummy:not(a) {
-            display: block;
-            width: 100% !important;
-            min-width: 150px !important;
+    &-field {
+        &--rate {
+            &-errors {
+                margin-bottom: 2em;
+            }
+            &--error {
+                border: 1px solid #dc3232 !important;
+                background-color: rgba(255, 85, 85, 0.192) !important;
+            }
+            &--dummy:not(a) {
+                display: block;
+                width: 100% !important;
+                min-width: 150px !important;
+            }
         }
     }
     &-row-advanced {
@@ -115,7 +117,7 @@
                 }
             }
         }
-	}
+    }
 }
 
 // .wcsdm-map-wrapper {

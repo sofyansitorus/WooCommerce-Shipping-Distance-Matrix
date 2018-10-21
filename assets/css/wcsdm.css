@@ -60,14 +60,14 @@
 .wcsdm-table-dummy tbody .hidden {
   display: none; }
 
-.wcsdm-rate-field-errors {
+.wcsdm-field--rate-errors {
   margin-bottom: 2em; }
 
-.wcsdm-rate-field--error {
+.wcsdm-field--rate--error {
   border: 1px solid #dc3232 !important;
   background-color: rgba(255, 85, 85, 0.192) !important; }
 
-.wcsdm-rate-field--dummy:not(a) {
+.wcsdm-field--rate--dummy:not(a) {
   display: block;
   width: 100% !important;
   min-width: 150px !important; }

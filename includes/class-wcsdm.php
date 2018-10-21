@@ -405,7 +405,7 @@ class Wcsdm extends WC_Shipping_Method {
 
 					case 'select':
 						?>
-						<select class="select <?php echo esc_attr( $data['class'] ); ?>" data-id="<?php echo esc_attr( $this->get_field_key( $key ) ); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" <?php disabled( $data['disabled'], true ); ?> <?php echo $this->get_custom_attribute_html( $data ); // WPCS: XSS ok. ?>>
+						<select class="select <?php echo esc_attr( $data['class'] ); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" <?php disabled( $data['disabled'], true ); ?> <?php echo $this->get_custom_attribute_html( $data ); // WPCS: XSS ok. ?>>
 							<?php foreach ( (array) $data['options'] as $option_key => $option_value ) : ?>
 								<option value="<?php echo esc_attr( $option_key ); ?>" <?php selected( $option_key, esc_attr( $field_value ) ); ?>><?php echo esc_attr( $option_value ); ?></option>
 							<?php endforeach; ?>
@@ -415,7 +415,7 @@ class Wcsdm extends WC_Shipping_Method {
 
 					default:
 						?>
-						<input class="input-text regular-input <?php echo esc_attr( $data['class'] ); ?>" type="<?php echo esc_attr( $data['type'] ); ?>" data-id="<?php echo esc_attr( $this->get_field_key( $key ) ); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" value="<?php echo esc_attr( $field_value ); ?>" placeholder="<?php echo esc_attr( $data['placeholder'] ); ?>" <?php disabled( $data['disabled'], true ); ?> <?php echo $this->get_custom_attribute_html( $data ); // WPCS: XSS ok. ?> />
+						<input class="input-text regular-input <?php echo esc_attr( $data['class'] ); ?>" type="text" style="<?php echo esc_attr( $data['css'] ); ?>" value="<?php echo esc_attr( $field_value ); ?>" placeholder="<?php echo esc_attr( $data['placeholder'] ); ?>" <?php disabled( $data['disabled'], true ); ?> <?php echo $this->get_custom_attribute_html( $data ); // WPCS: XSS ok. ?> />
 						<?php
 						break;
 				}
@@ -699,22 +699,23 @@ class Wcsdm extends WC_Shipping_Method {
 
 			$rate_field = wp_parse_args( $field, $rate_field_default );
 
-			$rate_field_class = array(
-				'wcsdm-rate-field',
-				'wcsdm-rate-field--' . $rate_field['type'],
-				'wcsdm-rate-field--' . $key,
-				'wcsdm-rate-field--' . $context,
-				'wcsdm-rate-field--' . $context . '--' . $rate_field['type'],
-				'wcsdm-rate-field--' . $context . '--' . $key,
+			$rate_field_class    = array(
+				'wcsdm-field',
+				'wcsdm-field--rate',
+				'wcsdm-field--rate--' . $rate_field['type'],
+				'wcsdm-field--rate--' . $key,
+				'wcsdm-field--rate--' . $context,
+				'wcsdm-field--rate--' . $context . '--' . $rate_field['type'],
+				'wcsdm-field--rate--' . $context . '--' . $key,
 			);
-			$rate_field['class'] = !empty( $rate_field['class'] ) ? $rate_field['class'] . ' ' . implode( ' ', $rate_field_class ) : implode( ' ', $rate_field_class );
+			$rate_field['class'] = ! empty( $rate_field['class'] ) ? $rate_field['class'] . ' ' . implode( ' ', $rate_field_class ) : implode( ' ', $rate_field_class );
 
 			$custom_attributes = array(
 				'data-type'     => $rate_field['type'],
 				'data-id'       => $this->get_field_key( $key ),
 				'data-required' => empty( $rate_field['is_required'] ) ? '0' : '1',
 				'data-title'    => isset( $rate_field['title'] ) ? $rate_field['title'] : $key,
-				'data-options'    => isset( $rate_field['options'] ) ? wp_json_encode( $rate_field['options'] ) : wp_json_encode( array() ),
+				'data-options'  => isset( $rate_field['options'] ) ? wp_json_encode( $rate_field['options'] ) : wp_json_encode( array() ),
 			);
 
 			$rate_field['custom_attributes'] = isset( $rate_field['custom_attributes'] ) ? array_merge( $rate_field['custom_attributes'], $custom_attributes ) : $custom_attributes;
