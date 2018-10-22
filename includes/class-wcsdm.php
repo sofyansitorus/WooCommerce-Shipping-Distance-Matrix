@@ -237,6 +237,9 @@ class Wcsdm extends WC_Shipping_Method {
 				'type'  => 'table_advanced',
 				'title' => __( 'Advanced Table Rate Settings', 'wcsdm' ),
 			),
+			'js_template'  => array(
+				'type'  => 'js_template',
+			),
 		);
 	}
 
@@ -303,6 +306,44 @@ class Wcsdm extends WC_Shipping_Method {
 	}
 
 	/**
+	 * Generate JS templates.
+	 *
+	 * @since 1.2.4
+	 */
+	public function generate_js_template_html() {
+		ob_start();
+		?>
+		<script type="text/template" id="tmpl-wcsdm-errors">
+			<div id="{{ data.id }}" class="wcsdm-errors">
+				<ul class="notice notice-error">
+					<li class="wcsdm-errors--heading"><?php _e( 'Errors', 'wcsdm' ); ?>:</li>
+					<# _.each(data.errors, function(error, key) { #>
+					<li id="wcsdm-errors--{{ key }}">{{ error }}</li>
+					<# }); #>
+				</ul>
+			</div>
+		</script>
+
+		<script type="text/template" id="tmpl-wcsdm-dummy-row">
+			<?php $this->generate_rate_row_body( 'generate_table_rates_html' ); ?>
+		</script>
+
+		<script type="text/template" id="tmpl-wcsdm-buttons">
+			<div id="wcsdm-buttons" class="wcsdm-buttons">
+				<# if(data.btn_left) { #>
+				<button id="{{data.btn_left.id}}" class="button button-primary button-large wcsdm-buttons-item wcsdm-buttons-item--left"><span class="dashicons dashicons-{{data.btn_left.dashicon}}"></span> {{data.btn_left.label}}</button>
+				<# } #>
+				<# if(data.btn_right) { #>
+				<button id="{{data.btn_right.id}}" class="button button-primary button-large wcsdm-buttons-item wcsdm-buttons-item--right"><span class="dashicons dashicons-{{data.btn_right.dashicon}}"></span> {{data.btn_right.label}}</button>
+				<# } #>
+			</div>
+		</script>
+		<?php
+
+		return ob_get_clean();
+	}
+
+	/**
 	 * Generate table rates HTML form.
 	 *
 	 * @since    1.0.0
@@ -353,19 +394,6 @@ class Wcsdm extends WC_Shipping_Method {
 						?>
 					</tbody>
 				</table>
-				<script type="text/template" id="tmpl-wcsdm-dummy-row">
-					<?php $this->generate_rate_row_body( $field_key ); ?>
-				</script>
-				<script type="text/template" id="tmpl-wcsdm-buttons">
-					<div id="wcsdm-buttons" class="wcsdm-buttons">
-						<# if(data.btn_left) { #>
-						<button id="{{data.btn_left.id}}" class="button button-primary button-large wcsdm-buttons-item wcsdm-buttons-item--left"><span class="dashicons dashicons-{{data.btn_left.dashicon}}"></span> {{data.btn_left.label}}</button>
-						<# } #>
-						<# if(data.btn_right) { #>
-						<button id="{{data.btn_right.id}}" class="button button-primary button-large wcsdm-buttons-item wcsdm-buttons-item--right"><span class="dashicons dashicons-{{data.btn_right.dashicon}}"></span> {{data.btn_right.label}}</button>
-						<# } #>
-					</div>
-				</script>
 			</td>
 		</tr>
 		<?php
@@ -511,6 +539,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'title'             => __( 'Maximum Distances', 'wcsdm' ),
 				'description'       => __( 'The maximum distances rule for the shipping rate. This input is required.', 'wcsdm' ),
 				'desc_tip'          => true,
+				'default'           => '1',
 				'is_advanced'       => true,
 				'is_dummy'          => true,
 				'is_hidden'         => true,
@@ -603,6 +632,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'is_dummy'          => true,
 				'is_hidden'         => true,
 				'is_required'       => true,
+				'default'           => '0',
 				'custom_attributes' => array(
 					'min' => '0',
 				),
@@ -663,6 +693,7 @@ class Wcsdm extends WC_Shipping_Method {
 								'title'       => sprintf( __( '"%s" Shipping Class Rate', 'wcsdm' ), $class_obj->name ),
 								// translators: %s is Product shipping class name.
 								'description' => sprintf( __( 'Rate for "%s" shipping class products. Leave blank to use defined default rate above.', 'wcsdm' ), $class_obj->name ),
+								'default'     => '',
 								'desc_tip'    => true,
 								'is_advanced' => true,
 								'is_dummy'    => false,
