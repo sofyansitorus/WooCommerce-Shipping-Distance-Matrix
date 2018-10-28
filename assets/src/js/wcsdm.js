@@ -573,6 +573,16 @@ var wcsdmTableRates = {
     },
 };
 
+/**
+ * Map Picker
+ */
+var wcsdmMapPicker = {
+    params: {},
+    init: function(params){
+        wcsdmMapPicker.params = params;
+    }
+};
+
 $(document).ready(function () {
     // Try show settings modal on settings page.
     if (wcsdm_params.showSettings) {
@@ -616,5 +626,6 @@ $(document).ready(function () {
         }
 
         wcsdmTableRates.init(params);
+        wcsdmMapPicker.init(params);
     });
 });
