@@ -3,27 +3,27 @@
 
 // Returns a function, that, as long as it continues to be invoked, will not
 // be triggered. The function will be called after it stops being called for
-// N milliseconds. If `immediate` is passed, trigger the function on the
-// leading edge, instead of the trailing.
-function debounce(func, wait, immediate) {
+// N milliseconds.
+function debounce(func, wait) {
     var timeout;
     return function () {
-        var context = this, args = arguments;
+        var context = this;
+        var args = arguments;
         var later = function () {
             timeout = null;
-            if (!immediate) {
-                func.apply(context, args);
-            }
+            func.apply(context, args);
         };
-        var callNow = immediate && !timeout;
         clearTimeout(timeout);
         timeout = setTimeout(later, wait);
-        if (callNow) {
-            func.apply(context, args);
-        }
     };
 }
 
+/**
+ * Replace the percent (%) sign by a variable passed as an argument
+ * similar to sprintf function in PHP
+ *
+ * @see: http://locutus.io/php/strings/sprintf/
+ */
 function sprintf() {
     var regex = /%%|%(?:(\d+)\$)?((?:[-+#0 ]|'[\s\S])*)(\d+)?(?:\.(\d*))?([\s\S])/g
     var args = arguments
@@ -189,14 +189,14 @@ function sprintf() {
     }
 }
 
-var rowScrollTop = 0;
+/**
+ * Table Rates
+ */
 var wcsdmTableRates = {
+    params: {},
     errorId: 'wcsdm-errors-rate-fields',
-    scrollTop: 0,
     init: function (params) {
         wcsdmTableRates.params = params;
-
-        $('.wc-modal-shipping-method-settings').on('scroll', wcsdmTableRates.setScrollTop);
 
         // Show advanced row
         $(document).off('click', '.wcsdm-field--rate--dummy--link_advanced');
@@ -246,10 +246,6 @@ var wcsdmTableRates = {
             wcsdmTableRates.addRateRow();
         }
     },
-    setScrollTop: function (e) {
-        console.log('setScrollTop', e.target.scrollTop);
-        wcsdmTableRates.scrollTop = e.target.scrollTop;
-    },
     handleAddRateButton: function (e) {
         e.preventDefault();
         $(e.currentTarget).prop('disabled', true);
@@ -274,7 +270,6 @@ var wcsdmTableRates = {
     },
     showAdvancedForm: function (e) {
         e.preventDefault();
-        $('.wc-modal-shipping-method-settings').off('scroll', wcsdmTableRates.setScrollTop);
         wcsdmTableRates.resetRateErrors();
 
         $('#wcsdm-table-dummy .select-item').prop('checked', false);
@@ -315,7 +310,6 @@ var wcsdmTableRates = {
         wcsdmTableRates.toggleBottons(wcsdmTableRates.getButtons());
         wcsdmTableRates.resetRateErrors();
         wcsdmTableRates.sortRateRows();
-        $('.wc-modal-shipping-method-settings').on('scroll', wcsdmTableRates.setScrollTop);
     },
     highlightRow() {
         var $row = $('#wcsdm-table-dummy tbody tr.editing');
@@ -625,7 +619,6 @@ $(document).ready(function () {
         }
 
         wcsdmTableRates.init(params);
-        // wcsdmMapPicker.init(params);
     });
 });
 }(jQuery));
