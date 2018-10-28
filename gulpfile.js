@@ -30,12 +30,12 @@ var stylesDestDir = 'assets/css/';
 var sources = [
     {
         key: 'backend',
-        scripts: ['shared.js', 'map-picker.js', 'table-rates.js', 'backend.js'],
+        scripts: ['helpers.js', 'map-picker.js', 'table-rates.js', 'backend.js'],
         styles: ['backend.scss'],
     },
     {
         key: 'frontend',
-        scripts: ['shared.js', 'frontend.js'],
+        scripts: ['helpers.js', 'frontend.js'],
         styles: ['frontend.scss'],
     }
 ];

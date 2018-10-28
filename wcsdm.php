@@ -146,30 +146,30 @@ add_filter( 'woocommerce_shipping_methods', 'wcsdm_shipping_methods' );
  * @since    1.0.0
  * @param    string $hook Current admin page hook.
  */
-function wcsdm_admin_enqueue_scripts( $hook ) {
+function wcsdm_backend_enqueue_scripts( $hook ) {
 	if ( false !== strpos( $hook, 'wc-settings' ) ) {
 		// Enqueue admin styles.
-		$wcsdm_admin_css = ( defined( 'WCSDM_DEV' ) && WCSDM_DEV ) ? add_query_arg( array( 't' => time() ), WCSDM_URL . 'assets/css/wcsdm.css' ) : WCSDM_URL . 'assets/css/wcsdm.min.css';
+		$wcsdm_backend_css = ( defined( 'WCSDM_DEV' ) && WCSDM_DEV ) ? add_query_arg( array( 't' => time() ), WCSDM_URL . 'assets/css/wcsdm-backend.css' ) : WCSDM_URL . 'assets/css/wcsdm-backend.min.css';
 		wp_enqueue_style(
-			'wcsdm', // Give the script a unique ID.
-			$wcsdm_admin_css, // Define the path to the JS file.
+			'wcsdm-backend', // Give the script a unique ID.
+			$wcsdm_backend_css, // Define the path to the JS file.
 			array(), // Define dependencies.
 			WCSDM_VERSION, // Define a version (optional).
 			false // Specify whether to put in footer (leave this false).
 		);
 
 		// Enqueue admin scripts.
-		$wcsdm_admin_js = ( defined( 'WCSDM_DEV' ) && WCSDM_DEV ) ? add_query_arg( array( 't' => time() ), WCSDM_URL . 'assets/js/wcsdm.js' ) : WCSDM_URL . 'assets/js/wcsdm.min.js';
+		$wcsdm_backend_js = ( defined( 'WCSDM_DEV' ) && WCSDM_DEV ) ? add_query_arg( array( 't' => time() ), WCSDM_URL . 'assets/js/wcsdm-backend.js' ) : WCSDM_URL . 'assets/js/wcsdm-backend.min.js';
 		wp_enqueue_script(
-			'wcsdm', // Give the script a unique ID.
-			$wcsdm_admin_js, // Define the path to the JS file.
+			'wcsdm-backend', // Give the script a unique ID.
+			$wcsdm_backend_js, // Define the path to the JS file.
 			array( 'jquery' ), // Define dependencies.
 			WCSDM_VERSION, // Define a version (optional).
 			true // Specify whether to put in footer (leave this true).
 		);
 		wp_localize_script(
-			'wcsdm',
-			'wcsdm_params',
+			'wcsdm-backend',
+			'wcsdm_backend_params',
 			array(
 				'showSettings' => isset( $_GET['wcsdm_settings'] ) && is_admin(),
 				'methodId'     => WCSDM_METHOD_ID,
@@ -207,4 +207,4 @@ function wcsdm_admin_enqueue_scripts( $hook ) {
 		);
 	}
 }
-add_action( 'admin_enqueue_scripts', 'wcsdm_admin_enqueue_scripts' );
+add_action( 'admin_enqueue_scripts', 'wcsdm_backend_enqueue_scripts' );
