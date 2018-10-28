@@ -23,7 +23,7 @@
 		"export": false,
 		"module": false,
 		"require": false,
-		"wcsdm_params": false,
+		"wcsdm_backend_params": false,
 		"$": false,
 		"google": false,
 		"console": false
