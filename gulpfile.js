@@ -1,33 +1,48 @@
+/**
+ * Import modules
+ */
 var gulp = require('gulp');
 var rename = require('gulp-rename');
 var uglify = require('gulp-uglify');
 var iife = require('gulp-iife');
+var concat = require('gulp-concat');
 var sass = require('gulp-sass');
-var cleanCSS = require('gulp-clean-css');
 var autoprefixer = require('gulp-autoprefixer');
 var plumber = require('gulp-plumber');
 var notify = require('gulp-notify');
-var gulpPhpCS = require('gulp-phpcs');
-var wpPot = require('gulp-wp-pot');
 var browserSync = require('browser-sync').create();
 var argv = require('yargs').argv;
-var zip = require('gulp-zip');
+var gulpif = require('gulp-if');
+var cleanCSS = require('gulp-clean-css');
+var sourcemaps = require('gulp-sourcemaps');
 
-var scriptsSrc = ['assets/src/js/*.js'];
-var scriptsDest = 'assets/js';
+/**
+ * Local variables
+ */
+var prefix = 'wcsdm-';
 
-var minifyScriptsSrc = ['assets/js/*.js', '!assets/js/*.min.js'];
-var minifyScriptsDest = 'assets/js';
+var scriptsSrcDir = 'assets/src/js/';
+var scriptsDestDir = 'assets/js/';
 
-var sassSrc = ['assets/src/scss/*.scss'];
-var sassDest = 'assets/css';
+var stylesSrcDir = 'assets/src/scss/';
+var stylesDestDir = 'assets/css/';
 
-var minifyCssSrc = ['assets/css/*.css', '!assets/css/*.min.css'];
-var minifyCssDest = 'assets/css';
+var sources = [
+    {
+        key: 'backend',
+        scripts: ['shared.js', 'map-picker.js', 'table-rates.js', 'backend.js'],
+        styles: ['backend.scss'],
+    },
+    {
+        key: 'frontend',
+        scripts: ['shared.js', 'frontend.js'],
+        styles: ['frontend.scss'],
+    }
+];
 
-var phpcsSrc = ['*.php', '**/*.php', '!vendor/*', '!node_modules/*', '!index.php', '!**/index.php'];
-
-// Custom error handler
+/**
+ * Custom error handler
+ */
 var errorHandler = function () {
     return plumber(function (err) {
         notify.onError({
@@ -37,35 +52,49 @@ var errorHandler = function () {
     });
 };
 
-// Scripts
-gulp.task('scripts', function () {
-    return gulp.src(scriptsSrc)
+/**
+ * Script taks handler
+ */
+var scriptsHandler = function (source, isMinify) {
+    var srcParam = source.scripts.map(function (file) {
+        return scriptsSrcDir + file;
+    });
+
+    return gulp.src(srcParam)
         .pipe(errorHandler())
+        .pipe(concat(source.key + '.js'))
         .pipe(iife({
             useStrict: true,
             trimCode: true,
-            prependSemicolon: true,
+            prependSemicolon: false,
+            bindThis: false,
             params: ['$'],
             args: ['jQuery']
         }))
-        .pipe(gulp.dest(scriptsDest));
-});
-
-// Minify scripts
-gulp.task('minify-scripts', function () {
-    return gulp.src(minifyScriptsSrc)
-        .pipe(errorHandler())
         .pipe(rename({
-            suffix: '.min'
+            prefix: prefix,
         }))
-        .pipe(uglify())
-        .pipe(gulp.dest(minifyScriptsDest));
-});
+        .pipe(gulp.dest(scriptsDestDir))
+        .pipe(gulpif(isMinify, rename({
+            suffix: '.min',
+        })))
+        .pipe(gulpif(isMinify, sourcemaps.init()))
+        .pipe(gulpif(isMinify, uglify()))
+        .pipe(gulpif(isMinify, sourcemaps.write()))
+        .pipe(gulpif(isMinify, gulp.dest(scriptsDestDir)));
+}
 
-// SASS
-gulp.task('sass', function () {
-    return gulp.src(sassSrc)
+/**
+ * Style taks handler
+ */
+var stylesHandler = function (source, isMinify) {
+    var srcParam = source.styles.map(function (file) {
+        return stylesSrcDir + file;
+    });
+
+    return gulp.src(srcParam)
         .pipe(errorHandler())
+        .pipe(gulpif(isMinify, sourcemaps.init()))
         .pipe(sass().on('error', sass.logError))
         .pipe(autoprefixer(
             'last 2 version',
@@ -76,58 +105,93 @@ gulp.task('sass', function () {
             'opera 12.1',
             'ios 6',
             'android 4'))
-        .pipe(gulp.dest(sassDest))
-        .pipe(browserSync.stream());
-});
-
-// Minify CSS
-gulp.task('minify-css', function () {
-    return gulp.src(minifyCssSrc)
-        .pipe(errorHandler())
         .pipe(rename({
-            suffix: '.min'
+            prefix: prefix,
         }))
-        .pipe(cleanCSS({ compatibility: 'ie8' }))
-        .pipe(gulp.dest(minifyCssDest));
-});
+        .pipe(gulp.dest(stylesDestDir))
+        .pipe(gulpif(isMinify, rename({
+            suffix: '.min',
+        })))
+        .pipe(gulpif(isMinify, cleanCSS({
+            compatibility: 'ie8',
+        })))
+        .pipe(gulpif(isMinify, sourcemaps.write()))
+        .pipe(gulpif(isMinify, gulp.dest(stylesDestDir)))
+        .pipe(gulpif(!isMinify, browserSync.stream()));
+}
 
-gulp.task('phpcs', function () {
-    return gulp.src(phpcsSrc)
-        .pipe(errorHandler())
-        .pipe(gulpPhpCS({
-            bin: '/usr/local/bin/phpcs',
-            standard: 'WordPress',
-            warningSeverity: 0
-        }))
-        // Log all problems that was found
-        .pipe(gulpPhpCS.reporter('log'));
-});
+/**
+ * Build tasks
+ */
+var tasksListBuild = [];
 
-gulp.task('i18n', function () {
-    return gulp.src(phpcsSrc)
-        .pipe(wpPot({
-            'domain': 'wcsdm',
-            'package': 'WooCommerce-Shipping-Distance-Matrix'
-        }))
-        .pipe(gulp.dest('languages/wcsdm.pot'));
-});
+sources.forEach(function (source) {
+    /**
+     * Minify Scripts Task
+     */
+    var scriptsTaskName = source.key + '-scripts-minify';
 
-// Dev task with watch
-gulp.task('default', ['sass', 'scripts', 'phpcs'], function () {
-    browserSync.init({
-        proxy: argv.proxy
+    gulp.task(scriptsTaskName, function () {
+        return scriptsHandler(source, true);
     });
-    gulp.watch([sassSrc], ['sass']);
-    gulp.watch([scriptsSrc], ['scripts']).on('change', browserSync.reload);
-    gulp.watch([phpcsSrc], ['phpcs']).on('change', browserSync.reload);
+
+    tasksListBuild.push(scriptsTaskName);
+
+    /**
+     * Styles Task
+     */
+    var stylesTaskName = source.key + '-styles-minify';
+
+    gulp.task(stylesTaskName, function () {
+        return stylesHandler(source, true);
+    });
+
+    tasksListBuild.push(stylesTaskName);
+});
+gulp.task('build', tasksListBuild);
+
+/**
+ * Default tasks
+ */
+var tasksListDefault = [];
+
+sources.forEach(function (source) {
+    /**
+     * Scripts Task
+     */
+    var scriptsTaskName = source.key + '-scripts';
+
+    gulp.task(scriptsTaskName, function () {
+        return scriptsHandler(source, false);
+    });
+
+    tasksListDefault.push(scriptsTaskName);
+
+    /**
+     * Styles Task
+     */
+    var stylesTaskName = source.key + '-styles';
+
+    gulp.task(stylesTaskName, function () {
+        return stylesHandler(source, false);
+    });
+
+    tasksListDefault.push(stylesTaskName);
 });
 
-// Build task
-gulp.task('build', ['sass', 'minify-css', 'scripts', 'minify-scripts', 'i18n']);
+gulp.task('default', tasksListDefault, function () {
+    if (argv.hasOwnProperty('proxy')) {
+        browserSync.init({
+            proxy: argv.proxy
+        });
+    }
 
-// Export files task
-gulp.task('export', ['build'], function () {
-    gulp.src(['./**', '!dist/', '!dist/**', '!node_modules/', '!node_modules/**', '!assets/src/', '!assets/src/**', '!gulpfile.js', '!package-lock.json', '!package.json'])
-        .pipe(zip('wcsdm.zip'))
-        .pipe(gulp.dest('dist'));
+    sources.forEach(function (source) {
+        var watchScriptsSrc = source.scripts.map(function (script) {
+            return scriptsSrcDir + script;
+        });
+        gulp.watch(watchScriptsSrc, [source.key + '-scripts']).on('change', browserSync.reload);
+
+        gulp.watch(source.styles, [source.key + '-styles']);
+    });
 });
