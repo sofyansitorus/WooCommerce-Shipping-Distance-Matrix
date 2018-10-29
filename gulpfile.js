@@ -216,7 +216,11 @@ gulp.task('default', tasksListDefault, function () {
             }
         });
 
-        gulp.watch(asset.styles, [asset.location + '-styles']);
+        var watchStylesSrc = asset.styles.map(function (style) {
+            return stylesSrcDir + style;
+        });
+
+        gulp.watch(watchStylesSrc, [asset.location + '-styles']);
     });
 
     gulp.watch(phpSrc, ['phpcs']).on('change', function () {
