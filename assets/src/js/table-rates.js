@@ -233,6 +233,7 @@ var wcsdmTableRates = {
         "use strict";
         e.preventDefault();
 
+        $('#wcsdm-row-dummy').siblings().hide();
         $('#wcsdm-table-dummy tbody .select-item:not(:checked)').closest('tr').addClass('hidden');
         $('#wcsdm-table-dummy tbody .wcsdm-field--rate--dummy').prop('disabled', true);
         $('#wcsdm-table-dummy tbody .select-item:checked').closest('tr').addClass('deleted');
@@ -243,6 +244,7 @@ var wcsdmTableRates = {
         "use strict";
         e.preventDefault();
 
+        $('#wcsdm-row-dummy').siblings().not('#wcsdm-row-advanced').show();
         $('#wcsdm-table-dummy tbody tr').removeClass('hidden deleted');
         $('#wcsdm-table-dummy tbody .wcsdm-field--rate--dummy').prop('disabled', false);
         $('.wcsdm-col--select-item, .wcsdm-col--link_advanced').show();
@@ -252,6 +254,7 @@ var wcsdmTableRates = {
         "use strict";
         e.preventDefault();
 
+        $('#wcsdm-row-dummy').siblings().not('#wcsdm-row-advanced').show();
         $('#wcsdm-table-dummy tbody .select-item:checked').closest('tr').remove();
         $('#wcsdm-table-dummy tbody tr').removeClass('hidden');
         $('#wcsdm-table-dummy thead .select-item').prop('checked', false);
