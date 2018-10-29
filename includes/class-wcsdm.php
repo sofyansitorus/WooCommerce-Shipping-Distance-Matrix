@@ -316,7 +316,7 @@ class Wcsdm extends WC_Shipping_Method {
 		<script type="text/template" id="tmpl-wcsdm-errors">
 			<div id="{{ data.id }}" class="wcsdm-errors">
 				<ul class="notice notice-error">
-					<li class="wcsdm-errors--heading"><?php _e( 'Errors', 'wcsdm' ); ?>:</li>
+					<li class="wcsdm-errors--heading"><?php esc_html_e( 'Errors', 'wcsdm' ); ?>:</li>
 					<# _.each(data.errors, function(error, key) { #>
 					<li id="wcsdm-errors--{{ key }}">{{ error }}</li>
 					<# }); #>
@@ -348,6 +348,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 *
 	 * @since    1.0.0
 	 * @param string $key Input field key.
+	 * @param array  $data Settings field data.
 	 */
 	public function generate_table_rates_html( $key, $data ) {
 		$field_key = $this->get_field_key( $key );
@@ -494,6 +495,13 @@ class Wcsdm extends WC_Shipping_Method {
 		return ob_get_clean();
 	}
 
+	/**
+	 * Generate sub_title field type HTML output
+	 *
+	 * @since 1.2.4
+	 * @param string $key Settings field key.
+	 * @param array  $data Settings field data.
+	 */
 	public function generate_sub_title_html( $key, $data ) {
 		$field_key = $this->get_field_key( $key );
 
@@ -523,6 +531,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 *
 	 * @since    1.4.2
 	 *
+	 * @param string $context Data context filter.
 	 * @return array
 	 */
 	public function rates_fields( $context = '' ) {
@@ -625,7 +634,7 @@ class Wcsdm extends WC_Shipping_Method {
 			),
 			'class_0'              => array(
 				'type'              => 'number',
-				'title'             => $context === 'advanced' ? __( 'Default Rate', 'wcsdm' ) : __( 'Shipping Rate', 'wcsdm' ),
+				'title'             => 'advanced' === $context ? __( 'Default Rate', 'wcsdm' ) : __( 'Shipping Rate', 'wcsdm' ),
 				'description'       => __( 'The shipping rate within the distances range. This input is required.', 'wcsdm' ),
 				'desc_tip'          => true,
 				'is_advanced'       => true,

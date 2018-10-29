@@ -193,11 +193,17 @@ function wcsdm_backend_enqueue_scripts( $hook ) {
 					'save_changes'        => __( 'Save Changes', 'wcsdm' ),
 					'apply_changes'       => __( 'Apply Changes', 'wcsdm' ),
 					'errors' => array(
+						// translators: %s = Field name.
 						'field_required' => __( '%s field is required', 'wcsdm' ),
-						'field_min_value' => __( '%s field value cannot be lower than %d', 'wcsdm' ),
-						'field_max_value' => __( '%s field value cannot be greater than %d', 'wcsdm' ),
+						// translators: %1$s = Field name, %2$d = Minimum field value rule.
+						'field_min_value' => __( '%1$s field value cannot be lower than %2$d', 'wcsdm' ),
+						// translators: %1$s = Field name, %2$d = Maximum field value rule.
+						'field_max_value' => __( '%1$s field value cannot be greater than %2$d', 'wcsdm' ),
+						// translators: %s = Field name.
 						'field_numeric' => __( '%s field value must be numeric', 'wcsdm' ),
+						// translators: %s = Field name.
 						'field_numeric_decimal' => __( '%s field value must be numeric and decimal', 'wcsdm' ),
+						// translators: %s = Field name.
 						'field_select' => __( '%s field value selected is not exists', 'wcsdm' ),
 					),
 				),
