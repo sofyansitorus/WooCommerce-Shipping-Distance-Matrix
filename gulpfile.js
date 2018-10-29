@@ -17,17 +17,22 @@ var cleanCSS = require('gulp-clean-css');
 var sourcemaps = require('gulp-sourcemaps');
 var wpPot = require('gulp-wp-pot');
 var zip = require('gulp-zip');
+var phpcs = require('gulp-phpcs');
+var phpcbf = require('gulp-phpcbf');
+var gutil = require('gutil');
 
 /**
  * Local variables
  */
-var prefix = 'wcsdm-';
+var prefix = 'wcsdm';
 
 var scriptsSrcDir = 'assets/src/js/';
 var scriptsDestDir = 'assets/js/';
 
 var stylesSrcDir = 'assets/src/scss/';
 var stylesDestDir = 'assets/css/';
+
+var phpSrc = ['*.php', '**/*.php', '!vendor/*', '!node_modules/*', '!index.php', '!**/index.php'];
 
 var assets = [
     {
@@ -74,7 +79,7 @@ var scriptsHandler = function (asset, isMinify) {
             args: ['jQuery']
         }))
         .pipe(rename({
-            prefix: prefix,
+            prefix: prefix + '-',
         }))
         .pipe(gulp.dest(scriptsDestDir))
         .pipe(gulpif(isMinify, rename({
@@ -108,7 +113,7 @@ var stylesHandler = function (asset, isMinify) {
             'ios 6',
             'android 4'))
         .pipe(rename({
-            prefix: prefix,
+            prefix: prefix + '-',
         }))
         .pipe(gulp.dest(stylesDestDir))
         .pipe(gulpif(isMinify, rename({
@@ -123,7 +128,7 @@ var stylesHandler = function (asset, isMinify) {
 }
 
 /**
- * Build tasks
+ * Build tasks list
  */
 var tasksListBuild = [];
 
@@ -150,17 +155,17 @@ assets.forEach(function (asset) {
 
     tasksListBuild.push(stylesTaskName);
 });
-gulp.task('build', tasksListBuild, function () {
-    return gulp.src(['./*.php', './**/*.php'])
-        .pipe(wpPot({
-            'domain': 'wcsdm',
-            'package': 'WooCommerce-Shipping-Distance-Matrix'
-        }))
-        .pipe(gulp.dest('languages/wcsdm.pot'));
-});
+
+// Add custom task to build tasks list
+tasksListBuild.push('i18n');
 
 /**
- * Default tasks
+ * Build task
+ */
+gulp.task('build', tasksListBuild);
+
+/**
+ * Default tasks list
  */
 var tasksListDefault = [];
 
@@ -188,6 +193,12 @@ assets.forEach(function (asset) {
     tasksListDefault.push(stylesTaskName);
 });
 
+// Add custom task to default tasks list
+tasksListDefault.push('phpcs');
+
+/**
+ * Default task
+ */
 gulp.task('default', tasksListDefault, function () {
     if (argv.hasOwnProperty('proxy')) {
         browserSync.init({
@@ -199,15 +210,71 @@ gulp.task('default', tasksListDefault, function () {
         var watchScriptsSrc = asset.scripts.map(function (script) {
             return scriptsSrcDir + script;
         });
-        gulp.watch(watchScriptsSrc, [asset.location + '-scripts']).on('change', browserSync.reload);
+        gulp.watch(watchScriptsSrc, [asset.location + '-scripts']).on('change', function () {
+            if (argv.hasOwnProperty('proxy')) {
+                browserSync.reload();
+            }
+        });
 
         gulp.watch(asset.styles, [asset.location + '-styles']);
     });
+
+    gulp.watch(phpSrc, ['phpcs']).on('change', function () {
+        if (argv.hasOwnProperty('proxy')) {
+            browserSync.reload();
+        }
+    });
+});
+
+/**
+ * i18n tasks
+ */
+gulp.task('i18n', function () {
+    return gulp.src(phpSrc)
+        .pipe(wpPot({
+            'domain': prefix,
+            'package': 'WooCommerce-Shipping-Distance-Matrix'
+        }))
+        .pipe(gulp.dest('languages/' + prefix + '.pot'));
+});
+
+/**
+ * PHPCS tasks
+ */
+gulp.task('phpcs', function () {
+    var bin = argv.hasOwnProperty('bin') ? argv.bin : '/usr/local/bin/phpcs';
+    return gulp.src(phpSrc)
+        .pipe(errorHandler())
+        .pipe(phpcs({
+            bin: bin,
+            standard: 'WordPress',
+            warningSeverity: 0
+        }))
+        // Log all problems that was found
+        .pipe(phpcs.reporter('log'));
+});
+
+/**
+ * PHPCBF tasks
+ */
+gulp.task('phpcbf', function () {
+    var bin = argv.hasOwnProperty('bin') ? argv.bin : '/usr/local/bin/phpcbf';
+    return gulp.src(phpSrc)
+        .pipe(errorHandler())
+        .pipe(phpcbf({
+            bin: bin,
+            standard: 'WordPress',
+            warningSeverity: 0
+        }))
+        .on('error', gutil.log)
+        .pipe(gulp.dest('./'));
 });
 
 // Export task
 gulp.task('export', ['build'], function () {
+    var file = argv.hasOwnProperty('file') ? argv.file : prefix + '.zip';
+    var dest = argv.hasOwnProperty('dest') ? argv.dest : 'dist';
     gulp.src(['./**', '!dist/', '!dist/**', '!node_modules/', '!node_modules/**', '!assets/src/', '!assets/src/**', '!gulpfile.js', '!package-lock.json', '!package.json'])
-        .pipe(zip('wcsdm.zip'))
-        .pipe(gulp.dest('dist'));
+        .pipe(zip(file))
+        .pipe(gulp.dest(dest));
 });
