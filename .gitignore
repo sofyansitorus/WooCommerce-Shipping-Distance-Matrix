@@ -23,3 +23,5 @@ assets/css/wcsdm-frontend\.css
 assets/js/wcsdm-backend\.js
 
 assets/js/wcsdm-frontend\.js
+
+assets/src/scss/wcsdm\.scss
