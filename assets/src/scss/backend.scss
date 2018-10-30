@@ -6,6 +6,16 @@
 /* Begin Stylings */
 
 .wcsdm {
+    &-hidden {
+        display: none;
+    }
+    &-link {
+        text-decoration: none;
+    }
+    &-fullwidth:not(a) {
+        display: block;
+        width: 100% !important;
+    }
     &-no-padding {
         padding: 0 !important;
     }
@@ -44,7 +54,31 @@
             padding-bottom: 8px;
         }
     }
-    &-table-dummy {
+    &-field {
+        &--rate {
+            &--error {
+                border: 1px solid $punch !important;
+                background-color: rgba($punch, .1) !important;
+            }
+            &--dummy:not(a) {
+                min-width: 150px !important;
+            }
+        }
+    }
+    &-location-field-wrap {
+        padding-right: 50px;
+        position: relative;
+        cursor: pointer;
+        &:after {
+            content: "\f231";
+            font-family: dashicons;
+            font-size: 2em;
+            position: absolute;
+            top: 0;
+            right: 10px;
+        }
+    }
+    &-row-dummy {
         .wcsdm-col {
             padding: 10px !important;
             &--select-item {
@@ -107,20 +141,32 @@
             }
         }
     }
-    &-field {
-        &--rate {
-            &--error {
-                border: 1px solid $punch !important;
-                background-color: rgba($punch, .1) !important;
-            }
-            &--dummy:not(a) {
-                display: block;
-                width: 100% !important;
-                min-width: 150px !important;
-            }
+    &-map-instructions {
+        background-color: $alto;
+        text-align: center;
+        padding: 30px 20px;
+        img {
+            display: block;
+            margin: 20px auto 0;
         }
     }
-    &-row-advanced {
-        display: none;
+    &-map-wrap {
+        background-color: $alto;
+        padding: 0;
+        min-height: 400px;
     }
+    &-map-canvas {
+        height: 400px;
+    }
+    &-map-search {
+        height: 40px;
+    }
+    &-map-error {
+        text-align: center;
+        padding-top: 100px;
+    }
+}
+
+.pac-container {
+    z-index: 9999999;
 }

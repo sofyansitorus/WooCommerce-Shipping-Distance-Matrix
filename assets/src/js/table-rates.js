@@ -12,29 +12,33 @@ var wcsdmTableRates = {
         $(document).off('click', '.wcsdm-field--rate--dummy--link_advanced');
         $(document).on('click', '.wcsdm-field--rate--dummy--link_advanced', wcsdmTableRates.showAdvancedForm);
 
+        // Add rate row
+        $(document).off('click', '#wcsdm-btn--save-settings');
+        $(document).on('click', '#wcsdm-btn--save-settings', wcsdmTableRates.submitForm);
+
         // Hide advanced row
-        $(document).off('click', '#wcsdm-btn-advanced-cancel');
-        $(document).on('click', '#wcsdm-btn-advanced-cancel', wcsdmTableRates.hideAdvancedForm);
+        $(document).off('click', '#wcsdm-btn--cancel-advanced');
+        $(document).on('click', '#wcsdm-btn--cancel-advanced', wcsdmTableRates.hideAdvancedForm);
 
         // Apply advanced row
-        $(document).off('click', '#wcsdm-btn-advanced-apply');
-        $(document).on('click', '#wcsdm-btn-advanced-apply', wcsdmTableRates.applyAdvancedForm);
+        $(document).off('click', '#wcsdm-btn--apply-advanced');
+        $(document).on('click', '#wcsdm-btn--apply-advanced', wcsdmTableRates.applyAdvancedForm);
 
         // Add rate row
-        $(document).off('click', '#wcsdm-btn-add-rate');
-        $(document).on('click', '#wcsdm-btn-add-rate', wcsdmTableRates.handleAddRateButton);
+        $(document).off('click', '#wcsdm-btn--add-rate');
+        $(document).on('click', '#wcsdm-btn--add-rate', wcsdmTableRates.handleAddRateButton);
 
         // Delete rate row
-        $(document).off('click', '#wcsdm-btn-delete-rate');
-        $(document).on('click', '#wcsdm-btn-delete-rate', wcsdmTableRates.deleteRateRow);
+        $(document).off('click', '#wcsdm-btn--delete-rate-select');
+        $(document).on('click', '#wcsdm-btn--delete-rate-select', wcsdmTableRates.deleteRateRow);
 
         // Cancel delete rate row
-        $(document).off('click', '#wcsdm-btn-delete-rate-cancel');
-        $(document).on('click', '#wcsdm-btn-delete-rate-cancel', wcsdmTableRates.deleteRateRowCancel);
+        $(document).off('click', '#wcsdm-btn--delete-rate-cancel');
+        $(document).on('click', '#wcsdm-btn--delete-rate-cancel', wcsdmTableRates.deleteRateRowCancel);
 
         // Confirm delete rate row
-        $(document).off('click', '#wcsdm-btn-delete-rate-confirm');
-        $(document).on('click', '#wcsdm-btn-delete-rate-confirm', wcsdmTableRates.deleteRateRowConfirm);
+        $(document).off('click', '#wcsdm-btn--delete-rate-confirm');
+        $(document).on('click', '#wcsdm-btn--delete-rate-confirm', wcsdmTableRates.deleteRateRowConfirm);
 
         // Toggle selected rows
         $(document).off('change', '#wcsdm-table-dummy thead .select-item');
@@ -50,11 +54,17 @@ var wcsdmTableRates = {
             wcsdmTableRates.handleRateFieldDummy(e);
         }, 500));
 
-        wcsdmTableRates.toggleBottons(wcsdmTableRates.getButtons());
+        toggleBottons();
 
         if (!$('#wcsdm-table-dummy tbody tr').length) {
             wcsdmTableRates.addRateRow();
         }
+    },
+    submitForm: function (e) {
+        "use strict";
+        e.preventDefault();
+
+        $('#btn-ok').trigger('click');
     },
     handleAddRateButton: function (e) {
         "use strict";
@@ -95,11 +105,22 @@ var wcsdmTableRates = {
             $('#' + $field.data('id')).val($field.val());
         });
 
-        wcsdmTableRates.toggleBottons(wcsdmTableRates.getButtons('advanced'));
-
-        $('#wcsdm-row-advanced').show().siblings().hide('fast', function () {
-            $('.modal-close-link').hide();
+        toggleBottons({
+            left: {
+                id: 'cancel-advanced',
+                label: 'cancel',
+                icon: 'undo',
+            },
+            right: {
+                id: 'apply-advanced',
+                label: 'apply',
+                icon: 'editor-spellcheck',
+            }
         });
+
+        $('.modal-close-link').hide();
+
+        $('#wcsdm-row-advanced').show().siblings().hide();
     },
     applyAdvancedForm: function (e) {
         "use strict";
@@ -120,11 +141,11 @@ var wcsdmTableRates = {
     hideAdvancedForm: function (e) {
         "use strict";
         e.preventDefault();
-        $('#wcsdm-row-advanced').hide().siblings().show();
         $('.modal-close-link').show();
-        wcsdmTableRates.toggleBottons(wcsdmTableRates.getButtons());
+        toggleBottons();
         wcsdmTableRates.resetRateErrors();
         wcsdmTableRates.sortRateRows();
+        $('#wcsdm-row-advanced').hide().siblings().not('.wcsdm-hidden').show();
     },
     highlightRow: function () {
         "use strict";
@@ -238,29 +259,48 @@ var wcsdmTableRates = {
         $('#wcsdm-table-dummy tbody .wcsdm-field--rate--dummy').prop('disabled', true);
         $('#wcsdm-table-dummy tbody .select-item:checked').closest('tr').addClass('deleted');
         $('.wcsdm-col--select-item, .wcsdm-col--link_advanced').hide();
-        wcsdmTableRates.toggleBottons(wcsdmTableRates.getButtons('confirm_delete_rate'));
+        toggleBottons({
+            left: {
+                id: 'delete-rate-cancel',
+                label: 'cancel',
+                icon: 'undo',
+            },
+            right: {
+                id: 'delete-rate-confirm',
+                label: 'confirm',
+                icon: 'editor-spellcheck',
+            }
+        });
     },
     deleteRateRowCancel: function (e) {
         "use strict";
         e.preventDefault();
 
-        $('#wcsdm-row-dummy').siblings().not('#wcsdm-row-advanced').show();
+        $('#wcsdm-row-dummy').siblings().not('.wcsdm-hidden').show();
         $('#wcsdm-table-dummy tbody tr').removeClass('hidden deleted');
         $('#wcsdm-table-dummy tbody .wcsdm-field--rate--dummy').prop('disabled', false);
         $('.wcsdm-col--select-item, .wcsdm-col--link_advanced').show();
-        wcsdmTableRates.toggleBottons(wcsdmTableRates.getButtons('delete_rate'));
+
+        toggleBottons({
+            left: {
+                id: 'delete-rate-select',
+                label: 'delete',
+                icon: 'trash',
+            }
+        });
     },
     deleteRateRowConfirm: function (e) {
         "use strict";
         e.preventDefault();
 
-        $('#wcsdm-row-dummy').siblings().not('#wcsdm-row-advanced').show();
+        $('#wcsdm-row-dummy').siblings().not('.wcsdm-hidden').show();
         $('#wcsdm-table-dummy tbody .select-item:checked').closest('tr').remove();
         $('#wcsdm-table-dummy tbody tr').removeClass('hidden');
         $('#wcsdm-table-dummy thead .select-item').prop('checked', false);
         $('#wcsdm-table-dummy tbody .wcsdm-field--rate--dummy').prop('disabled', false);
         $('.wcsdm-col--select-item, .wcsdm-col--link_advanced').show();
-        wcsdmTableRates.toggleBottons(wcsdmTableRates.getButtons());
+
+        toggleBottons();
 
         if (!$('#wcsdm-table-dummy tbody tr').length) {
             wcsdmTableRates.addRateRow();
@@ -274,10 +314,16 @@ var wcsdmTableRates = {
 
         if ($(e.target).is(':checked')) {
             $('#wcsdm-table-dummy tbody tr').removeClass('hidden deleted').addClass('selected').find('.select-item').prop('checked', true);
-            wcsdmTableRates.toggleBottons(wcsdmTableRates.getButtons('delete_rate'));
+            toggleBottons({
+                left: {
+                    id: 'delete-rate-select',
+                    label: 'delete',
+                    icon: 'trash',
+                }
+            });
         } else {
             $('#wcsdm-table-dummy tbody tr').removeClass('hidden deleted').removeClass('selected').find('.select-item').prop('checked', false);
-            wcsdmTableRates.toggleBottons(wcsdmTableRates.getButtons());
+            toggleBottons();
         }
     },
     toggleSelectedRow: function (e) {
@@ -294,9 +340,15 @@ var wcsdmTableRates = {
         }
 
         if ($('#wcsdm-table-dummy tbody .select-item:checked').length) {
-            wcsdmTableRates.toggleBottons(wcsdmTableRates.getButtons('delete_rate'));
+            toggleBottons({
+                left: {
+                    id: 'delete-rate-select',
+                    label: 'delete',
+                    icon: 'trash',
+                }
+            });
         } else {
-            wcsdmTableRates.toggleBottons(wcsdmTableRates.getButtons());
+            toggleBottons();
         }
 
         var isBulkChecked = $('#wcsdm-table-dummy tbody .select-item').length === $('#wcsdm-table-dummy tbody .select-item:checked').length;
@@ -334,79 +386,5 @@ var wcsdmTableRates = {
         setTimeout(function () {
             wcsdmTableRates.highlightRow();
         }, 100);
-    },
-    toggleBottons: function (data) {
-        "use strict";
-        $('#wcsdm-buttons').remove();
-        $('#btn-ok').hide().after(wp.template('wcsdm-buttons')(data));
-    },
-    getButtons: function (context) {
-        "use strict";
-        var btnAddRate = {
-            label: wcsdmTableRates.params.i18n.add_rate,
-            id: 'wcsdm-btn-add-rate',
-            dashicon: 'plus'
-        };
-
-        var btnDeleteRate = {
-            label: wcsdmTableRates.params.i18n.delete_rate,
-            id: 'wcsdm-btn-delete-rate',
-            dashicon: 'plus'
-        };
-
-        var btnDeleteRateCancel = {
-            label: wcsdmTableRates.params.i18n.cancel,
-            id: 'wcsdm-btn-delete-rate-cancel',
-            dashicon: 'undo'
-        };
-
-        var btnDeleteRateConfirm = {
-            label: wcsdmTableRates.params.i18n.delete_rate_confirm,
-            id: 'wcsdm-btn-delete-rate-confirm',
-            dashicon: 'trash'
-        };
-
-        var btnSave = {
-            label: wcsdmTableRates.params.i18n.save_changes,
-            id: 'wcsdm-btn-save',
-            dashicon: 'yes'
-        };
-
-        var btnAdvancedCancel = {
-            label: wcsdmTableRates.params.i18n.cancel,
-            id: 'wcsdm-btn-advanced-cancel',
-            dashicon: 'undo'
-        };
-
-        var btnAdvancedApply = {
-            label: wcsdmTableRates.params.i18n.apply_changes,
-            id: 'wcsdm-btn-advanced-apply',
-            dashicon: 'editor-spellcheck'
-        };
-
-        if (context === 'advanced') {
-            return {
-                btn_left: btnAdvancedCancel,
-                btn_right: btnAdvancedApply,
-            };
-        }
-
-        if (context === 'delete_rate') {
-            return {
-                btn_left: btnDeleteRate,
-            };
-        }
-
-        if (context === 'confirm_delete_rate') {
-            return {
-                btn_left: btnDeleteRateCancel,
-                btn_right: btnDeleteRateConfirm,
-            };
-        }
-
-        return {
-            btn_left: btnAddRate,
-            btn_right: btnSave,
-        };
-    },
+    }
 };

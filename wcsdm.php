@@ -61,6 +61,9 @@ define( 'WCSDM_VERSION', '1.4.7' );
 define( 'WCSDM_METHOD_ID', 'wcsdm' );
 define( 'WCSDM_METHOD_TITLE', 'Shipping Distance Matrix' );
 
+define( 'WCSDM_DEFAULT_LAT', -6.175392 );
+define( 'WCSDM_DEFAULT_LNG', 106.827156 );
+
 /**
  * Load plugin textdomain.
  *
@@ -192,23 +195,32 @@ function wcsdm_backend_enqueue_scripts( $hook ) {
 					'delete_rate_confirm' => __( 'Confirm Delete', 'wcsdm' ),
 					'save_changes'        => __( 'Save Changes', 'wcsdm' ),
 					'apply_changes'       => __( 'Apply Changes', 'wcsdm' ),
-					'errors' => array(
+					'add'                 => __( 'Add', 'wcsdm' ),
+					'save'                => __( 'Save', 'wcsdm' ),
+					'apply'               => __( 'Apply', 'wcsdm' ),
+					'close'               => __( 'Close', 'wcsdm' ),
+					'back'                => __( 'Back', 'wcsdm' ),
+					'delete'              => __( 'Delete', 'wcsdm' ),
+					'confirm'             => __( 'Confirm', 'wcsdm' ),
+					'errors'              => array(
 						// translators: %s = Field name.
-						'field_required' => __( '%s field is required', 'wcsdm' ),
+						'field_required'        => __( '%s field is required', 'wcsdm' ),
 						// translators: %1$s = Field name, %2$d = Minimum field value rule.
-						'field_min_value' => __( '%1$s field value cannot be lower than %2$d', 'wcsdm' ),
+						'field_min_value'       => __( '%1$s field value cannot be lower than %2$d', 'wcsdm' ),
 						// translators: %1$s = Field name, %2$d = Maximum field value rule.
-						'field_max_value' => __( '%1$s field value cannot be greater than %2$d', 'wcsdm' ),
+						'field_max_value'       => __( '%1$s field value cannot be greater than %2$d', 'wcsdm' ),
 						// translators: %s = Field name.
-						'field_numeric' => __( '%s field value must be numeric', 'wcsdm' ),
+						'field_numeric'         => __( '%s field value must be numeric', 'wcsdm' ),
 						// translators: %s = Field name.
 						'field_numeric_decimal' => __( '%s field value must be numeric and decimal', 'wcsdm' ),
 						// translators: %s = Field name.
-						'field_select' => __( '%s field value selected is not exists', 'wcsdm' ),
+						'field_select'          => __( '%s field value selected is not exists', 'wcsdm' ),
 					),
 				),
 				'marker'       => WCSDM_URL . 'assets/img/marker.png',
 				'language'     => get_locale(),
+				'defaultLat'   => WCSDM_DEFAULT_LAT,
+				'defaultLng'   => WCSDM_DEFAULT_LNG,
 			)
 		);
 	}

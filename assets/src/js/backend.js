@@ -1,6 +1,81 @@
 /**
  * Backend Scripts
  */
+
+function toggleBottons(args) {
+    "use strict";
+
+    var data = getButton(args);
+    $('#wcsdm-buttons').remove();
+    $('#btn-ok').hide().after(wp.template('wcsdm-buttons')(data));
+}
+
+function getButton(args) {
+    "use strict";
+
+    var leftButtonDefaultId = 'add-rate';
+    var leftButtonDefaultIcon = 'plus';
+    var leftButtonDefaultLabel = 'add';
+
+    var leftButtonDefault = {
+        id: leftButtonDefaultId,
+        icon: leftButtonDefaultIcon,
+        label: leftButtonDefaultLabel,
+    };
+
+    var rightButtonDefaultIcon = 'yes';
+    var rightButtonDefaultId = 'save-settings';
+    var rightButtonDefaultLabel = 'save';
+
+    var rightButtonDefault = {
+        id: rightButtonDefaultId,
+        icon: rightButtonDefaultIcon,
+        label: rightButtonDefaultLabel,
+    };
+
+    var selected = {};
+
+    if (_.has(args, 'left')) {
+        var leftButton = _.defaults(args.left, leftButtonDefault);
+
+        if (_.has(wcsdm_backend_params.i18n, leftButton.label)) {
+            leftButton.label = wcsdm_backend_params.i18n[leftButton.label];
+        }
+
+        selected.btn_left = leftButton;
+    }
+
+    if (_.has(args, 'right')) {
+        var rightButton = _.defaults(args.right, rightButtonDefault);
+
+        if (_.has(wcsdm_backend_params.i18n, rightButton.label)) {
+            rightButton.label = wcsdm_backend_params.i18n[rightButton.label];
+        }
+
+        selected.btn_right = rightButton;
+    }
+
+    if (_.isEmpty(selected)) {
+        var leftButton = _.defaults({}, leftButtonDefault);
+
+        if (_.has(wcsdm_backend_params.i18n, leftButton.label)) {
+            leftButton.label = wcsdm_backend_params.i18n[leftButton.label];
+        }
+
+        selected.btn_left = leftButton;
+
+        var rightButton = _.defaults({}, rightButtonDefault);
+
+        if (_.has(wcsdm_backend_params.i18n, rightButton.label)) {
+            rightButton.label = wcsdm_backend_params.i18n[rightButton.label];
+        }
+
+        selected.btn_right = rightButton;
+    }
+
+    return selected;
+}
+
 $(document).ready(function () {
     // Try show settings modal on settings page.
     if (wcsdm_backend_params.showSettings) {
