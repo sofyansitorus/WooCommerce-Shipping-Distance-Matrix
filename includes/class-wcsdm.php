@@ -304,7 +304,8 @@ class Wcsdm extends WC_Shipping_Method {
 				),
 			),
 			'min_order_quantity'   => array(
-				'type'              => 'number',
+				'type'              => 'pro',
+				'orig_type'         => 'text',
 				'title'             => __( 'Minimum Order Quantity', 'wcsdm' ),
 				'description'       => __( 'The shipping rule for minimum order quantity. Leave blank to disable this rule.', 'wcsdm' ),
 				'desc_tip'          => true,
@@ -320,7 +321,8 @@ class Wcsdm extends WC_Shipping_Method {
 				),
 			),
 			'max_order_quantity'   => array(
-				'type'              => 'number',
+				'type'              => 'pro',
+				'orig_type'         => 'text',
 				'title'             => __( 'Maximum Order Quantity', 'wcsdm' ),
 				'description'       => __( 'The shipping rule for maximum order quantity. Leave blank to disable this rule.', 'wcsdm' ),
 				'desc_tip'          => true,
@@ -336,7 +338,8 @@ class Wcsdm extends WC_Shipping_Method {
 				),
 			),
 			'min_order_amount'     => array(
-				'type'              => 'number',
+				'type'              => 'pro',
+				'orig_type'         => 'text',
 				'title'             => __( 'Minimum Order Amount', 'wcsdm' ),
 				'description'       => __( 'The shipping rule for minimum order amount. Leave blank to disable this rule.', 'wcsdm' ),
 				'desc_tip'          => true,
@@ -352,7 +355,8 @@ class Wcsdm extends WC_Shipping_Method {
 				),
 			),
 			'max_order_amount'     => array(
-				'type'              => 'number',
+				'type'              => 'pro',
+				'orig_type'         => 'text',
 				'title'             => __( 'Maximum Order Amount', 'wcsdm' ),
 				'description'       => __( 'The shipping rule for maximum order amount. Leave blank to disable this rule.', 'wcsdm' ),
 				'desc_tip'          => true,
@@ -498,13 +502,15 @@ class Wcsdm extends WC_Shipping_Method {
 
 			$rate_field = wp_parse_args( $field, $rate_field_default );
 
+			$field_type = isset( $rate_field['orig_type'] ) ? $rate_field['orig_type'] : $rate_field['type'];
+
 			$rate_field_class = array(
 				'wcsdm-field',
 				'wcsdm-field--rate',
-				'wcsdm-field--rate--' . $rate_field['type'],
+				'wcsdm-field--rate--' . $field_type,
 				'wcsdm-field--rate--' . $key,
 				'wcsdm-field--rate--' . $context,
-				'wcsdm-field--rate--' . $context . '--' . $rate_field['type'],
+				'wcsdm-field--rate--' . $context . '--' . $field_type,
 				'wcsdm-field--rate--' . $context . '--' . $key,
 			);
 
@@ -515,7 +521,7 @@ class Wcsdm extends WC_Shipping_Method {
 			$rate_field['class'] = ! empty( $rate_field['class'] ) ? $rate_field['class'] . ' ' . implode( ' ', $rate_field_class ) : implode( ' ', $rate_field_class );
 
 			$custom_attributes = array(
-				'data-type'     => $rate_field['type'],
+				'data-type'     => $field_type,
 				'data-id'       => $this->get_field_key( $key ),
 				'data-required' => empty( $rate_field['is_required'] ) ? '0' : '1',
 				'data-title'    => isset( $rate_field['title'] ) ? $rate_field['title'] : $key,
@@ -523,12 +529,6 @@ class Wcsdm extends WC_Shipping_Method {
 			);
 
 			$rate_field['custom_attributes'] = isset( $rate_field['custom_attributes'] ) ? array_merge( $rate_field['custom_attributes'], $custom_attributes ) : $custom_attributes;
-
-			$rate_field['field_type'] = $rate_field['type'];
-
-			if ( ! in_array( $rate_field['type'], array( 'link_advanced', 'select', 'sub_title' ) ) ) {
-				$rate_field['type'] = 'text';
-			}
 
 			$rates_fields[ $key ] = $rate_field;
 		}
@@ -598,6 +598,8 @@ class Wcsdm extends WC_Shipping_Method {
 
 		if ( ! $this->is_pro() ) {
 			$data['title'] = $data['title'] . ' (' . __( 'Pro Version', 'wcsdm' ) . ')';
+
+			$data['custom_attributes']['disabled'] = 'disabled';
 		}
 
 		return $this->generate_settings_html( array( $key => $data ), false );
@@ -848,19 +850,18 @@ class Wcsdm extends WC_Shipping_Method {
 				<h3 class="wcsdm-settings-form-title"><?php echo wp_kses_post( $data['title'] ); ?></h3>
 				<table id="wcsdm-table-advanced" class="form-table wcsdm-table wcsdm-table-advanced" cellspacing="0">
 					<?php
-					foreach ( $this->rates_fields( 'advanced' ) as $key => $data ) :
-						$type = $this->get_field_type( $data );
-
-						if ( isset( $data['is_pro'] ) && $data['is_pro'] && ! $this->is_pro() ) {
-							$data['title'] = $data['title'] . ' (' . __( 'Pro Version', 'wcsdm' ) . ')';
-						}
-
-						if ( method_exists( $this, 'generate_' . $type . '_html' ) ) {
-							echo $this->{'generate_' . $type . '_html'}( $key, $data ); // WPCS: XSS ok.
-						} else {
-							echo $this->generate_text_html( $key, $data ); // WPCS: XSS ok.
-						}
-					endforeach;
+					$this->generate_settings_html( $this->rates_fields( 'advanced' ) );
+					// foreach ( $this->rates_fields( 'advanced' ) as $key => $data ) :
+					// $type = $this->get_field_type( $data );
+					// if ( isset( $data['is_pro'] ) && $data['is_pro'] && ! $this->is_pro() ) {
+					// $data['title'] = $data['title'] . ' (' . __( 'Pro Version', 'wcsdm' ) . ')';
+					// }
+					// if ( method_exists( $this, 'generate_' . $type . '_html' ) ) {
+					// echo $this->{'generate_' . $type . '_html'}( $key, $data ); // WPCS: XSS ok.
+					// } else {
+					// echo $this->generate_text_html( $key, $data ); // WPCS: XSS ok.
+					// }
+					// endforeach;
 					?>
 				</table>
 			</td>
@@ -1041,9 +1042,32 @@ class Wcsdm extends WC_Shipping_Method {
 				throw new Exception( __( 'Shipping rates table is empty', 'wcsdm' ) );
 			}
 
-			ksort( $rates_filtered );
+			$rates_filtered = array_values( $rates_filtered );
 
-			return array_values( $rates_filtered );
+			// get a list of sort columns and their data to pass to array_multisort
+			$sorted = array();
+			foreach ( $rates_filtered as $k => $v ) {
+				foreach ( $rule_fields as $rule_field ) {
+					$sorted[ $rule_field ][ $k ] = $v[ $rule_field ];
+				}
+			}
+
+			// sort by event_type desc and then title asc
+			array_multisort(
+				$sorted['max_distance'],
+				SORT_ASC,
+				$sorted['min_order_quantity'],
+				SORT_ASC,
+				$sorted['max_order_quantity'],
+				SORT_ASC,
+				$sorted['min_order_amount'],
+				SORT_ASC,
+				$sorted['max_order_amount'],
+				SORT_ASC,
+				$rates_filtered
+			);
+
+			return $rates_filtered;
 		} catch ( Exception $e ) {
 			$this->add_error( $e->getMessage() );
 			return $this->table_rates;

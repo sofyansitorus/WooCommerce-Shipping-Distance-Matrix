@@ -240,11 +240,15 @@ var wcsdmTableRates = {
 
         if ($lastRow) {
             $lastRow.find('.wcsdm-field--rate--dummy:not(a)').each(function (index, field) {
-                $('#wcsdm-table-dummy tbody tr:last-child .wcsdm-field--rate--dummy[data-id=' + $(field).data('id') + ']').val($(field).val());
+                var fieldId = $(field).data('id');
+                var fieldValue = fieldId === 'woocommerce_wcsdm_max_distance' ? Math.ceil(($(field).val() * 1.3)) : $(field).val();
+                $('#wcsdm-table-dummy tbody tr:last-child .wcsdm-field--rate--dummy[data-id=' + fieldId + ']').val(fieldValue);
             });
 
             $lastRow.find('.wcsdm-field--rate--hidden:not(a)').each(function (index, field) {
-                $('#wcsdm-table-dummy tbody tr:last-child .wcsdm-field--rate--hidden[data-id=' + $(field).data('id') + ']').val($(field).val());
+                var fieldId = $(field).data('id');
+                var fieldValue = fieldId === 'woocommerce_wcsdm_max_distance' ? Math.ceil(($(field).val() * 1.4)) : $(field).val();
+                $('#wcsdm-table-dummy tbody tr:last-child .wcsdm-field--rate--hidden[data-id=' + fieldId + ']').val(fieldValue);
             });
         }
 
