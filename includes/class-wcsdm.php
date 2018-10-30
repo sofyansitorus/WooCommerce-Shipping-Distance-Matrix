@@ -145,8 +145,8 @@ class Wcsdm extends WC_Shipping_Method {
 			),
 			'api_key'           => array(
 				'title'             => __( 'API Key', 'wcsdm' ),
-				'type'              => 'text',
-				'description'       => '<a href="#" class="wcsdm-link wcsdm-link--show-map"><span class="dashicons dashicons-edit"></span></a>',
+				'type'              => 'map_edit',
+				// 'description'       => '<a href="#" class="wcsdm-link wcsdm-link--show-map"><span class="dashicons dashicons-edit"></span></a>',
 				'default'           => '',
 				'placeholder'       => __( 'Enter the API Key here', 'wcsdm' ),
 				'custom_attributes' => array(
@@ -155,8 +155,8 @@ class Wcsdm extends WC_Shipping_Method {
 			),
 			'lat'               => array(
 				'title'             => __( 'Store Location Latitude', 'wcsdm' ),
-				'type'              => 'text',
-				'description'       => '<a href="#" class="wcsdm-link wcsdm-link--show-map"><span class="dashicons dashicons-edit"></span></a>',
+				'type'              => 'map_edit',
+				// 'description'       => '<a href="#" class="wcsdm-link wcsdm-link--show-map"><span class="dashicons dashicons-edit"></span></a>',
 				'default'           => '',
 				'custom_attributes' => array(
 					'readonly' => 'readonly',
@@ -164,8 +164,8 @@ class Wcsdm extends WC_Shipping_Method {
 			),
 			'lng'               => array(
 				'title'             => __( 'Store Location Longitude', 'wcsdm' ),
-				'type'              => 'text',
-				'description'       => '<a href="#" class="wcsdm-link wcsdm-link--show-map"><span class="dashicons dashicons-edit"></span></a>',
+				'type'              => 'map_edit',
+				// 'description'       => '<a href="#" class="wcsdm-link wcsdm-link--show-map"><span class="dashicons dashicons-edit"></span></a>',
 				'default'           => '',
 				'custom_attributes' => array(
 					'readonly' => 'readonly',
@@ -175,6 +175,14 @@ class Wcsdm extends WC_Shipping_Method {
 				'title'       => __( 'Store Location', 'wcsdm' ),
 				'type'        => 'map_picker',
 				'description' => sprintf( __( 'This plugin makes use of the Google Maps Platform APIs. Make sure you checked 3 checkboxes as shown below when enabling the APIs. <a href="%1$s" target="_blank">Click here</a> get the API Key. <a href="%1$s" target="_blank">%2$s</a>', 'wcsdm' ), 'https://cloud.google.com/maps-platform/#get-started', '<img src="' . WCSDM_URL . 'assets/img/map-instructions.jpg" />' ),
+			),
+			'show_map_picker'   => array(
+				'title'       => __( 'Show Map Picker', 'wcsdm' ),
+				'label'       => __( 'Yes', 'wcsdm' ),
+				'type'        => 'pro',
+				'orig_type'   => 'checkbox',
+				'description' => __( 'Show the map picker to user during checkout so can get more accurate address using drap and drop map picker.', 'wcsdm' ),
+				'desc_tip'    => true,
 			),
 			'travel_mode'       => array(
 				'title'       => __( 'Travel Mode', 'wcsdm' ),
@@ -260,7 +268,7 @@ class Wcsdm extends WC_Shipping_Method {
 			),
 		);
 
-		$this->instance_form_fields = apply_filters( $this->id . '_instance_form_fields', $instance_form_fields );
+		$this->instance_form_fields = apply_filters( $this->id . '_form_fields', $instance_form_fields );
 	}
 
 	/**
@@ -305,6 +313,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'is_hidden'         => true,
 				'is_required'       => true,
 				'is_rule'           => true,
+				'is_pro'            => true,
 				'default'           => '0',
 				'custom_attributes' => array(
 					'min' => '0',
@@ -320,6 +329,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'is_hidden'         => true,
 				'is_required'       => true,
 				'is_rule'           => true,
+				'is_pro'            => true,
 				'default'           => '0',
 				'custom_attributes' => array(
 					'min' => '0',
@@ -335,6 +345,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'is_hidden'         => true,
 				'is_required'       => true,
 				'is_rule'           => true,
+				'is_pro'            => true,
 				'default'           => '0',
 				'custom_attributes' => array(
 					'min' => '0',
@@ -350,6 +361,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'is_hidden'         => true,
 				'is_required'       => true,
 				'is_rule'           => true,
+				'is_pro'            => true,
 				'default'           => '0',
 				'custom_attributes' => array(
 					'min' => '0',
@@ -368,8 +380,8 @@ class Wcsdm extends WC_Shipping_Method {
 				'default'     => 'flat',
 				'options'     => array(
 					'flat'     => __( 'Flat', 'wcsdm' ),
-					'flexible' => __( 'Per Distance Unit', 'wcsdm' ),
-					'formula'  => __( 'Maths Formula (Pro Version Only)', 'wcsdm' ),
+					'flexible' => __( 'Multiplied by Distance', 'wcsdm' ),
+					'formula'  => __( 'Maths Formula', 'wcsdm' ) . ( ! $this->is_pro() ? '' : ' (' . __( 'Pro Version', 'wcsdm' ) . ')' ),
 				),
 				'description' => __( 'Determine how to calculate the shipping rate either flat rate, flexible rate multiplied by distances or advanced rate by maths formula. This input is required.', 'wcsdm' ),
 				'desc_tip'    => true,
@@ -387,6 +399,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'is_dummy'          => true,
 				'is_hidden'         => true,
 				'is_required'       => true,
+				'is_rate'           => true,
 				'default'           => '0',
 				'custom_attributes' => array(
 					'min' => '0',
@@ -542,10 +555,6 @@ class Wcsdm extends WC_Shipping_Method {
 			</div>
 		</script>
 
-		<script type="text/template" id="tmpl-wcsdm-dummy-row">
-			<?php $this->generate_rate_row_body( $this->get_field_key( 'table_rates' ) ); ?>
-		</script>
-
 		<script type="text/template" id="tmpl-wcsdm-buttons">
 			<div id="wcsdm-buttons" class="wcsdm-buttons">
 				<# if(data.btn_left) { #>
@@ -556,6 +565,81 @@ class Wcsdm extends WC_Shipping_Method {
 				<# } #>
 			</div>
 		</script>
+		<?php
+
+		return ob_get_clean();
+	}
+
+	/**
+	 * Generate pro HTML form.
+	 *
+	 * @since    1.0.0
+	 * @param string $key Input field key.
+	 * @param array  $data Settings field data.
+	 */
+	public function generate_pro_html( $key, $data ) {
+		$defaults = array(
+			'title'             => '',
+			'disabled'          => false,
+			'class'             => '',
+			'css'               => '',
+			'placeholder'       => '',
+			'type'              => 'text',
+			'desc_tip'          => false,
+			'description'       => '',
+			'custom_attributes' => array(),
+		);
+
+		$data = wp_parse_args( $data, $defaults );
+
+		$orig_type = isset( $data['orig_type'] ) ? $data['orig_type'] : $data['type'];
+
+		$data['type'] = $orig_type;
+
+		if ( ! $this->is_pro() ) {
+			$data['title'] = $data['title'] . ' (' . __( 'Pro Version', 'wcsdm' ) . ')';
+		}
+
+		return $this->generate_settings_html( array( $key => $data ), false );
+	}
+
+	/**
+	 * Generate map_edit HTML form.
+	 *
+	 * @since    1.0.0
+	 * @param string $key Input field key.
+	 * @param array  $data Settings field data.
+	 */
+	public function generate_map_edit_html( $key, $data ) {
+		$field_key = $this->get_field_key( $key );
+		$defaults  = array(
+			'title'             => '',
+			'disabled'          => false,
+			'class'             => '',
+			'css'               => '',
+			'placeholder'       => '',
+			'type'              => 'text',
+			'desc_tip'          => false,
+			'description'       => '',
+			'custom_attributes' => array(),
+		);
+
+		$data = wp_parse_args( $data, $defaults );
+
+		ob_start();
+		?>
+		<tr valign="top">
+			<th scope="row" class="titledesc">
+				<label for="<?php echo esc_attr( $field_key ); ?>"><?php echo wp_kses_post( $data['title'] ); ?> <?php echo $this->get_tooltip_html( $data ); // WPCS: XSS ok. ?></label>
+			</th>
+			<td class="forminp">
+				<fieldset>
+					<legend class="screen-reader-text"><span><?php echo wp_kses_post( $data['title'] ); ?></span></legend>
+					<input class="input-text regular-input <?php echo esc_attr( $data['class'] ); ?>" type="text" name="<?php echo esc_attr( $field_key ); ?>" id="<?php echo esc_attr( $field_key ); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" value="<?php echo esc_attr( $this->get_option( $key ) ); ?>" placeholder="<?php echo esc_attr( $data['placeholder'] ); ?>" <?php disabled( $data['disabled'], true ); ?> <?php echo $this->get_custom_attribute_html( $data ); // WPCS: XSS ok. ?> /> <a href="#" class="wcsdm-link wcsdm-link--show-map"><span class="dashicons dashicons-edit"></span></a>
+					<?php echo $this->get_description_html( $data ); // WPCS: XSS ok. ?>
+				</fieldset>
+			</td>
+		</tr>
 		<?php
 
 		return ob_get_clean();
@@ -591,6 +675,7 @@ class Wcsdm extends WC_Shipping_Method {
 		?>
 		<tr valign="top" id="wcsdm-row-map-picker" class="wcsdm-row wcsdm-row-map-picker wcsdm-hidden">
 			<td colspan="2" class="wcsdm-no-padding">
+				<h3 class="wcsdm-settings-form-title"><?php echo wp_kses_post( $data['title'] ); ?></h3>
 				<table id="wcsdm-table-map-picker" class="form-table wcsdm-table wcsdm-table-map-picker" cellspacing="0">
 					<tr>
 						<th scope="row" class="titledesc">
@@ -677,6 +762,9 @@ class Wcsdm extends WC_Shipping_Method {
 						?>
 					</tbody>
 				</table>
+				<script type="text/template" id="tmpl-wcsdm-dummy-row">
+					<?php $this->generate_rate_row_body( $field_key ); ?>
+				</script>
 			</td>
 		</tr>
 		<?php
@@ -763,6 +851,10 @@ class Wcsdm extends WC_Shipping_Method {
 					foreach ( $this->rates_fields( 'advanced' ) as $key => $data ) :
 						$type = $this->get_field_type( $data );
 
+						if ( isset( $data['is_pro'] ) && $data['is_pro'] && ! $this->is_pro() ) {
+							$data['title'] = $data['title'] . ' (' . __( 'Pro Version', 'wcsdm' ) . ')';
+						}
+
 						if ( method_exists( $this, 'generate_' . $type . '_html' ) ) {
 							echo $this->{'generate_' . $type . '_html'}( $key, $data ); // WPCS: XSS ok.
 						} else {
@@ -806,6 +898,30 @@ class Wcsdm extends WC_Shipping_Method {
 		</tr>
 		<?php
 		return ob_get_clean();
+	}
+
+
+
+	/**
+	 * Validate and format show_map_picker settings field.
+	 *
+	 * @since    1.0.0
+	 * @param string $key Input field key.
+	 * @param string $value Input field currenet value.
+	 * @throws Exception If the field value is invalid.
+	 * @return string
+	 */
+	public function validate_show_map_picker_field( $key, $value ) {
+		try {
+			if ( ! empty( $value ) ) {
+				throw new Exception( wp_sprintf( wcsdm_i18n( 'errors.need_upgrade.general' ), $this->instance_form_fields[ $key ]['title'] ) );
+			}
+
+			return $value;
+		} catch ( Exception $e ) {
+			$this->add_error( $e->getMessage() );
+			return '';
+		}
 	}
 
 	/**
@@ -853,7 +969,7 @@ class Wcsdm extends WC_Shipping_Method {
 
 				foreach ( $values as $index => $value ) {
 					// Validate required field.
-					if ( isset( $rate_field['is_required'] ) && $rate_field['is_required'] && ! strlen( $value ) ) {
+					if ( isset( $rate_field['is_required'] ) && $rate_field['is_required'] && ! strlen( trim( $value ) ) ) {
 						throw new Exception( wp_sprintf( wcsdm_i18n( 'errors.field_required' ), $rate_field['title'] ) );
 					}
 
@@ -867,6 +983,14 @@ class Wcsdm extends WC_Shipping_Method {
 						if ( isset( $rate_field['custom_attributes']['max'] ) && $value > $rate_field['custom_attributes']['max'] ) {
 							throw new Exception( wp_sprintf( wcsdm_i18n( 'errors.field_max_value' ), $rate_field['title'], $rate_field['custom_attributes']['max'] ) );
 						}
+					}
+
+					if ( isset( $rate_field['is_pro'] ) && $rate_field['is_pro'] && ! $this->is_pro() && $value !== $rate_field['default'] ) {
+						throw new Exception( wp_sprintf( wcsdm_i18n( 'errors.need_upgrade.general' ), $rate_field['title'] ) );
+					}
+
+					if ( 'calculation_type' === $rate_field_key && ! $this->is_pro() && 'formula' === $value ) {
+						throw new Exception( wcsdm_i18n( 'errors.need_upgrade.calculation_type' ) );
 					}
 
 					$rates[ $index ][ $rate_field_key ] = $value;
@@ -1789,6 +1913,16 @@ class Wcsdm extends WC_Shipping_Method {
 		}
 
 		return preg_match( "/^$pattern$/", $postcode, $matches );
+	}
+
+	/**
+	 * Check if pro version plugin is installed and activated
+	 *
+	 * @since    1.5.0
+	 * @return bool
+	 */
+	private function is_pro() {
+		return apply_filters( 'wcsdm_is_pro', false );
 	}
 
 	/**

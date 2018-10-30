@@ -160,17 +160,16 @@ var wcsdmMapPicker = {
         };
 
         $.when(testDistanceMatrix())
-            .then(function () {
-                if (!isMapError) {
+            .then(function (status) {
+                if (status.toLowerCase() === 'ok' && !isMapError) {
                     $('#woocommerce_wcsdm_lat').val(wcsdmMapPicker.lat);
                     $('#woocommerce_wcsdm_lng').val(wcsdmMapPicker.lng);
                     $('#woocommerce_wcsdm_api_key').val($('#woocommerce_wcsdm_api_key__dummy').val());
                     wcsdmMapPicker.hideForm(e);
-                } else {
-                    alert(wcsdmMapPicker.params.i18n.map_is_error);
+
+                    return;
                 }
-            })
-            .catch(function (status) {
+
                 alert(status);
             });
     },

@@ -239,6 +239,10 @@ function wcsdm_i18n( $key = '', $default = '' ) {
 			'field_select'          => __( '%s field value selected is not exists', 'wcsdm' ),
 			// translators: %s = Field name.
 			'duplicate_rate'        => __( 'Duplicate shipping rules: %s', 'wcsdm' ),
+			'need_upgrade'          => array(
+				'general'          => __( '%s only changeable in pro version. Please upgrade!', 'wcsdm' ),
+				'calculation_type' => __( 'Calculation type "Match Formula" options only available in pro version. Please upgrade!', 'wcsdm' ),
+			),
 		),
 	);
 
