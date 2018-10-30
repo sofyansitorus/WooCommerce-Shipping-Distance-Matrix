@@ -240,7 +240,7 @@ function wcsdm_i18n( $key = '', $default = '' ) {
 			// translators: %s = Field name.
 			'duplicate_rate'        => __( 'Duplicate shipping rules: %s', 'wcsdm' ),
 			'need_upgrade'          => array(
-				'general'          => __( '%s only changeable in pro version. Please upgrade!', 'wcsdm' ),
+				'general'          => __( '%s value only changeable in pro version. Please upgrade!', 'wcsdm' ),
 				'calculation_type' => __( 'Calculation type "Match Formula" options only available in pro version. Please upgrade!', 'wcsdm' ),
 			),
 		),

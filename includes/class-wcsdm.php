@@ -381,7 +381,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'options'     => array(
 					'flat'     => __( 'Flat', 'wcsdm' ),
 					'flexible' => __( 'Multiplied by Distance', 'wcsdm' ),
-					'formula'  => __( 'Maths Formula', 'wcsdm' ) . ( ! $this->is_pro() ? '' : ' (' . __( 'Pro Version', 'wcsdm' ) . ')' ),
+					'formula'  => __( 'Maths Formula', 'wcsdm' ) . ( $this->is_pro() ? '' : ' (' . __( 'Pro Version', 'wcsdm' ) . ')' ),
 				),
 				'description' => __( 'Determine how to calculate the shipping rate either flat rate, flexible rate multiplied by distances or advanced rate by maths formula. This input is required.', 'wcsdm' ),
 				'desc_tip'    => true,
