@@ -146,7 +146,8 @@ class Wcsdm extends WC_Shipping_Method {
 			'api_key'           => array(
 				'title'             => __( 'API Key', 'wcsdm' ),
 				'type'              => 'map_edit',
-				// 'description'       => '<a href="#" class="wcsdm-link wcsdm-link--show-map"><span class="dashicons dashicons-edit"></span></a>',
+				'description'       => __( 'Google maps platform API Key', 'wcsdm' ),
+				'desc_tip'          => true,
 				'default'           => '',
 				'placeholder'       => __( 'Enter the API Key here', 'wcsdm' ),
 				'custom_attributes' => array(
@@ -156,7 +157,8 @@ class Wcsdm extends WC_Shipping_Method {
 			'lat'               => array(
 				'title'             => __( 'Store Location Latitude', 'wcsdm' ),
 				'type'              => 'map_edit',
-				// 'description'       => '<a href="#" class="wcsdm-link wcsdm-link--show-map"><span class="dashicons dashicons-edit"></span></a>',
+				'description'       => __( 'Store location latitude coordinates', 'wcsdm' ),
+				'desc_tip'          => true,
 				'default'           => '',
 				'custom_attributes' => array(
 					'readonly' => 'readonly',
@@ -165,7 +167,8 @@ class Wcsdm extends WC_Shipping_Method {
 			'lng'               => array(
 				'title'             => __( 'Store Location Longitude', 'wcsdm' ),
 				'type'              => 'map_edit',
-				// 'description'       => '<a href="#" class="wcsdm-link wcsdm-link--show-map"><span class="dashicons dashicons-edit"></span></a>',
+				'description'       => __( 'Store location longitude coordinates', 'wcsdm' ),
+				'desc_tip'          => true,
 				'default'           => '',
 				'custom_attributes' => array(
 					'readonly' => 'readonly',
@@ -174,7 +177,7 @@ class Wcsdm extends WC_Shipping_Method {
 			'map_picker'        => array(
 				'title'       => __( 'Store Location', 'wcsdm' ),
 				'type'        => 'map_picker',
-				'description' => sprintf( __( 'This plugin makes use of the Google Maps Platform APIs. Make sure you checked 3 checkboxes as shown below when enabling the APIs. <a href="%1$s" target="_blank">Click here</a> get the API Key. <a href="%1$s" target="_blank">%2$s</a>', 'wcsdm' ), 'https://cloud.google.com/maps-platform/#get-started', '<img src="' . WCSDM_URL . 'assets/img/map-instructions.jpg" />' ),
+				'description' => sprintf( __( 'This plugin requires a Google Maps Platform APIs and might be Google will <a href="%3$s" target="_blank">charge</a> you based on your rate of usage. Make sure you checked 3 checkboxes as shown below when enabling the APIs. <a href="%1$s" target="_blank">Click here</a> get the API Key. <a href="%1$s" target="_blank">%2$s</a>', 'wcsdm' ), 'https://cloud.google.com/maps-platform/#get-started', '<img src="' . WCSDM_URL . 'assets/img/map-instructions.jpg" />', 'https://cloud.google.com/maps-platform/pricing/sheet/' ),
 			),
 			'show_map_picker'   => array(
 				'title'       => __( 'Show Map Picker', 'wcsdm' ),
@@ -289,7 +292,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'is_hidden'   => false,
 			),
 			'max_distance'         => array(
-				'type'              => 'number',
+				'type'              => 'text',
 				'title'             => __( 'Maximum Distances', 'wcsdm' ),
 				'description'       => __( 'The maximum distances rule for the shipping rate. This input is required.', 'wcsdm' ),
 				'desc_tip'          => true,
@@ -299,6 +302,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'is_hidden'         => true,
 				'is_required'       => true,
 				'is_rule'           => true,
+				'validate'          => 'number',
 				'custom_attributes' => array(
 					'min' => '1',
 				),
@@ -395,7 +399,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'is_required' => true,
 			),
 			'class_0'              => array(
-				'type'              => 'number',
+				'type'              => 'text',
 				'title'             => 'advanced' === $context ? __( 'Default Rate', 'wcsdm' ) : __( 'Shipping Rate', 'wcsdm' ),
 				'description'       => __( 'The shipping rate within the distances range. This input is required.', 'wcsdm' ),
 				'desc_tip'          => true,
@@ -405,19 +409,6 @@ class Wcsdm extends WC_Shipping_Method {
 				'is_required'       => true,
 				'is_rate'           => true,
 				'default'           => '0',
-				'custom_attributes' => array(
-					'min' => '0',
-				),
-			),
-			'surcharge'            => array(
-				'type'              => 'number',
-				'title'             => __( 'Surcharge', 'wcsdm' ),
-				'default'           => '0',
-				'description'       => __( 'Surcharge that will be added to the total shipping cost.', 'wcsdm' ),
-				'desc_tip'          => true,
-				'is_advanced'       => true,
-				'is_dummy'          => true,
-				'is_hidden'         => true,
 				'custom_attributes' => array(
 					'min' => '0',
 				),
@@ -438,6 +429,19 @@ class Wcsdm extends WC_Shipping_Method {
 					'is_dummy'    => true,
 					'is_hidden'   => true,
 				)
+			),
+			'surcharge'            => array(
+				'type'              => 'text',
+				'title'             => __( 'Surcharge', 'wcsdm' ),
+				'default'           => '0',
+				'description'       => __( 'Surcharge that will be added to the total shipping cost.', 'wcsdm' ),
+				'desc_tip'          => true,
+				'is_advanced'       => true,
+				'is_dummy'          => true,
+				'is_hidden'         => true,
+				'custom_attributes' => array(
+					'min' => '0',
+				),
 			),
 			'link_advanced'        => array(
 				'type'        => 'link_advanced',
@@ -507,8 +511,6 @@ class Wcsdm extends WC_Shipping_Method {
 			$rate_field_class = array(
 				'wcsdm-field',
 				'wcsdm-field--rate',
-				'wcsdm-field--rate--' . $field_type,
-				'wcsdm-field--rate--' . $key,
 				'wcsdm-field--rate--' . $context,
 				'wcsdm-field--rate--' . $context . '--' . $field_type,
 				'wcsdm-field--rate--' . $context . '--' . $key,
@@ -526,6 +528,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'data-required' => empty( $rate_field['is_required'] ) ? '0' : '1',
 				'data-title'    => isset( $rate_field['title'] ) ? $rate_field['title'] : $key,
 				'data-options'  => isset( $rate_field['options'] ) ? wp_json_encode( $rate_field['options'] ) : wp_json_encode( array() ),
+				'data-validate' => isset( $rate_field['validate'] ) ? $rate_field['validate'] : 'text',
 			);
 
 			$rate_field['custom_attributes'] = isset( $rate_field['custom_attributes'] ) ? array_merge( $rate_field['custom_attributes'], $custom_attributes ) : $custom_attributes;
@@ -901,7 +904,19 @@ class Wcsdm extends WC_Shipping_Method {
 		return ob_get_clean();
 	}
 
-
+	/**
+	 * Validate Number Field.
+	 *
+	 * Make sure the data is escaped correctly, etc.
+	 *
+	 * @param  string $key Field key.
+	 * @param  string $value Posted Value.
+	 * @return string
+	 */
+	public function validate_number_field( $key, $value ) {
+		$value = is_null( $value ) ? '' : $value;
+		return ( '' === $value ) ? '' : wc_format_decimal( trim( stripslashes( $value ) ) );
+	}
 
 	/**
 	 * Validate and format show_map_picker settings field.
@@ -969,6 +984,12 @@ class Wcsdm extends WC_Shipping_Method {
 				$values = isset( $post_data[ $field_key ] ) ? (array) $post_data[ $field_key ] : array();
 
 				foreach ( $values as $index => $value ) {
+					$validate_method = isset( $rate_field['validate'] ) ? 'validate_' . $rate_field['validate'] . '_field' : 'validate_text_field';
+
+					if ( $validate_method && is_callable( array( $this, $validate_method ) ) ) {
+						$value = call_user_func( array( $this, $validate_method ), $rate_field_key, $value );
+					}
+
 					// Validate required field.
 					if ( isset( $rate_field['is_required'] ) && $rate_field['is_required'] && ! strlen( trim( $value ) ) ) {
 						throw new Exception( wp_sprintf( wcsdm_i18n( 'errors.field_required' ), $rate_field['title'] ) );
@@ -1946,7 +1967,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @return bool
 	 */
 	private function is_pro() {
-		return apply_filters( 'wcsdm_is_pro', false );
+		return wcsdm_is_pro();
 	}
 
 	/**

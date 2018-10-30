@@ -28,24 +28,40 @@
  */
 
 // If this file is called directly, abort.
-if ( ! defined( 'WPINC' ) ) {
+if ( ! defined( 'ABSPATH' ) ) {
 	die;
 }
 
-/**
- * Check if plugin is active
- *
- * @param string $plugin_file Plugin file name.
- */
-function wcsdm_is_plugin_active( $plugin_file ) {
-	$active_plugins = (array) apply_filters( 'active_plugins', get_option( 'active_plugins', array() ) );
-
-	if ( is_multisite() ) {
-		$active_plugins = array_merge( $active_plugins, (array) get_site_option( 'active_sitewide_plugins', array() ) );
-	}
-
-	return in_array( $plugin_file, $active_plugins, true ) || array_key_exists( $plugin_file, $active_plugins );
+// Defines plugin named constants.
+if ( ! defined( 'WCSDM_FILE' ) ) {
+	define( 'WCSDM_FILE', __FILE__ );
 }
+if ( ! defined( 'WCSDM_PATH' ) ) {
+	define( 'WCSDM_PATH', plugin_dir_path( __FILE__ ) );
+}
+if ( ! defined( 'WCSDM_URL' ) ) {
+	define( 'WCSDM_URL', plugin_dir_url( __FILE__ ) );
+}
+if ( ! defined( 'WCSDM_VERSION' ) ) {
+	define( 'WCSDM_VERSION', '1.4.7' );
+}
+if ( ! defined( 'WCSDM_METHOD_ID' ) ) {
+	define( 'WCSDM_METHOD_ID', 'wcsdm' );
+}
+if ( ! defined( 'WCSDM_METHOD_TITLE' ) ) {
+	define( 'WCSDM_METHOD_TITLE', 'Shipping Distance Matrix' );
+}
+if ( ! defined( 'WCSDM_DEFAULT_LAT' ) ) {
+	define( 'WCSDM_DEFAULT_LAT', -6.175392 );
+}
+if ( ! defined( 'WCSDM_DEFAULT_LNG' ) ) {
+	define( 'WCSDM_DEFAULT_LNG', 106.827156 );
+}
+
+/**
+ * Include required core files.
+ */
+require_once WCSDM_PATH . '/includes/helpers.php';
 
 /**
  * Check if WooCommerce plugin is active
@@ -53,16 +69,6 @@ function wcsdm_is_plugin_active( $plugin_file ) {
 if ( ! wcsdm_is_plugin_active( 'woocommerce/woocommerce.php' ) ) {
 	return;
 }
-
-// Defines plugin named constants.
-define( 'WCSDM_PATH', plugin_dir_path( __FILE__ ) );
-define( 'WCSDM_URL', plugin_dir_url( __FILE__ ) );
-define( 'WCSDM_VERSION', '1.4.7' );
-define( 'WCSDM_METHOD_ID', 'wcsdm' );
-define( 'WCSDM_METHOD_TITLE', 'Shipping Distance Matrix' );
-
-define( 'WCSDM_DEFAULT_LAT', -6.175392 );
-define( 'WCSDM_DEFAULT_LNG', 106.827156 );
 
 /**
  * Load plugin textdomain.
@@ -187,75 +193,3 @@ function wcsdm_backend_enqueue_scripts( $hook ) {
 	}
 }
 add_action( 'admin_enqueue_scripts', 'wcsdm_backend_enqueue_scripts' );
-
-/**
- * Get i18n strings
- *
- * @param string $key Strings key.
- * @param string $default Default value.
- * @return mixed
- */
-function wcsdm_i18n( $key = '', $default = '' ) {
-	$i18n = array(
-		'dragMarker'          => __( 'Drag this marker or search your address at the input above.', 'wcsdm' ),
-		'distance'            => array(
-			'metric'   => array(
-				'perUnit' => __( 'Per Kilometer', 'wcsdm' ),
-				'unit'    => __( 'KM', 'wcsdm' ),
-			),
-			'imperial' => array(
-				'perUnit' => __( 'Per Mile', 'wcsdm' ),
-				'unit'    => __( 'MI', 'wcsdm' ),
-			),
-		),
-		'map_is_error'        => __( 'Map is error', 'wcsdm' ),
-		'latitude'            => __( 'Latitude', 'wcsdm' ),
-		'longitude'           => __( 'Longitude', 'wcsdm' ),
-		'cancel'              => __( 'Cancel', 'wcsdm' ),
-		'add_rate'            => __( 'Add Rate', 'wcsdm' ),
-		'delete_rate'         => __( 'Delete Selected Rates', 'wcsdm' ),
-		'delete_rate_confirm' => __( 'Confirm Delete', 'wcsdm' ),
-		'save_changes'        => __( 'Save Changes', 'wcsdm' ),
-		'apply_changes'       => __( 'Apply Changes', 'wcsdm' ),
-		'add'                 => __( 'Add', 'wcsdm' ),
-		'save'                => __( 'Save', 'wcsdm' ),
-		'apply'               => __( 'Apply', 'wcsdm' ),
-		'close'               => __( 'Close', 'wcsdm' ),
-		'back'                => __( 'Back', 'wcsdm' ),
-		'delete'              => __( 'Delete', 'wcsdm' ),
-		'confirm'             => __( 'Confirm', 'wcsdm' ),
-		'errors'              => array(
-			// translators: %s = Field name.
-			'field_required'        => __( '%s field is required', 'wcsdm' ),
-			// translators: %1$s = Field name, %2$d = Minimum field value rule.
-			'field_min_value'       => __( '%1$s field value cannot be lower than %2$d', 'wcsdm' ),
-			// translators: %1$s = Field name, %2$d = Maximum field value rule.
-			'field_max_value'       => __( '%1$s field value cannot be greater than %2$d', 'wcsdm' ),
-			// translators: %s = Field name.
-			'field_numeric'         => __( '%s field value must be numeric', 'wcsdm' ),
-			// translators: %s = Field name.
-			'field_numeric_decimal' => __( '%s field value must be numeric and decimal', 'wcsdm' ),
-			// translators: %s = Field name.
-			'field_select'          => __( '%s field value selected is not exists', 'wcsdm' ),
-			// translators: %s = Field name.
-			'duplicate_rate'        => __( 'Duplicate shipping rules: %s', 'wcsdm' ),
-			'need_upgrade'          => array(
-				'general'          => __( '%s value only changeable in pro version. Please upgrade!', 'wcsdm' ),
-				'calculation_type' => __( 'Calculation type "Match Formula" options only available in pro version. Please upgrade!', 'wcsdm' ),
-			),
-		),
-	);
-
-	if ( ! empty( $key ) && is_string( $key ) ) {
-		$keys = explode( '.', $key );
-
-		$temp = $i18n;
-		foreach ( $keys as $path ) {
-			$temp = &$temp[ $path ];
-		}
-
-		return is_null( $temp ) ? $default : $temp;
-	}
-
-	return $i18n;
-}

@@ -85,7 +85,9 @@ var wcsdmTableRates = {
         var $row = $field.closest('tr');
         $row.find('.wcsdm-field--rate--hidden[data-id=' + $field.data('id') + ']').val(e.target.value);
 
-        if (wcsdmTableRates.validateRates()) {
+        wcsdmTableRates.validateRates()
+
+        if ($field.hasClass('wcsdm-field--rate--dummy--max_distance')) {
             $row.addClass('editing');
             wcsdmTableRates.sortRateRows();
         }
@@ -192,15 +194,6 @@ var wcsdmTableRates = {
                         errorMessage = sprintf(wcsdmTableRates.params.i18n.errors.field_select, $field.data('title'));
                     }
 
-                    // Validate numeric field
-                    if ($field.data('type') === 'number') {
-                        var regex = $field.attr('step') === 'any' ? /^[0-9]\d*(\.\d+)?$/ : /^\d+$/;
-                        if (!regex.test(fieldValue)) {
-                            var errorStrkey = $field.attr('step') === 'any' ? 'field_numeric_decimal' : 'field_numeric';
-                            errorMessage = sprintf(wcsdmTableRates.params.i18n.errors[errorStrkey], $field.data('title'));
-                        }
-                    }
-
                     // Validate field minimum value
                     if ($field.attr('min') && fieldValue < $field.attr('min')) {
                         errorMessage = sprintf(wcsdmTableRates.params.i18n.errors.field_min_value, $field.data('title'), $field.attr('min'));
@@ -209,6 +202,15 @@ var wcsdmTableRates = {
                     // Validate field minimum value
                     if ($field.attr('max') && fieldValue < $field.attr('max')) {
                         errorMessage = sprintf(wcsdmTableRates.params.i18n.errors.field_min_value, $field.data('title'), $field.attr('min'));
+                    }
+
+                    // Validate numeric field
+                    if ($field.data('validate') === 'number') {
+                        var regex = $field.attr('step') === 'any' ? /^[0-9]\d*(\.\d+)?$/ : /^\d+$/;
+                        if (!regex.test(fieldValue)) {
+                            var errorStrkey = $field.attr('step') === 'any' ? 'field_numeric_decimal' : 'field_numeric';
+                            errorMessage = sprintf(wcsdmTableRates.params.i18n.errors[errorStrkey], $field.data('title'));
+                        }
                     }
                 }
 
@@ -272,7 +274,7 @@ var wcsdmTableRates = {
             right: {
                 id: 'delete-rate-confirm',
                 label: 'confirm',
-                icon: 'editor-spellcheck',
+                icon: 'trash',
             }
         });
     },
