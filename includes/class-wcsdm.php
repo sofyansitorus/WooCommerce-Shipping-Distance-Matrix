@@ -290,6 +290,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'is_dummy'          => true,
 				'is_hidden'         => true,
 				'is_required'       => true,
+				'is_rule'           => true,
 				'custom_attributes' => array(
 					'min' => '1',
 				),
@@ -302,6 +303,8 @@ class Wcsdm extends WC_Shipping_Method {
 				'is_advanced'       => true,
 				'is_dummy'          => false,
 				'is_hidden'         => true,
+				'is_required'       => true,
+				'is_rule'           => true,
 				'default'           => '0',
 				'custom_attributes' => array(
 					'min' => '0',
@@ -315,6 +318,8 @@ class Wcsdm extends WC_Shipping_Method {
 				'is_advanced'       => true,
 				'is_dummy'          => false,
 				'is_hidden'         => true,
+				'is_required'       => true,
+				'is_rule'           => true,
 				'default'           => '0',
 				'custom_attributes' => array(
 					'min' => '0',
@@ -328,6 +333,8 @@ class Wcsdm extends WC_Shipping_Method {
 				'is_advanced'       => true,
 				'is_dummy'          => false,
 				'is_hidden'         => true,
+				'is_required'       => true,
+				'is_rule'           => true,
 				'default'           => '0',
 				'custom_attributes' => array(
 					'min' => '0',
@@ -341,6 +348,8 @@ class Wcsdm extends WC_Shipping_Method {
 				'is_advanced'       => true,
 				'is_dummy'          => false,
 				'is_hidden'         => true,
+				'is_required'       => true,
+				'is_rule'           => true,
 				'default'           => '0',
 				'custom_attributes' => array(
 					'min' => '0',
@@ -359,8 +368,8 @@ class Wcsdm extends WC_Shipping_Method {
 				'default'     => 'flat',
 				'options'     => array(
 					'flat'     => __( 'Flat', 'wcsdm' ),
-					'flexible' => __( 'Flexible', 'wcsdm' ),
-					'formula'  => __( 'Formula', 'wcsdm' ),
+					'flexible' => __( 'Per Distance Unit', 'wcsdm' ),
+					'formula'  => __( 'Maths Formula (Pro Version Only)', 'wcsdm' ),
 				),
 				'description' => __( 'Determine how to calculate the shipping rate either flat rate, flexible rate multiplied by distances or advanced rate by maths formula. This input is required.', 'wcsdm' ),
 				'desc_tip'    => true,
@@ -383,14 +392,14 @@ class Wcsdm extends WC_Shipping_Method {
 					'min' => '0',
 				),
 			),
-			'extra_cost'           => array(
+			'surcharge'            => array(
 				'type'              => 'number',
-				'title'             => __( 'Extra Cost', 'wcsdm' ),
+				'title'             => __( 'Surcharge', 'wcsdm' ),
 				'default'           => '0',
 				'description'       => __( 'Surcharge that will be added to the total shipping cost.', 'wcsdm' ),
 				'desc_tip'          => true,
 				'is_advanced'       => true,
-				'is_dummy'          => false,
+				'is_dummy'          => true,
 				'is_hidden'         => true,
 				'custom_attributes' => array(
 					'min' => '0',
@@ -501,6 +510,8 @@ class Wcsdm extends WC_Shipping_Method {
 			);
 
 			$rate_field['custom_attributes'] = isset( $rate_field['custom_attributes'] ) ? array_merge( $rate_field['custom_attributes'], $custom_attributes ) : $custom_attributes;
+
+			$rate_field['field_type'] = $rate_field['type'];
 
 			if ( ! in_array( $rate_field['type'], array( 'link_advanced', 'select', 'sub_title' ) ) ) {
 				$rate_field['type'] = 'text';
@@ -827,75 +838,79 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @throws Exception If the field value is invalid.
 	 * @return array
 	 */
-	public function validatex_table_rates_field( $key, $value ) {
+	public function validate_table_rates_field( $key, $value ) {
 		try {
-			$field_key = $this->get_field_key( $key );
-			$post_data = $this->get_post_data();
-
 			$rates = array();
 
-			foreach ( $post_data as $post_data_key => $post_data_value ) {
+			$post_data = $this->get_post_data();
 
-				// Check if posted data key begin with field key value.
-				if ( 0 !== strpos( $post_data_key, $field_key ) ) {
+			$rate_fields = $this->rates_fields( 'hidden' );
+
+			foreach ( $rate_fields as $rate_field_key => $rate_field ) {
+				$field_key = $this->get_field_key( $key . '__' . $rate_field_key );
+
+				$values = isset( $post_data[ $field_key ] ) ? (array) $post_data[ $field_key ] : array();
+
+				foreach ( $values as $index => $value ) {
+					// Validate required field.
+					if ( isset( $rate_field['is_required'] ) && $rate_field['is_required'] && ! strlen( $value ) ) {
+						throw new Exception( wp_sprintf( wcsdm_i18n( 'errors.field_required' ), $rate_field['title'] ) );
+					}
+
+					if ( strlen( $value ) ) {
+						// Validate min field value.
+						if ( isset( $rate_field['custom_attributes']['min'] ) && $value < $rate_field['custom_attributes']['min'] ) {
+							throw new Exception( wp_sprintf( wcsdm_i18n( 'errors.field_min_value' ), $rate_field['title'], $rate_field['custom_attributes']['min'] ) );
+						}
+
+						// Validate max field value.
+						if ( isset( $rate_field['custom_attributes']['max'] ) && $value > $rate_field['custom_attributes']['max'] ) {
+							throw new Exception( wp_sprintf( wcsdm_i18n( 'errors.field_max_value' ), $rate_field['title'], $rate_field['custom_attributes']['max'] ) );
+						}
+					}
+
+					$rates[ $index ][ $rate_field_key ] = $value;
+				}
+			}
+
+			$rule_fields = array();
+
+			foreach ( $rate_fields as $rate_field_key => $rate_field ) {
+				if ( ! isset( $rate_field['is_rule'] ) || ! $rate_field['is_rule'] ) {
 					continue;
 				}
 
-				$data_key = str_replace( $field_key . '_', '', $post_data_key );
-
-				foreach ( $post_data_value as $index => $row_value ) {
-					switch ( $data_key ) {
-						case 'shipping_label':
-						case 'free':
-						case 'cost_type':
-							$value = $row_value;
-							break;
-
-						case 'distance':
-							$value = intval( $row_value );
-							break;
-
-						case 'free_min_qty':
-							$value = strlen( $row_value ) ? intval( $row_value ) : '';
-							break;
-
-						case 'base':
-							$value = strlen( $row_value ) ? wc_format_decimal( $row_value ) : '';
-							if ( empty( $value ) ) {
-								$value = 0;
-							}
-							break;
-
-						default:
-							$value = strlen( $row_value ) ? wc_format_decimal( $row_value ) : '';
-							break;
-					}
-					if ( is_numeric( $value ) && $value < 0 ) {
-						$value = 0;
-					}
-					$rates[ $index ][ $data_key ] = $value;
-				}
+				$rule_fields[] = $rate_field_key;
 			}
 
 			$rates_filtered = array();
 
-			foreach ( $rates as $key => $value ) {
-				if ( empty( $value['distance'] ) ) {
-					if ( is_numeric( $value['distance'] ) ) {
-						throw new Exception( __( 'Maximum distance input field value must be greater than zero', 'wcsdm' ) );
+			foreach ( $rates as $rate ) {
+				$rules       = array();
+				$rules_assoc = array();
+
+				foreach ( $rule_fields as $rule_field ) {
+					$rules[] = isset( $rate[ $rule_field ] ) ? $rate[ $rule_field ] : $rule_field;
+
+					$rules_assoc[ $rule_field ] = isset( $rate[ $rule_field ] ) ? $rate[ $rule_field ] : false;
+				}
+
+				$rate_key = implode( '___', $rules );
+
+				if ( isset( $rates_filtered[ $rate_key ] ) ) {
+					$erros = array();
+					foreach ( $rules_assoc as $rule_key => $rule_value ) {
+						if ( false === $rule_value ) {
+							continue;
+						}
+
+						$erros[] = wp_sprintf( '%s: %s', $rate_fields[ $rule_key ]['title'], $rule_value );
 					}
-					throw new Exception( __( 'Maximum distance input field is required', 'wcsdm' ) );
+
+					throw new Exception( wp_sprintf( wcsdm_i18n( 'errors.duplicate_rate' ), implode( ', ', $erros ) ) );
 				}
-				if ( empty( $value['class_0'] ) ) {
-					if ( is_numeric( $value['class_0'] ) ) {
-						throw new Exception( __( 'Shipping rate input field value must be greater than zero', 'wcsdm' ) );
-					}
-					throw new Exception( __( 'Shipping rate input field is required', 'wcsdm' ) );
-				}
-				if ( 'yes_alt' === $value['free'] && empty( $value['free_min_amount'] ) && empty( $value['free_min_qty'] ) ) {
-					throw new Exception( __( 'You must define at least one free shipping rule either by minimum order amount or minimum order quantity', 'wcsdm' ) );
-				}
-				$rates_filtered[ $value['distance'] ] = $value;
+
+				$rates_filtered[ $rate_key ] = $rate;
 			}
 
 			if ( empty( $rates_filtered ) ) {
