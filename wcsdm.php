@@ -189,6 +189,8 @@ function wcsdm_backend_enqueue_scripts( $hook ) {
 							'unit'    => __( 'MI', 'wcsdm' ),
 						),
 					),
+					'latitude'            => __( 'Latitude', 'wcsdm' ),
+					'longitude'           => __( 'Longitude', 'wcsdm' ),
 					'cancel'              => __( 'Cancel', 'wcsdm' ),
 					'add_rate'            => __( 'Add Rate', 'wcsdm' ),
 					'delete_rate'         => __( 'Delete Selected Rates', 'wcsdm' ),

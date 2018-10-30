@@ -1,19 +1,16 @@
 
 
 // Taking Over window.console.error
-var timerDistanceMatrix;
-
 var isMapError = false;
+
 var windowConsoleError = window.console.error;
 window.console.error = function () {
     if (arguments[0].toLowerCase().indexOf('google') !== 1) {
         isMapError = true;
         $('#wcsdm-map-search').hide();
-        var regExpLink = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
         $('.gm-err-message').empty().html(
-            arguments[0].replace(regExpLink, '<a href="$1" target="_blank">$1</a>')
+            arguments[0].replace(/(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig, '<a href="$1" target="_blank">$1</a>')
         );
-        return;
     }
 
     windowConsoleError.apply(windowConsoleError, arguments);
@@ -160,7 +157,7 @@ var wcsdmMapPicker = {
         };
 
         $.when(testDistanceMatrix()).then(function (status) {
-            if (status.toLowerCase() === 'ok') {
+            if (status.toLowerCase() === 'ok' && !isMapError) {
                 $('#woocommerce_wcsdm_lat').val(wcsdmMapPicker.lat);
                 $('#woocommerce_wcsdm_lng').val(wcsdmMapPicker.lng);
                 $('#woocommerce_wcsdm_api_key').val($('#woocommerce_wcsdm_api_key__dummy').val());
@@ -219,6 +216,7 @@ var wcsdmMapPicker = {
             map: map,
             position: currentLatLng,
             draggable: true,
+            icon: wcsdmMapPicker.params.marker
         });
 
         var infowindow = new google.maps.InfoWindow({ maxWidth: 350 });
@@ -274,7 +272,9 @@ var wcsdmMapPicker = {
                     draggable: true,
                     icon: wcsdmMapPicker.params.marker
                 });
+
                 wcsdmMapPicker.setLatLng(place.geometry.location, marker, map, infowindow);
+
                 google.maps.event.addListener(marker, 'dragstart', function () {
                     infowindow.close();
                 });
@@ -301,11 +301,17 @@ var wcsdmMapPicker = {
             },
             function (results, status) {
                 if (status === google.maps.GeocoderStatus.OK && results[0]) {
-                    infowindow.setContent(results[0].formatted_address);
+                    var infowindowCOntent = [
+                        wcsdmMapPicker.params.i18n.latitude + ': ' + location.lat().toString(),
+                        wcsdmMapPicker.params.i18n.longitude + ': ' + location.lng().toString(),
+                    ];
+                    infowindow.setContent(infowindowCOntent.join('<br /><br />'));
                     infowindow.open(map, marker);
+
                     marker.addListener('click', function () {
                         infowindow.open(map, marker);
                     });
+
                     $('#wcsdm-map-search').val(results[0].formatted_address);
                 }
             }
