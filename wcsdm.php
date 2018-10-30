@@ -189,6 +189,7 @@ function wcsdm_backend_enqueue_scripts( $hook ) {
 							'unit'    => __( 'MI', 'wcsdm' ),
 						),
 					),
+					'map_is_error'        => __( 'Map is error', 'wcsdm' ),
 					'latitude'            => __( 'Latitude', 'wcsdm' ),
 					'longitude'           => __( 'Longitude', 'wcsdm' ),
 					'cancel'              => __( 'Cancel', 'wcsdm' ),

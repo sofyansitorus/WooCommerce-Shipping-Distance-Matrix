@@ -149,24 +149,30 @@ var wcsdmMapPicker = {
                     travelMode: 'DRIVING',
                     unitSystem: google.maps.UnitSystem.METRIC
                 }, function (response, status) {
-                    console.log('testDistanceMatrix', { response: response, status: status });
-                    dfd.resolve(status);
+                    if (status.toLowerCase() === 'ok') {
+                        dfd.resolve(status, response);
+                    } else {
+                        dfd.reject(status, response);
+                    }
                 });
 
             return dfd.promise();
         };
 
-        $.when(testDistanceMatrix()).then(function (status) {
-            if (status.toLowerCase() === 'ok' && !isMapError) {
-                $('#woocommerce_wcsdm_lat').val(wcsdmMapPicker.lat);
-                $('#woocommerce_wcsdm_lng').val(wcsdmMapPicker.lng);
-                $('#woocommerce_wcsdm_api_key').val($('#woocommerce_wcsdm_api_key__dummy').val());
-                wcsdmMapPicker.hideForm(e);
-                return;
-            }
-
-            alert(status);
-        });
+        $.when(testDistanceMatrix())
+            .then(function () {
+                if (!isMapError) {
+                    $('#woocommerce_wcsdm_lat').val(wcsdmMapPicker.lat);
+                    $('#woocommerce_wcsdm_lng').val(wcsdmMapPicker.lng);
+                    $('#woocommerce_wcsdm_api_key').val($('#woocommerce_wcsdm_api_key__dummy').val());
+                    wcsdmMapPicker.hideForm(e);
+                } else {
+                    alert(wcsdmMapPicker.params.i18n.map_is_error);
+                }
+            })
+            .catch(function (status) {
+                alert(status);
+            });
     },
     destroyMap: function () {
         window.google = undefined;
