@@ -31,7 +31,7 @@ function wcsdm_is_plugin_active( $plugin_file ) {
  * @return bool
  */
 function wcsdm_is_pro() {
-	return wcsdm_is_plugin_active( 'woocommerce/woocommerce.php' );
+	return wcsdm_is_plugin_active( 'woocommercex/woocommercex.php' );
 }
 
 /**
@@ -83,11 +83,11 @@ function wcsdm_i18n( $key = '', $default = '' ) {
 			'field_numeric_decimal' => __( '%s field value must be numeric and decimal', 'wcsdm' ),
 			// translators: %s = Field name.
 			'field_select'          => __( '%s field value selected is not exists', 'wcsdm' ),
-			// translators: %s = Field name.
-			'duplicate_rate'        => __( 'Duplicate shipping rules: %s', 'wcsdm' ),
+			// translators: %1$d = row number, %2$s = error message.
+			'duplicate_rate'        => __( 'Duplicate shipping rules row %1$d: %2$s', 'wcsdm' ),
 			'need_upgrade'          => array(
 				// translators: %s = Field name.
-				'general'          => __( '%s value only changeable in pro version. Please upgrade!', 'wcsdm' ),
+				'general'          => __( '%s field value only changeable in pro version. Please upgrade!', 'wcsdm' ),
 				'calculation_type' => __( 'Calculation type "Match Formula" options only available in pro version. Please upgrade!', 'wcsdm' ),
 			),
 		),

@@ -103,8 +103,7 @@ var wcsdmTableRates = {
         var $row = $(e.currentTarget).closest('tr').addClass('editing');
 
         $row.find('.wcsdm-field--rate--hidden').each(function (index, field) {
-            var $field = $(field);
-            $('#' + $field.data('id')).val($field.val());
+            $('#' + $(field).data('id')).val($(field).val());
         });
 
         toggleBottons({
