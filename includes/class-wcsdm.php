@@ -649,6 +649,16 @@ class Wcsdm extends WC_Shipping_Method {
 				<# } #>
 			</div>
 		</script>
+		<script type="text/template" id="tmpl-wcsdm-map-search-panel">
+			<div id="wcsdm-map-search-panel" class="wcsdm-map-search-panel">
+				<a href="#" id="wcsdm-map-search-panel-toggle" class="wcsdm-map-search-panel-toggle wcsdm-link"><span class="dashicons dashicons-dismiss"></span></a>
+				<div id="wcsdm-map-search-panel-main">
+					<h3>Store Location Picker</h3>
+					<p class="description">Drag the store icon marker or search your address in the input box below.</p>
+					<input id="wcsdm-map-search-input" class="wcsdm-fullwidth wcsdm-map-search-input" type="search" placeholder="Search your store address here" autocomplete="off">
+				</div>
+			</div>
+		</script>
 		<?php
 
 		return ob_get_clean();
@@ -740,12 +750,9 @@ class Wcsdm extends WC_Shipping_Method {
 					</tr>
 					<tr valign="top">
 						<td colspan="2" class="wcsdm-no-padding">
-							<div id="wcsdm-map-heading" class="wcsdm-map-heading">
-								<h3><?php echo wp_kses_post( $data['title'] ); ?> <?php echo $this->get_tooltip_html( $data ); // WPCS: XSS ok. ?></h3>
-								<?php echo $this->get_description_html( $data ); // WPCS: XSS ok. ?>
-								<input id="wcsdm-map-search" class="wcsdm-fullwidth wcsdm-map-search" type="search" placeholder="<?php esc_attr_e( 'Search your store address here', 'wcsdm' ); ?>">
+							<div id="wcsdm-map-wrap" class="wcsdm-map-wrap">
+								<div id="wcsdm-map-canvas" class="wcsdm-map-canvas"></div>
 							</div>
-							<div id="wcsdm-map-canvas" class="wcsdm-map-canvas"></div>
 						</td>
 					</tr>
 				</table>

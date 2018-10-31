@@ -7,7 +7,6 @@ var windowConsoleError = window.console.error;
 window.console.error = function () {
     if (arguments[0].toLowerCase().indexOf('google') !== 1) {
         isMapError = true;
-        $('#wcsdm-map-heading').hide();
         $('.gm-err-message').empty().html(
             arguments[0].replace(/(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig, '<a href="$1" target="_blank">$1</a>')
         );
@@ -30,10 +29,12 @@ var wcsdmMapPicker = {
 
         wcsdmMapPicker.tweakShowMapFormLink();
 
-        // Show form
+        // Show map
         $(document).off('click', '.wcsdm-link--show-map');
         $(document).on('click', '.wcsdm-link--show-map', wcsdmMapPicker.showForm);
 
+        $(document).off('click', '#wcsdm-map-search-panel-toggle');
+        $(document).on('click', '#wcsdm-map-search-panel-toggle', wcsdmMapPicker.toggleMapSearch);
         // Hide form
         $(document).off('click', '#wcsdm-btn--map-cancel');
         $(document).on('click', '#wcsdm-btn--map-cancel', wcsdmMapPicker.hideForm);
@@ -54,6 +55,17 @@ var wcsdmMapPicker = {
         $(document).on('input', '#woocommerce_wcsdm_api_key__dummy', debounce(function () {
             wcsdmMapPicker.initMap();
         }, 500));
+    },
+    toggleMapSearch: function (e) {
+        "use strict";
+
+        e.preventDefault();
+
+        $(e.currentTarget).find('span').toggleClass('dashicons-search').toggleClass('dashicons-dismiss');
+
+        $('#wcsdm-map-search-panel').toggleClass('hide-main');
+        $('#wcsdm-map-search-panel-main').toggleClass('wcsdm-hidden');
+
     },
     tweakShowMapFormLink: function () {
         "use strict";
@@ -176,7 +188,7 @@ var wcsdmMapPicker = {
     destroyMap: function () {
         window.google = undefined;
         $('#wcsdm-map-canvas').empty();
-        $('#wcsdm-map-search').val('');
+        $('#wcsdm-map-search-panel').remove();
     },
     initMap: function () {
         wcsdmMapPicker.destroyMap();
@@ -188,8 +200,6 @@ var wcsdmMapPicker = {
         if (_.isEmpty(apiKey)) {
             apiKey = 'InvalidKey';
         }
-
-        $('#wcsdm-map-heading').show();
 
         var scriptUrl = 'https://maps.googleapis.com/maps/api/js?libraries=geometry,places&key=' + apiKey;
         $.getScript(scriptUrl, function () {
@@ -240,10 +250,11 @@ var wcsdmMapPicker = {
             wcsdmMapPicker.setLatLng(event.latLng, marker, map, infowindow);
         });
 
-        var mapSearchInput = document.getElementById('wcsdm-map-search');
-        // map.controls[google.maps.ControlPosition.TOP_LEFT].push(mapSearchInput);
 
-        var mapSearchBox = new google.maps.places.SearchBox(mapSearchInput);
+        $('#wcsdm-map-wrap').prepend(wp.template('wcsdm-map-search-panel')());
+        map.controls[google.maps.ControlPosition.TOP_LEFT].push(document.getElementById('wcsdm-map-search-panel'));
+
+        var mapSearchBox = new google.maps.places.SearchBox(document.getElementById('wcsdm-map-search-input'));
 
         // Bias the SearchBox results towards current map's viewport.
         map.addListener('bounds_changed', function () {
@@ -309,14 +320,14 @@ var wcsdmMapPicker = {
                         wcsdmMapPicker.params.i18n.latitude + ': ' + location.lat().toString(),
                         wcsdmMapPicker.params.i18n.longitude + ': ' + location.lng().toString(),
                     ];
-                    infowindow.setContent(infowindowCOntent.join('<br /><br />'));
+                    infowindow.setContent(infowindowCOntent.join('<br />'));
                     infowindow.open(map, marker);
 
                     marker.addListener('click', function () {
                         infowindow.open(map, marker);
                     });
 
-                    $('#wcsdm-map-search').val(results[0].formatted_address);
+                    $('#wcsdm-map-search-input').val(results[0].formatted_address);
                 }
             }
         );

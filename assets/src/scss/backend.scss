@@ -11,6 +11,11 @@
     }
     &-link {
         text-decoration: none;
+        &:active,
+        &:focus {
+            text-decoration: none;
+            box-shadow: none;
+        }
     }
     &-fullwidth:not(a) {
         display: block;
@@ -157,38 +162,58 @@
         }
     }
     &-map-wrap {
-        background-color: $alto;
+        position: relative;
         padding: 0;
-        min-height: 400px;
     }
     &-map-canvas {
-        height: 400px;
+        height: 450px;
     }
     &-map-error {
         text-align: center;
         padding-top: 100px;
     }
-    &-map-heading {
+    &-map-search-panel {
+        display: none;
         position: absolute;
-        z-index: 999999;
-        background-color: $double-pearl-lusta;
-        border: 1px solid darken($double-pearl-lusta, 20%);
-        padding: 10px 15px 15px;
-        max-width: 550px;
+        background-color: $white;
+        border: 1px solid darken($white, 10%);
+        padding: 10px 10px 15px;
         width: 100%;
-        margin: 5px;
+        max-width: 600px;
         border-radius: 15px;
+        margin: 10px;
         h3,
         p {
             text-align: center;
             margin: 0px !important;
         }
+        .gm-style & {
+            display: block;
+        }
+        &-toggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            .hide-main & {
+                left: 6px;
+                top: 6px;
+                .dashicons {
+                    font-size: 2.4em;
+                }
+            }
+        }
+        &.hide-main {
+            width: 40px;
+            height: 40px;
+            border-radius: 0px;
+            background-color: $white;
+            border: 1px solid darken($white, 10%);
+        }
     }
-    &-map-search {
+    &-map-search-input {
         display: block;
-        max-width: 800px;
-        margin: 10px auto 0;
-        height: 2em;
+        margin: 5px 0 0;
+        border-radius: 5px;
     }
 }
 
