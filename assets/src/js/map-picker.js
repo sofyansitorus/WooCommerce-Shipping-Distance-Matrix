@@ -7,7 +7,7 @@ var windowConsoleError = window.console.error;
 window.console.error = function () {
     if (arguments[0].toLowerCase().indexOf('google') !== 1) {
         isMapError = true;
-        $('#wcsdm-map-search').hide();
+        $('#wcsdm-map-heading').hide();
         $('.gm-err-message').empty().html(
             arguments[0].replace(/(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig, '<a href="$1" target="_blank">$1</a>')
         );
@@ -175,8 +175,8 @@ var wcsdmMapPicker = {
     },
     destroyMap: function () {
         window.google = undefined;
-        $('#wcsdm-map-canvas').hide().empty();
-        $('#wcsdm-map-search').hide().val('');
+        $('#wcsdm-map-canvas').empty();
+        $('#wcsdm-map-search').val('');
     },
     initMap: function () {
         wcsdmMapPicker.destroyMap();
@@ -189,8 +189,7 @@ var wcsdmMapPicker = {
             apiKey = 'InvalidKey';
         }
 
-        $('#wcsdm-map-canvas').show();
-        $('#wcsdm-map-search').show();
+        $('#wcsdm-map-heading').show();
 
         var scriptUrl = 'https://maps.googleapis.com/maps/api/js?libraries=geometry,places&key=' + apiKey;
         $.getScript(scriptUrl, function () {

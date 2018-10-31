@@ -240,16 +240,10 @@ var wcsdmTableRates = {
         $('#wcsdm-table-dummy tbody').append(wp.template('wcsdm-dummy-row')).find('tr:last-child').find('.wcsdm-field--rate--dummy--max_distance').focus();
 
         if ($lastRow) {
-            $lastRow.find('.wcsdm-field--rate--dummy:not(a)').each(function (index, field) {
-                var fieldId = $(field).data('id');
-                var fieldValue = fieldId === 'woocommerce_wcsdm_max_distance' ? Math.ceil(($(field).val() * 1.3)) : $(field).val();
-                $('#wcsdm-table-dummy tbody tr:last-child .wcsdm-field--rate--dummy[data-id=' + fieldId + ']').val(fieldValue);
-            });
-
             $lastRow.find('.wcsdm-field--rate--hidden:not(a)').each(function (index, field) {
                 var fieldId = $(field).data('id');
-                var fieldValue = fieldId === 'woocommerce_wcsdm_max_distance' ? Math.ceil(($(field).val() * 1.4)) : $(field).val();
-                $('#wcsdm-table-dummy tbody tr:last-child .wcsdm-field--rate--hidden[data-id=' + fieldId + ']').val(fieldValue);
+                var fieldValue = fieldId === 'woocommerce_wcsdm_max_distance' ? Math.ceil((parseInt($(field).val(), 10) * 1.8)) : $(field).val();
+                $('#wcsdm-table-dummy tbody tr:last-child .wcsdm-field--rate[data-id=' + fieldId + ']').val(fieldValue);
             });
         }
 

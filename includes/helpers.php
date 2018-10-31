@@ -84,7 +84,7 @@ function wcsdm_i18n( $key = '', $default = '' ) {
 			// translators: %s = Field name.
 			'field_select'          => __( '%s field value selected is not exists', 'wcsdm' ),
 			// translators: %1$d = row number, %2$s = error message.
-			'duplicate_rate'        => __( 'Duplicate shipping rules row %1$d: %2$s', 'wcsdm' ),
+			'duplicate_rate'        => __( 'Duplicate shipping rules for rate row %1$d: %2$s', 'wcsdm' ),
 			'need_upgrade'          => array(
 				// translators: %s = Field name.
 				'general'          => __( '%s field value only changeable in pro version. Please upgrade!', 'wcsdm' ),

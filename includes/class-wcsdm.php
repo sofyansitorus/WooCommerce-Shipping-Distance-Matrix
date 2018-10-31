@@ -207,8 +207,9 @@ class Wcsdm extends WC_Shipping_Method {
 				'disabled'    => true,
 			),
 			'map_picker'        => array(
-				'title' => __( 'Store Location', 'wcsdm' ),
-				'type'  => 'map_picker',
+				'title'       => __( 'Store Location Picker', 'wcsdm' ),
+				'type'        => 'map_picker',
+				'description' => __( 'Drag the store icon marker or search your address in the input box below.', 'wcsdm' ),
 			),
 			'travel_mode'       => array(
 				'title'       => __( 'Travel Mode', 'wcsdm' ),
@@ -725,26 +726,26 @@ class Wcsdm extends WC_Shipping_Method {
 		?>
 		<tr valign="top" id="wcsdm-row-map-picker" class="wcsdm-row wcsdm-row-map-picker wcsdm-hidden">
 			<td colspan="2" class="wcsdm-no-padding">
-				<h3 class="wcsdm-settings-form-title"><?php echo wp_kses_post( $data['title'] ); ?></h3>
 				<table id="wcsdm-table-map-picker" class="form-table wcsdm-table wcsdm-table-map-picker" cellspacing="0">
 					<tr>
 						<th scope="row" class="titledesc">
-							<label for="<?php echo esc_attr( $field_key ); ?>"><?php echo wp_kses_post( $data['title'] ); ?> <?php echo $this->get_tooltip_html( $data ); // WPCS: XSS ok. ?></label>
+							<label for="woocommerce_wcsdm_api_key__dummy"><?php esc_html_e( 'API Key', 'wcsdm' ); ?></label>
 						</th>
 						<td class="forminp">
 							<fieldset>
 								<legend class="screen-reader-text"><span><?php echo esc_html( $this->instance_form_fields['api_key']['title'] ); ?></span></legend>
 								<input class="input-text regular-input" type="text" id="woocommerce_wcsdm_api_key__dummy" value="" placeholder="<?php esc_attr_e( 'Enter the API Key here', 'wcsdm' ); ?>" /> <a href="#" id="wcsdm-show-instructions"><?php esc_html_e( 'How to Get API Key?', 'wcsdm' ); ?></a>
-								<?php echo $this->get_description_html( $data ); // WPCS: XSS ok. ?>
 							</fieldset>
 						</td>
 					</tr>
 					<tr valign="top">
 						<td colspan="2" class="wcsdm-no-padding">
-							<div id="wcsdm-map-wrap" class="wcsdm-map-wrap">
-								<input id="wcsdm-map-search" type="search" class="wcsdm-fullwidth wcsdm-map-search" placeholder="<?php esc_attr_e( 'Search your store address here', 'wcsdm' ); ?>">
-								<div id="wcsdm-map-canvas" class="wcsdm-map-canvas"></div>
+							<div id="wcsdm-map-heading" class="wcsdm-map-heading">
+								<h3><?php echo wp_kses_post( $data['title'] ); ?> <?php echo $this->get_tooltip_html( $data ); // WPCS: XSS ok. ?></h3>
+								<?php echo $this->get_description_html( $data ); // WPCS: XSS ok. ?>
+								<input id="wcsdm-map-search" class="wcsdm-fullwidth wcsdm-map-search" type="search" placeholder="<?php esc_attr_e( 'Search your store address here', 'wcsdm' ); ?>">
 							</div>
+							<div id="wcsdm-map-canvas" class="wcsdm-map-canvas"></div>
 						</td>
 					</tr>
 				</table>
@@ -753,7 +754,7 @@ class Wcsdm extends WC_Shipping_Method {
 		<tr valign="top" id="wcsdm-row-map-instructions" class="wcsdm-row wcsdm-row-map-instructions wcsdm-hidden">
 			<td colspan="2" class="wcsdm-no-padding">
 				<div id="wcsdm-map-instructions" class="wcsdm-map-instructions">
-					<p><?php echo wp_kses_post( __( 'This plugin requires a Google Maps Platform APIs. Google might be <a href="https://cloud.google.com/maps-platform/pricing/sheet/" target="_blank">charge</a> you based on your rate of usage. Make sure you checked 3 checkboxes as shown below when enabling the APIs. <a href="https://cloud.google.com/maps-platform/#get-started" target="_blank">Click here</a> get the API Key.', 'wcsdm' ) ); ?></p>
+					<p><?php echo wp_kses_post( __( 'This plugin requires a Google Maps Platform APIs. Google might be <a href="https://cloud.google.com/maps-platform/pricing/sheet/" target="_blank">charge</a> you based on your usage. Make sure you checked 3 checkboxes as shown below when enabling the APIs. <a href="https://cloud.google.com/maps-platform/#get-started" target="_blank">Click here</a> get the API Key.', 'wcsdm' ) ); ?></p>
 					<img src="<?php echo esc_attr( WCSDM_URL ); ?>assets/img/map-instructions.jpg" />
 				</div>
 			</td>

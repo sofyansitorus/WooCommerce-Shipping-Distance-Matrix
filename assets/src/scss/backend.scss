@@ -143,7 +143,7 @@
     }
     &-map-instructions {
         background-color: $double-pearl-lusta;
-        border: 1px solid $energy-yellow;
+        border: 1px solid darken($double-pearl-lusta, 20%);
         text-align: center;
         padding: 30px 30px;
         max-width: 760px;
@@ -164,12 +164,31 @@
     &-map-canvas {
         height: 400px;
     }
-    &-map-search {
-        height: 40px;
-    }
     &-map-error {
         text-align: center;
         padding-top: 100px;
+    }
+    &-map-heading {
+        position: absolute;
+        z-index: 999999;
+        background-color: $double-pearl-lusta;
+        border: 1px solid darken($double-pearl-lusta, 20%);
+        padding: 10px 15px 15px;
+        max-width: 550px;
+        width: 100%;
+        margin: 5px;
+        border-radius: 15px;
+        h3,
+        p {
+            text-align: center;
+            margin: 0px !important;
+        }
+    }
+    &-map-search {
+        display: block;
+        max-width: 800px;
+        margin: 10px auto 0;
+        height: 2em;
     }
 }
 
