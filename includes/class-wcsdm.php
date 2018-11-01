@@ -155,7 +155,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 */
 	public function init_form_fields() {
 		$instance_form_fields = array(
-			'shipping_label'    => array(
+			'shipping_label'        => array(
 				'title'       => __( 'Label', 'wcsdm' ),
 				'type'        => 'wcsdm',
 				'orig_type'   => 'text',
@@ -163,7 +163,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'default'     => $this->method_title,
 				'desc_tip'    => true,
 			),
-			'tax_status'        => array(
+			'tax_status'            => array(
 				'title'     => __( 'Tax Status', 'wcsdm' ),
 				'type'      => 'wcsdm',
 				'orig_type' => 'select',
@@ -173,7 +173,7 @@ class Wcsdm extends WC_Shipping_Method {
 					'none'    => __( 'None', 'wcsdm' ),
 				),
 			),
-			'api_key'           => array(
+			'api_key'               => array(
 				'title'       => __( 'API Key', 'wcsdm' ),
 				'type'        => 'wcsdm',
 				'orig_type'   => 'map_edit',
@@ -184,7 +184,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'is_required' => true,
 				'disabled'    => true,
 			),
-			'lat'               => array(
+			'lat'                   => array(
 				'title'       => __( 'Store Location Latitude', 'wcsdm' ),
 				'type'        => 'wcsdm',
 				'orig_type'   => 'map_edit',
@@ -195,7 +195,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'is_required' => true,
 				'disabled'    => true,
 			),
-			'lng'               => array(
+			'lng'                   => array(
 				'title'       => __( 'Store Location Longitude', 'wcsdm' ),
 				'type'        => 'wcsdm',
 				'orig_type'   => 'map_edit',
@@ -206,12 +206,12 @@ class Wcsdm extends WC_Shipping_Method {
 				'is_required' => true,
 				'disabled'    => true,
 			),
-			'map_picker'        => array(
+			'store_location_picker' => array(
 				'title'       => __( 'Store Location Picker', 'wcsdm' ),
-				'type'        => 'map_picker',
+				'type'        => 'store_location_picker',
 				'description' => __( 'Drag the store icon marker or search your address in the input box below.', 'wcsdm' ),
 			),
-			'travel_mode'       => array(
+			'travel_mode'           => array(
 				'title'       => __( 'Travel Mode', 'wcsdm' ),
 				'type'        => 'wcsdm',
 				'orig_type'   => 'select',
@@ -224,7 +224,7 @@ class Wcsdm extends WC_Shipping_Method {
 					'bicycling' => __( 'Bicycling', 'wcsdm' ),
 				),
 			),
-			'route_estrictions' => array(
+			'route_estrictions'     => array(
 				'title'       => __( 'Route Restrictions', 'wcsdm' ),
 				'type'        => 'wcsdm',
 				'orig_type'   => 'select',
@@ -239,7 +239,7 @@ class Wcsdm extends WC_Shipping_Method {
 					'indoor'   => __( 'Avoid Indoor', 'wcsdm' ),
 				),
 			),
-			'prefered_route'    => array(
+			'prefered_route'        => array(
 				'title'       => __( 'Prefered Route', 'wcsdm' ),
 				'type'        => 'wcsdm',
 				'orig_type'   => 'select',
@@ -253,7 +253,7 @@ class Wcsdm extends WC_Shipping_Method {
 					'longest_duration'  => __( 'Longest Duration', 'wcsdm' ),
 				),
 			),
-			'distance_unit'     => array(
+			'distance_unit'         => array(
 				'title'       => __( 'Distance Units', 'wcsdm' ),
 				'type'        => 'wcsdm',
 				'orig_type'   => 'select',
@@ -265,7 +265,7 @@ class Wcsdm extends WC_Shipping_Method {
 					'imperial' => __( 'Miles', 'wcsdm' ),
 				),
 			),
-			'round_up_distance' => array(
+			'round_up_distance'     => array(
 				'title'       => __( 'Round Up Distance', 'wcsdm' ),
 				'label'       => __( 'Yes', 'wcsdm' ),
 				'type'        => 'wcsdm',
@@ -273,7 +273,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'description' => __( 'Round up distance to the nearest integer.', 'wcsdm' ),
 				'desc_tip'    => true,
 			),
-			'show_distance'     => array(
+			'show_distance'         => array(
 				'title'       => __( 'Show Distance Info', 'wcsdm' ),
 				'label'       => __( 'Yes', 'wcsdm' ),
 				'type'        => 'wcsdm',
@@ -281,17 +281,17 @@ class Wcsdm extends WC_Shipping_Method {
 				'description' => __( 'Show the distance info to customer during checkout.', 'wcsdm' ),
 				'desc_tip'    => true,
 			),
-			'enable_map_picker' => array(
-				'title'       => __( 'Enable Map Picker', 'wcsdm' ),
+			'enable_address_picker' => array(
+				'title'       => __( 'Enable Address Picker', 'wcsdm' ),
 				'label'       => __( 'Yes', 'wcsdm' ),
 				'type'        => 'wcsdm',
 				'orig_type'   => 'checkbox',
-				'description' => __( 'Enable the map picker to user during checkout so can set more accurate distance using drap and drop map picker to get the address latitude and longitude coordinate.', 'wcsdm' ),
+				'description' => __( 'Enable the map address picker to user during checkout so can set more accurate shipping address latitude and longitude coordinate using drap and drop map picker.', 'wcsdm' ),
 				'desc_tip'    => true,
 				'default'     => 'no',
 				'is_pro'      => true,
 			),
-			'enable_debug_mode' => array(
+			'enable_debug_mode'     => array(
 				'title'       => __( 'Enable Debug Mode', 'wcsdm' ),
 				'label'       => __( 'Yes', 'wcsdm' ),
 				'type'        => 'wcsdm',
@@ -299,15 +299,15 @@ class Wcsdm extends WC_Shipping_Method {
 				'description' => __( 'Enable shipping debug mode to show shipping debug data and to bypass shipping rate cache.', 'wcsdm' ),
 				'desc_tip'    => true,
 			),
-			'table_rates'       => array(
+			'table_rates'           => array(
 				'type'  => 'table_rates',
 				'title' => __( 'Table Rates Settings', 'wcsdm' ),
 			),
-			'table_advanced'    => array(
+			'table_advanced'        => array(
 				'type'  => 'table_advanced',
 				'title' => __( 'Advanced Table Rate Settings', 'wcsdm' ),
 			),
-			'js_template'       => array(
+			'js_template'           => array(
 				'type' => 'js_template',
 			),
 		);
@@ -707,13 +707,13 @@ class Wcsdm extends WC_Shipping_Method {
 	}
 
 	/**
-	 * Generate map_picker HTML form.
+	 * Generate store_location_picker HTML form.
 	 *
 	 * @since    1.0.0
 	 * @param string $key Input field key.
 	 * @param array  $data Settings field data.
 	 */
-	public function generate_map_picker_html( $key, $data ) {
+	public function generate_store_location_picker_html( $key, $data ) {
 		$field_key = $this->get_field_key( $key );
 
 		$defaults = array(
