@@ -51,11 +51,21 @@ var wcsdmMapPicker = {
         $(document).off('click', '#wcsdm-btn--close-instructions');
         $(document).on('click', '#wcsdm-btn--close-instructions', wcsdmMapPicker.closeInstructions);
 
+        $(document).off('click', '#wcsdm-btn--get-api-key');
+        $(document).on('click', '#wcsdm-btn--get-api-key', wcsdmMapPicker.openLinkToGoogle);
+
         // Handle on API Key field setting changed.
         $(document).off('input', '#woocommerce_wcsdm_api_key__dummy');
         $(document).on('input', '#woocommerce_wcsdm_api_key__dummy', debounce(function () {
             wcsdmMapPicker.initMap();
         }, 500));
+    },
+    openLinkToGoogle: function (e) {
+        "use strict";
+
+        e.preventDefault();
+
+        window.open('https://cloud.google.com/maps-platform/#get-started', '_blank').focus();
     },
     toggleMapSearch: function (e) {
         "use strict";
@@ -66,7 +76,6 @@ var wcsdmMapPicker = {
 
         $('#wcsdm-map-search-panel').toggleClass('hide-main');
         $('#wcsdm-map-search-panel-main').toggleClass('wcsdm-hidden');
-
     },
     tweakShowMapFormLink: function () {
         "use strict";
@@ -79,10 +88,15 @@ var wcsdmMapPicker = {
         e.preventDefault();
 
         toggleBottons({
-            right: {
+            left: {
                 id: 'close-instructions',
                 label: 'back',
                 icon: 'undo',
+            },
+            right: {
+                id: 'get-api-key',
+                label: 'get_api_key',
+                icon: 'admin-links',
             }
         });
 
@@ -152,8 +166,8 @@ var wcsdmMapPicker = {
         var testDistanceMatrix = function () {
             var dfd = jQuery.Deferred();
 
-            var origin = new google.maps.LatLng(-6.1762256, 106.82295120000003);
-            var destination = new google.maps.LatLng(-6.194891755155254, 106.81979692219852);
+            var origin = new google.maps.LatLng(parseFloat(wcsdmMapPicker.params.defaultLat), parseFloat(wcsdmMapPicker.params.defaultLng));
+            var destination = new google.maps.LatLng(parseFloat(wcsdmMapPicker.params.testLat), parseFloat(wcsdmMapPicker.params.testLng));
             var service = new google.maps.DistanceMatrixService();
             service.getDistanceMatrix(
                 {

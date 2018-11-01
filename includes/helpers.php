@@ -70,6 +70,7 @@ function wcsdm_i18n( $key = '', $default = '' ) {
 		'back'                => __( 'Back', 'wcsdm' ),
 		'delete'              => __( 'Delete', 'wcsdm' ),
 		'confirm'             => __( 'Confirm', 'wcsdm' ),
+		'get_api_key'         => __( 'Get API Key', 'wcsdm' ),
 		'errors'              => array(
 			// translators: %s = Field name.
 			'field_required'        => __( '%s field is required', 'wcsdm' ),

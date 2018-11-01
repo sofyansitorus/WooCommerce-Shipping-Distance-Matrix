@@ -760,9 +760,17 @@ class Wcsdm extends WC_Shipping_Method {
 		</tr>
 		<tr valign="top" id="wcsdm-row-map-instructions" class="wcsdm-row wcsdm-row-map-instructions wcsdm-hidden">
 			<td colspan="2" class="wcsdm-no-padding">
-				<div id="wcsdm-map-instructions" class="wcsdm-map-instructions">
-					<p><?php echo wp_kses_post( __( 'This plugin requires a Google Maps Platform APIs. Google might be <a href="https://cloud.google.com/maps-platform/pricing/sheet/" target="_blank">charge</a> you based on your usage. Make sure you checked 3 checkboxes as shown below when enabling the APIs. <a href="https://cloud.google.com/maps-platform/#get-started" target="_blank">Click here</a> get the API Key.', 'wcsdm' ) ); ?></p>
-					<img src="<?php echo esc_attr( WCSDM_URL ); ?>assets/img/map-instructions.jpg" />
+				<div id="wcsdm-map-instructions">
+					<div class="wcsdm-map-instructions">
+						<p><?php echo wp_kses_post( __( 'This plugin uses Google Maps Platform APIs where users are required to have a valid API key to be able to use their APIs. Make sure you checked 3 the checkboxes as shown below when creating the API Key.', 'wcsdm' ) ); ?></p>
+						<img src="<?php echo esc_attr( WCSDM_URL ); ?>assets/img/map-instructions.jpg" />
+					</div>
+					<div class="wcsdm-map-instructions">
+						<p><?php echo wp_kses_post( __( 'As of July 16, 2018, Google Maps Platform APIs has new pay-as-you-go pricing model. You will be charged if the monthly usage exceed the $200 free monthly credit. You can read more about the pricing <a href="https://cloud.google.com/maps-platform/pricing/sheet/" target="_blank">here</a>.', 'wcsdm' ) ); ?></p>
+					</div>
+					<div class="wcsdm-map-instructions">
+						<p><?php echo wp_kses_post( __( 'As the API Key will be used on the server side during calculate the distance in the checkout form and on the browser side when picking the store location in the settings form, so the API Key <strong>MUST NOT</strong> be restricted to any method.', 'wcsdm' ) ); ?></p>
+					</div>
 				</div>
 			</td>
 		</tr>
@@ -1138,6 +1146,207 @@ class Wcsdm extends WC_Shipping_Method {
 	}
 
 	/**
+	 * Validate and format table_rates settings field.
+	 *
+	 * @since    1.0.0
+	 * @throws Exception If the field value is invalid.
+	 * @return array
+	 */
+	public function validate_store_location_picker_field() {
+		$post_data = $this->get_post_data();
+
+		$field_api_key = $this->get_field_key( 'api_key' );
+		$value_api_key = isset( $post_data[ $field_api_key ] ) ? $post_data[ $field_api_key ] : false;
+
+		if ( ! empty( $value_api_key ) && ! empty( $value_api_key ) && ! empty( $value_api_key ) ) {
+			$origin      = array( WCSDM_DEFAULT_LAT, WCSDM_DEFAULT_LNG );
+			$destination = array( WCSDM_TEST_LAT, WCSDM_TEST_LNG );
+			$args        = array( 'settings' => array( 'api_key' => $value_api_key ) );
+
+			$result = $this->api_request();
+			if ( is_wp_error( $result ) ) {
+				throw new Exception( $result->get_error_message() );
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Making HTTP request to Google Maps Distance Matrix API
+	 *
+	 * @param array   $origin Shipping origin info.
+	 * @param array   $destination Shipping destination info.
+	 * @param array   $args Custom arguments for $settings and $package data.
+	 * @param boolean $cache Is use the cached data.
+	 * @throws Exception If error happen.
+	 * @return array
+	 */
+	private function api_request( $origin, $destination, $args, $cache = false ) {
+		try {
+
+			$package = isset( $args['package'] ) ? (array) $args['package'] : array();
+
+			$settings = isset( $args['settings'] ) ? (array) $args['settings'] : array();
+			$settings = wp_parse_args( $settings, $this->_settings );
+
+			if ( $cache ) {
+				$cache_key = $this->id . '_api_request_' . md5(
+					wp_json_encode(
+						array(
+							'origin'      => $origin,
+							'destination' => $destination,
+							'package'     => $package,
+							'settings'    => $settings,
+						)
+					)
+				);
+
+				// Check if the data already chached and return it.
+				$cached_data = get_transient( $cache_key );
+
+				if ( false !== $cached_data ) {
+					$this->show_debug( __( 'Cache key', 'wcsdm' ) . ': ' . $cache_key );
+					$this->show_debug( __( 'Cached data', 'wcsdm' ) . ': ' . wp_json_encode( $cached_data ) );
+
+					return $cached_data;
+				}
+			}
+
+			$request_url_args = array(
+				'key'          => rawurlencode( $settings['api_key'] ),
+				'mode'         => rawurlencode( $settings['travel_mode'] ),
+				'avoid'        => is_string( $settings['route_estrictions'] ) ? rawurlencode( $settings['route_estrictions'] ) : '',
+				'units'        => rawurlencode( $settings['distance_unit'] ),
+				'language'     => rawurlencode( get_locale() ),
+				'origins'      => rawurlencode( implode( ',', $origin ) ),
+				'destinations' => rawurlencode( implode( ',', $destination ) ),
+			);
+
+			$request_url = add_query_arg( $request_url_args, $this->_google_api_url );
+
+			$this->show_debug( __( 'API Request URL', 'wcsdm' ) . ': ' . str_replace( rawurlencode( $settings['api_key'] ), '**********', $request_url ) );
+
+			$raw_response = wp_remote_get( esc_url_raw( $request_url ) );
+
+			// Check if HTTP request is error.
+			if ( is_wp_error( $raw_response ) ) {
+				throw new Exception( $raw_response->get_error_message() );
+			}
+
+			$response_body = wp_remote_retrieve_body( $raw_response );
+
+			// Check if API response is empty.
+			if ( empty( $response_body ) ) {
+				throw new Exception( __( 'API response is empty', 'wcsdm' ) );
+			}
+
+			// Decode API response body.
+			$response_data = json_decode( $response_body, true );
+
+			// Check if JSON data is valid.
+			$json_last_error_msg = json_last_error_msg();
+			if ( $json_last_error_msg && 'No error' !== $json_last_error_msg ) {
+				// translators: %s = Json error message.
+				$error_message = sprintf( __( 'Error occured while decoding API response: %s', 'wcsdm' ), $json_last_error_msg );
+
+				throw new Exception( $error_message );
+			}
+
+			// Check API response is OK.
+			$status = isset( $response_data['status'] ) ? $response_data['status'] : '';
+			if ( 'OK' !== $status ) {
+				$error_message = __( 'API Response Error', 'wcsdm' ) . ': ' . $status;
+				if ( isset( $response_data['error_message'] ) ) {
+					$error_message .= ' - ' . $response_data['error_message'];
+				}
+
+				throw new Exception( $error_message );
+			}
+
+			$errors  = array();
+			$results = array();
+
+			// Get the shipping distance.
+			foreach ( $response_data['rows'] as $row ) {
+				foreach ( $row['elements'] as $element ) {
+					// Check element status code.
+					if ( 'OK' !== $element['status'] ) {
+						$errors[] = $element['status'];
+						continue;
+					}
+
+					$results[] = array(
+						'distance'      => $this->convert_distance( $element['distance']['value'] ),
+						'distance_text' => $element['distance']['text'],
+						'duration'      => $element['duration']['value'],
+						'duration_text' => $element['duration']['text'],
+					);
+				}
+			}
+
+			if ( empty( $results ) ) {
+				$error_template = array(
+					'NOT_FOUND'                 => __( 'Origin and/or destination of this pairing could not be geocoded', 'wcsdm' ),
+					'ZERO_RESULTS'              => __( 'No route could be found between the origin and destination', 'wcsdm' ),
+					'MAX_ROUTE_LENGTH_EXCEEDED' => __( 'Requested route is too long and cannot be processed', 'wcsdm' ),
+				);
+
+				if ( ! empty( $errors ) ) {
+					foreach ( $errors as $error_key ) {
+						if ( isset( $error_template[ $error_key ] ) ) {
+							throw new Exception( __( 'API Response Error', 'wcsdm' ) . ': ' . $error_template[ $error_key ] );
+						}
+					}
+				}
+
+				throw new Exception( __( 'API Response Error', 'wcsdm' ) . ': ' . __( 'No results found', 'wcsdm' ) );
+			}
+
+			if ( count( $results ) > 1 ) {
+				switch ( $settings['prefered_route'] ) {
+					case 'longest_duration':
+						usort( $results, array( $this, 'longest_duration_results' ) );
+						break;
+
+					case 'longest_distance':
+						usort( $results, array( $this, 'longest_distance_results' ) );
+						break;
+
+					case 'shortest_duration':
+						usort( $results, array( $this, 'shortest_duration_results' ) );
+						break;
+
+					default:
+						usort( $results, array( $this, 'shortest_distance_results' ) );
+						break;
+				}
+			}
+
+			$result = $results[0];
+
+			// Rounds distance UP to the nearest integer.
+			if ( 'yes' === $settings['round_up_distance'] ) {
+				$result['distance']      = ceil( $result['distance'] );
+				$result['distance_text'] = $result['distance'] . preg_replace( '/[0-9\.,]/', '', $result['distance_text'] );
+			}
+
+			$result['response'] = $response_data;
+
+			if ( $cache ) {
+				delete_transient( $cache_key ); // To make sure the transient data re-created, delete it first.
+				set_transient( $cache_key, $result, HOUR_IN_SECONDS ); // Store the data to transient with expiration in 1 hour for later use.
+			}
+
+			return $result;
+		} catch ( Exception $e ) {
+			$this->show_debug( $e->getMessage(), 'error' );
+
+			return new WP_Error( 'api_request', $e->getMessage() );
+		}
+	}
+
+	/**
 	 * Populate field data
 	 *
 	 * @since    1.4.8
@@ -1189,13 +1398,20 @@ class Wcsdm extends WC_Shipping_Method {
 	public function calculate_shipping( $package = array() ) {
 		global $woocommerce;
 
-		$api_request = $this->api_request( $package );
-
-		if ( ! $api_request ) {
-			return;
-		}
-
 		try {
+			$origin      = $this->get_origin_info( $package );
+			$destination = $this->get_destination_info( $package['destination'] );
+			$api_request = $this->api_request( $origin, $destination, array( 'package' => $package ), true );
+
+			// Bail early if the API request error.
+			if ( is_wp_error( $api_request ) ) {
+				throw new Exception( $api_request->get_error_message() );
+			}
+
+			if ( ! $api_request ) {
+				return;
+			}
+
 			$rate_data = $this->get_rate_by_distance( $api_request['distance'] );
 
 			// Bail early if there is no rate found.
@@ -1389,92 +1605,6 @@ class Wcsdm extends WC_Shipping_Method {
 	}
 
 	/**
-	 * Making HTTP request to Google Maps Distance Matrix API
-	 *
-	 * @since    1.0.0
-	 * @param array $package The cart content data.
-	 * @throws Exception Throw error if validation not passed.
-	 * @return mixed array of API response data, false on failure.
-	 */
-	private function api_request( $package ) {
-		try {
-			$destination_info = $this->get_destination_info( $package['destination'] );
-			if ( empty( $destination_info ) ) {
-				return false;
-			}
-
-			if ( empty( $this->api_key ) ) {
-				throw new Exception( __( 'API Key is empty', 'wcsdm' ) );
-			}
-
-			$origin_info = $this->get_origin_info( $package );
-			if ( empty( $origin_info ) ) {
-				throw new Exception( __( 'Origin info is empty', 'wcsdm' ) );
-			}
-
-			$cache_key = $this->id . '_api_request_' . md5(
-				wp_json_encode(
-					array(
-						'destination_info' => $destination_info,
-						'origin_info'      => $origin_info,
-						'package'          => $package,
-						'settings'         => $this->_settings,
-					)
-				)
-			);
-
-			// Check if the data already chached and return it.
-			$cached_data = get_transient( $cache_key );
-
-			if ( false !== $cached_data ) {
-				$this->show_debug( __( 'Cache key', 'wcsdm' ) . ': ' . $cache_key );
-				$this->show_debug( __( 'Cached data', 'wcsdm' ) . ': ' . wp_json_encode( $cached_data ) );
-				return $cached_data;
-			}
-
-			$request_url_args = array(
-				'key'          => rawurlencode( $this->api_key ),
-				'mode'         => rawurlencode( $this->travel_mode ),
-				'avoid'        => is_string( $this->route_estrictions ) ? rawurlencode( $this->route_estrictions ) : '',
-				'units'        => rawurlencode( $this->distance_unit ),
-				'language'     => rawurlencode( get_locale() ),
-				'origins'      => rawurlencode( implode( ',', $origin_info ) ),
-				'destinations' => rawurlencode( implode( ',', $destination_info ) ),
-			);
-
-			$request_url = add_query_arg( $request_url_args, $this->_google_api_url );
-
-			$this->show_debug( __( 'API Request URL', 'wcsdm' ) . ': ' . str_replace( rawurlencode( $this->api_key ), '**********', $request_url ) );
-
-			$data = $this->process_api_response( wp_remote_get( esc_url_raw( $request_url ) ) );
-
-			// Try to make fallback request if no results found.
-			if ( ! $data && ! empty( $destination_info['address_2'] ) ) {
-				unset( $destination_info['address'] );
-				$request_url_args['destinations'] = rawurlencode( implode( ',', $destination_info ) );
-
-				$request_url = add_query_arg( $request_url_args, $this->_google_api_url );
-
-				$this->show_debug( __( 'API Fallback Request URL', 'wcsdm' ) . ': ' . str_replace( rawurlencode( $this->api_key ), '**********', $request_url ) );
-
-				$data = $this->process_api_response( wp_remote_get( esc_url_raw( $request_url ) ) );
-			}
-
-			if ( empty( $data ) ) {
-				return false;
-			}
-
-			delete_transient( $cache_key ); // To make sure the transient data re-created, delete it first.
-			set_transient( $cache_key, $data, HOUR_IN_SECONDS ); // Store the data to transient with expiration in 1 hour for later use.
-
-			return $data;
-		} catch ( Exception $e ) {
-			$this->show_debug( $e->getMessage(), 'error' );
-			return false;
-		}
-	}
-
-	/**
 	 * Process API Response.
 	 *
 	 * @since 1.3.4
@@ -1544,6 +1674,7 @@ class Wcsdm extends WC_Shipping_Method {
 					'ZERO_RESULTS'              => __( 'No route could be found between the origin and destination', 'wcsdm' ),
 					'MAX_ROUTE_LENGTH_EXCEEDED' => __( 'Requested route is too long and cannot be processed', 'wcsdm' ),
 				);
+
 				if ( ! empty( $errors ) ) {
 					foreach ( $errors as $error_key ) {
 						if ( isset( $error_template[ $error_key ] ) ) {
@@ -1551,6 +1682,7 @@ class Wcsdm extends WC_Shipping_Method {
 						}
 					}
 				}
+
 				throw new Exception( __( 'API Response Error', 'wcsdm' ) . ': ' . __( 'No results found', 'wcsdm' ) );
 			}
 
@@ -1584,7 +1716,8 @@ class Wcsdm extends WC_Shipping_Method {
 			return $result;
 		} catch ( Exception $e ) {
 			$this->show_debug( $e->getMessage(), 'error' );
-			return false;
+
+			return new WP_Error( 'process_api_response', $e->getMessage() );
 		}
 	}
 

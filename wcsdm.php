@@ -52,10 +52,16 @@ if ( ! defined( 'WCSDM_METHOD_TITLE' ) ) {
 	define( 'WCSDM_METHOD_TITLE', 'Shipping Distance Matrix' );
 }
 if ( ! defined( 'WCSDM_DEFAULT_LAT' ) ) {
-	define( 'WCSDM_DEFAULT_LAT', -6.175392 );
+	define( 'WCSDM_DEFAULT_LAT', -6.178784361374902 );
 }
 if ( ! defined( 'WCSDM_DEFAULT_LNG' ) ) {
-	define( 'WCSDM_DEFAULT_LNG', 106.827156 );
+	define( 'WCSDM_DEFAULT_LNG', 106.82303292695315 );
+}
+if ( ! defined( 'WCSDM_TEST_LAT' ) ) {
+	define( 'WCSDM_TEST_LAT', -6.181472315327319 );
+}
+if ( ! defined( 'WCSDM_TEST_LNG' ) ) {
+	define( 'WCSDM_TEST_LNG', 106.8170462364319 );
 }
 
 /**
@@ -187,6 +193,8 @@ function wcsdm_backend_enqueue_scripts( $hook ) {
 				'marker'       => WCSDM_URL . 'assets/img/marker.png',
 				'defaultLat'   => WCSDM_DEFAULT_LAT,
 				'defaultLng'   => WCSDM_DEFAULT_LNG,
+				'testLat'      => WCSDM_TEST_LAT,
+				'testLng'      => WCSDM_TEST_LNG,
 				'language'     => get_locale(),
 				'isPro'        => wcsdm_is_pro(),
 				'i18n'         => wcsdm_i18n(),
