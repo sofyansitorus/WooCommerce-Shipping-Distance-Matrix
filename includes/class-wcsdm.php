@@ -1155,15 +1155,16 @@ class Wcsdm extends WC_Shipping_Method {
 	public function validate_store_location_picker_field() {
 		$post_data = $this->get_post_data();
 
-		$field_api_key = $this->get_field_key( 'api_key' );
-		$value_api_key = isset( $post_data[ $field_api_key ] ) ? $post_data[ $field_api_key ] : false;
+		$api_key_field = $this->get_field_key( 'api_key' );
+		$api_key_value = isset( $post_data[ $api_key_field ] ) ? $post_data[ $api_key_field ] : false;
 
-		if ( ! empty( $value_api_key ) && ! empty( $value_api_key ) && ! empty( $value_api_key ) ) {
+		if ( ! empty( $api_key_value ) ) {
 			$origin      = array( WCSDM_DEFAULT_LAT, WCSDM_DEFAULT_LNG );
 			$destination = array( WCSDM_TEST_LAT, WCSDM_TEST_LNG );
-			$args        = array( 'settings' => array( 'api_key' => $value_api_key ) );
+			$args        = array( 'settings' => array( 'api_key' => $api_key_value ) );
 
-			$result = $this->api_request();
+			$result = $this->api_request( $origin, $destination, $args, false );
+
 			if ( is_wp_error( $result ) ) {
 				throw new Exception( $result->get_error_message() );
 			}
@@ -1182,7 +1183,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @throws Exception If error happen.
 	 * @return array
 	 */
-	private function api_request( $origin, $destination, $args, $cache = false ) {
+	private function api_request( $origin, $destination, $args, $cache = true ) {
 		try {
 
 			$package = isset( $args['package'] ) ? (array) $args['package'] : array();
@@ -1401,7 +1402,7 @@ class Wcsdm extends WC_Shipping_Method {
 		try {
 			$origin      = $this->get_origin_info( $package );
 			$destination = $this->get_destination_info( $package['destination'] );
-			$api_request = $this->api_request( $origin, $destination, array( 'package' => $package ), true );
+			$api_request = $this->api_request( $origin, $destination, array( 'package' => $package ) );
 
 			// Bail early if the API request error.
 			if ( is_wp_error( $api_request ) ) {
