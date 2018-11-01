@@ -56,9 +56,16 @@ var wcsdmTableRates = {
 
         toggleBottons();
 
+        wcsdmTableRates.initForm();
+
         if (!$('#wcsdm-table-dummy tbody tr').length) {
             wcsdmTableRates.addRateRow();
         }
+    },
+    initForm: function () {
+        "use strict";
+
+        $('.wcsdm-field--rate > option[value=formula]').prop('disabled', !wcsdmTableRates.params.isPro);
     },
     submitForm: function (e) {
         "use strict";
@@ -248,6 +255,8 @@ var wcsdmTableRates = {
         }
 
         $('.wc-modal-shipping-method-settings').scrollTop($('.wc-modal-shipping-method-settings').find('form').outerHeight());
+
+        wcsdmTableRates.initForm();
     },
     deleteRateRow: function (e) {
         "use strict";

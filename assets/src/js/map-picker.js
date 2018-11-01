@@ -6,9 +6,9 @@ var isMapError = false;
 var windowConsoleError = window.console.error;
 window.console.error = function () {
     if (arguments[0].toLowerCase().indexOf('google') !== 1) {
-        isMapError = true;
+        isMapError = arguments[0];
         $('.gm-err-message').empty().html(
-            arguments[0].replace(/(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig, '<a href="$1" target="_blank">$1</a>')
+            isMapError.replace(/(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig, '<a href="$1" target="_blank">$1</a>')
         );
     }
 
@@ -22,6 +22,7 @@ var wcsdmMapPicker = {
     params: {},
     lat: '',
     lng: '',
+    zoomLevel: 16,
     init: function (params) {
         "use strict";
 
@@ -182,6 +183,12 @@ var wcsdmMapPicker = {
                     return;
                 }
 
+                if (isMapError) {
+                    alert(isMapError);
+
+                    return;
+                }
+
                 alert(status);
             });
     },
@@ -220,7 +227,7 @@ var wcsdmMapPicker = {
             {
                 mapTypeId: 'roadmap',
                 center: currentLatLng,
-                zoom: 12,
+                zoom: wcsdmMapPicker.zoomLevel,
                 streetViewControl: false,
                 mapTypeControl: false,
             }
@@ -250,7 +257,6 @@ var wcsdmMapPicker = {
             wcsdmMapPicker.setLatLng(event.latLng, marker, map, infowindow);
         });
 
-
         $('#wcsdm-map-wrap').prepend(wp.template('wcsdm-map-search-panel')());
         map.controls[google.maps.ControlPosition.TOP_LEFT].push(document.getElementById('wcsdm-map-search-panel'));
 
@@ -269,18 +275,23 @@ var wcsdmMapPicker = {
             if (places.length === 0) {
                 return;
             }
+
             // Clear out the old markers.
             markers.forEach(function (marker) {
                 marker.setMap(null);
             });
+
             markers = [];
+
             // For each place, get the icon, name and location.
             var bounds = new google.maps.LatLngBounds();
+
             places.forEach(function (place) {
                 if (!place.geometry) {
                     console.log('Returned place contains no geometry');
                     return;
                 }
+
                 marker = new google.maps.Marker({
                     map: map,
                     position: place.geometry.location,
@@ -293,11 +304,14 @@ var wcsdmMapPicker = {
                 google.maps.event.addListener(marker, 'dragstart', function () {
                     infowindow.close();
                 });
+
                 google.maps.event.addListener(marker, 'dragend', function (event) {
                     wcsdmMapPicker.setLatLng(event.latLng, marker, map, infowindow);
                 });
+
                 // Create a marker for each place.
                 markers.push(marker);
+
                 if (place.geometry.viewport) {
                     // Only geocodes have viewport.
                     bounds.union(place.geometry.viewport);
@@ -305,22 +319,25 @@ var wcsdmMapPicker = {
                     bounds.extend(place.geometry.location);
                 }
             });
+
             map.fitBounds(bounds);
         });
     },
     setLatLng: function (location, marker, map, infowindow) {
         var geocoder = new google.maps.Geocoder();
+
         geocoder.geocode(
             {
                 latLng: location
             },
             function (results, status) {
                 if (status === google.maps.GeocoderStatus.OK && results[0]) {
-                    var infowindowCOntent = [
+                    var infowindowContents = [
                         wcsdmMapPicker.params.i18n.latitude + ': ' + location.lat().toString(),
                         wcsdmMapPicker.params.i18n.longitude + ': ' + location.lng().toString(),
                     ];
-                    infowindow.setContent(infowindowCOntent.join('<br />'));
+
+                    infowindow.setContent(infowindowContents.join('<br />'));
                     infowindow.open(map, marker);
 
                     marker.addListener('click', function () {
@@ -331,7 +348,9 @@ var wcsdmMapPicker = {
                 }
             }
         );
+
         map.setCenter(location);
+
         wcsdmMapPicker.lat = location.lat();
         wcsdmMapPicker.lng = location.lng();
     }

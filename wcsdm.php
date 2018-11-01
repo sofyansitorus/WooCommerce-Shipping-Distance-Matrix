@@ -176,6 +176,7 @@ function wcsdm_backend_enqueue_scripts( $hook ) {
 			WCSDM_VERSION, // Define a version (optional).
 			true // Specify whether to put in footer (leave this true).
 		);
+
 		wp_localize_script(
 			'wcsdm-backend',
 			'wcsdm_backend_params',
@@ -183,11 +184,12 @@ function wcsdm_backend_enqueue_scripts( $hook ) {
 				'showSettings' => isset( $_GET['wcsdm_settings'] ) && is_admin(),
 				'methodId'     => WCSDM_METHOD_ID,
 				'methodTitle'  => WCSDM_METHOD_TITLE,
-				'i18n'         => wcsdm_i18n(),
 				'marker'       => WCSDM_URL . 'assets/img/marker.png',
-				'language'     => get_locale(),
 				'defaultLat'   => WCSDM_DEFAULT_LAT,
 				'defaultLng'   => WCSDM_DEFAULT_LNG,
+				'language'     => get_locale(),
+				'isPro'        => wcsdm_is_pro(),
+				'i18n'         => wcsdm_i18n(),
 			)
 		);
 	}
