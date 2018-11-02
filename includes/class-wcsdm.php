@@ -42,7 +42,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @since    1.4.2
 	 * @var array
 	 */
-	private $_settings = array();
+	private $_options = array();
 
 	/**
 	 * All debugs data
@@ -142,9 +142,9 @@ class Wcsdm extends WC_Shipping_Method {
 		foreach ( $this->instance_form_fields as $key => $field ) {
 			$default = isset( $field['default'] ) ? $field['default'] : null;
 
-			$this->_settings[ $key ] = $this->get_option( $key, $default );
+			$this->_options[ $key ] = $this->get_option( $key, $default );
 
-			$this->{$key} = $this->_settings[ $key ];
+			$this->{$key} = $this->_options[ $key ];
 		}
 	}
 
@@ -290,14 +290,6 @@ class Wcsdm extends WC_Shipping_Method {
 				'desc_tip'    => true,
 				'default'     => 'no',
 				'is_pro'      => true,
-			),
-			'enable_debug_mode'     => array(
-				'title'       => __( 'Enable Debug Mode', 'wcsdm' ),
-				'label'       => __( 'Yes', 'wcsdm' ),
-				'type'        => 'wcsdm',
-				'orig_type'   => 'checkbox',
-				'description' => __( 'Enable shipping debug mode to show shipping debug data and to bypass shipping rate cache.', 'wcsdm' ),
-				'desc_tip'    => true,
 			),
 			'table_rates'           => array(
 				'type'  => 'table_rates',
@@ -1183,15 +1175,24 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @throws Exception If error happen.
 	 * @return array
 	 */
-	private function api_request( $origin, $destination, $args, $cache = true ) {
+	private function api_request( $origin, $destination, $args = array(), $cache = true ) {
 		try {
+			// Check origin parameter is valid.
+			if ( empty( $origin ) ) {
+				throw new Exception( __( 'Origin parameter is invalid', 'wcsdm' ) );
+			}
+
+			// Check destination parameter is valid.
+			if ( empty( $destination ) ) {
+				throw new Exception( __( 'Destination parameter is invalid', 'wcsdm' ) );
+			}
 
 			$package = isset( $args['package'] ) ? (array) $args['package'] : array();
 
 			$settings = isset( $args['settings'] ) ? (array) $args['settings'] : array();
-			$settings = wp_parse_args( $settings, $this->_settings );
+			$settings = wp_parse_args( $settings, $this->_options );
 
-			if ( $cache ) {
+			if ( $cache && ! $this->is_debug_mode() ) {
 				$cache_key = $this->id . '_api_request_' . md5(
 					wp_json_encode(
 						array(
@@ -1215,14 +1216,18 @@ class Wcsdm extends WC_Shipping_Method {
 			}
 
 			$request_url_args = array(
-				'key'          => rawurlencode( $settings['api_key'] ),
-				'mode'         => rawurlencode( $settings['travel_mode'] ),
-				'avoid'        => is_string( $settings['route_estrictions'] ) ? rawurlencode( $settings['route_estrictions'] ) : '',
-				'units'        => rawurlencode( $settings['distance_unit'] ),
-				'language'     => rawurlencode( get_locale() ),
-				'origins'      => rawurlencode( implode( ',', $origin ) ),
-				'destinations' => rawurlencode( implode( ',', $destination ) ),
+				'key'          => $settings['api_key'],
+				'mode'         => $settings['travel_mode'],
+				'avoid'        => $settings['route_estrictions'],
+				'units'        => $settings['distance_unit'],
+				'language'     => get_locale(),
+				'origins'      => is_array( $origin ) ? implode( ',', $origin ) : $origin,
+				'destinations' => is_array( $destination ) ? implode( ',', $destination ) : $destination,
 			);
+
+			foreach ( $request_url_args as $key => $value ) {
+				$request_url_args[ $key ] = is_string( $value ) ? rawurlencode( $value ) : array_map( $value, 'rawurlencode' );
+			}
 
 			$request_url = add_query_arg( $request_url_args, $this->_google_api_url );
 
@@ -1334,7 +1339,7 @@ class Wcsdm extends WC_Shipping_Method {
 
 			$result['response'] = $response_data;
 
-			if ( $cache ) {
+			if ( $cache && ! $this->is_debug_mode() ) {
 				delete_transient( $cache_key ); // To make sure the transient data re-created, delete it first.
 				set_transient( $cache_key, $result, HOUR_IN_SECONDS ); // Store the data to transient with expiration in 1 hour for later use.
 			}
@@ -1367,7 +1372,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 */
 	public function instance_settings_values( $settings ) {
 		if ( $this->get_errors() ) {
-			return $this->_settings;
+			return $this->_options;
 		}
 
 		return $settings;
@@ -1401,7 +1406,8 @@ class Wcsdm extends WC_Shipping_Method {
 
 		try {
 			$origin      = $this->get_origin_info( $package );
-			$destination = $this->get_destination_info( $package['destination'] );
+			$destination = $this->get_destination_info( $package );
+
 			$api_request = $this->api_request( $origin, $destination, array( 'package' => $package ) );
 
 			// Bail early if the API request error.
@@ -1424,39 +1430,6 @@ class Wcsdm extends WC_Shipping_Method {
 			$label = empty( $rate_data['shipping_label'] ) ? $this->title : $rate_data['shipping_label'];
 			if ( 'yes' === $this->show_distance && ! empty( $api_request['distance_text'] ) ) {
 				$label = sprintf( '%s (%s)', $label, $api_request['distance_text'] );
-			}
-
-			// Check if free shipping.
-			if ( 'no' !== $rate_data['free'] ) {
-				$is_free_shipping = 'yes' === $rate_data['free'];
-
-				if ( ! $is_free_shipping ) {
-					// Check if free shipping by matc with rules defined.
-					if ( strlen( $rate_data['free_min_amount'] ) && $woocommerce->cart->get_cart_contents_total() >= $rate_data['free_min_amount'] ) {
-						$is_free_shipping = true;
-					}
-
-					// Check if free shipping by minimum order quantity.
-					if ( strlen( $rate_data['free_min_qty'] ) && $woocommerce->cart->get_cart_contents_count() >= $rate_data['free_min_qty'] ) {
-						$is_free_shipping = true;
-					}
-				}
-
-				// Apply free shipping rate.
-				if ( $is_free_shipping ) {
-					// Register the rate.
-					$this->register_rate(
-						array(
-							'id'        => $this->get_rate_id(),
-							'label'     => $label,
-							'cost'      => 0,
-							'taxes'     => false,
-							'package'   => $package,
-							'meta_data' => $api_request,
-						)
-					);
-					return;
-				}
 			}
 
 			$cost_total              = 0;
@@ -1484,57 +1457,9 @@ class Wcsdm extends WC_Shipping_Method {
 				}
 
 				// Multiply shipping cost with distance unit.
-				if ( 'per_unit' === $rate_data['cost_type'] ) {
+				if ( 'flexible' === $rate_data['calculation_type'] ) {
 					$calculated_cost = $calculated_cost * $api_request['distance'];
 				}
-
-				// Calculate cost by calculation type setting.
-				switch ( $this->calc_type ) {
-					case 'per_order':
-						if ( $calculated_cost > $cost_per_order ) {
-							$cost_per_order = $calculated_cost;
-						}
-						break;
-					case 'per_shipping_class':
-						if ( ! isset( $cost_per_shipping_class[ $shipping_class_id ] ) ) {
-							$cost_per_shipping_class[ $shipping_class_id ] = $calculated_cost;
-						}
-						if ( isset( $cost_per_shipping_class[ $shipping_class_id ] ) && $calculated_cost > $cost_per_shipping_class[ $shipping_class_id ] ) {
-							$cost_per_shipping_class[ $shipping_class_id ] = $calculated_cost;
-						}
-						break;
-					case 'per_product':
-						if ( ! isset( $cost_per_product[ $product_id ] ) ) {
-							$cost_per_product[ $product_id ] = $calculated_cost;
-						}
-						if ( isset( $cost_per_product[ $product_id ] ) && $calculated_cost > $cost_per_product[ $product_id ] ) {
-							$cost_per_product[ $product_id ] = $calculated_cost;
-						}
-						break;
-					default:
-						$cost_per_item += $calculated_cost * $item['quantity'];
-						break;
-				}
-			}
-
-			switch ( $this->calc_type ) {
-				case 'per_order':
-					$cost_total = $cost_per_order;
-					break;
-				case 'per_shipping_class':
-					$cost_total = array_sum( $cost_per_shipping_class );
-					break;
-				case 'per_product':
-					$cost_total = array_sum( $cost_per_product );
-					break;
-				default:
-					$cost_total = $cost_per_item;
-					break;
-			}
-
-			// Apply shipping base fee.
-			if ( ! empty( $rate_data['base'] ) ) {
-				$cost_total += $rate_data['base'];
 			}
 
 			$rate = array(
@@ -1594,132 +1519,15 @@ class Wcsdm extends WC_Shipping_Method {
 		if ( $this->table_rates ) {
 			$offset = 0;
 			foreach ( $this->table_rates as $rate ) {
-				if ( $distance > $offset && $distance <= $rate['distance'] ) {
+				if ( $distance > $offset && $distance <= $rate['max_distance'] ) {
 					return $rate;
 				}
-				$offset = $rate['distance'];
+				$offset = $rate['max_distance'];
 			}
 		}
 
 		// translators: %1$s distance value, %2$s distance unit.
 		return new WP_Error( 'no_rates', sprintf( __( 'No shipping rates defined within distance range: %1$s %2$s', 'wcsdm' ), $distance, 'imperial' === $this->distance_unit ? 'mi' : 'km' ) );
-	}
-
-	/**
-	 * Process API Response.
-	 *
-	 * @since 1.3.4
-	 * @throws Exception If API response data is invalid.
-	 * @param array $raw_response HTTP API response.
-	 * @return array|bool Formatted response data, false on failure.
-	 */
-	private function process_api_response( $raw_response ) {
-		try {
-			// Check if HTTP request is error.
-			if ( is_wp_error( $raw_response ) ) {
-				throw new Exception( $raw_response->get_error_message() );
-			}
-
-			$response_body = wp_remote_retrieve_body( $raw_response );
-
-			// Check if API response is empty.
-			if ( empty( $response_body ) ) {
-				throw new Exception( __( 'API response is empty', 'wcsdm' ) );
-			}
-
-			// Decode API response body.
-			$response_data = json_decode( $response_body, true );
-
-			// Check if JSON data is valid.
-			if ( json_last_error() !== JSON_ERROR_NONE ) {
-				$error_message = __( 'Error occured while decoding API response', 'wcsdm' );
-				if ( function_exists( 'json_last_error_msg' ) ) {
-					$error_message .= ': ' . json_last_error_msg();
-				}
-				throw new Exception( $error_message );
-			}
-
-			// Check API response is OK.
-			$status = isset( $response_data['status'] ) ? $response_data['status'] : '';
-			if ( 'OK' !== $status ) {
-				$error_message = __( 'API Response Error', 'wcsdm' ) . ': ' . $status;
-				if ( isset( $response_data['error_message'] ) ) {
-					$error_message .= ' - ' . $response_data['error_message'];
-				}
-				throw new Exception( $error_message );
-			}
-
-			$errors  = array();
-			$results = array();
-
-			// Get the shipping distance.
-			foreach ( $response_data['rows'] as $row ) {
-				foreach ( $row['elements'] as $element ) {
-					// Check element status code.
-					if ( 'OK' !== $element['status'] ) {
-						$errors[] = $element['status'];
-						continue;
-					}
-					$results[] = array(
-						'distance'      => $this->convert_distance( $element['distance']['value'] ),
-						'distance_text' => $element['distance']['text'],
-						'duration'      => $element['duration']['value'],
-						'duration_text' => $element['duration']['text'],
-					);
-				}
-			}
-
-			if ( empty( $results ) ) {
-				$error_template = array(
-					'NOT_FOUND'                 => __( 'Origin and/or destination of this pairing could not be geocoded', 'wcsdm' ),
-					'ZERO_RESULTS'              => __( 'No route could be found between the origin and destination', 'wcsdm' ),
-					'MAX_ROUTE_LENGTH_EXCEEDED' => __( 'Requested route is too long and cannot be processed', 'wcsdm' ),
-				);
-
-				if ( ! empty( $errors ) ) {
-					foreach ( $errors as $error_key ) {
-						if ( isset( $error_template[ $error_key ] ) ) {
-							throw new Exception( __( 'API Response Error', 'wcsdm' ) . ': ' . $error_template[ $error_key ] );
-						}
-					}
-				}
-
-				throw new Exception( __( 'API Response Error', 'wcsdm' ) . ': ' . __( 'No results found', 'wcsdm' ) );
-			}
-
-			if ( count( $results ) > 1 ) {
-				switch ( $this->prefered_route ) {
-					case 'longest_duration':
-						usort( $results, array( $this, 'longest_duration_results' ) );
-						break;
-					case 'longest_distance':
-						usort( $results, array( $this, 'longest_distance_results' ) );
-						break;
-					case 'shortest_duration':
-						usort( $results, array( $this, 'shortest_duration_results' ) );
-						break;
-					default:
-						usort( $results, array( $this, 'shortest_distance_results' ) );
-						break;
-				}
-			}
-
-			$result = $results[0];
-
-			// Rounds distance UP to the nearest integer.
-			if ( 'yes' === $this->round_up_distance ) {
-				$result['distance']      = ceil( $result['distance'] );
-				$result['distance_text'] = $result['distance'] . preg_replace( '/[0-9\.,]/', '', $result['distance_text'] );
-			}
-
-			$result['response'] = $response_data;
-
-			return $result;
-		} catch ( Exception $e ) {
-			$this->show_debug( $e->getMessage(), 'error' );
-
-			return new WP_Error( 'process_api_response', $e->getMessage() );
-		}
 	}
 
 	/**
@@ -1742,15 +1550,15 @@ class Wcsdm extends WC_Shipping_Method {
 		 *
 		 * @since 1.0.1
 		 *
-		 * This example shows how you can modify the shipping origin info via custom function:
+		 * This example shows how you can modify the $origin_info var via custom function:
 		 *
-		 *      add_filter( 'wcsdm_shipping_origin_info', 'modify_shipping_origin_info', 10, 2 );
+		 *      add_filter( 'wcsdm_origin_info', 'modify_origin_info', 10, 2 );
 		 *
-		 *      function modify_shipping_origin_info( $origin_info, $package ) {
+		 *      function modify_origin_info( $origin_info, $package ) {
 		 *          return '1600 Amphitheatre Parkway,Mountain View,CA,94043';
 		 *      }
 		 */
-		return apply_filters( $this->id . '_shipping_origin_info', $origin_info, $package );
+		return apply_filters( $this->id . '_origin_info', $origin_info, $package );
 	}
 
 	/**
@@ -1758,123 +1566,157 @@ class Wcsdm extends WC_Shipping_Method {
 	 *
 	 * @since    1.0.0
 	 * @throws Exception Throw error if validation not passed.
-	 * @param array $data Shipping destination data in associative array format: address, city, state, postcode, country.
+	 * @param array $package The cart content data.
 	 * @return string
 	 */
-	private function get_destination_info( $data ) {
-		$errors = array();
-
-		$country_code = isset( $data['country'] ) && ! empty( $data['country'] ) ? $data['country'] : false;
-
-		if ( ! $country_code ) {
-			throw new Exception( __( 'Shipping destination country is not defined', 'wcsdm' ) );
-		}
-
-		$fields_default = WC()->countries->get_default_address_fields();
-
-		$country_locale = WC()->countries->get_country_locale();
-		$country_locale = isset( $country_locale[ $country_code ] ) ? $country_locale[ $country_code ] : $country_locale['default'];
-
-		$fields_rules = array(
-			'address'   => false,
-			'address_2' => false,
-			'city'      => true,
-			'state'     => WC()->countries->get_states( $country_code ),
-			'postcode'  => true,
-			'country'   => true,
-		);
-
+	private function get_destination_info( $package ) {
 		$destination_info = array();
 
-		foreach ( $fields_rules as $field => $calculator_enable ) {
-			$calculator_enable = apply_filters( 'woocommerce_shipping_calculator_enable_' . $field, $calculator_enable );
-			if ( $this->is_calc_shipping() && ! $calculator_enable ) {
-				continue;
-			}
-
-			$field_data = isset( $fields_default[ $field ] ) ? $fields_default[ $field ] : false;
-			if ( empty( $field_data ) ) {
-				continue;
-			}
-
-			if ( isset( $country_locale[ $field ] ) ) {
-				$field_data = array_merge( $field_data, $country_locale[ $field ] );
-			}
-
-			if ( isset( $field_data['hidden'] ) && $field_data['hidden'] ) {
-				continue;
-			}
-
-			$field_label = isset( $field_data['label'] ) ? $field_data['label'] : $field;
-			$field_value = isset( $data[ $field ] ) ? $data[ $field ] : '';
-
-			if ( empty( $field_value ) && $field_data['required'] ) {
-				// translators: %s is shipping destination field label.
-				array_push( $errors, sprintf( __( 'Shipping destination field is empty: %s', 'wcsdm' ), $field_label ) );
-				continue;
-			}
-
-			if ( ! empty( $field_value ) ) {
-				switch ( $field ) {
-					case 'postcode':
-						$poscode_valid = WC_Validation::is_postcode( $field_value, $country_code );
-						if ( $poscode_valid ) {
-							$poscode_valid = $this->validate_postcode( $field_value, $country_code );
-						}
-
-						if ( ! $poscode_valid ) {
-							// translators: %s is shipping destination field label.
-							array_push( $errors, sprintf( __( 'Shipping destination field is invalid: %s', 'wcsdm' ), $field_label ) );
-							continue;
-						}
-
-						if ( $poscode_valid ) {
-							$destination_info[ $field ] = $field_value;
-						}
-						break;
-
-					case 'state':
-						if ( isset( WC()->countries->states[ $country_code ][ $field_value ] ) ) {
-							$field_value = WC()->countries->states[ $country_code ][ $field_value ];
-						}
-						$destination_info[ $field ] = $field_value;
-						break;
-
-					case 'country':
-						if ( isset( WC()->countries->countries[ $field_value ] ) ) {
-							$field_value = WC()->countries->countries[ $field_value ];
-						}
-						$destination_info[ $field ] = $field_value;
+		// Set initial destination info
+		if ( isset( $package['destination'] ) ) {
+			foreach ( $package['destination'] as $key => $value ) {
+				switch ( $key ) {
+					case 'address':
+						$destination_info['address_1'] = $value;
 						break;
 
 					default:
-						$destination_info[ $field ] = $field_value;
+						$destination_info[ $key ] = $value;
 						break;
 				}
 			}
 		}
 
+		// $data   = $package['destination'];
+		$errors = array();
+
+		$country_code = ! empty( $destination_info['country'] ) ? $destination_info['country'] : false;
+
+		$country_locale = WC()->countries->get_country_locale();
+
+		$rules = $country_locale['default'];
+
+		if ( $country_code && isset( $country_locale[ $country_code ] ) ) {
+			$rules = array_merge( $rules, $country_locale[ $country_code ] );
+		}
+
+		// Validate shiipping fields.
+		foreach ( $rules as $rule_key => $rule ) {
+			if ( in_array( $rule_key, array( 'first_name', 'last_name', 'company' ) ) ) {
+				continue;
+			}
+
+			$field_value = isset( $destination_info[ $rule_key ] ) ? $destination_info[ $rule_key ] : '';
+			$is_required = isset( $rule['required'] ) ? $rule['required'] : false;
+
+			if ( $is_required && ! strlen( strval( $field_value ) ) ) {
+				$errors[ $rule_key ] = sprintf( __( 'Shipping destination field is empty: %s', 'wcsdm' ), $rule['label'] );
+			}
+
+			if ( $country_code && $field_value && 'postcode' === $rule_key && ! WC_Validation::is_postcode( $field_value, $country_code ) ) {
+				$errors[ $rule_key ] = sprintf( __( 'Shipping destination field is invalid: %s', 'wcsdm' ), $rule['label'] );
+			}
+		}
+
 		if ( $errors ) {
+			// Set debug if error.
 			foreach ( $errors as $error ) {
 				$this->show_debug( $error, 'error' );
 			}
-			return false;
+
+			// Reset destionation info if error.
+			$destination_info = array();
+		} else {
+			// Remove unwanted fields when in shipping calculator mode.
+			if ( $this->is_calc_shipping() ) {
+				$calculator_fields = array(
+					'address_1' => false,
+					'address_2' => false,
+					'city'      => true,
+					'postcode'  => true,
+					'state'     => true,
+					'country'   => true,
+				);
+
+				foreach ( $calculator_fields as $calculator_field_key => $calculator_enable ) {
+					if ( ! apply_filters( 'woocommerce_shipping_calculator_enable_' . $calculator_field_key, $calculator_enable ) ) {
+						unset( $destination_info[ $calculator_field_key ] );
+					}
+				}
+			}
+
+			$destination = array();
+			$states      = WC()->countries->states;
+			$countries   = WC()->countries->countries;
+
+			foreach ( $destination_info as $key => $value ) {
+				// Skip for empty field
+				if ( ! strlen( strval( $field_value ) ) ) {
+					continue;
+				}
+
+				switch ( $key ) {
+					case 'country':
+						if ( ! $country_code ) {
+							$country_code = $value;
+						}
+
+						$destination[ $key ] = isset( $countries[ $value ] ) ? $countries[ $value ] : $value; // Set country full name.
+						break;
+
+					case 'state':
+						if ( ! $country_code ) {
+							$country_code = isset( $destination_info['country'] ) ? $destination_info['country'] : 'undefined';
+						}
+
+						$destination[ $key ] = isset( $states[ $country_code ][ $value ] ) ? $states[ $country_code ][ $value ] : $value; // Set state full name.
+						break;
+
+					default:
+						$destination[ $key ] = $value;
+						break;
+				}
+			}
+
+			if ( ! $country_code ) {
+				$country_code = isset( $destination['country'] ) ? $destination['country'] : false;
+			}
+
+			// Try to format the address.
+			if ( $country_code ) {
+				$formats = WC()->countries->get_address_formats();
+				$format  = isset( $formats[ $country_code ] ) ? $formats[ $country_code ] : $formats['default'];
+
+				if ( $format ) {
+					$destination_format = array();
+					$parts              = explode( "\n", str_replace( array( '{', '}' ), '', $format ) );
+					foreach ( $parts as $part ) {
+						if ( isset( $destination[ $part ] ) ) {
+							$destination_format[ $part ] = $destination[ $part ];
+						}
+					}
+
+					$destination = $destination_format;
+				}
+			}
+
+			$destination_info = $destination;
 		}
 
 		/**
-		 * Developers can modify the destination info via filter hooks.
+		 * Developers can modify the $destination_info var via filter hooks.
 		 *
 		 * @since 1.0.1
 		 *
 		 * This example shows how you can modify the shipping destination info via custom function:
 		 *
-		 *      add_filter( 'wcsdm_shipping_destination_info', 'modify_shipping_destination_info', 10, 2 );
+		 *      add_filter( 'wcsdm_destination_info', 'modify_destination_info', 10, 2 );
 		 *
-		 *      function modify_shipping_destination_info( $destination_info, $destination_info_arr ) {
+		 *      function modify_destination_info( $destination_info, $destination_info_arr ) {
 		 *          return '1600 Amphitheatre Parkway,Mountain View,CA,94043';
 		 *      }
 		 */
-		return apply_filters( $this->id . '_shipping_destination_info', $destination_info, $this );
+		return apply_filters( $this->id . '_destination_info', $destination_info, $package );
 	}
 
 	/**
@@ -1883,7 +1725,10 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @return bool
 	 */
 	private function is_calc_shipping() {
-		if ( isset( $_POST['calc_shipping'], $_POST['woocommerce-shipping-calculator-nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['woocommerce-shipping-calculator-nonce'] ) ), 'woocommerce-shipping-calculator' ) ) {
+		$nonce_field  = 'woocommerce-shipping-calculator-nonce';
+		$nonce_action = 'woocommerce-shipping-calculator';
+
+		if ( isset( $_POST['calc_shipping'], $_POST[ $nonce_field ] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST[ $nonce_field ] ) ), $nonce_action ) ) {
 			return true;
 		}
 
@@ -1962,10 +1807,10 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @return int
 	 */
 	private function shortest_distance_results( $a, $b ) {
-		if ( $a['distance'] === $b['distance'] ) {
+		if ( $a['max_distance'] === $b['max_distance'] ) {
 			return 0;
 		}
-		return ( $a['distance'] < $b['distance'] ) ? -1 : 1;
+		return ( $a['max_distance'] < $b['max_distance'] ) ? -1 : 1;
 	}
 
 	/**
@@ -1977,189 +1822,10 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @return int
 	 */
 	private function longest_distance_results( $a, $b ) {
-		if ( $a['distance'] === $b['distance'] ) {
+		if ( $a['max_distance'] === $b['max_distance'] ) {
 			return 0;
 		}
-		return ( $a['distance'] > $b['distance'] ) ? -1 : 1;
-	}
-
-	/**
-	 * Validate postal code
-	 *
-	 * @since    1.4.7
-	 * @param array $postcode Postal code to validate.
-	 * @param array $country_code Country code.
-	 * @return bool
-	 */
-	private function validate_postcode( $postcode, $country_code ) {
-		$patterns = array(
-			'GB' => 'GIR[ ]?0AA|((AB|AL|B|BA|BB|BD|BH|BL|BN|BR|BS|BT|CA|CB|CF|CH|CM|CO|CR|CT|CV|CW|DA|DD|DE|DG|DH|DL|DN|DT|DY|E|EC|EH|EN|EX|FK|FY|G|GL|GY|GU|HA|HD|HG|HP|HR|HS|HU|HX|IG|IM|IP|IV|JE|KA|KT|KW|KY|L|LA|LD|LE|LL|LN|LS|LU|M|ME|MK|ML|N|NE|NG|NN|NP|NR|NW|OL|OX|PA|PE|PH|PL|PO|PR|RG|RH|RM|S|SA|SE|SG|SK|SL|SM|SN|SO|SP|SR|SS|ST|SW|SY|TA|TD|TF|TN|TQ|TR|TS|TW|UB|W|WA|WC|WD|WF|WN|WR|WS|WV|YO|ZE)(\d[\dA-Z]?[ ]?\d[ABD-HJLN-UW-Z]{2}))|BFPO[ ]?\d{1,4}',
-			'JE' => 'JE\d[\dA-Z]?[ ]?\d[ABD-HJLN-UW-Z]{2}',
-			'GG' => 'GY\d[\dA-Z]?[ ]?\d[ABD-HJLN-UW-Z]{2}',
-			'IM' => 'IM\d[\dA-Z]?[ ]?\d[ABD-HJLN-UW-Z]{2}',
-			'US' => '\d{5}([ \-]\d{4})?',
-			'CA' => '[ABCEGHJKLMNPRSTVXY]\d[ABCEGHJ-NPRSTV-Z][ ]?\d[ABCEGHJ-NPRSTV-Z]\d',
-			'DE' => '\d{5}',
-			'JP' => '\d{3}-\d{4}',
-			'FR' => '\d{2}[ ]?\d{3}',
-			'AU' => '\d{4}',
-			'IT' => '\d{5}',
-			'CH' => '\d{4}',
-			'AT' => '\d{4}',
-			'ES' => '\d{5}',
-			'NL' => '\d{4}[ ]?[A-Z]{2}',
-			'BE' => '\d{4}',
-			'DK' => '\d{4}',
-			'SE' => '\d{3}[ ]?\d{2}',
-			'NO' => '\d{4}',
-			'BR' => '\d{5}[\-]?\d{3}',
-			'PT' => '\d{4}([\-]\d{3})?',
-			'FI' => '\d{5}',
-			'AX' => '22\d{3}',
-			'KR' => '\d{3}[\-]\d{3}',
-			'CN' => '\d{6}',
-			'TW' => '\d{3}(\d{2})?',
-			'SG' => '\d{6}',
-			'DZ' => '\d{5}',
-			'AD' => 'AD\d{3}',
-			'AR' => '([A-HJ-NP-Z])?\d{4}([A-Z]{3})?',
-			'AM' => '(37)?\d{4}',
-			'AZ' => '\d{4}',
-			'BH' => '((1[0-2]|[2-9])\d{2})?',
-			'BD' => '\d{4}',
-			'BB' => '(BB\d{5})?',
-			'BY' => '\d{6}',
-			'BM' => '[A-Z]{2}[ ]?[A-Z0-9]{2}',
-			'BA' => '\d{5}',
-			'IO' => 'BBND 1ZZ',
-			'BN' => '[A-Z]{2}[ ]?\d{4}',
-			'BG' => '\d{4}',
-			'KH' => '\d{5}',
-			'CV' => '\d{4}',
-			'CL' => '\d{7}',
-			'CR' => '\d{4,5}|\d{3}-\d{4}',
-			'HR' => '\d{5}',
-			'CY' => '\d{4}',
-			'CZ' => '\d{3}[ ]?\d{2}',
-			'DO' => '\d{5}',
-			'EC' => '([A-Z]\d{4}[A-Z]|(?:[A-Z]{2})?\d{6})?',
-			'EG' => '\d{5}',
-			'EE' => '\d{5}',
-			'FO' => '\d{3}',
-			'GE' => '\d{4}',
-			'GR' => '\d{3}[ ]?\d{2}',
-			'GL' => '39\d{2}',
-			'GT' => '\d{5}',
-			'HT' => '\d{4}',
-			'HN' => '(?:\d{5})?',
-			'HU' => '\d{4}',
-			'IS' => '\d{3}',
-			'IN' => '\d{6}',
-			'ID' => '\d{5}',
-			'IL' => '\d{5}',
-			'JO' => '\d{5}',
-			'KZ' => '\d{6}',
-			'KE' => '\d{5}',
-			'KW' => '\d{5}',
-			'LA' => '\d{5}',
-			'LV' => '\d{4}',
-			'LB' => '(\d{4}([ ]?\d{4})?)?',
-			'LI' => '(948[5-9])|(949[0-7])',
-			'LT' => '\d{5}',
-			'LU' => '\d{4}',
-			'MK' => '\d{4}',
-			'MY' => '\d{5}',
-			'MV' => '\d{5}',
-			'MT' => '[A-Z]{3}[ ]?\d{2,4}',
-			'MU' => '(\d{3}[A-Z]{2}\d{3})?',
-			'MX' => '\d{5}',
-			'MD' => '\d{4}',
-			'MC' => '980\d{2}',
-			'MA' => '\d{5}',
-			'NP' => '\d{5}',
-			'NZ' => '\d{4}',
-			'NI' => '((\d{4}-)?\d{3}-\d{3}(-\d{1})?)?',
-			'NG' => '(\d{6})?',
-			'OM' => '(PC )?\d{3}',
-			'PK' => '\d{5}',
-			'PY' => '\d{4}',
-			'PH' => '\d{4}',
-			'PL' => '\d{2}-\d{3}',
-			'PR' => '00[679]\d{2}([ \-]\d{4})?',
-			'RO' => '\d{6}',
-			'RU' => '\d{6}',
-			'SM' => '4789\d',
-			'SA' => '\d{5}',
-			'SN' => '\d{5}',
-			'SK' => '\d{3}[ ]?\d{2}',
-			'SI' => '\d{4}',
-			'ZA' => '\d{4}',
-			'LK' => '\d{5}',
-			'TJ' => '\d{6}',
-			'TH' => '\d{5}',
-			'TN' => '\d{4}',
-			'TR' => '\d{5}',
-			'TM' => '\d{6}',
-			'UA' => '\d{5}',
-			'UY' => '\d{5}',
-			'UZ' => '\d{6}',
-			'VA' => '00120',
-			'VE' => '\d{4}',
-			'ZM' => '\d{5}',
-			'AS' => '96799',
-			'CC' => '6799',
-			'CK' => '\d{4}',
-			'RS' => '\d{6}',
-			'ME' => '8\d{4}',
-			'CS' => '\d{5}',
-			'YU' => '\d{5}',
-			'CX' => '6798',
-			'ET' => '\d{4}',
-			'FK' => 'FIQQ 1ZZ',
-			'NF' => '2899',
-			'FM' => '(9694[1-4])([ \-]\d{4})?',
-			'GF' => '9[78]3\d{2}',
-			'GN' => '\d{3}',
-			'GP' => '9[78][01]\d{2}',
-			'GS' => 'SIQQ 1ZZ',
-			'GU' => '969[123]\d([ \-]\d{4})?',
-			'GW' => '\d{4}',
-			'HM' => '\d{4}',
-			'IQ' => '\d{5}',
-			'KG' => '\d{6}',
-			'LR' => '\d{4}',
-			'LS' => '\d{3}',
-			'MG' => '\d{3}',
-			'MH' => '969[67]\d([ \-]\d{4})?',
-			'MN' => '\d{6}',
-			'MP' => '9695[012]([ \-]\d{4})?',
-			'MQ' => '9[78]2\d{2}',
-			'NC' => '988\d{2}',
-			'NE' => '\d{4}',
-			'VI' => '008(([0-4]\d)|(5[01]))([ \-]\d{4})?',
-			'PF' => '987\d{2}',
-			'PG' => '\d{3}',
-			'PM' => '9[78]5\d{2}',
-			'PN' => 'PCRN 1ZZ',
-			'PW' => '96940',
-			'RE' => '9[78]4\d{2}',
-			'SH' => '(ASCN|STHL) 1ZZ',
-			'SJ' => '\d{4}',
-			'SO' => '\d{5}',
-			'SZ' => '[HLMS]\d{3}',
-			'TC' => 'TKCA 1ZZ',
-			'WF' => '986\d{2}',
-			'XK' => '\d{5}',
-			'YT' => '976\d{2}',
-		);
-
-		$pattern = isset( $patterns[ $country_code ] ) ? $patterns[ $country_code ] : false;
-
-		if ( ! $pattern ) {
-			return true;
-		}
-
-		return preg_match( "/^$pattern$/", $postcode, $matches );
+		return ( $a['max_distance'] > $b['max_distance'] ) ? -1 : 1;
 	}
 
 	/**
@@ -2170,6 +1836,16 @@ class Wcsdm extends WC_Shipping_Method {
 	 */
 	private function is_pro() {
 		return wcsdm_is_pro();
+	}
+
+	/**
+	 * Check if run in debug mode
+	 *
+	 * @since    1.5.0
+	 * @return bool
+	 */
+	private function is_debug_mode() {
+		return get_option( 'woocommerce_shipping_debug_mode', 'no' ) === 'yes';
 	}
 
 	/**
@@ -2193,14 +1869,16 @@ class Wcsdm extends WC_Shipping_Method {
 			return;
 		}
 
-		if ( get_option( 'woocommerce_shipping_enable_debug_mode', 'no' ) !== 'yes' ) {
+		if ( ! $this->is_debug_mode() ) {
 			return;
 		}
 
-		if ( ! current_user_can( 'administrator' ) ) {
-			return;
-		}
-
+		// if ( is_admin() ) {
+		// return;
+		// }
+		// if ( ! current_user_can( 'administrator' ) ) {
+		// return;
+		// }
 		$debug_key = md5( $message );
 
 		if ( isset( $this->_debugs[ $debug_key ] ) ) {

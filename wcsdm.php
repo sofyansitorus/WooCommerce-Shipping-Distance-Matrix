@@ -49,19 +49,19 @@ if ( ! defined( 'WCSDM_METHOD_ID' ) ) {
 	define( 'WCSDM_METHOD_ID', 'wcsdm' );
 }
 if ( ! defined( 'WCSDM_METHOD_TITLE' ) ) {
-	define( 'WCSDM_METHOD_TITLE', 'Shipping Distance Matrix' );
+	define( 'WCSDM_METHOD_TITLE', 'WooCommerce Shipping Distance Matrix' );
 }
 if ( ! defined( 'WCSDM_DEFAULT_LAT' ) ) {
-	define( 'WCSDM_DEFAULT_LAT', -6.178784361374902 );
+	define( 'WCSDM_DEFAULT_LAT', '-6.178784361374902' );
 }
 if ( ! defined( 'WCSDM_DEFAULT_LNG' ) ) {
-	define( 'WCSDM_DEFAULT_LNG', 106.82303292695315 );
+	define( 'WCSDM_DEFAULT_LNG', '106.82303292695315' );
 }
 if ( ! defined( 'WCSDM_TEST_LAT' ) ) {
-	define( 'WCSDM_TEST_LAT', -6.181472315327319 );
+	define( 'WCSDM_TEST_LAT', '-6.181472315327319' );
 }
 if ( ! defined( 'WCSDM_TEST_LNG' ) ) {
-	define( 'WCSDM_TEST_LNG', 106.8170462364319 );
+	define( 'WCSDM_TEST_LNG', '106.8170462364319' );
 }
 
 /**
