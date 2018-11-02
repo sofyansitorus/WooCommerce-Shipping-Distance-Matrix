@@ -43,17 +43,8 @@ function wcsdm_is_pro() {
  */
 function wcsdm_i18n( $key = '', $default = '' ) {
 	$i18n = array(
-		'dragMarker'          => __( 'Drag this marker or search your address at the input above.', 'wcsdm' ),
-		'distance'            => array(
-			'metric'   => array(
-				'perUnit' => __( 'Per Kilometer', 'wcsdm' ),
-				'unit'    => __( 'KM', 'wcsdm' ),
-			),
-			'imperial' => array(
-				'perUnit' => __( 'Per Mile', 'wcsdm' ),
-				'unit'    => __( 'MI', 'wcsdm' ),
-			),
-		),
+		'drag_marker'         => __( 'Drag this marker or search your address at the input above.', 'wcsdm' ),
+		'per_unit'            => __( 'Per %s', 'wcsdm' ),
 		'map_is_error'        => __( 'Map is error', 'wcsdm' ),
 		'latitude'            => __( 'Latitude', 'wcsdm' ),
 		'longitude'           => __( 'Longitude', 'wcsdm' ),
@@ -89,7 +80,7 @@ function wcsdm_i18n( $key = '', $default = '' ) {
 			'need_upgrade'          => array(
 				// translators: %s = Field name.
 				'general'          => __( '%s field value only changeable in pro version. Please upgrade!', 'wcsdm' ),
-				'calculation_type' => __( 'Calculation type "Match Formula" options only available in pro version. Please upgrade!', 'wcsdm' ),
+				'total_cost_type'  => __( 'Total cost type "Match Formula" options only available in pro version. Please upgrade!', 'wcsdm' ),
 			),
 		),
 	);

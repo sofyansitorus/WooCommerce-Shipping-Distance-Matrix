@@ -257,7 +257,7 @@ var wcsdmMapPicker = {
         var infowindow = new google.maps.InfoWindow({ maxWidth: 350 });
 
         if (_.isEmpty(wcsdmMapPicker.lat) || _.isEmpty(wcsdmMapPicker.lng)) {
-            infowindow.setContent(wcsdmMapPicker.params.i18n.dragMarker);
+            infowindow.setContent(wcsdmMapPicker.params.i18n.drag_marker);
             infowindow.open(map, marker);
         } else {
             wcsdmMapPicker.setLatLng(marker.position, marker, map, infowindow);

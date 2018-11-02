@@ -239,6 +239,18 @@ class Wcsdm extends WC_Shipping_Method {
 					'indoor'   => __( 'Avoid Indoor', 'wcsdm' ),
 				),
 			),
+			'distance_unit'         => array(
+				'title'       => __( 'Distance Units', 'wcsdm' ),
+				'type'        => 'wcsdm',
+				'orig_type'   => 'select',
+				'description' => __( 'Google Maps Distance Matrix API distance units parameter.', 'wcsdm' ),
+				'desc_tip'    => true,
+				'default'     => 'metric',
+				'options'     => array(
+					'metric'   => __( 'Kilometer', 'wcsdm' ),
+					'imperial' => __( 'Mile', 'wcsdm' ),
+				),
+			),
 			'prefered_route'        => array(
 				'title'       => __( 'Prefered Route', 'wcsdm' ),
 				'type'        => 'wcsdm',
@@ -251,18 +263,6 @@ class Wcsdm extends WC_Shipping_Method {
 					'longest_distance'  => __( 'Longest Distance', 'wcsdm' ),
 					'shortest_duration' => __( 'Shortest Duration', 'wcsdm' ),
 					'longest_duration'  => __( 'Longest Duration', 'wcsdm' ),
-				),
-			),
-			'distance_unit'         => array(
-				'title'       => __( 'Distance Units', 'wcsdm' ),
-				'type'        => 'wcsdm',
-				'orig_type'   => 'select',
-				'description' => __( 'Google Maps Distance Matrix API distance units parameter.', 'wcsdm' ),
-				'desc_tip'    => true,
-				'default'     => 'metric',
-				'options'     => array(
-					'metric'   => __( 'Kilometers', 'wcsdm' ),
-					'imperial' => __( 'Miles', 'wcsdm' ),
 				),
 			),
 			'round_up_distance'     => array(
@@ -408,16 +408,15 @@ class Wcsdm extends WC_Shipping_Method {
 				'is_dummy'    => false,
 				'is_hidden'   => false,
 			),
-			'calculation_type'       => array(
+			'rate_type'              => array(
 				'type'        => 'select',
-				'title'       => __( 'Calculation Type', 'wcsdm' ),
+				'title'       => __( 'Rate Type', 'wcsdm' ),
 				'default'     => 'flat',
 				'options'     => array(
-					'flat'     => __( 'Flat', 'wcsdm' ),
-					'flexible' => __( 'Multiplied by Distance', 'wcsdm' ),
-					'formula'  => __( 'Maths Formula', 'wcsdm' ) . ( $this->is_pro() ? '' : ' (' . __( 'Pro Version', 'wcsdm' ) . ')' ),
+					'fixed'    => __( 'Fixed', 'wcsdm' ),
+					'flexible' => __( 'Flexible', 'wcsdm' ),
 				),
-				'description' => __( 'Determine how to calculate the shipping rate either flat rate, flexible rate multiplied by distances or advanced rate by maths formula. This input is required.', 'wcsdm' ),
+				'description' => __( 'Determine rate type either fixed or flexible rate. This input is required.', 'wcsdm' ),
 				'desc_tip'    => true,
 				'is_advanced' => true,
 				'is_dummy'    => true,
@@ -427,7 +426,7 @@ class Wcsdm extends WC_Shipping_Method {
 			'class_0'                => array(
 				'type'              => 'text',
 				'title'             => __( 'Shipping Rate', 'wcsdm' ),
-				'description'       => __( 'The shipping rate within the distances range. This input is required.', 'wcsdm' ),
+				'description'       => __( 'The shipping rate within the distances range. Zero value will be assumed as free shipping.', 'wcsdm' ),
 				'desc_tip'          => true,
 				'is_advanced'       => true,
 				'is_dummy'          => true,
@@ -439,22 +438,12 @@ class Wcsdm extends WC_Shipping_Method {
 					'min' => '0',
 				),
 			),
-			'section_miscellaneous'  => array(
+			'section_total_cost'     => array(
 				'type'        => 'section',
-				'title'       => __( 'Miscellaneous', 'wcsdm' ),
+				'title'       => __( 'Total Cost', 'wcsdm' ),
 				'is_advanced' => true,
 				'is_dummy'    => false,
 				'is_hidden'   => false,
-			),
-			'rate_shipping_label'    => array_merge(
-				$this->instance_form_fields['shipping_label'], array(
-					'description' => $this->instance_form_fields['shipping_label']['description'] . ' ' . __( 'Leave blank to use the global title settings.', 'wcsdm' ),
-					'default'     => '',
-					'desc_tip'    => true,
-					'is_advanced' => true,
-					'is_dummy'    => true,
-					'is_hidden'   => true,
-				)
 			),
 			'surcharge'              => array(
 				'type'              => 'text',
@@ -468,6 +457,43 @@ class Wcsdm extends WC_Shipping_Method {
 				'custom_attributes' => array(
 					'min' => '0',
 				),
+			),
+			'total_cost_type'        => array(
+				'type'        => 'select',
+				'title'       => __( 'Total Cost Type', 'wcsdm' ),
+				'default'     => 'flat__highest',
+				'options'     => array(
+					'flat__highest'                   => __( 'Flat - Set highest item cost as total', 'wcsdm' ),
+					'flat__average'                   => __( 'Flat - Set average item cost as total', 'wcsdm' ),
+					'flat__lowest'                    => __( 'Flat - Set lowest item cost as total', 'wcsdm' ),
+					'progressive__per_shipping_class' => __( 'Progressive - Accumulate total by product shipping class', 'wcsdm' ),
+					'progressive__per_product'        => __( 'Progressive - Accumulate total by product', 'wcsdm' ),
+					'progressive__per_item'           => __( 'Progressive - Accumulate total by quantity', 'wcsdm' ),
+					'formula'                         => __( 'Advanced - Use math formula to calculate the total', 'wcsdm' ) . ( $this->is_pro() ? '' : ' (' . __( 'Pro Version', 'wcsdm' ) . ')' ),
+				),
+				'description' => __( 'Determine how is the total shipping cost calculated.', 'wcsdm' ),
+				'desc_tip'    => true,
+				'is_advanced' => true,
+				'is_dummy'    => false,
+				'is_hidden'   => true,
+				'is_required' => true,
+			),
+			'section_miscellaneous'  => array(
+				'type'        => 'section',
+				'title'       => __( 'Miscellaneous', 'wcsdm' ),
+				'is_advanced' => true,
+				'is_dummy'    => false,
+				'is_hidden'   => false,
+			),
+			'shipping_label_rate'    => array_merge(
+				$this->instance_form_fields['shipping_label'], array(
+					'description' => $this->instance_form_fields['shipping_label']['description'] . ' ' . __( 'Leave blank to use the global title settings.', 'wcsdm' ),
+					'default'     => '',
+					'desc_tip'    => true,
+					'is_advanced' => true,
+					'is_dummy'    => true,
+					'is_hidden'   => true,
+				)
 			),
 			'link_advanced'          => array(
 				'type'        => 'link_advanced',
@@ -862,20 +888,17 @@ class Wcsdm extends WC_Shipping_Method {
 						endforeach;
 						break;
 
-					case 'select':
-						?>
-						<select class="select <?php echo esc_attr( $data['class'] ); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" <?php disabled( $data['disabled'], true ); ?> <?php echo $this->get_custom_attribute_html( $data ); // WPCS: XSS ok. ?>>
-							<?php foreach ( (array) $data['options'] as $option_key => $option_value ) : ?>
-								<option value="<?php echo esc_attr( $option_key ); ?>" <?php selected( $option_key, esc_attr( $field_value ) ); ?>><?php echo esc_attr( $option_value ); ?></option>
-							<?php endforeach; ?>
-						</select>
-						<?php
-						break;
-
 					default:
-						?>
-						<input class="input-text regular-input <?php echo esc_attr( $data['class'] ); ?>" type="text" style="<?php echo esc_attr( $data['css'] ); ?>" value="<?php echo esc_attr( $field_value ); ?>" placeholder="<?php echo esc_attr( $data['placeholder'] ); ?>" <?php disabled( $data['disabled'], true ); ?> <?php echo $this->get_custom_attribute_html( $data ); // WPCS: XSS ok. ?> />
-						<?php
+						$html = $this->generate_settings_html( array( 'dummy-key---' . $key => $data ), false );
+
+						preg_match( '/<fieldset>(.*?)<\/fieldset>/s', $html, $matches );
+
+						if ( ! empty( $matches[0] ) ) {
+							$find    = 'select' === $data['type'] ? 'value="' . $field_value . '"' : 'value=""';
+							$replace = 'select' === $data['type'] ? 'value="' . $field_value . '" ' . selected( true, true, false ) : 'value="' . $field_value . '"';
+
+							echo preg_replace( '#\s(name|id)="[^"]+"#', '', str_replace( $find, $replace, $matches[0] ) ); // WPCS: XSS ok.
+						}
 						break;
 				}
 				?>
@@ -1043,8 +1066,8 @@ class Wcsdm extends WC_Shipping_Method {
 				try {
 					$value = $this->validate_wcsdm_field( $rate_field_key, $value, true );
 
-					if ( 'calculation_type' === $rate_field_key && ! $this->is_pro() && 'formula' === $value ) {
-						throw new Exception( wcsdm_i18n( 'errors.need_upgrade.calculation_type' ) );
+					if ( 'total_cost_type' === $rate_field_key && ! $this->is_pro() && 'formula' === $value ) {
+						throw new Exception( wcsdm_i18n( 'errors.need_upgrade.total_cost_type' ) );
 					}
 
 					$rates[ $index ][ $rate_field_key ] = $value;
@@ -1419,15 +1442,17 @@ class Wcsdm extends WC_Shipping_Method {
 				return;
 			}
 
-			$rate_data = $this->get_rate_by_distance( $api_request['distance'] );
+			$cost_data = $this->get_cost( $api_request['distance'], $package );
 
 			// Bail early if there is no rate found.
-			if ( is_wp_error( $rate_data ) ) {
-				throw new Exception( $rate_data->get_error_message() );
+			if ( is_wp_error( $cost_data ) ) {
+				throw new Exception( $cost_data->get_error_message() );
 			}
 
 			// Set shipping courier label.
-			$label = empty( $rate_data['shipping_label'] ) ? $this->title : $rate_data['shipping_label'];
+			$label = empty( $cost_data['shipping_label_rate'] ) ? $this->shipping_label : $cost_data['shipping_label_rate'];
+
+			// Show the distance info.
 			if ( 'yes' === $this->show_distance && ! empty( $api_request['distance_text'] ) ) {
 				$label = sprintf( '%s (%s)', $label, $api_request['distance_text'] );
 			}
@@ -1439,26 +1464,19 @@ class Wcsdm extends WC_Shipping_Method {
 			$cost_per_item           = 0;
 
 			foreach ( $package['contents'] as $hash => $item ) {
-				$shipping_class_id = $item['data']->get_shipping_class_id();
-				$product_id        = $item['data']->get_id();
-				$default_rate      = isset( $rate_data['class_0'] ) ? $rate_data['class_0'] : false;
+				$class_id   = $item['data']->get_shipping_class_id();
+				$product_id = $item['data']->get_id();
 
-				$calculated_cost = isset( $rate_data[ 'class_' . $shipping_class_id ] ) ? $rate_data[ 'class_' . $shipping_class_id ] : false;
+				$default_cost = isset( $cost_data['class_0'] ) ? $cost_data['class_0'] : 0;
+				$class_cost   = isset( $cost_data[ 'class_' . $class_id ] ) ? $cost_data[ 'class_' . $class_id ] : false;
 
-				if ( ! $calculated_cost && $default_rate ) {
-					$calculated_cost = $default_rate;
-				}
-
-				if ( ! $calculated_cost ) {
-					if ( is_numeric( $calculated_cost ) ) {
-						throw new Exception( __( 'Use the free shipping option instead of set the shipping rate as zero', 'wcsdm' ) );
-					}
-					throw new Exception( __( 'Unable to calculate the shipping rate', 'wcsdm' ) );
+				if ( ! $class_cost && $default_cost ) {
+					$class_cost = $default_cost;
 				}
 
 				// Multiply shipping cost with distance unit.
-				if ( 'flexible' === $rate_data['calculation_type'] ) {
-					$calculated_cost = $calculated_cost * $api_request['distance'];
+				if ( 'flexible' === $cost_data['rate_type'] ) {
+					$class_cost = $class_cost * $api_request['distance'];
 				}
 			}
 
@@ -1510,17 +1528,52 @@ class Wcsdm extends WC_Shipping_Method {
 	}
 
 	/**
-	 * Get shipping table rate by distance and shipping class
+	 * Get shipping cost by distance and shipping class
 	 *
 	 * @since    1.0.0
 	 * @param int $distance Distance of shipping destination.
+	 * @return mixed rate row array data or WP_Error on failure.
 	 */
-	private function get_rate_by_distance( $distance ) {
+	private function get_cost( $distance ) {
+		/**
+		 * Developers can modify the $rate via filter hooks.
+		 *
+		 * @since 1.0.1
+		 *
+		 * This example shows how you can modify the $rate var via custom function:
+		 *
+		 *      add_filter( 'wcsdm_get_cost_pre', 'modify_get_rate_pre', 10, 3 );
+		 *
+		 *      function modify_get_rate_pre( $false, $distance, $table_rates ) {
+		 *          // Return the table rate row match with the rule
+		 *          return array('max_distance' => 100, 'class_0' => 10);
+		 *      }
+		 */
+		$pre = apply_filters( 'wcsdm_get_cost_pre', false, $distance, $this->table_rates );
+
+		if ( false !== $pre ) {
+			return $pre;
+		}
+
 		if ( $this->table_rates ) {
 			$offset = 0;
 			foreach ( $this->table_rates as $rate ) {
 				if ( $distance > $offset && $distance <= $rate['max_distance'] ) {
-					return $rate;
+					/**
+					 * Developers can modify the $rate via filter hooks.
+					 *
+					 * @since 1.0.1
+					 *
+					 * This example shows how you can modify the $$rate var via custom function:
+					 *
+					 *      add_filter( 'wcsdm_get_cost', 'modify_get_rate', 10, 3 );
+					 *
+					 *      function modify_get_cost( $rate, $distance, $table_rates ) {
+					 *          // Return the table rate row match with the rule
+					 *          return array('max_distance' => 100, 'class_0' => 10);
+					 *      }
+					 */
+					return apply_filters( 'wcsdm_get_cost', $rate, $distance, $this->table_rates );
 				}
 				$offset = $rate['max_distance'];
 			}

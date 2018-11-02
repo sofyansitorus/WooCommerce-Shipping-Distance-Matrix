@@ -54,6 +54,10 @@ var wcsdmTableRates = {
             wcsdmTableRates.handleRateFieldDummy(e);
         }, 500));
 
+        // Toggle selected row
+        $(document).off('change', '#woocommerce_wcsdm_distance_unit');
+        $(document).on('change', '#woocommerce_wcsdm_distance_unit', wcsdmTableRates.initForm);
+
         toggleBottons();
 
         wcsdmTableRates.initForm();
@@ -66,6 +70,7 @@ var wcsdmTableRates = {
         "use strict";
 
         $('.wcsdm-field--rate > option[value=formula]').prop('disabled', !wcsdmTableRates.params.isPro);
+        $('.wcsdm-field--rate > option[value=flexible]').text(wcsdmTableRates.params.i18n.per_unit.replace('%s', $('#woocommerce_wcsdm_distance_unit option:selected').text()));
     },
     submitForm: function (e) {
         "use strict";
@@ -110,7 +115,7 @@ var wcsdmTableRates = {
         var $row = $(e.currentTarget).closest('tr').addClass('editing');
 
         $row.find('.wcsdm-field--rate--hidden').each(function (index, field) {
-            $('#' + $(field).data('id')).val($(field).val());
+            $('.wcsdm-field--rate--advanced[data-id=' + $(field).data('id') + ']').val($(field).val());
         });
 
         toggleBottons({
