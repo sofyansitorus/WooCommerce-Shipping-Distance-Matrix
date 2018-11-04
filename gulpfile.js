@@ -1,56 +1,70 @@
 /**
  * Import modules
  */
-var gulp = require('gulp');
-var rename = require('gulp-rename');
-var uglify = require('gulp-uglify');
-var iife = require('gulp-iife');
-var concat = require('gulp-concat');
-var sass = require('gulp-sass');
-var autoprefixer = require('gulp-autoprefixer');
-var plumber = require('gulp-plumber');
-var notify = require('gulp-notify');
-var browserSync = require('browser-sync').create();
-var argv = require('yargs').argv;
-var gulpif = require('gulp-if');
-var cleanCSS = require('gulp-clean-css');
-var sourcemaps = require('gulp-sourcemaps');
-var wpPot = require('gulp-wp-pot');
-var zip = require('gulp-zip');
-var phpcs = require('gulp-phpcs');
-var phpcbf = require('gulp-phpcbf');
-var gutil = require('gutil');
+const gulp = require('gulp');
+const rename = require('gulp-rename');
+const uglify = require('gulp-uglify');
+const iife = require('gulp-iife');
+const concat = require('gulp-concat');
+const sass = require('gulp-sass');
+const autoprefixer = require('gulp-autoprefixer');
+const plumber = require('gulp-plumber');
+const notify = require('gulp-notify');
+const browserSync = require('browser-sync').create();
+const argv = require('yargs').argv;
+const gulpif = require('gulp-if');
+const cleanCSS = require('gulp-clean-css');
+const sourcemaps = require('gulp-sourcemaps');
+const wpPot = require('gulp-wp-pot');
+const phpcs = require('gulp-phpcs');
+const phpcbf = require('gulp-phpcbf');
+const gutil = require('gutil');
+const bump = require('gulp-bump');
 
 /**
  * Local variables
  */
-var prefix = 'wcsdm';
+const prefix = 'wcsdm';
+const project = 'WooCommerce-Shipping-Distance-Matrix';
 
-var scriptsSrcDir = 'assets/src/js/';
-var scriptsDestDir = 'assets/js/';
-
-var stylesSrcDir = 'assets/src/scss/';
-var stylesDestDir = 'assets/css/';
-
-var phpSrc = ['*.php', '**/*.php', '!vendor/*', '!node_modules/*', '!index.php', '!**/index.php'];
-
-var assets = [
+const assets = [
     {
-        location: 'backend',
-        scripts: ['helpers.js', 'map-picker.js', 'table-rates.js', 'backend.js'],
-        styles: ['backend.scss'],
+        type: 'scripts',
+        target: 'backend',
+        sources: ['helpers.js', 'map-picker.js', 'table-rates.js', 'backend.js'],
+        targetDir: 'assets/js/',
+        sourcesDir: 'assets/src/js/',
+        isPrefixed: true,
+        isIife: true,
     },
     {
-        location: 'frontend',
-        scripts: ['helpers.js', 'frontend.js'],
-        styles: ['frontend.scss'],
-    }
+        type: 'scripts',
+        target: 'frontend',
+        sources: ['helpers.js', 'frontend.js'],
+        targetDir: 'assets/js/',
+        sourcesDir: 'assets/src/js/',
+        isPrefixed: true,
+        isIife: true,
+    },
+    {
+        type: 'styles',
+        target: 'backend',
+        sources: ['backend.scss'],
+        targetDir: 'assets/css/',
+        sourcesDir: 'assets/src/scss/',
+        isPrefixed: true,
+    },
+    {
+        type: 'php',
+        target: 'php',
+        sources: ['*.php', '**/*.php', '!vendor/*', '!node_modules/*', '!index.php', '!**/index.php'],
+    },
 ];
 
 /**
  * Custom error handler
  */
-var errorHandler = function () {
+const errorHandler = function () {
     return plumber(function (err) {
         notify.onError({
             title: 'Gulp error in ' + err.plugin,
@@ -62,41 +76,43 @@ var errorHandler = function () {
 /**
  * Script taks handler
  */
-var scriptsHandler = function (asset, isMinify) {
-    var srcParam = asset.scripts.map(function (file) {
-        return scriptsSrcDir + file;
+const scriptsHandler = function (asset, isMinify) {
+    const srcParam = asset.sources.map(function (sources) {
+        const sourcesDir = asset.sourcesDir || '';
+        return sourcesDir + sources;
     });
 
     return gulp.src(srcParam)
         .pipe(errorHandler())
-        .pipe(concat(asset.location + '.js'))
-        .pipe(iife({
+        .pipe(concat(asset.target + '.js'))
+        .pipe(gulpif(asset.isIife, iife({
             useStrict: true,
             trimCode: true,
             prependSemicolon: false,
             bindThis: false,
             params: ['$'],
             args: ['jQuery']
-        }))
-        .pipe(rename({
+        })))
+        .pipe(gulpif(asset.isPrefixed, rename({
             prefix: prefix + '-',
-        }))
-        .pipe(gulp.dest(scriptsDestDir))
+        })))
+        .pipe(gulp.dest(asset.targetDir))
         .pipe(gulpif(isMinify, rename({
             suffix: '.min',
         })))
         .pipe(gulpif(isMinify, sourcemaps.init()))
         .pipe(gulpif(isMinify, uglify()))
         .pipe(gulpif(isMinify, sourcemaps.write()))
-        .pipe(gulpif(isMinify, gulp.dest(scriptsDestDir)));
+        .pipe(gulpif(isMinify, gulp.dest(asset.targetDir)));
 }
 
 /**
  * Style taks handler
  */
-var stylesHandler = function (asset, isMinify) {
-    var srcParam = asset.styles.map(function (file) {
-        return stylesSrcDir + file;
+const stylesHandler = function (asset, isMinify) {
+    const srcParam = asset.sources.map(function (sourcesFile) {
+        const sourcesDir = asset.sourcesDir || '';
+        return sourcesDir + sourcesFile;
     });
 
     return gulp.src(srcParam)
@@ -112,10 +128,10 @@ var stylesHandler = function (asset, isMinify) {
             'opera 12.1',
             'ios 6',
             'android 4'))
-        .pipe(rename({
+        .pipe(gulpif(asset.isPrefixed, rename({
             prefix: prefix + '-',
-        }))
-        .pipe(gulp.dest(stylesDestDir))
+        })))
+        .pipe(gulp.dest(asset.targetDir))
         .pipe(gulpif(isMinify, rename({
             suffix: '.min',
         })))
@@ -123,41 +139,130 @@ var stylesHandler = function (asset, isMinify) {
             compatibility: 'ie8',
         })))
         .pipe(gulpif(isMinify, sourcemaps.write()))
-        .pipe(gulpif(isMinify, gulp.dest(stylesDestDir)))
+        .pipe(gulpif(isMinify, gulp.dest(asset.targetDir)))
         .pipe(gulpif(!isMinify, browserSync.stream()));
+}
+
+/**
+ * PHPCS taks handler
+ */
+const phpcsHandler = function (asset) {
+    const srcParam = asset.sources.map(function (sourcesFile) {
+        const sourcesDir = asset.sourcesDir || '';
+        return sourcesDir + sourcesFile;
+    });
+
+    const config = Object.assign({}, asset.config, {
+        bin: '/usr/local/bin/phpcs',
+        standard: 'WordPress',
+        warningSeverity: 0,
+    });
+
+    return gulp.src(srcParam)
+        .pipe(errorHandler())
+        .pipe(phpcs(config))
+        .pipe(phpcs.reporter('log'));
+}
+
+/**
+ * PHPCBF taks handler
+ */
+const phpcbfHandler = function (asset) {
+    const srcParam = asset.sources.map(function (sourcesFile) {
+        const sourcesDir = asset.sourcesDir || '';
+        return sourcesDir + sourcesFile;
+    });
+
+    const config = Object.assign({}, asset.config, {
+        bin: '/usr/local/bin/phpcbf',
+        standard: 'WordPress',
+        warningSeverity: 0,
+    });
+
+    return gulp.src(srcParam)
+        .pipe(errorHandler())
+        .pipe(phpcbf(config))
+        .on('error', gutil.log)
+        .pipe(gulp.dest('./'));
+}
+
+/**
+ * PHPCBF taks handler
+ */
+const i18nHandler = function (asset) {
+    const srcParam = asset.sources.map(function (sourcesFile) {
+        const sourcesDir = asset.sourcesDir || '';
+        return sourcesDir + sourcesFile;
+    });
+
+    const config = Object.assign({}, asset.config, {
+        domain: prefix,
+        package: project,
+    });
+
+    return gulp.src(srcParam)
+        .pipe(wpPot(config))
+        .pipe(gulp.dest('languages/' + config.domain + '.pot'));
 }
 
 /**
  * Build tasks list
  */
-var tasksListBuild = [];
+const tasksListBuild = [];
 
 assets.forEach(function (asset) {
     /**
      * Minify Scripts Task
      */
-    var scriptsTaskName = asset.location + '-scripts-minify';
+    if (asset.type === 'scripts') {
+        const taskName = asset.target + '-scripts-minify';
 
-    gulp.task(scriptsTaskName, function () {
-        return scriptsHandler(asset, true);
-    });
+        gulp.task(taskName, function () {
+            return scriptsHandler(asset, true);
+        });
 
-    tasksListBuild.push(scriptsTaskName);
+        tasksListBuild.push(taskName);
+    }
 
     /**
-     * Styles Task
+     * Minify Styles Task
      */
-    var stylesTaskName = asset.location + '-styles-minify';
+    if (asset.type === 'styles') {
+        const taskName = asset.target + '-styles-minify';
 
-    gulp.task(stylesTaskName, function () {
-        return stylesHandler(asset, true);
-    });
+        gulp.task(taskName, function () {
+            return stylesHandler(asset, true);
+        });
 
-    tasksListBuild.push(stylesTaskName);
+        tasksListBuild.push(taskName);
+    }
+
+    /**
+     * PHPCBF Task
+     */
+    if (asset.type === 'php') {
+        const taskName = asset.target + '-phpcbf';
+
+        gulp.task(taskName, function () {
+            return phpcbfHandler(asset);
+        });
+
+        tasksListBuild.push(taskName);
+    }
+
+    /**
+     * PHPCBF Task
+     */
+    if (asset.type === 'php') {
+        const taskName = asset.target + '-i18n';
+
+        gulp.task(taskName, function () {
+            return i18nHandler(asset);
+        });
+
+        tasksListBuild.push(taskName);
+    }
 });
-
-// Add custom task to build tasks list
-tasksListBuild.push('i18n');
 
 /**
  * Build task
@@ -167,34 +272,49 @@ gulp.task('build', tasksListBuild);
 /**
  * Default tasks list
  */
-var tasksListDefault = [];
+const tasksListDefault = [];
 
 assets.forEach(function (asset) {
     /**
      * Scripts Task
      */
-    var scriptsTaskName = asset.location + '-scripts';
+    if (asset.type === 'scripts') {
+        const taskName = asset.target + '-scripts';
 
-    gulp.task(scriptsTaskName, function () {
-        return scriptsHandler(asset, false);
-    });
+        gulp.task(taskName, function () {
+            return scriptsHandler(asset);
+        });
 
-    tasksListDefault.push(scriptsTaskName);
+        tasksListDefault.push(taskName);
+    }
 
     /**
      * Styles Task
      */
-    var stylesTaskName = asset.location + '-styles';
+    if (asset.type === 'styles') {
+        const taskName = asset.target + '-styles';
 
-    gulp.task(stylesTaskName, function () {
-        return stylesHandler(asset, false);
-    });
+        gulp.task(taskName, function () {
+            return stylesHandler(asset, false);
+        });
 
-    tasksListDefault.push(stylesTaskName);
+        tasksListDefault.push(taskName);
+    }
+
+    /**
+     * PHPCS Task
+     */
+    if (asset.type === 'php') {
+        const taskName = asset.target + '-phpcs';
+
+        gulp.task(taskName, function () {
+            return phpcsHandler(asset);
+        });
+
+        tasksListDefault.push(taskName);
+    }
 });
 
-// Add custom task to default tasks list
-tasksListDefault.push('phpcs');
 
 /**
  * Default task
@@ -207,78 +327,96 @@ gulp.task('default', tasksListDefault, function () {
     }
 
     assets.forEach(function (asset) {
-        var watchScriptsSrc = asset.scripts.map(function (script) {
-            return scriptsSrcDir + script;
-        });
-        gulp.watch(watchScriptsSrc, [asset.location + '-scripts']).on('change', function () {
-            if (argv.hasOwnProperty('proxy')) {
-                browserSync.reload();
-            }
-        });
+        /**
+         * Watch styles sources files
+         */
+        if (asset.type === 'styles') {
+            const watchStylesSrc = asset.sources.map(function (sourcesFile) {
+                const sourcesDir = asset.sourcesDir || '';
+                return sourcesDir + sourcesFile;
+            });
 
-        var watchStylesSrc = asset.styles.map(function (style) {
-            return stylesSrcDir + style;
-        });
+            gulp.watch(watchStylesSrc, [asset.target + '-styles']);
+        }
 
-        gulp.watch(watchStylesSrc, [asset.location + '-styles']);
-    });
+        /**
+         * Watch scripts sources files
+         */
+        if (asset.type === 'scripts') {
+            const watchScriptsSrc = asset.sources.map(function (sourcesFile) {
+                const sourcesDir = asset.sourcesDir || '';
+                return sourcesDir + sourcesFile;
+            });
 
-    gulp.watch(phpSrc, ['phpcs']).on('change', function () {
-        if (argv.hasOwnProperty('proxy')) {
-            browserSync.reload();
+            gulp.watch(watchScriptsSrc, [asset.target + '-scripts']).on('change', function () {
+                if (argv.hasOwnProperty('proxy')) {
+                    browserSync.reload();
+                }
+            });
+        }
+
+        /**
+         * Watch php sources files
+         */
+        if (asset.type === 'php') {
+            const watchSrc = asset.sources.map(function (sourcesFile) {
+                const sourcesDir = asset.sourcesDir || '';
+                return sourcesDir + sourcesFile;
+            });
+
+            gulp.watch(watchSrc, [asset.target + '-phpcs']).on('change', function () {
+                if (argv.hasOwnProperty('proxy')) {
+                    browserSync.reload();
+                }
+            });
         }
     });
 });
 
-/**
- * i18n tasks
- */
-gulp.task('i18n', function () {
-    return gulp.src(phpSrc)
-        .pipe(wpPot({
-            'domain': prefix,
-            'package': 'WooCommerce-Shipping-Distance-Matrix'
-        }))
-        .pipe(gulp.dest('languages/' + prefix + '.pot'));
-});
+gulp.task('bump', function () {
+    var sources = [
+        {
+            file: ['./README.txt'],
+            config: {
+                key: "Stable tag",
+                type: argv.hasOwnProperty('type') ? argv.type : 'patch',
+            },
+        },
+        {
+            file: ['./wcsdm.php'],
+            config: {
+                key: "Version",
+                type: argv.hasOwnProperty('type') ? argv.type : 'patch',
+            },
+        },
+        {
+            file: ['./package.json'],
+            config: {
+                key: "version",
+                type: argv.hasOwnProperty('type') ? argv.type : 'patch',
+            },
+        },
+    ];
 
-/**
- * PHPCS tasks
- */
-gulp.task('phpcs', function () {
-    var bin = argv.hasOwnProperty('bin') ? argv.bin : '/usr/local/bin/phpcs';
-    return gulp.src(phpSrc)
-        .pipe(errorHandler())
-        .pipe(phpcs({
-            bin: bin,
-            standard: 'WordPress',
-            warningSeverity: 0
-        }))
-        // Log all problems that was found
-        .pipe(phpcs.reporter('log'));
-});
-
-/**
- * PHPCBF tasks
- */
-gulp.task('phpcbf', function () {
-    var bin = argv.hasOwnProperty('bin') ? argv.bin : '/usr/local/bin/phpcbf';
-    return gulp.src(phpSrc)
-        .pipe(errorHandler())
-        .pipe(phpcbf({
-            bin: bin,
-            standard: 'WordPress',
-            warningSeverity: 0
-        }))
-        .on('error', gutil.log)
-        .pipe(gulp.dest('./'));
+    sources.forEach(function (source) {
+        gulp.src(source.file)
+            .pipe(bump(source.config))
+            .pipe(gulp.dest('./'));
+    });
 });
 
 // Export task
-gulp.task('export', ['build'], function () {
-    var file = argv.hasOwnProperty('file') ? argv.file : prefix + '.zip';
-    var dest = argv.hasOwnProperty('dest') ? argv.dest : 'dist';
-    gulp.src(['./**', '!dist/', '!dist/**', '!node_modules/', '!node_modules/**', '!assets/src/', '!assets/src/**', '!gulpfile.js', '!package-lock.json', '!package.json'])
-        .pipe(zip(file))
-        .pipe(gulp.dest(dest));
+gulp.task('dist', function () {
+    gulp.src([
+        './**',
+        '!dist/',
+        '!dist/**',
+        '!node_modules/',
+        '!node_modules/**',
+        '!assets/src/',
+        '!assets/src/**',
+        '!gulpfile.js',
+        '!package-lock.json',
+        '!package.json'
+    ]).pipe(gulp.dest('./dist'));
 });
