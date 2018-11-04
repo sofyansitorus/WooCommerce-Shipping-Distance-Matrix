@@ -42,15 +42,6 @@ if ( ! defined( 'WCSDM_PATH' ) ) {
 if ( ! defined( 'WCSDM_URL' ) ) {
 	define( 'WCSDM_URL', plugin_dir_url( __FILE__ ) );
 }
-if ( ! defined( 'WCSDM_VERSION' ) ) {
-	define( 'WCSDM_VERSION', '1.4.7' );
-}
-if ( ! defined( 'WCSDM_METHOD_ID' ) ) {
-	define( 'WCSDM_METHOD_ID', 'wcsdm' );
-}
-if ( ! defined( 'WCSDM_METHOD_TITLE' ) ) {
-	define( 'WCSDM_METHOD_TITLE', 'WooCommerce Shipping Distance Matrix' );
-}
 if ( ! defined( 'WCSDM_DEFAULT_LAT' ) ) {
 	define( 'WCSDM_DEFAULT_LAT', '-6.178784361374902' );
 }
@@ -62,6 +53,27 @@ if ( ! defined( 'WCSDM_TEST_LAT' ) ) {
 }
 if ( ! defined( 'WCSDM_TEST_LNG' ) ) {
 	define( 'WCSDM_TEST_LNG', '106.8170462364319' );
+}
+
+if ( ! function_exists( 'get_plugin_data' ) ) {
+	require_once ABSPATH . 'wp-admin/includes/plugin.php';
+}
+
+$plugin_data = get_plugin_data( WCSDM_FILE, false, false );
+
+if ( ! defined( 'WCSDM_VERSION' ) ) {
+	$WCSDM_VERSION = isset( $plugin_data['Version'] ) ? $plugin_data['Version'] : '1.0.0';
+	define( 'WCSDM_VERSION', $WCSDM_VERSION );
+}
+
+if ( ! defined( 'WCSDM_METHOD_ID' ) ) {
+	$WCSDM_METHOD_ID = isset( $plugin_data['Version'] ) ? $plugin_data['Version'] : 'wcsdm';
+	define( 'WCSDM_METHOD_ID', $WCSDM_METHOD_ID );
+}
+
+if ( ! defined( 'WCSDM_METHOD_TITLE' ) ) {
+	$WCSDM_METHOD_TITLE = isset( $plugin_data['Version'] ) ? $plugin_data['Version'] : 'WooCommerce Shipping Distance Matrix';
+	define( 'WCSDM_METHOD_TITLE', $WCSDM_METHOD_TITLE );
 }
 
 /**
