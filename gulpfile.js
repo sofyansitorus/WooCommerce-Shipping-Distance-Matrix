@@ -31,7 +31,12 @@ const assets = [
     {
         type: 'scripts',
         target: 'backend',
-        sources: ['helpers.js', 'map-picker.js', 'table-rates.js', 'backend.js'],
+        sources: [
+            'helpers.js',
+            'map-picker.js',
+            'table-rates.js',
+            'backend.js',
+        ],
         targetDir: 'assets/js/',
         sourcesDir: 'assets/src/js/',
         isPrefixed: true,
@@ -40,7 +45,10 @@ const assets = [
     {
         type: 'scripts',
         target: 'frontend',
-        sources: ['helpers.js', 'frontend.js'],
+        sources: [
+            'helpers.js',
+            'frontend.js',
+        ],
         targetDir: 'assets/js/',
         sourcesDir: 'assets/src/js/',
         isPrefixed: true,
@@ -49,7 +57,9 @@ const assets = [
     {
         type: 'styles',
         target: 'backend',
-        sources: ['backend.scss'],
+        sources: [
+            'backend.scss',
+        ],
         targetDir: 'assets/css/',
         sourcesDir: 'assets/src/scss/',
         isPrefixed: true,
@@ -57,7 +67,18 @@ const assets = [
     {
         type: 'php',
         target: 'php',
-        sources: ['*.php', '**/*.php', '!vendor/*', '!node_modules/*', '!index.php', '!**/index.php'],
+        sources: [
+            '*.php',
+            '**/*.php',
+            '!vendor/',
+            '!vendor/**',
+            '!dist/',
+            '!dist/**',
+            '!node_modules/',
+            '!node_modules/**',
+            '!index.php',
+            '!**/index.php',
+        ],
     },
 ];
 
