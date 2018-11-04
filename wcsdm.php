@@ -67,12 +67,12 @@ if ( ! defined( 'WCSDM_VERSION' ) ) {
 }
 
 if ( ! defined( 'WCSDM_METHOD_ID' ) ) {
-	$WCSDM_METHOD_ID = isset( $plugin_data['Version'] ) ? $plugin_data['Version'] : 'wcsdm';
+	$WCSDM_METHOD_ID = isset( $plugin_data['TextDomain'] ) ? $plugin_data['TextDomain'] : 'wcsdm';
 	define( 'WCSDM_METHOD_ID', $WCSDM_METHOD_ID );
 }
 
 if ( ! defined( 'WCSDM_METHOD_TITLE' ) ) {
-	$WCSDM_METHOD_TITLE = isset( $plugin_data['Version'] ) ? $plugin_data['Version'] : 'WooCommerce Shipping Distance Matrix';
+	$WCSDM_METHOD_TITLE = isset( $plugin_data['Name'] ) ? $plugin_data['Name'] : 'WooCommerce Shipping Distance Matrix';
 	define( 'WCSDM_METHOD_TITLE', $WCSDM_METHOD_TITLE );
 }
 
