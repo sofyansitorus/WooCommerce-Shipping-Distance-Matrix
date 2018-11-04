@@ -411,7 +411,7 @@ class Wcsdm extends WC_Shipping_Method {
 			'rate_type'              => array(
 				'type'        => 'select',
 				'title'       => __( 'Rate Type', 'wcsdm' ),
-				'default'     => 'flat',
+				'default'     => 'fixed',
 				'options'     => array(
 					'fixed'    => __( 'Fixed', 'wcsdm' ),
 					'flexible' => __( 'Flexible', 'wcsdm' ),
