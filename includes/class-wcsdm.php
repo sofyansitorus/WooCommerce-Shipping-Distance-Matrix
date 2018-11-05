@@ -110,6 +110,16 @@ class Wcsdm extends WC_Shipping_Method {
 			'instance-settings-modal',
 		);
 
+		$this->init_hooks();
+		$this->init();
+	}
+
+	/**
+	 * Register actions/filters hooks
+	 *
+	 * @return void
+	 */
+	private function init_hooks() {
 		// Save settings in admin if you have any defined.
 		add_action( 'woocommerce_update_options_shipping_' . $this->id, array( $this, 'process_admin_options' ) );
 
@@ -121,8 +131,18 @@ class Wcsdm extends WC_Shipping_Method {
 
 		// Show city field on the cart shipping calculator.
 		add_filter( 'woocommerce_shipping_calculator_enable_city', '__return_true' );
+	
+		// Add custom action hook to woocommerce_before_checkout_form.
+		add_action( 'woocommerce_before_checkout_form', array( $this, 'hook_before_checkout_form' ) );
 
-		$this->init();
+		// Add custom action hook to woocommerce_after_checkout_form.
+		add_action( 'woocommerce_after_checkout_form', array( $this, 'hook_after_checkout_form' ) );
+
+		// Add custom action hook to woocommerce_before_shipping_calculator.
+		add_action( 'woocommerce_before_shipping_calculator', array( $this, 'hook_before_shipping_calculator' ) );
+
+		// Add custom action hook to woocommerce_after_shipping_calculator.
+		add_action( 'woocommerce_after_shipping_calculator', array( $this, 'hook_after_shipping_calculator' ) );
 	}
 
 	/**
@@ -176,7 +196,7 @@ class Wcsdm extends WC_Shipping_Method {
 			'api_key_browser'       => array(
 				'title'       => __( 'Browser API Key', 'wcsdm' ),
 				'type'        => 'wcsdm',
-				'orig_type'   => 'map_api_key',
+				'orig_type'   => 'api_key',
 				'description' => __( 'Google maps platform API Key for usage in browser side request. This API Key will be used by Store Location Latitude/Longitude seting fields and customer checkout Address Picker that available in Pro Version. This API Key should be has HTTP referrers restriction.', 'wcsdm' ),
 				'desc_tip'    => true,
 				'default'     => '',
@@ -186,7 +206,7 @@ class Wcsdm extends WC_Shipping_Method {
 			'api_key_server'        => array(
 				'title'       => __( 'Server API Key', 'wcsdm' ),
 				'type'        => 'wcsdm',
-				'orig_type'   => 'map_api_key',
+				'orig_type'   => 'api_key',
 				'description' => __( 'Google maps platform API Key for usage in server side request. This API Key will be used to calculate the distance of the customer during checkout. This API Key should be has IP addresses restriction.', 'wcsdm' ),
 				'desc_tip'    => true,
 				'default'     => '',
@@ -696,13 +716,13 @@ class Wcsdm extends WC_Shipping_Method {
 	}
 
 	/**
-	 * Generate map_api_key HTML form.
+	 * Generate api_key HTML form.
 	 *
 	 * @since    1.0.0
 	 * @param string $key Input field key.
 	 * @param array  $data Settings field data.
 	 */
-	public function generate_map_api_key_html( $key, $data ) {
+	public function generate_api_key_html( $key, $data ) {
 		$field_key = $this->get_field_key( $key );
 		$defaults  = array(
 			'title'             => '',
@@ -729,8 +749,8 @@ class Wcsdm extends WC_Shipping_Method {
 					<legend class="screen-reader-text"><span><?php echo wp_kses_post( $data['title'] ); ?></span></legend>
 					<input type="hidden" name="<?php echo esc_attr( $field_key ); ?>" id="<?php echo esc_attr( $field_key ); ?>" value="<?php echo esc_attr( $this->get_option( $key ) ); ?>" />
 					<input class="input-text regular-input <?php echo esc_attr( $data['class'] ); ?>" type="text" id="<?php echo esc_attr( $field_key ); ?>--dummy" style="<?php echo esc_attr( $data['css'] ); ?>" value="<?php echo esc_attr( $this->get_option( $key ) ); ?>" placeholder="<?php echo esc_attr( $data['placeholder'] ); ?>" readonly="readonly" /> 
-					<a href="#" class="button button-primary button-small wcsdm-edit-api-key" id="<?php echo esc_attr( $key ); ?>"><span class="dashicons dashicons-edit"></span></a> 
-					<a href="#" class="button button-secondary button-small wcsdm-edit-api-key-cancel wcsdm-hidden"><span class="dashicons dashicons-undo"></span></a>
+					<a href="#" class="button button-primary button-small wcsdm-edit-api-key wcsdm-link" id="<?php echo esc_attr( $key ); ?>"><span class="dashicons dashicons-edit"></span></a> 
+					<a href="#" class="button button-secondary button-small wcsdm-edit-api-key-cancel wcsdm-link wcsdm-hidden"><span class="dashicons dashicons-undo"></span></a>
 					<span class="spinner"></span>
 					<div>
 					<a href="#" class="wcsdm-show-instructions"><?php esc_html_e( 'How to Get API Key?', 'wcsdm' ); ?></a>
@@ -1938,11 +1958,111 @@ class Wcsdm extends WC_Shipping_Method {
 	}
 
 	/**
+	 * Custom hook will be excuted in woocommerce_before_checkout_form.
+	 *
+	 * @return void
+	 */
+	public function hook_before_checkout_form() {
+		// Make sure the hook executed only once.
+		if ( $this->get_instance_id() && ! did_action( 'wcsdm_before_checkout_form' ) ) {
+			/**
+			 * Developers can add custom action to access Wcsdm via action hooks.
+			 *
+			 * @since 2.0
+			 *
+			 * This example shows debug Wcsdm class:
+			 *
+			 *      add_action( 'wcsdm_before_checkout_form', 'my_before_checkout_form', 10 );
+			 *
+			 *      function my_before_checkout_form( $obj ) {
+			 *          var_dump( $obj );
+			 *      }
+			 */
+			do_action( 'wcsdm_before_checkout_form', $this );
+		}
+	}
+
+	/**
+	 * Custom hook will be excuted in woocommerce_after_checkout_form.
+	 *
+	 * @return void
+	 */
+	public function hook_after_checkout_form() {
+		// Make sure the hook executed only once.
+		if ( $this->get_instance_id() && ! did_action( 'wcsdm_after_checkout_form' ) ) {
+			/**
+			 * Developers can add custom action to access Wcsdm via action hooks.
+			 *
+			 * @since 2.0
+			 *
+			 * This example shows debug Wcsdm class:
+			 *
+			 *      add_action( 'wcsdm_after_checkout_form', 'my_after_checkout_form', 10 );
+			 *
+			 *      function my_after_checkout_form( $obj ) {
+			 *          var_dump( $obj );
+			 *      }
+			 */
+			do_action( 'wcsdm_after_checkout_form', $this );
+		}
+	}
+
+	/**
+	 * Custom hook will be excuted in woocommerce_before_shipping_calculator.
+	 *
+	 * @return void
+	 */
+	public function hook_before_shipping_calculator() {
+		// Make sure the hook executed only once.
+		if ( $this->get_instance_id() && ! did_action( 'wcsdm_before_shipping_calculator' ) ) {
+			/**
+			 * Developers can add custom action to access Wcsdm via action hooks.
+			 *
+			 * @since 2.0
+			 *
+			 * This example shows debug Wcsdm class:
+			 *
+			 *      add_action( 'wcsdm_before_shipping_calculator', 'my_before_shipping_calculator', 10 );
+			 *
+			 *      function my_before_shipping_calculator( $obj ) {
+			 *          var_dump( $obj );
+			 *      }
+			 */
+			do_action( 'wcsdm_before_shipping_calculator', $this );
+		}
+	}
+
+	/**
+	 * Custom hook will be excuted in woocommerce_after_shipping_calculator.
+	 *
+	 * @return void
+	 */
+	public function hook_after_shipping_calculator() {
+		// Make sure the hook executed only once.
+		if ( $this->get_instance_id() && ! did_action( 'wcsdm_after_shipping_calculator' ) ) {
+			/**
+			 * Developers can add custom action to access Wcsdm via action hooks.
+			 *
+			 * @since 2.0
+			 *
+			 * This example shows debug Wcsdm class:
+			 *
+			 *      add_action( 'wcsdm_after_shipping_calculator', 'my_after_shipping_calculator', 10 );
+			 *
+			 *      function my_after_shipping_calculator( $obj ) {
+			 *          var_dump( $obj );
+			 *      }
+			 */
+			do_action( 'wcsdm_after_shipping_calculator', $this );
+		}
+	}
+
+	/**
 	 * Check if current request is shipping calculator form.
 	 *
 	 * @return bool
 	 */
-	private function is_calc_shipping() {
+	public function is_calc_shipping() {
 		$nonce_field  = 'woocommerce-shipping-calculator-nonce';
 		$nonce_action = 'woocommerce-shipping-calculator';
 
@@ -1960,7 +2080,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @param int $meters Number of meters to convert.
 	 * @return int
 	 */
-	private function convert_distance( $meters ) {
+	public function convert_distance( $meters ) {
 		return ( 'metric' === $this->distance_unit ) ? $this->convert_distance_to_km( $meters ) : $this->convert_distance_to_mi( $meters );
 	}
 
@@ -1971,7 +2091,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @param int $meters Number of meters to convert.
 	 * @return int
 	 */
-	private function convert_distance_to_mi( $meters ) {
+	public function convert_distance_to_mi( $meters ) {
 		return wc_format_decimal( ( $meters * 0.000621371 ), 1 );
 	}
 
@@ -1982,7 +2102,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @param int $meters Number of meters to convert.
 	 * @return int
 	 */
-	private function convert_distance_to_km( $meters ) {
+	public function convert_distance_to_km( $meters ) {
 		return wc_format_decimal( ( $meters * 0.001 ), 1 );
 	}
 
@@ -1994,7 +2114,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @param array $b Array 2 that will be compared.
 	 * @return int
 	 */
-	private function shortest_duration_results( $a, $b ) {
+	public function shortest_duration_results( $a, $b ) {
 		if ( $a['duration'] === $b['duration'] ) {
 			return 0;
 		}
@@ -2009,7 +2129,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @param array $b Array 2 that will be compared.
 	 * @return int
 	 */
-	private function longest_duration_results( $a, $b ) {
+	public function longest_duration_results( $a, $b ) {
 		if ( $a['duration'] === $b['duration'] ) {
 			return 0;
 		}
@@ -2024,7 +2144,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @param array $b Array 2 that will be compared.
 	 * @return int
 	 */
-	private function shortest_distance_results( $a, $b ) {
+	public function shortest_distance_results( $a, $b ) {
 		if ( $a['max_distance'] === $b['max_distance'] ) {
 			return 0;
 		}
@@ -2039,7 +2159,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @param array $b Array 2 that will be compared.
 	 * @return int
 	 */
-	private function longest_distance_results( $a, $b ) {
+	public function longest_distance_results( $a, $b ) {
 		if ( $a['max_distance'] === $b['max_distance'] ) {
 			return 0;
 		}
@@ -2052,7 +2172,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @since    1.5.0
 	 * @return bool
 	 */
-	private function is_pro() {
+	public function is_pro() {
 		return wcsdm_is_pro();
 	}
 
@@ -2062,7 +2182,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @since    1.5.0
 	 * @return bool
 	 */
-	private function is_debug_mode() {
+	public function is_debug_mode() {
 		return get_option( 'woocommerce_shipping_debug_mode', 'no' ) === 'yes';
 	}
 
@@ -2074,7 +2194,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @param string $type The type of notice.
 	 * @return void
 	 */
-	private function show_debug( $message, $type = '' ) {
+	public function show_debug( $message, $type = '' ) {
 		if ( empty( $message ) ) {
 			return;
 		}
