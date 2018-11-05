@@ -31,7 +31,7 @@ function wcsdm_is_plugin_active( $plugin_file ) {
  * @return bool
  */
 function wcsdm_is_pro() {
-	return wcsdm_is_plugin_active( 'woocommercex/woocommercex.php' );
+	return wcsdm_is_plugin_active( 'wcsdm-pro/wcsdm-pro.php' );
 }
 
 /**
