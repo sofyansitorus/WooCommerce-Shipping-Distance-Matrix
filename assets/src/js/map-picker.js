@@ -93,7 +93,7 @@ var wcsdmMapPicker = {
                 case 'api_key_browser': {
                     $link.hide();
                     $spinner.css('visibility', 'visible');
-                    $('.wcsdm-buttons-item').prop('disabled', true);
+                    $('.wcsdm-buttons-item,.wcsdm-link').prop('disabled', true).css('opacity', .5);
 
                     isMapError = false;
 
@@ -103,7 +103,7 @@ var wcsdmMapPicker = {
                         setTimeout(() => {
                             $link.show();
                             $spinner.css('visibility', 'hidden');
-                            $('.wcsdm-buttons-item').prop('disabled', false);
+                            $('.wcsdm-buttons-item,.wcsdm-link').prop('disabled', false).css('opacity', 1);
                             if (!isMapError) {
                                 $input.val(apiKeyDummy);
                             }
