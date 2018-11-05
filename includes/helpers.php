@@ -44,6 +44,7 @@ function wcsdm_is_pro() {
 function wcsdm_i18n( $key = '', $default = '' ) {
 	$i18n = array(
 		'drag_marker'         => __( 'Drag this marker or search your address at the input above.', 'wcsdm' ),
+		// translators: %s = distance unit.
 		'per_unit'            => __( 'Per %s', 'wcsdm' ),
 		'map_is_error'        => __( 'Map is error', 'wcsdm' ),
 		'latitude'            => __( 'Latitude', 'wcsdm' ),

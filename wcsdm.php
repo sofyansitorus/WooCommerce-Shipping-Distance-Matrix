@@ -62,18 +62,18 @@ if ( ! function_exists( 'get_plugin_data' ) ) {
 $plugin_data = get_plugin_data( WCSDM_FILE, false, false );
 
 if ( ! defined( 'WCSDM_VERSION' ) ) {
-	$WCSDM_VERSION = isset( $plugin_data['Version'] ) ? $plugin_data['Version'] : '1.0.0';
-	define( 'WCSDM_VERSION', $WCSDM_VERSION );
+	$wcsdm_version = isset( $plugin_data['Version'] ) ? $plugin_data['Version'] : '1.0.0';
+	define( 'WCSDM_VERSION', $wcsdm_version );
 }
 
 if ( ! defined( 'WCSDM_METHOD_ID' ) ) {
-	$WCSDM_METHOD_ID = isset( $plugin_data['TextDomain'] ) ? $plugin_data['TextDomain'] : 'wcsdm';
-	define( 'WCSDM_METHOD_ID', $WCSDM_METHOD_ID );
+	$wcsdm_method_id = isset( $plugin_data['TextDomain'] ) ? $plugin_data['TextDomain'] : 'wcsdm';
+	define( 'WCSDM_METHOD_ID', $wcsdm_method_id );
 }
 
 if ( ! defined( 'WCSDM_METHOD_TITLE' ) ) {
-	$WCSDM_METHOD_TITLE = isset( $plugin_data['Name'] ) ? $plugin_data['Name'] : 'WooCommerce Shipping Distance Matrix';
-	define( 'WCSDM_METHOD_TITLE', $WCSDM_METHOD_TITLE );
+	$wcsdm_method_title = isset( $plugin_data['Name'] ) ? $plugin_data['Name'] : 'WooCommerce Shipping Distance Matrix';
+	define( 'WCSDM_METHOD_TITLE', $wcsdm_method_title );
 }
 
 /**
@@ -210,6 +210,7 @@ function wcsdm_backend_enqueue_scripts( $hook ) {
 				'language'     => get_locale(),
 				'isPro'        => wcsdm_is_pro(),
 				'i18n'         => wcsdm_i18n(),
+				'ajax_url'     => admin_url( 'admin-ajax.php' ),
 			)
 		);
 	}
