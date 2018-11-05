@@ -1,5 +1,4 @@
 
-
 // Taking Over window.console.error
 var isMapError = false;
 
@@ -7,9 +6,9 @@ var windowConsoleError = window.console.error;
 window.console.error = function () {
     if (arguments[0].toLowerCase().indexOf('google') !== 1) {
         isMapError = arguments[0];
-        $('.gm-err-message').empty().html(
-            isMapError.replace(/(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig, '<a href="$1" target="_blank">$1</a>')
-        );
+        alert(arguments[0]);
+        $('#api_key_browser').trigger('click');
+        // return;
     }
 
     windowConsoleError.apply(windowConsoleError, arguments);
@@ -23,6 +22,7 @@ var wcsdmMapPicker = {
     lat: '',
     lng: '',
     zoomLevel: 16,
+    isEditingApiKey: false,
     init: function (params) {
         "use strict";
 
@@ -31,34 +31,118 @@ var wcsdmMapPicker = {
         wcsdmMapPicker.tweakShowMapFormLink();
 
         // Show map
-        $(document).off('click', '.wcsdm-link--show-map');
-        $(document).on('click', '.wcsdm-link--show-map', wcsdmMapPicker.showForm);
+        $(document).off('click', '.wcsdm-edit-api-key', wcsdmMapPicker.editApiKey);
+        $(document).on('click', '.wcsdm-edit-api-key', wcsdmMapPicker.editApiKey);
 
-        $(document).off('click', '#wcsdm-map-search-panel-toggle');
+        // Show map
+        $(document).off('click', '.wcsdm-edit-api-key-cancel', wcsdmMapPicker.editApiKeyCancel);
+        $(document).on('click', '.wcsdm-edit-api-key-cancel', wcsdmMapPicker.editApiKeyCancel);
+
+        // Show map
+        $(document).off('click', '.wcsdm-edit-location', wcsdmMapPicker.showForm);
+        $(document).on('click', '.wcsdm-edit-location', wcsdmMapPicker.showForm);
+
+        $(document).off('click', '#wcsdm-map-search-panel-toggle', wcsdmMapPicker.toggleMapSearch);
         $(document).on('click', '#wcsdm-map-search-panel-toggle', wcsdmMapPicker.toggleMapSearch);
         // Hide form
-        $(document).off('click', '#wcsdm-btn--map-cancel');
+        $(document).off('click', '#wcsdm-btn--map-cancel', wcsdmMapPicker.hideForm);
         $(document).on('click', '#wcsdm-btn--map-cancel', wcsdmMapPicker.hideForm);
 
         // Apply form
-        $(document).off('click', '#wcsdm-btn--map-apply');
+        $(document).off('click', '#wcsdm-btn--map-apply', wcsdmMapPicker.applyForm);
         $(document).on('click', '#wcsdm-btn--map-apply', wcsdmMapPicker.applyForm);
 
         // Togle instructions
-        $(document).off('click', '#wcsdm-show-instructions');
-        $(document).on('click', '#wcsdm-show-instructions', wcsdmMapPicker.showInstructions);
+        $(document).off('click', '.wcsdm-show-instructions', wcsdmMapPicker.showInstructions);
+        $(document).on('click', '.wcsdm-show-instructions', wcsdmMapPicker.showInstructions);
 
-        $(document).off('click', '#wcsdm-btn--close-instructions');
+        $(document).off('click', '#wcsdm-btn--close-instructions', wcsdmMapPicker.closeInstructions);
         $(document).on('click', '#wcsdm-btn--close-instructions', wcsdmMapPicker.closeInstructions);
 
-        $(document).off('click', '#wcsdm-btn--get-api-key');
+        $(document).off('click', '#wcsdm-btn--get-api-key', wcsdmMapPicker.openLinkToGoogle);
         $(document).on('click', '#wcsdm-btn--get-api-key', wcsdmMapPicker.openLinkToGoogle);
+    },
+    editApiKey: function (e) {
+        "use strict";
 
-        // Handle on API Key field setting changed.
-        $(document).off('input', '#woocommerce_wcsdm_api_key__dummy');
-        $(document).on('input', '#woocommerce_wcsdm_api_key__dummy', debounce(function () {
-            wcsdmMapPicker.initMap();
-        }, 500));
+        e.preventDefault();
+
+        var $link = $(e.currentTarget);
+        var $linkCancel = $link.next('a');
+        var $input = $link.closest('tr').find('input[type=hidden]');
+        var $inputDummy = $link.closest('tr').find('input[type=text]');
+        var $spinner = $link.closest('tr').find('.spinner');
+        var $icon = $link.find('.dashicons');
+
+        var apiKey = $input.val();
+        var apiKeyDummy = $inputDummy.val();
+
+        if ($link.hasClass('editing')) {
+            if (!apiKeyDummy.length) {
+                return;
+            }
+
+            wcsdmMapPicker.isEditingApiKey = false;
+
+            $linkCancel.addClass('wcsdm-hidden');
+            $link.removeClass('editing');
+            $inputDummy.prop('readonly', true);
+            $icon.toggleClass('dashicons-edit').toggleClass('dashicons-yes');
+
+            switch ($link.attr('id')) {
+                case 'api_key_browser': {
+                    $link.hide();
+                    $spinner.css('visibility', 'visible');
+                    $('.wcsdm-buttons-item').prop('disabled', true);
+
+                    isMapError = false;
+
+                    // Unset current google instance
+                    window.google = undefined;
+                    $.getScript('https://maps.googleapis.com/maps/api/js?libraries=geometry,places&key=' + apiKeyDummy, function () {
+                        setTimeout(() => {
+                            $link.show();
+                            $spinner.css('visibility', 'hidden');
+                            $('.wcsdm-buttons-item').prop('disabled', false);
+                            if (!isMapError) {
+                                $input.val(apiKeyDummy);
+                            }
+                        }, 6000);
+                    });
+                    break;
+                }
+
+                default:
+                    $input.val(apiKeyDummy);
+                    break;
+            }
+        } else {
+            $link.show().addClass('editing');
+            $linkCancel.removeClass('wcsdm-hidden');
+            $icon.toggleClass('dashicons-edit').toggleClass('dashicons-yes');
+            $inputDummy.prop('readonly', false).val(apiKey);
+            $spinner.css('visibility', 'hidden');
+
+            wcsdmMapPicker.isEditingApiKey = true;
+        }
+    },
+    editApiKeyCancel: function (e) {
+        "use strict";
+
+        e.preventDefault();
+
+        var $link = $(e.currentTarget);
+        var $linkEdit = $link.prev('a');
+        var $iconEdit = $linkEdit.find('.dashicons');
+        var $input = $link.closest('tr').find('input[type=hidden]');
+        var $inputDummy = $link.closest('tr').find('input[type=text]');
+
+        $link.addClass('wcsdm-hidden');
+        $linkEdit.removeClass('editing');
+        $iconEdit.toggleClass('dashicons-yes').toggleClass('dashicons-edit');
+        $inputDummy.prop('readonly', true).val($input.val());
+
+        wcsdmMapPicker.isEditingApiKey = false;
     },
     openLinkToGoogle: function (e) {
         "use strict";
@@ -80,7 +164,7 @@ var wcsdmMapPicker = {
     tweakShowMapFormLink: function () {
         "use strict";
 
-        $('.wcsdm-link--show-map').closest('p').css('display', 'inline-block');
+        $('.wcsdm-edit-location').closest('p').css('display', 'inline-block');
     },
     showInstructions: function (e) {
         "use strict";
@@ -101,13 +185,19 @@ var wcsdmMapPicker = {
         });
 
         $('#wcsdm-row-map-instructions').show().siblings().hide();
+
+        $('.modal-close-link').hide();
     },
     closeInstructions: function (e) {
         "use strict";
 
         e.preventDefault();
 
-        wcsdmMapPicker.showForm(e);
+        $('#wcsdm-row-map-instructions').hide().siblings().not('.wcsdm-hidden').show();
+
+        $('.modal-close-link').show();
+
+        toggleBottons();
     },
     showForm: function (e) {
         "use strict";
@@ -128,8 +218,6 @@ var wcsdmMapPicker = {
                 icon: 'editor-spellcheck',
             }
         });
-
-        $('#woocommerce_wcsdm_api_key__dummy').val($('#woocommerce_wcsdm_api_key').val());
 
         $('#wcsdm-row-map-picker').show().siblings().hide();
 
@@ -157,9 +245,8 @@ var wcsdmMapPicker = {
             return;
         }
 
-        var apiKey = $('#woocommerce_wcsdm_api_key__dummy').val();
+        var apiKey = $('#woocommerce_wcsdm_api_key_browser').val();
         if (_.isEmpty(apiKey)) {
-            $('#woocommerce_wcsdm_api_key__dummy').val('InvalidKey').trigger('input');
             return;
         }
 
@@ -191,7 +278,6 @@ var wcsdmMapPicker = {
                 if (status.toLowerCase() === 'ok' && !isMapError) {
                     $('#woocommerce_wcsdm_lat').val(wcsdmMapPicker.lat);
                     $('#woocommerce_wcsdm_lng').val(wcsdmMapPicker.lng);
-                    $('#woocommerce_wcsdm_api_key').val($('#woocommerce_wcsdm_api_key__dummy').val());
                     wcsdmMapPicker.hideForm(e);
 
                     return;
@@ -216,7 +302,7 @@ var wcsdmMapPicker = {
 
         isMapError = false;
 
-        var apiKey = $('#woocommerce_wcsdm_api_key__dummy').val();
+        var apiKey = $('#woocommerce_wcsdm_api_key_browser').val();
 
         if (_.isEmpty(apiKey)) {
             apiKey = 'InvalidKey';
