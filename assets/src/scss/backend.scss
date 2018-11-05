@@ -8,6 +8,9 @@
 .wcsdm {
     &-hidden {
         display: none;
+        &.button {
+            display: none;
+        }
     }
     &-link {
         text-decoration: none;
@@ -35,6 +38,13 @@
         padding: 0.5em 1em;
         margin: 0;
         background-color: $alabaster;
+    }
+    &-edit-api-links {
+        a {
+            &+a {
+                margin-left: 10px;
+            }
+        }
     }
     &-buttons {
         &-item {
@@ -99,6 +109,11 @@
                 text-align: center;
                 a {
                     text-decoration: none;
+                    &:active,
+                    &:focus {
+                        text-decoration: none;
+                        box-shadow: none;
+                    }
                 }
             }
         }
@@ -132,6 +147,10 @@
                     .wcsdm-col {
                         background-color: rgba($anakiwa, .5);
                     }
+                    a {
+                        color: $anakiwa;
+                        opacity: .3;
+                    }
                 }
                 &.highlighted {
                     .wcsdm-col {
@@ -152,7 +171,7 @@
         text-align: center;
         padding: 30px 30px;
         max-width: 760px;
-        margin: 10px auto 10px;
+        margin: 50px auto 50px;
         border-radius: 5px;
         img {
             display: block;
@@ -182,6 +201,8 @@
         max-width: 560px;
         border-radius: 15px;
         margin: 10px;
+        background-color: $lemon-chiffon;
+        border: 1px solid darken($lemon-chiffon, 30%);
         h3,
         p {
             text-align: center;
