@@ -131,7 +131,7 @@ class Wcsdm extends WC_Shipping_Method {
 
 		// Show city field on the cart shipping calculator.
 		add_filter( 'woocommerce_shipping_calculator_enable_city', '__return_true' );
-	
+
 		// Add custom action hook to woocommerce_before_checkout_form.
 		add_action( 'woocommerce_before_checkout_form', array( $this, 'hook_before_checkout_form' ) );
 
@@ -751,9 +751,9 @@ class Wcsdm extends WC_Shipping_Method {
 					<input class="input-text regular-input <?php echo esc_attr( $data['class'] ); ?>" type="text" id="<?php echo esc_attr( $field_key ); ?>--dummy" style="<?php echo esc_attr( $data['css'] ); ?>" value="<?php echo esc_attr( $this->get_option( $key ) ); ?>" placeholder="<?php echo esc_attr( $data['placeholder'] ); ?>" readonly="readonly" /> 
 					<a href="#" class="button button-primary button-small wcsdm-edit-api-key wcsdm-link" id="<?php echo esc_attr( $key ); ?>"><span class="dashicons dashicons-edit"></span></a> 
 					<a href="#" class="button button-secondary button-small wcsdm-edit-api-key-cancel wcsdm-link wcsdm-hidden"><span class="dashicons dashicons-undo"></span></a>
-					<span class="spinner"></span>
+					<span class="spinner wcsdm-spinner"></span>
 					<div>
-					<a href="#" class="wcsdm-show-instructions"><?php esc_html_e( 'How to Get API Key?', 'wcsdm' ); ?></a>
+					<a href="#" class="wcsdm-show-instructions wcsdm-link"><?php esc_html_e( 'How to Get API Key?', 'wcsdm' ); ?></a>
 					</div>
 					<?php echo $this->get_description_html( $data ); // WPCS: XSS ok. ?>
 				</fieldset>
@@ -1227,7 +1227,7 @@ class Wcsdm extends WC_Shipping_Method {
 	}
 
 	/**
-	 * Validate and format api_key_server settings field.
+	 * Validate and format api_key settings field.
 	 *
 	 * @since    1.0.0
 	 * @param string $key Input field key.
@@ -1235,22 +1235,20 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @throws Exception If the field value is invalid.
 	 * @return array
 	 */
-	public function validate_api_key_server_field( $key, $value ) {
-		if ( empty( $value ) ) {
-			throw new Exception( __( 'Server API Key field is empty', 'wcsdm' ) );
-		}
+	public function validate_api_key_field( $key, $value ) {
+		if ( 'api_key_server' === $key && ! empty( $value ) ) {
+			$response = $this->api_request(
+				array(
+					'origin'      => array( WCSDM_DEFAULT_LAT, WCSDM_DEFAULT_LNG ),
+					'destination' => array( WCSDM_TEST_LAT, WCSDM_TEST_LNG ),
+					'settings'    => array( 'api_key_server' => $value ),
+				), false
+			);
 
-		$result = $this->api_request(
-			array(
-				'origin'      => array( WCSDM_DEFAULT_LAT, WCSDM_DEFAULT_LNG ),
-				'destination' => array( WCSDM_TEST_LAT, WCSDM_TEST_LNG ),
-				'settings'    => array( 'api_key_server' => $value ),
-			), false
-		);
-
-		if ( is_wp_error( $result ) ) {
-			// translators: %s = API response error message.
-			throw new Exception( sprintf( __( 'Server API Key Error: %s', 'wcsdm' ), $result->get_error_message() ) );
+			if ( is_wp_error( $response ) ) {
+				// translators: %s = API response error message.
+				throw new Exception( sprintf( __( 'Server API Key Error: %s', 'wcsdm' ), $response->get_error_message() ) );
+			}
 		}
 
 		return $value;

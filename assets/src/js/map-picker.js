@@ -6,9 +6,10 @@ var windowConsoleError = window.console.error;
 window.console.error = function () {
     if (arguments[0].toLowerCase().indexOf('google') !== 1) {
         isMapError = arguments[0];
-        alert(arguments[0]);
+        alert(isMapError);
         $('#api_key_browser').trigger('click');
-        // return;
+        $('#woocommerce_wcsdm_api_key_browser').val(wcsdmMapPicker.apiKeyBrowser);
+        $('#woocommerce_wcsdm_api_key_browser--dummy').val(wcsdmMapPicker.apiKeyBrowser);
     }
 
     windowConsoleError.apply(windowConsoleError, arguments);
@@ -22,7 +23,7 @@ var wcsdmMapPicker = {
     lat: '',
     lng: '',
     zoomLevel: 16,
-    isEditingApiKey: false,
+    apiKeyBrowser: '',
     init: function (params) {
         "use strict";
 
@@ -82,38 +83,49 @@ var wcsdmMapPicker = {
                 return;
             }
 
-            wcsdmMapPicker.isEditingApiKey = false;
-
             $linkCancel.addClass('wcsdm-hidden');
             $link.removeClass('editing');
             $inputDummy.prop('readonly', true);
             $icon.toggleClass('dashicons-edit').toggleClass('dashicons-yes');
 
+            var toggleControls = function (timeout) {
+                var $d = $.Deferred();
+                $link.hide();
+                $spinner.css('visibility', 'visible');
+                $('.wcsdm-buttons-item,.wcsdm-link').prop('disabled', true).css('opacity', .5);
+
+                setTimeout(function () {
+                    $link.show();
+                    $spinner.css('visibility', 'hidden');
+                    $('.wcsdm-buttons-item,.wcsdm-link').prop('disabled', false).css('opacity', 1);
+                    $d.resolve(true);
+                }, timeout);
+
+                return $d.promise();
+            }
+
             switch ($link.attr('id')) {
                 case 'api_key_browser': {
-                    $link.hide();
-                    $spinner.css('visibility', 'visible');
-                    $('.wcsdm-buttons-item,.wcsdm-link').prop('disabled', true).css('opacity', .5);
-
-                    isMapError = false;
+                    wcsdmMapPicker.apiKeyBrowser = $input.val();
 
                     // Unset current google instance
                     window.google = undefined;
+                    isMapError = false;
+
                     $.getScript('https://maps.googleapis.com/maps/api/js?libraries=geometry,places&key=' + apiKeyDummy, function () {
-                        setTimeout(() => {
-                            $link.show();
-                            $spinner.css('visibility', 'hidden');
-                            $('.wcsdm-buttons-item,.wcsdm-link').prop('disabled', false).css('opacity', 1);
+                        toggleControls(5000).then(function () {
                             if (!isMapError) {
                                 $input.val(apiKeyDummy);
                             }
-                        }, 6000);
+                        });
                     });
                     break;
                 }
 
                 default:
-                    $input.val(apiKeyDummy);
+                    toggleControls(500).then(function () {
+                        $input.val(apiKeyDummy);
+                    });
                     break;
             }
         } else {
@@ -122,8 +134,6 @@ var wcsdmMapPicker = {
             $icon.toggleClass('dashicons-edit').toggleClass('dashicons-yes');
             $inputDummy.prop('readonly', false).val(apiKey);
             $spinner.css('visibility', 'hidden');
-
-            wcsdmMapPicker.isEditingApiKey = true;
         }
     },
     editApiKeyCancel: function (e) {
@@ -141,8 +151,6 @@ var wcsdmMapPicker = {
         $linkEdit.removeClass('editing');
         $iconEdit.toggleClass('dashicons-yes').toggleClass('dashicons-edit');
         $inputDummy.prop('readonly', true).val($input.val());
-
-        wcsdmMapPicker.isEditingApiKey = false;
     },
     openLinkToGoogle: function (e) {
         "use strict";
@@ -203,6 +211,11 @@ var wcsdmMapPicker = {
         "use strict";
 
         e.preventDefault();
+
+        if (isMapError) {
+            alert(isMapError);
+            return;
+        }
 
         $('.modal-close-link').hide();
 

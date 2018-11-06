@@ -46,6 +46,11 @@
             }
         }
     }
+    &-spinner{
+        float: none;
+        margin-top: 0;
+        margin-left: 7px;
+    }
     &-buttons {
         &-item {
             &--left {
