@@ -143,6 +143,9 @@ class Wcsdm extends WC_Shipping_Method {
 
 		// Add custom action hook to woocommerce_after_shipping_calculator.
 		add_action( 'woocommerce_after_shipping_calculator', array( $this, 'hook_after_shipping_calculator' ) );
+
+		// Add custom action hook to wp_footer.
+		add_action( 'wp_footer', array( $this, 'hook_footer' ) );
 	}
 
 	/**
@@ -2052,6 +2055,31 @@ class Wcsdm extends WC_Shipping_Method {
 			 *      }
 			 */
 			do_action( 'wcsdm_after_shipping_calculator', $this );
+		}
+	}
+
+	/**
+	 * Custom hook will be excuted in wp_footer.
+	 *
+	 * @return void
+	 */
+	public function hook_footer() {
+		// Make sure the hook executed only once.
+		if ( $this->get_instance_id() && ! did_action( 'wcsdm_footer' ) ) {
+			/**
+			 * Developers can add custom action to access Wcsdm via action hooks.
+			 *
+			 * @since 2.0
+			 *
+			 * This example shows debug Wcsdm class:
+			 *
+			 *      add_action( 'wcsdm_footer', 'my_footer', 10 );
+			 *
+			 *      function my_footer( $obj ) {
+			 *          var_dump( $obj );
+			 *      }
+			 */
+			do_action( 'wcsdm_footer', $this );
 		}
 	}
 
