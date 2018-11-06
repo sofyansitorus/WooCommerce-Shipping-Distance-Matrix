@@ -150,7 +150,7 @@ var wcsdmMapPicker = {
         $linkEdit.removeClass('editing');
         $iconEdit.toggleClass('dashicons-yes').toggleClass('dashicons-edit');
         $inputDummy.prop('readonly', true).val($input.val());
-        if($input.val().length){
+        if ($input.val().length) {
             isMapError = false;
         }
     },
