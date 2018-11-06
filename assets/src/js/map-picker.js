@@ -9,7 +9,6 @@ window.console.error = function () {
         alert(isMapError);
         $('#api_key_browser').trigger('click');
         $('#woocommerce_wcsdm_api_key_browser').val(wcsdmMapPicker.apiKeyBrowser);
-        $('#woocommerce_wcsdm_api_key_browser--dummy').val(wcsdmMapPicker.apiKeyBrowser);
     }
 
     windowConsoleError.apply(windowConsoleError, arguments);
@@ -151,6 +150,9 @@ var wcsdmMapPicker = {
         $linkEdit.removeClass('editing');
         $iconEdit.toggleClass('dashicons-yes').toggleClass('dashicons-edit');
         $inputDummy.prop('readonly', true).val($input.val());
+        if($input.val().length){
+            isMapError = false;
+        }
     },
     openLinkToGoogle: function (e) {
         "use strict";
