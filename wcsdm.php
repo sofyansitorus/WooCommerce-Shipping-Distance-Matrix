@@ -125,6 +125,17 @@ function wcsdm_plugin_action_links( $links ) {
 		$links
 	);
 
+	if ( ! wcsdm_is_pro() ) {
+		$link_pro = array(
+			'<a href="https://wooreer.com/?utm_source=wp-admin&utm_medium=action_links" target="_blank">' . __( 'Get Pro Version', 'wcsdm' ) . '</a>',
+		);
+
+		$links = array_merge(
+			$links,
+			$link_pro
+		);
+	}
+
 	return $links;
 }
 add_action( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'wcsdm_plugin_action_links' );
