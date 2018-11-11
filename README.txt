@@ -5,7 +5,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Requires at least: 4.8
 Tested up to: 4.9.5
 Requires PHP: 5.6
-Stable tag: 1.4.7
+Stable tag: 2.0
 License: GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -99,6 +99,20 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 5. Cart Page - Free Shipping
 
 == Changelog ==
+
+= 2.0 =
+* Improvements - Renamed the plugin name from WooCommerce Shipping Distance Matrix to WooReer.
+* Improvements - Added server side API Key setting field in the setting form.
+* Improvements - Added server side API Key setting field in the setting form.
+* Improvements - Added browser side API Key setting field in the setting form.
+* Improvements - Added address 1 field into the shipping calculator form.
+* Improvements - Added address 2 field into the shipping calculator form.
+* Improvements - Improved the admin setting form UI/UX. Specially the address picker.
+* Fix - Postcode validation not for several country such as Lutvia.
+* Fix - Postcode validation only works in uppercase.
+* Fix - Failed populating shipping destination info for address field.
+* Fix - Failed to calculating for short distance such as 100m.
+* Fix - Data cache issue for multiple instance within the same shipping zone.
 
 = 1.4.7 =
 * Feature - Added new field to set the shipping title dynamically for each distance ranges.
@@ -253,6 +267,6 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 * Feature - Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
 
 == Upgrade Notice ==
-= 1.4.7 =
+= 2.0 =
 
-This version includes bug fixes and improvements. We highly recommend that you update the plugin to the latest version.
+This version is major updates and has breaking changes. Re-setting the plugin is required after the upgrade.
