@@ -1,11 +1,11 @@
-=== WooCommerce Shipping Distance Matrix ===
+=== WooReer (formerly WooCommerce Shipping Distance Matrix) ===
 Contributors: sofyansitorus
 Tags: woocommerce,woocommerce-shipping,local-shipping,private-shipping
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=DGSVXLV7R8BTY
 Requires at least: 4.8
 Tested up to: 4.9.5
 Requires PHP: 5.6
-Stable tag: 1.4.7
+Stable tag: 2.0
 License: GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -18,19 +18,31 @@ This plugin perfect for the store owner who wants to charge customers for delive
 
 = Key Features =
 
-* Set unlimited distances ranges.
-* Set shipping rate as flat price or flexible price per distances unit for each distance ranges.
-* Set free shipping with or without rules for each distance ranges.
-* Set surcharge for each distance ranges.
+* Set unlimited table rates rows.
+* Set flat or flexible distance cost type: Fixed, Per KM/MI.
+* Set rule for each rates rows: Maximum Distances.
+* Set flat or pregressive total shipping cost for each rates rows: Max, Average, Min, Per Class, Per Product, Per Piece.
+* Set surcharge for each rates rows.
+* Set custom shipping label for each rates rows.
 * Set different shipping rate for each product shipping class.
-* Set flat or pregressive total shipping cost.
-* Set shipping origin location coordinates using Maps Picker.
+* Set shipping origin location using Maps Picker.
 * Set distances unit: Mile, Kilometer.
 * Set travel mode: Driving, Walking, Bicycling.
 * Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
 * Set prefered route: Shortest Distance, Longest Distance, Shortest Duration, Longest Duration.
-* Set visibility distance info to customer.
-* Set fallback request if there is no results for API request using full address.
+* Round the distance up to the nearest absolute number.
+* Show distance info to customer during checkout.
+
+= Pro Version Features =
+* Set rule for each rates rows: Minimum Order Quantity.
+* Set rule for each rates rows: Maximum Order Quantity.
+* Set rule for each rates rows: Minimum Order Amount.
+* Set rule for each rates rows: Maximum Order Amount.
+* Set Advanced Math Formula to calculate total shipping cost for each rates rows.
+* Use map address picker for customer during checkout.
+* Multiple instances within the same shipping zone.
+
+<a href="https://wooreer.com/?utm_source=wordpress.org&amp;utm_medium=link&amp;utm_campaign=plugin-details-from-wordpress.org" target="_blank">Upgrade to the Pro Version Now!</a>
 
 = Dependencies =
 
@@ -44,9 +56,9 @@ This plugin require Google Maps Distance Matrix API Key and service is enabled. 
 
 = AUTOMATIC INSTALLATION =
 
-Automatic installation is the easiest option as WordPress handles the file transfers itself and you don’t even need to leave your web browser. To do an automatic install of WooCommerce Shipping Distance Matrix, log in to your WordPress admin panel, navigate to the Plugins menu and click Add New.
+Automatic installation is the easiest option as WordPress handles the file transfers itself and you don’t even need to leave your web browser. To do an automatic install of WooReer, log in to your WordPress admin panel, navigate to the Plugins menu and click Add New.
 
-In the search field type “WooCommerce Shipping Distance Matrix” and click Search Plugins. You can install it by simply clicking Install Now. After clicking that link you will be asked if you’re sure you want to install the plugin. Click yes and WordPress will automatically complete the installation. After installation has finished, click the ‘activate plugin’ link.
+In the search field type “WooReer” and click Search Plugins. You can install it by simply clicking Install Now. After clicking that link you will be asked if you’re sure you want to install the plugin. Click yes and WordPress will automatically complete the installation. After installation has finished, click the ‘activate plugin’ link.
 
 = MANUAL INSTALLATION =
 
@@ -87,6 +99,20 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 5. Cart Page - Free Shipping
 
 == Changelog ==
+
+= 2.0 =
+* Improvements - Renamed the plugin name from WooCommerce Shipping Distance Matrix to WooReer.
+* Improvements - Added server side API Key setting field in the setting form.
+* Improvements - Added server side API Key setting field in the setting form.
+* Improvements - Added browser side API Key setting field in the setting form.
+* Improvements - Added address 1 field into the shipping calculator form.
+* Improvements - Added address 2 field into the shipping calculator form.
+* Improvements - Improved the admin setting form UI/UX. Specially the address picker.
+* Fix - Postcode validation not for several country such as Lutvia.
+* Fix - Postcode validation only works in uppercase.
+* Fix - Failed populating shipping destination info for address field.
+* Fix - Failed to calculating for short distance such as 100m.
+* Fix - Data cache issue for multiple instance within the same shipping zone.
 
 = 1.4.7 =
 * Feature - Added new field to set the shipping title dynamically for each distance ranges.
@@ -241,6 +267,6 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 * Feature - Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
 
 == Upgrade Notice ==
-= 1.4.7 =
+= 2.0 =
 
-This version includes bug fixes and improvements. We highly recommend that you update the plugin to the latest version.
+This version is major updates and has breaking changes. Re-setting the plugin is required after the upgrade.

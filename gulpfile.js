@@ -1,34 +1,91 @@
-var gulp = require('gulp');
-var rename = require('gulp-rename');
-var uglify = require('gulp-uglify');
-var iife = require('gulp-iife');
-var sass = require('gulp-sass');
-var cleanCSS = require('gulp-clean-css');
-var autoprefixer = require('gulp-autoprefixer');
-var plumber = require('gulp-plumber');
-var notify = require('gulp-notify');
-var gulpPhpCS = require('gulp-phpcs');
-var wpPot = require('gulp-wp-pot');
-var browserSync = require('browser-sync').create();
-var argv = require('yargs').argv;
-var zip = require('gulp-zip');
+/**
+ * Import modules
+ */
+const gulp = require('gulp');
+const rename = require('gulp-rename');
+const uglify = require('gulp-uglify');
+const iife = require('gulp-iife');
+const concat = require('gulp-concat');
+const sass = require('gulp-sass');
+const autoprefixer = require('gulp-autoprefixer');
+const plumber = require('gulp-plumber');
+const notify = require('gulp-notify');
+const browserSync = require('browser-sync').create();
+const argv = require('yargs').argv;
+const gulpif = require('gulp-if');
+const cleanCSS = require('gulp-clean-css');
+const sourcemaps = require('gulp-sourcemaps');
+const wpPot = require('gulp-wp-pot');
+const phpcs = require('gulp-phpcs');
+const phpcbf = require('gulp-phpcbf');
+const gutil = require('gutil');
+const bump = require('gulp-bump');
 
-var scriptsSrc = ['assets/src/js/*.js'];
-var scriptsDest = 'assets/js';
+/**
+ * Local variables
+ */
+const prefix = 'wcsdm';
+const project = 'WooCommerce-Shipping-Distance-Matrix';
 
-var minifyScriptsSrc = ['assets/js/*.js', '!assets/js/*.min.js'];
-var minifyScriptsDest = 'assets/js';
+const assets = [
+    {
+        type: 'scripts',
+        target: 'backend',
+        sources: [
+            'helpers.js',
+            'map-picker.js',
+            'table-rates.js',
+            'backend.js',
+        ],
+        targetDir: 'assets/js/',
+        sourcesDir: 'assets/src/js/',
+        isPrefixed: true,
+        isIife: true,
+    },
+    {
+        type: 'scripts',
+        target: 'frontend',
+        sources: [
+            'helpers.js',
+            'frontend.js',
+        ],
+        targetDir: 'assets/js/',
+        sourcesDir: 'assets/src/js/',
+        isPrefixed: true,
+        isIife: true,
+    },
+    {
+        type: 'styles',
+        target: 'backend',
+        sources: [
+            'backend.scss',
+        ],
+        targetDir: 'assets/css/',
+        sourcesDir: 'assets/src/scss/',
+        isPrefixed: true,
+    },
+    {
+        type: 'php',
+        target: 'php',
+        sources: [
+            '*.php',
+            '**/*.php',
+            '!vendor/',
+            '!vendor/**',
+            '!dist/',
+            '!dist/**',
+            '!node_modules/',
+            '!node_modules/**',
+            '!index.php',
+            '!**/index.php',
+        ],
+    },
+];
 
-var sassSrc = ['assets/src/scss/*.scss'];
-var sassDest = 'assets/css';
-
-var minifyCssSrc = ['assets/css/*.css', '!assets/css/*.min.css'];
-var minifyCssDest = 'assets/css';
-
-var phpcsSrc = ['*.php', '**/*.php', '!vendor/*', '!node_modules/*', '!index.php', '!**/index.php'];
-
-// Custom error handler
-var errorHandler = function () {
+/**
+ * Custom error handler
+ */
+const errorHandler = function () {
     return plumber(function (err) {
         notify.onError({
             title: 'Gulp error in ' + err.plugin,
@@ -37,35 +94,51 @@ var errorHandler = function () {
     });
 };
 
-// Scripts
-gulp.task('scripts', function () {
-    return gulp.src(scriptsSrc)
+/**
+ * Script taks handler
+ */
+const scriptsHandler = function (asset, isMinify) {
+    const srcParam = asset.sources.map(function (sources) {
+        const sourcesDir = asset.sourcesDir || '';
+        return sourcesDir + sources;
+    });
+
+    return gulp.src(srcParam)
         .pipe(errorHandler())
-        .pipe(iife({
+        .pipe(concat(asset.target + '.js'))
+        .pipe(gulpif(asset.isIife, iife({
             useStrict: true,
             trimCode: true,
-            prependSemicolon: true,
+            prependSemicolon: false,
+            bindThis: false,
             params: ['$'],
             args: ['jQuery']
-        }))
-        .pipe(gulp.dest(scriptsDest));
-});
+        })))
+        .pipe(gulpif(asset.isPrefixed, rename({
+            prefix: prefix + '-',
+        })))
+        .pipe(gulp.dest(asset.targetDir))
+        .pipe(gulpif(isMinify, rename({
+            suffix: '.min',
+        })))
+        .pipe(gulpif(isMinify, sourcemaps.init()))
+        .pipe(gulpif(isMinify, uglify()))
+        .pipe(gulpif(isMinify, sourcemaps.write()))
+        .pipe(gulpif(isMinify, gulp.dest(asset.targetDir)));
+}
 
-// Minify scripts
-gulp.task('minify-scripts', function () {
-    return gulp.src(minifyScriptsSrc)
-        .pipe(errorHandler())
-        .pipe(rename({
-            suffix: '.min'
-        }))
-        .pipe(uglify())
-        .pipe(gulp.dest(minifyScriptsDest));
-});
+/**
+ * Style taks handler
+ */
+const stylesHandler = function (asset, isMinify) {
+    const srcParam = asset.sources.map(function (sourcesFile) {
+        const sourcesDir = asset.sourcesDir || '';
+        return sourcesDir + sourcesFile;
+    });
 
-// SASS
-gulp.task('sass', function () {
-    return gulp.src(sassSrc)
+    return gulp.src(srcParam)
         .pipe(errorHandler())
+        .pipe(gulpif(isMinify, sourcemaps.init()))
         .pipe(sass().on('error', sass.logError))
         .pipe(autoprefixer(
             'last 2 version',
@@ -76,58 +149,295 @@ gulp.task('sass', function () {
             'opera 12.1',
             'ios 6',
             'android 4'))
-        .pipe(gulp.dest(sassDest))
-        .pipe(browserSync.stream());
-});
+        .pipe(gulpif(asset.isPrefixed, rename({
+            prefix: prefix + '-',
+        })))
+        .pipe(gulp.dest(asset.targetDir))
+        .pipe(gulpif(isMinify, rename({
+            suffix: '.min',
+        })))
+        .pipe(gulpif(isMinify, cleanCSS({
+            compatibility: 'ie8',
+        })))
+        .pipe(gulpif(isMinify, sourcemaps.write()))
+        .pipe(gulpif(isMinify, gulp.dest(asset.targetDir)))
+        .pipe(gulpif(!isMinify, browserSync.stream()));
+}
 
-// Minify CSS
-gulp.task('minify-css', function () {
-    return gulp.src(minifyCssSrc)
-        .pipe(errorHandler())
-        .pipe(rename({
-            suffix: '.min'
-        }))
-        .pipe(cleanCSS({ compatibility: 'ie8' }))
-        .pipe(gulp.dest(minifyCssDest));
-});
-
-gulp.task('phpcs', function () {
-    return gulp.src(phpcsSrc)
-        .pipe(errorHandler())
-        .pipe(gulpPhpCS({
-            bin: '/usr/local/bin/phpcs',
-            standard: 'WordPress',
-            warningSeverity: 0
-        }))
-        // Log all problems that was found
-        .pipe(gulpPhpCS.reporter('log'));
-});
-
-gulp.task('i18n', function () {
-    return gulp.src(phpcsSrc)
-        .pipe(wpPot({
-            'domain': 'wcsdm',
-            'package': 'WooCommerce-Shipping-Distance-Matrix'
-        }))
-        .pipe(gulp.dest('languages/wcsdm.pot'));
-});
-
-// Dev task with watch
-gulp.task('default', ['sass', 'scripts', 'phpcs'], function () {
-    browserSync.init({
-        proxy: argv.proxy
+/**
+ * PHPCS taks handler
+ */
+const phpcsHandler = function (asset) {
+    const srcParam = asset.sources.map(function (sourcesFile) {
+        const sourcesDir = asset.sourcesDir || '';
+        return sourcesDir + sourcesFile;
     });
-    gulp.watch([sassSrc], ['sass']);
-    gulp.watch([scriptsSrc], ['scripts']).on('change', browserSync.reload);
-    gulp.watch([phpcsSrc], ['phpcs']).on('change', browserSync.reload);
+
+    const config = Object.assign({}, asset.config, {
+        bin: '/usr/local/bin/phpcs',
+        standard: 'WordPress',
+        warningSeverity: 0,
+    });
+
+    return gulp.src(srcParam)
+        .pipe(errorHandler())
+        .pipe(phpcs(config))
+        .pipe(phpcs.reporter('log'));
+}
+
+/**
+ * PHPCBF taks handler
+ */
+const phpcbfHandler = function (asset) {
+    const srcParam = asset.sources.map(function (sourcesFile) {
+        const sourcesDir = asset.sourcesDir || '';
+        return sourcesDir + sourcesFile;
+    });
+
+    const config = Object.assign({}, asset.config, {
+        bin: '/usr/local/bin/phpcbf',
+        standard: 'WordPress',
+        warningSeverity: 0,
+    });
+
+    return gulp.src(srcParam)
+        .pipe(errorHandler())
+        .pipe(phpcbf(config))
+        .on('error', gutil.log)
+        .pipe(gulp.dest('./'));
+}
+
+/**
+ * PHPCBF taks handler
+ */
+const i18nHandler = function (asset) {
+    const srcParam = asset.sources.map(function (sourcesFile) {
+        const sourcesDir = asset.sourcesDir || '';
+        return sourcesDir + sourcesFile;
+    });
+
+    const config = Object.assign({}, asset.config, {
+        domain: prefix,
+        package: project,
+    });
+
+    return gulp.src(srcParam)
+        .pipe(wpPot(config))
+        .pipe(gulp.dest('languages/' + config.domain + '.pot'));
+}
+
+/**
+ * Build tasks list
+ */
+const tasksListBuild = [];
+
+assets.forEach(function (asset) {
+    /**
+     * Minify Scripts Task
+     */
+    if (asset.type === 'scripts') {
+        const taskName = asset.target + '-scripts-minify';
+
+        gulp.task(taskName, function () {
+            return scriptsHandler(asset, true);
+        });
+
+        tasksListBuild.push(taskName);
+    }
+
+    /**
+     * Minify Styles Task
+     */
+    if (asset.type === 'styles') {
+        const taskName = asset.target + '-styles-minify';
+
+        gulp.task(taskName, function () {
+            return stylesHandler(asset, true);
+        });
+
+        tasksListBuild.push(taskName);
+    }
+
+    /**
+     * PHPCBF Task
+     */
+    if (asset.type === 'php') {
+        const taskName = asset.target + '-phpcbf';
+
+        gulp.task(taskName, function () {
+            return phpcbfHandler(asset);
+        });
+
+        tasksListBuild.push(taskName);
+    }
+
+    /**
+     * PHPCBF Task
+     */
+    if (asset.type === 'php') {
+        const taskName = asset.target + '-i18n';
+
+        gulp.task(taskName, function () {
+            return i18nHandler(asset);
+        });
+
+        tasksListBuild.push(taskName);
+    }
 });
 
-// Build task
-gulp.task('build', ['sass', 'minify-css', 'scripts', 'minify-scripts', 'i18n']);
+/**
+ * Build task
+ */
+gulp.task('build', tasksListBuild);
 
-// Export files task
-gulp.task('export', ['build'], function () {
-    gulp.src(['./**', '!dist/', '!dist/**', '!node_modules/', '!node_modules/**', '!assets/src/', '!assets/src/**', '!gulpfile.js', '!package-lock.json', '!package.json'])
-        .pipe(zip('wcsdm.zip'))
-        .pipe(gulp.dest('dist'));
+/**
+ * Default tasks list
+ */
+const tasksListDefault = [];
+
+assets.forEach(function (asset) {
+    /**
+     * Scripts Task
+     */
+    if (asset.type === 'scripts') {
+        const taskName = asset.target + '-scripts';
+
+        gulp.task(taskName, function () {
+            return scriptsHandler(asset);
+        });
+
+        tasksListDefault.push(taskName);
+    }
+
+    /**
+     * Styles Task
+     */
+    if (asset.type === 'styles') {
+        const taskName = asset.target + '-styles';
+
+        gulp.task(taskName, function () {
+            return stylesHandler(asset, false);
+        });
+
+        tasksListDefault.push(taskName);
+    }
+
+    /**
+     * PHPCS Task
+     */
+    if (asset.type === 'php') {
+        const taskName = asset.target + '-phpcs';
+
+        gulp.task(taskName, function () {
+            return phpcsHandler(asset);
+        });
+
+        tasksListDefault.push(taskName);
+    }
+});
+
+
+/**
+ * Default task
+ */
+gulp.task('default', tasksListDefault, function () {
+    if (argv.hasOwnProperty('proxy')) {
+        browserSync.init({
+            proxy: argv.proxy
+        });
+    }
+
+    assets.forEach(function (asset) {
+        /**
+         * Watch styles sources files
+         */
+        if (asset.type === 'styles') {
+            const watchStylesSrc = asset.sources.map(function (sourcesFile) {
+                const sourcesDir = asset.sourcesDir || '';
+                return sourcesDir + sourcesFile;
+            });
+
+            gulp.watch(watchStylesSrc, [asset.target + '-styles']);
+        }
+
+        /**
+         * Watch scripts sources files
+         */
+        if (asset.type === 'scripts') {
+            const watchScriptsSrc = asset.sources.map(function (sourcesFile) {
+                const sourcesDir = asset.sourcesDir || '';
+                return sourcesDir + sourcesFile;
+            });
+
+            gulp.watch(watchScriptsSrc, [asset.target + '-scripts']).on('change', function () {
+                if (argv.hasOwnProperty('proxy')) {
+                    browserSync.reload();
+                }
+            });
+        }
+
+        /**
+         * Watch php sources files
+         */
+        if (asset.type === 'php') {
+            const watchSrc = asset.sources.map(function (sourcesFile) {
+                const sourcesDir = asset.sourcesDir || '';
+                return sourcesDir + sourcesFile;
+            });
+
+            gulp.watch(watchSrc, [asset.target + '-phpcs']).on('change', function () {
+                if (argv.hasOwnProperty('proxy')) {
+                    browserSync.reload();
+                }
+            });
+        }
+    });
+});
+
+gulp.task('bump', function () {
+    var sources = [
+        {
+            file: ['./README.txt'],
+            config: {
+                key: "Stable tag",
+                type: argv.hasOwnProperty('type') ? argv.type : 'patch',
+            },
+        },
+        {
+            file: ['./wcsdm.php'],
+            config: {
+                key: "Version",
+                type: argv.hasOwnProperty('type') ? argv.type : 'patch',
+            },
+        },
+        {
+            file: ['./package.json'],
+            config: {
+                key: "version",
+                type: argv.hasOwnProperty('type') ? argv.type : 'patch',
+            },
+        },
+    ];
+
+    sources.forEach(function (source) {
+        gulp.src(source.file)
+            .pipe(bump(source.config))
+            .pipe(gulp.dest('./'));
+    });
+});
+
+// Export task
+gulp.task('dist', function () {
+    gulp.src([
+        './**',
+        '!dist/',
+        '!dist/**',
+        '!node_modules/',
+        '!node_modules/**',
+        '!assets/src/',
+        '!assets/src/**',
+        '!gulpfile.js',
+        '!package-lock.json',
+        '!package.json'
+    ]).pipe(gulp.dest('./dist'));
 });

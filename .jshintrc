@@ -23,9 +23,11 @@
 		"export": false,
 		"module": false,
 		"require": false,
-		"wcsdm_params": false,
 		"$": false,
 		"google": false,
-		"console": false
+		"console": false,
+		"wcsdm_params": false,
+		"wc_country_select_params": false,
+		"wc_address_i18n_params": false
 	}
 }
