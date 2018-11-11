@@ -12,8 +12,8 @@
  * @package           Wcsdm
  *
  * @wordpress-plugin
- * Plugin Name:       WooCommerce Shipping Distance Matrix
- * Plugin URI:        https://github.com/sofyansitorus/WooCommerce-Shipping-Distance-Matrix
+ * Plugin Name:       WooReer (formerly WooCommerce Shipping Distance Matrix)
+ * Plugin URI:        https://wooreer.com
  * Description:       WooCommerce shipping rates calculator that allows you to easily offer shipping rates based on the distance that calculated using Google Maps Distance Matrix Service API.
  * Version:           1.4.7
  * Author:            Sofyan Sitorus
@@ -109,22 +109,6 @@ add_action( 'plugins_loaded', 'wcsdm_load_textdomain' );
  * @return array         List of modified plugin action links.
  */
 function wcsdm_plugin_action_links( $links ) {
-	$zone_id = 0;
-	foreach ( WC_Shipping_Zones::get_zones() as $zone ) {
-		if ( empty( $zone['shipping_methods'] ) || empty( $zone['zone_id'] ) ) {
-			continue;
-		}
-		foreach ( $zone['shipping_methods'] as $zone_shipping_method ) {
-			if ( $zone_shipping_method instanceof Wcsdm ) {
-				$zone_id = $zone['zone_id'];
-				break;
-			}
-		}
-		if ( $zone_id ) {
-			break;
-		}
-	}
-
 	$links = array_merge(
 		array(
 			'<a href="' . esc_url(
@@ -132,7 +116,7 @@ function wcsdm_plugin_action_links( $links ) {
 					array(
 						'page'           => 'wc-settings',
 						'tab'            => 'shipping',
-						'zone_id'        => $zone_id,
+						'zone_id'        => 0,
 						'wcsdm_settings' => true,
 					), admin_url( 'admin.php' )
 				)
@@ -168,28 +152,38 @@ function wcsdm_shipping_methods( $methods ) {
 add_filter( 'woocommerce_shipping_methods', 'wcsdm_shipping_methods' );
 
 /**
- * Register the stylesheets and JavaScripts for the admin area.
+ * Enqueue both scripts and styles in the admin area.
  *
  * @since    1.0.0
  * @param    string $hook Current admin page hook.
  */
-function wcsdm_backend_enqueue_scripts( $hook ) {
+function wcsdm_enqueue_scripts_backend( $hook ) {
 	if ( false !== strpos( $hook, 'wc-settings' ) ) {
+		$is_debug = defined( 'WCSDM_DEV' ) && WCSDM_DEV;
+
 		// Enqueue admin styles.
-		$wcsdm_backend_css = ( defined( 'WCSDM_DEV' ) && WCSDM_DEV ) ? add_query_arg( array( 't' => time() ), WCSDM_URL . 'assets/css/wcsdm-backend.css' ) : WCSDM_URL . 'assets/css/wcsdm-backend.min.css';
+		$css_url = WCSDM_URL . 'assets/css/wcsdm-backend.min.css';
+		if ( $is_debug ) {
+			$css_url = add_query_arg( array( 't' => time() ), str_replace( '.min', '', $css_url ) );
+		}
+
 		wp_enqueue_style(
 			'wcsdm-backend', // Give the script a unique ID.
-			$wcsdm_backend_css, // Define the path to the JS file.
+			$css_url, // Define the path to the JS file.
 			array(), // Define dependencies.
 			WCSDM_VERSION, // Define a version (optional).
 			false // Specify whether to put in footer (leave this false).
 		);
 
 		// Enqueue admin scripts.
-		$wcsdm_backend_js = ( defined( 'WCSDM_DEV' ) && WCSDM_DEV ) ? add_query_arg( array( 't' => time() ), WCSDM_URL . 'assets/js/wcsdm-backend.js' ) : WCSDM_URL . 'assets/js/wcsdm-backend.min.js';
+		$js_url = WCSDM_URL . 'assets/js/wcsdm-backend.min.js';
+		if ( $is_debug ) {
+			$js_url = add_query_arg( array( 't' => time() ), str_replace( '.min', '', $js_url ) );
+		}
+
 		wp_enqueue_script(
 			'wcsdm-backend', // Give the script a unique ID.
-			$wcsdm_backend_js, // Define the path to the JS file.
+			$js_url, // Define the path to the JS file.
 			array( 'jquery' ), // Define dependencies.
 			WCSDM_VERSION, // Define a version (optional).
 			true // Specify whether to put in footer (leave this true).
@@ -197,11 +191,11 @@ function wcsdm_backend_enqueue_scripts( $hook ) {
 
 		wp_localize_script(
 			'wcsdm-backend',
-			'wcsdm_backend_params',
+			'wcsdm_params',
 			array(
 				'showSettings' => isset( $_GET['wcsdm_settings'] ) && is_admin(),
 				'methodId'     => WCSDM_METHOD_ID,
-				'methodTitle'  => WCSDM_METHOD_TITLE,
+				'methodTitle'  => wcsdm_is_pro() ? WCSDM_PRO_METHOD_TITLE : WCSDM_METHOD_TITLE,
 				'marker'       => WCSDM_URL . 'assets/img/marker.png',
 				'defaultLat'   => WCSDM_DEFAULT_LAT,
 				'defaultLng'   => WCSDM_DEFAULT_LNG,
@@ -209,10 +203,34 @@ function wcsdm_backend_enqueue_scripts( $hook ) {
 				'testLng'      => WCSDM_TEST_LNG,
 				'language'     => get_locale(),
 				'isPro'        => wcsdm_is_pro(),
+				'isDebug'      => $is_debug,
 				'i18n'         => wcsdm_i18n(),
-				'ajax_url'     => admin_url( 'admin-ajax.php' ),
 			)
 		);
 	}
 }
-add_action( 'admin_enqueue_scripts', 'wcsdm_backend_enqueue_scripts' );
+add_action( 'admin_enqueue_scripts', 'wcsdm_enqueue_scripts_backend' );
+
+/**
+ * Enqueue scripts in the frontend area.
+ *
+ * @since    2.0
+ */
+function wcsdm_enqueue_scripts_frontend() {
+	$is_debug = defined( 'WCSDM_DEV' ) && WCSDM_DEV;
+
+	// Enqueue admin scripts.
+	$js_url = WCSDM_URL . 'assets/js/wcsdm-frontend.min.js';
+	if ( $is_debug ) {
+		$js_url = add_query_arg( array( 't' => time() ), str_replace( '.min', '', $js_url ) );
+	}
+
+	wp_enqueue_script(
+		'wcsdm-frontend', // Give the script a unique ID.
+		$js_url, // Define the path to the JS file.
+		array( 'jquery', 'wp-util' ), // Define dependencies.
+		WCSDM_VERSION, // Define a version (optional).
+		true // Specify whether to put in footer (leave this true).
+	);
+}
+add_action( 'wp_enqueue_scripts', 'wcsdm_enqueue_scripts_frontend' );

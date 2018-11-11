@@ -1,4 +1,4 @@
-=== WooCommerce Shipping Distance Matrix ===
+=== WooReer (formerly WooCommerce Shipping Distance Matrix) ===
 Contributors: sofyansitorus
 Tags: woocommerce,woocommerce-shipping,local-shipping,private-shipping
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=DGSVXLV7R8BTY
@@ -44,9 +44,9 @@ This plugin require Google Maps Distance Matrix API Key and service is enabled. 
 
 = AUTOMATIC INSTALLATION =
 
-Automatic installation is the easiest option as WordPress handles the file transfers itself and you don’t even need to leave your web browser. To do an automatic install of WooCommerce Shipping Distance Matrix, log in to your WordPress admin panel, navigate to the Plugins menu and click Add New.
+Automatic installation is the easiest option as WordPress handles the file transfers itself and you don’t even need to leave your web browser. To do an automatic install of WooReer, log in to your WordPress admin panel, navigate to the Plugins menu and click Add New.
 
-In the search field type “WooCommerce Shipping Distance Matrix” and click Search Plugins. You can install it by simply clicking Install Now. After clicking that link you will be asked if you’re sure you want to install the plugin. Click yes and WordPress will automatically complete the installation. After installation has finished, click the ‘activate plugin’ link.
+In the search field type “WooReer” and click Search Plugins. You can install it by simply clicking Install Now. After clicking that link you will be asked if you’re sure you want to install the plugin. Click yes and WordPress will automatically complete the installation. After installation has finished, click the ‘activate plugin’ link.
 
 = MANUAL INSTALLATION =
 

@@ -38,8 +38,8 @@ function getButton(args) {
     if (_.has(args, 'left')) {
         var leftButton = _.defaults(args.left, leftButtonDefault);
 
-        if (_.has(wcsdm_backend_params.i18n, leftButton.label)) {
-            leftButton.label = wcsdm_backend_params.i18n[leftButton.label];
+        if (_.has(wcsdm_params.i18n, leftButton.label)) {
+            leftButton.label = wcsdm_params.i18n[leftButton.label];
         }
 
         selected.btn_left = leftButton;
@@ -48,8 +48,8 @@ function getButton(args) {
     if (_.has(args, 'right')) {
         var rightButton = _.defaults(args.right, rightButtonDefault);
 
-        if (_.has(wcsdm_backend_params.i18n, rightButton.label)) {
-            rightButton.label = wcsdm_backend_params.i18n[rightButton.label];
+        if (_.has(wcsdm_params.i18n, rightButton.label)) {
+            rightButton.label = wcsdm_params.i18n[rightButton.label];
         }
 
         selected.btn_right = rightButton;
@@ -58,16 +58,16 @@ function getButton(args) {
     if (_.isEmpty(selected)) {
         var leftButton = _.defaults({}, leftButtonDefault);
 
-        if (_.has(wcsdm_backend_params.i18n, leftButton.label)) {
-            leftButton.label = wcsdm_backend_params.i18n[leftButton.label];
+        if (_.has(wcsdm_params.i18n, leftButton.label)) {
+            leftButton.label = wcsdm_params.i18n[leftButton.label];
         }
 
         selected.btn_left = leftButton;
 
         var rightButton = _.defaults({}, rightButtonDefault);
 
-        if (_.has(wcsdm_backend_params.i18n, rightButton.label)) {
-            rightButton.label = wcsdm_backend_params.i18n[rightButton.label];
+        if (_.has(wcsdm_params.i18n, rightButton.label)) {
+            rightButton.label = wcsdm_params.i18n[rightButton.label];
         }
 
         selected.btn_right = rightButton;
@@ -78,13 +78,13 @@ function getButton(args) {
 
 $(document).ready(function () {
     // Try show settings modal on settings page.
-    if (wcsdm_backend_params.showSettings) {
+    if (wcsdm_params.showSettings) {
         setTimeout(function () {
             var isMethodAdded = false;
             var methods = $(document).find('.wc-shipping-zone-method-type');
             for (var i = 0; i < methods.length; i++) {
                 var method = methods[i];
-                if ($(method).text() === wcsdm_backend_params.methodTitle) {
+                if ($(method).text() === wcsdm_params.methodTitle) {
                     $(method).closest('tr').find('.row-actions .wc-shipping-zone-method-settings').trigger('click');
                     isMethodAdded = true;
                     return;
@@ -93,13 +93,13 @@ $(document).ready(function () {
             // Show Add shipping method modal if the shipping is not added.
             if (!isMethodAdded) {
                 $('.wc-shipping-zone-add-method').trigger('click');
-                $('select[name="add_method_id"]').val(wcsdm_backend_params.methodId).trigger('change');
+                $('select[name="add_method_id"]').val(wcsdm_params.methodId).trigger('change');
             }
         }, 400);
     }
 
     $(document).on('click', '.wc-shipping-zone-method-settings', function () {
-        var params = _.mapObject(wcsdm_backend_params, function (val, key) {
+        var params = _.mapObject(wcsdm_params, function (val, key) {
             switch (key) {
                 case 'default_lat':
                 case 'default_lng':

@@ -19,8 +19,9 @@ window.console.error = function () {
  */
 var wcsdmMapPicker = {
     params: {},
-    lat: '',
-    lng: '',
+    origin_lat: '',
+    origin_lng: '',
+    origin_address: '',
     zoomLevel: 16,
     apiKeyBrowser: '',
     init: function (params) {
@@ -291,8 +292,9 @@ var wcsdmMapPicker = {
         $.when(testDistanceMatrix())
             .then(function (status) {
                 if (status.toLowerCase() === 'ok' && !isMapError) {
-                    $('#woocommerce_wcsdm_lat').val(wcsdmMapPicker.lat);
-                    $('#woocommerce_wcsdm_lng').val(wcsdmMapPicker.lng);
+                    $('#woocommerce_wcsdm_origin_lat').val(wcsdmMapPicker.origin_lat);
+                    $('#woocommerce_wcsdm_origin_lng').val(wcsdmMapPicker.origin_lng);
+                    $('#woocommerce_wcsdm_origin_address').val(wcsdmMapPicker.origin_address);
                     wcsdmMapPicker.hideForm(e);
 
                     return;
@@ -329,12 +331,12 @@ var wcsdmMapPicker = {
         });
     },
     renderMap: function () {
-        wcsdmMapPicker.lat = $('#woocommerce_wcsdm_lat').val();
-        wcsdmMapPicker.lng = $('#woocommerce_wcsdm_lng').val();
+        wcsdmMapPicker.origin_lat = $('#woocommerce_wcsdm_origin_lat').val();
+        wcsdmMapPicker.origin_lng = $('#woocommerce_wcsdm_origin_lng').val();
 
         var currentLatLng = {
-            lat: _.isEmpty(wcsdmMapPicker.lat) ? parseFloat(wcsdmMapPicker.params.defaultLat) : parseFloat(wcsdmMapPicker.lat),
-            lng: _.isEmpty(wcsdmMapPicker.lng) ? parseFloat(wcsdmMapPicker.params.defaultLng) : parseFloat(wcsdmMapPicker.lng),
+            lat: _.isEmpty(wcsdmMapPicker.origin_lat) ? parseFloat(wcsdmMapPicker.params.defaultLat) : parseFloat(wcsdmMapPicker.origin_lat),
+            lng: _.isEmpty(wcsdmMapPicker.origin_lng) ? parseFloat(wcsdmMapPicker.params.defaultLng) : parseFloat(wcsdmMapPicker.origin_lng),
         };
 
         var map = new google.maps.Map(
@@ -357,7 +359,7 @@ var wcsdmMapPicker = {
 
         var infowindow = new google.maps.InfoWindow({ maxWidth: 350 });
 
-        if (_.isEmpty(wcsdmMapPicker.lat) || _.isEmpty(wcsdmMapPicker.lng)) {
+        if (_.isEmpty(wcsdmMapPicker.origin_lat) || _.isEmpty(wcsdmMapPicker.origin_lng)) {
             infowindow.setContent(wcsdmMapPicker.params.i18n.drag_marker);
             infowindow.open(map, marker);
         } else {
@@ -460,13 +462,14 @@ var wcsdmMapPicker = {
                     });
 
                     $('#wcsdm-map-search-input').val(results[0].formatted_address);
+
+                    wcsdmMapPicker.origin_lat = location.lat();
+                    wcsdmMapPicker.origin_lng = location.lng();
+                    wcsdmMapPicker.origin_address = results[0].formatted_address;
                 }
             }
         );
 
         map.setCenter(location);
-
-        wcsdmMapPicker.lat = location.lat();
-        wcsdmMapPicker.lng = location.lng();
     }
 };
