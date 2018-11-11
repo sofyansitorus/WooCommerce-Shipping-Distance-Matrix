@@ -18,19 +18,31 @@ This plugin perfect for the store owner who wants to charge customers for delive
 
 = Key Features =
 
-* Set unlimited distances ranges.
-* Set shipping rate as flat price or flexible price per distances unit for each distance ranges.
-* Set free shipping with or without rules for each distance ranges.
-* Set surcharge for each distance ranges.
+* Set unlimited table rates rows.
+* Set flat or flexible distance cost type: Fixed, Per KM/MI.
+* Set rule for each rates rows: Maximum Distances.
+* Set flat or pregressive total shipping cost for each rates rows: Max, Average, Min, Per Class, Per Product, Per Piece.
+* Set surcharge for each rates rows.
+* Set custom shipping label for each rates rows.
 * Set different shipping rate for each product shipping class.
-* Set flat or pregressive total shipping cost.
-* Set shipping origin location coordinates using Maps Picker.
+* Set shipping origin location using Maps Picker.
 * Set distances unit: Mile, Kilometer.
 * Set travel mode: Driving, Walking, Bicycling.
 * Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
 * Set prefered route: Shortest Distance, Longest Distance, Shortest Duration, Longest Duration.
-* Set visibility distance info to customer.
-* Set fallback request if there is no results for API request using full address.
+* Round the distance up to the nearest absolute number.
+* Show distance info to customer during checkout.
+
+= Pro Version Features =
+* Set rule for each rates rows: Minimum Order Quantity.
+* Set rule for each rates rows: Maximum Order Quantity.
+* Set rule for each rates rows: Minimum Order Amount.
+* Set rule for each rates rows: Maximum Order Amount.
+* Set Advanced Math Formula to calculate total shipping cost for each rates rows.
+* Use map address picker for customer during checkout.
+* Multiple instances within the same shipping zone.
+
+<a href="https://wooreer.com/?utm_source=wordpress.org&amp;utm_medium=link&amp;utm_campaign=plugin-details-from-wordpress.org" target="_blank">Upgrade to the Pro Version Now!</a>
 
 = Dependencies =
 
