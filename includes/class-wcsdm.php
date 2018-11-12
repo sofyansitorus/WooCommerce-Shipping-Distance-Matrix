@@ -1511,11 +1511,12 @@ class Wcsdm extends WC_Shipping_Method {
 			 *      function my_api_request( $false, $args, $cache, $obj ) {
 			 *          // Return the response data array
 			 *          return array(
-			 *              'distance'      => 40,
-			 *              'distance_text' => '40 km',
-			 *              'duration'      => 3593,
-			 *              'duration_text' => '1 hour 5 mins',
-			 *              'response'      => array() // Raw response from API server
+			 *              'distance'          => 40,
+			 *              'distance_text'     => '40 km',
+			 *              'duration'          => 3593,
+			 *              'duration_text'     => '1 hour 5 mins',
+			 *              'api_response_data' => array() // Raw response from API server
+			 *              'api_request_data'  => array() // API request parameters
 			 *          );
 			 *      }
 			 */
