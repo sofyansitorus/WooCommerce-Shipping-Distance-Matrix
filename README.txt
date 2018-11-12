@@ -5,7 +5,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Requires at least: 4.8
 Tested up to: 4.9.5
 Requires PHP: 5.6
-Stable tag: 2.0
+Stable tag: 2.0.1
 License: GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -99,6 +99,11 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 5. Cart Page - Free Shipping
 
 == Changelog ==
+
+= 2.0.1 =
+* Fix - Fixed JS Error in console that causing shipping calculator form crash.
+* Fix - Fixed typo for "Total Cost Type" settings field description
+* Fix - Disabled enqueue frontend scripts when the instance is disabled
 
 = 2.0 =
 * Improvements - Renamed the plugin name from WooCommerce Shipping Distance Matrix to WooReer.
@@ -267,6 +272,6 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 * Feature - Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
 
 == Upgrade Notice ==
-= 2.0 =
+= 2.0.1 =
 
-This version is major updates and has breaking changes. Re-setting the plugin is required after the upgrade.
+This version includes fixes for an important issue and some minor issues. Upgrade immediately is necessary.

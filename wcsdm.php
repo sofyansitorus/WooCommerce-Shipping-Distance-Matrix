@@ -15,7 +15,7 @@
  * Plugin Name:       WooReer (formerly WooCommerce Shipping Distance Matrix)
  * Plugin URI:        https://wooreer.com
  * Description:       WooCommerce shipping rates calculator that allows you to easily offer shipping rates based on the distance that calculated using Google Maps Distance Matrix Service API.
- * Version:           2.0
+ * Version:           2.0.1
  * Author:            Sofyan Sitorus
  * Author URI:        https://github.com/sofyansitorus
  * License:           GPL-2.0+
