@@ -48,7 +48,7 @@ var wcsdmFrontendForm = {
                                                     included = false;
                                                 } else {
                                                     var states = $.parseJSON(wc_country_select_params.countries)[countryCode];
-                                                    if (states) {
+                                                    if (!_.isEmpty(states)) {
                                                         var stateText = $field.find('option[value=' + fieldValue + ']').text();
                                                         if (stateText.trim() === part) {
                                                             included = false;
