@@ -523,7 +523,7 @@ class Wcsdm extends WC_Shipping_Method {
 					'progressive__per_item'           => __( 'Per Piece - Accumulate total by multiplying the quantity (Progressive)', 'wcsdm' ),
 					'formula'                         => __( 'Advanced - Use math formula to calculate the total', 'wcsdm' ) . ( $this->is_pro() ? '' : ' (' . __( 'Pro Version', 'wcsdm' ) . ')' ),
 				),
-				'description' => __( 'Determine how is the total shipping cost calculated when the cart contents count is mor than 1 item.', 'wcsdm' ),
+				'description' => __( 'Determine how is the total shipping cost calculated when the cart contents is more than 1 item.', 'wcsdm' ),
 				'desc_tip'    => true,
 				'is_advanced' => true,
 				'is_dummy'    => false,
