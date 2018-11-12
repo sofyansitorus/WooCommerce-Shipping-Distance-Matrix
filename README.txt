@@ -5,7 +5,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Requires at least: 4.8
 Tested up to: 4.9.5
 Requires PHP: 5.6
-Stable tag: 2.0.1
+Stable tag: 2.0.2
 License: GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -99,6 +99,9 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 5. Cart Page - Free Shipping
 
 == Changelog ==
+
+= 2.0.2 =
+* Fix - Fixed JS Error in console that causing shipping calculator form crash when there is no state selected on page load.
 
 = 2.0.1 =
 * Fix - Fixed JS Error in console that causing shipping calculator form crash.
@@ -272,6 +275,6 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 * Feature - Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
 
 == Upgrade Notice ==
-= 2.0.1 =
+= 2.0.2 =
 
-This version includes fixes for an important issue and some minor issues. Upgrade immediately is necessary.
+This version includes fixes for an important issue. Upgrade immediately is recommended.
