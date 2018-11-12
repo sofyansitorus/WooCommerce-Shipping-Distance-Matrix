@@ -1354,7 +1354,7 @@ class Wcsdm extends WC_Shipping_Method {
 				}
 			}
 
-			$request_url_args = array(
+			$api_request_data = array(
 				'origins'      => is_array( $origin ) ? implode( ',', $origin ) : $origin,
 				'destinations' => is_array( $destination ) ? implode( ',', $destination ) : $destination,
 				'language'     => get_locale(),
@@ -1365,14 +1365,14 @@ class Wcsdm extends WC_Shipping_Method {
 					continue;
 				}
 
-				$request_url_args[ $field['api_request'] ] = isset( $settings[ $key ] ) ? $settings[ $key ] : '';
+				$api_request_data[ $field['api_request'] ] = isset( $settings[ $key ] ) ? $settings[ $key ] : '';
 			}
 
-			foreach ( $request_url_args as $key => $value ) {
-				$request_url_args[ $key ] = is_array( $value ) ? array_map( $value, 'rawurlencode' ) : rawurlencode( $value );
+			foreach ( $api_request_data as $key => $value ) {
+				$api_request_data[ $key ] = is_array( $value ) ? array_map( $value, 'rawurlencode' ) : rawurlencode( $value );
 			}
 
-			$request_url = add_query_arg( $request_url_args, $this->_google_api_url );
+			$request_url = add_query_arg( $api_request_data, $this->_google_api_url );
 
 			$this->show_debug( __( 'API Request URL', 'wcsdm' ) . ': ' . $request_url );
 
@@ -1484,11 +1484,12 @@ class Wcsdm extends WC_Shipping_Method {
 			}
 
 			$result = array(
-				'distance'      => $distance,
-				'distance_text' => sprintf( '%s %s', $distance, ( 'metric' === $this->distance_unit ? 'km' : 'mi' ) ),
-				'duration'      => $results[0]['duration'],
-				'duration_text' => $results[0]['duration_text'],
-				'response'      => $response_data,
+				'distance'          => $distance,
+				'distance_text'     => sprintf( '%s %s', $distance, ( 'metric' === $this->distance_unit ? 'km' : 'mi' ) ),
+				'duration'          => $results[0]['duration'],
+				'duration_text'     => $results[0]['duration_text'],
+				'api_response_data' => $response_data,
+				'api_request_data'  => $api_request_data,
 			);
 
 			if ( $cache && ! $this->is_debug_mode() ) {
