@@ -221,27 +221,3 @@ function wcsdm_enqueue_scripts_backend( $hook ) {
 	}
 }
 add_action( 'admin_enqueue_scripts', 'wcsdm_enqueue_scripts_backend' );
-
-/**
- * Enqueue scripts in the frontend area.
- *
- * @since    2.0
- */
-function wcsdm_enqueue_scripts_frontend() {
-	$is_debug = defined( 'WCSDM_DEV' ) && WCSDM_DEV;
-
-	// Enqueue admin scripts.
-	$js_url = WCSDM_URL . 'assets/js/wcsdm-frontend.min.js';
-	if ( $is_debug ) {
-		$js_url = add_query_arg( array( 't' => time() ), str_replace( '.min', '', $js_url ) );
-	}
-
-	wp_enqueue_script(
-		'wcsdm-frontend', // Give the script a unique ID.
-		$js_url, // Define the path to the JS file.
-		array( 'jquery', 'wp-util' ), // Define dependencies.
-		WCSDM_VERSION, // Define a version (optional).
-		true // Specify whether to put in footer (leave this true).
-	);
-}
-add_action( 'wp_enqueue_scripts', 'wcsdm_enqueue_scripts_frontend' );

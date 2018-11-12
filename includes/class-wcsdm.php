@@ -2184,6 +2184,24 @@ class Wcsdm extends WC_Shipping_Method {
 	public function hook_footer() {
 		if ( $this->get_instance_id() ) {
 			/**
+			 * Enqueue scripts in the frontend area.
+			 *
+			 * @since    2.0
+			 */
+			$js_url = WCSDM_URL . 'assets/js/wcsdm-frontend.min.js';
+			if ( defined( 'WCSDM_DEV' ) && WCSDM_DEV ) {
+				$js_url = add_query_arg( array( 't' => time() ), str_replace( '.min', '', $js_url ) );
+			}
+		
+			wp_enqueue_script(
+				'wcsdm-frontend', // Give the script a unique ID.
+				$js_url, // Define the path to the JS file.
+				array( 'jquery', 'wp-util' ), // Define dependencies.
+				WCSDM_VERSION, // Define a version (optional).
+				true // Specify whether to put in footer (leave this true).
+			);
+
+			/**
 			 * Developers can add custom action to access Wcsdm via action hooks.
 			 *
 			 * @since 2.0
