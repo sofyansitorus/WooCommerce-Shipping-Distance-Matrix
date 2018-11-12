@@ -69,8 +69,8 @@ var wcsdmTableRates = {
     initForm: function () {
         "use strict";
 
-        $('.wcsdm-field--rate > option[value=formula]').prop('disabled', !wcsdmTableRates.params.isPro);
-        $('.wcsdm-field--rate > option[value=flexible]').text(wcsdmTableRates.params.i18n.per_unit.replace('%s', $('#woocommerce_wcsdm_distance_unit option:selected').text()));
+        $('.wcsdm-field--rate > option[value="formula"]').prop('disabled', !wcsdmTableRates.params.isPro);
+        $('.wcsdm-field--rate > option[value="flexible"]').text(wcsdmTableRates.params.i18n.per_unit.replace('%s', $('#woocommerce_wcsdm_distance_unit option:selected').text()));
     },
     submitForm: function (e) {
         "use strict";
