@@ -2192,7 +2192,7 @@ class Wcsdm extends WC_Shipping_Method {
 			if ( defined( 'WCSDM_DEV' ) && WCSDM_DEV ) {
 				$js_url = add_query_arg( array( 't' => time() ), str_replace( '.min', '', $js_url ) );
 			}
-		
+
 			wp_enqueue_script(
 				'wcsdm-frontend', // Give the script a unique ID.
 				$js_url, // Define the path to the JS file.
