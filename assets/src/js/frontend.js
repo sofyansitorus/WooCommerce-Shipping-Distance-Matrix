@@ -38,7 +38,7 @@ var wcsdmFrontendForm = {
                                         var fieldValue = $field.val();
                                         switch (fieldKey) {
                                             case 'country':
-                                                var countryText = $field.find('option[value=' + fieldValue + ']').text();
+                                                var countryText = $field.find('option[value="' + fieldValue + '"]').text();
                                                 if (countryText.trim() === part) {
                                                     included = false;
                                                 }
@@ -49,7 +49,7 @@ var wcsdmFrontendForm = {
                                                 } else {
                                                     var states = $.parseJSON(wc_country_select_params.countries)[countryCode];
                                                     if (!_.isEmpty(states)) {
-                                                        var stateText = $field.find('option[value=' + fieldValue + ']').text();
+                                                        var stateText = $field.find('option[value="' + fieldValue + '"]').text();
                                                         if (stateText.trim() === part) {
                                                             included = false;
                                                         }
