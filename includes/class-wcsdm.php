@@ -2186,6 +2186,22 @@ class Wcsdm extends WC_Shipping_Method {
 	public function hook_footer() {
 		if ( $this->get_instance_id() ) {
 			/**
+			 * Developers can add custom action to access Wcsdm via action hooks.
+			 *
+			 * @since 2.0
+			 * @param int   $instance_id Instance ID.
+			 *
+			 * This example shows debug Wcsdm class:
+			 *
+			 *      add_action( 'wcsdm_footer', 'my_footer' );
+			 *
+			 *      function my_footer( $instance_id ) {
+			 *          // Do anything here
+			 *      }
+			 */
+			do_action( 'wcsdm_footer', $this->get_instance_id() );
+
+			/**
 			 * Enqueue scripts in the frontend area.
 			 *
 			 * @since    2.0
@@ -2202,22 +2218,6 @@ class Wcsdm extends WC_Shipping_Method {
 				WCSDM_VERSION, // Define a version (optional).
 				true // Specify whether to put in footer (leave this true).
 			);
-
-			/**
-			 * Developers can add custom action to access Wcsdm via action hooks.
-			 *
-			 * @since 2.0
-			 * @param int   $instance_id Instance ID.
-			 *
-			 * This example shows debug Wcsdm class:
-			 *
-			 *      add_action( 'wcsdm_footer', 'my_footer' );
-			 *
-			 *      function my_footer( $instance_id ) {
-			 *          // Do anything here
-			 *      }
-			 */
-			do_action( 'wcsdm_footer', $this->get_instance_id() );
 		}
 	}
 
