@@ -46,7 +46,6 @@ const assets = [
         type: 'scripts',
         target: 'frontend',
         sources: [
-            'helpers.js',
             'frontend.js',
         ],
         targetDir: 'assets/js/',
