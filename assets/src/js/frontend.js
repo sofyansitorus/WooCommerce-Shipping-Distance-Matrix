@@ -111,8 +111,8 @@ var wcsdmFrontendForm = {
                     }
                 }
 
-                $(document.body).trigger('wcsdm_form_loaded_' + form.prefix, form, wcsdmFrontendForm.fields);
-                $(document.body).trigger('wcsdm_form_loaded', form, wcsdmFrontendForm.fields);
+                $(document.body).trigger('wcsdm_form_loaded_' + form.prefix, form);
+                $(document.body).trigger('wcsdm_form_loaded', form);
             }
         });
     },
