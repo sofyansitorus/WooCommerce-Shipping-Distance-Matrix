@@ -132,8 +132,12 @@ class Wcsdm extends WC_Shipping_Method {
 		// Hook to woocommerce_cart_shipping_packages to inject filed address_2.
 		add_filter( 'woocommerce_cart_shipping_packages', array( $this, 'inject_cart_shipping_packages' ), 10 );
 
-		// Show city field on the cart shipping calculator.
+		// Show fields in the shipping calculator form.
+		add_filter( 'woocommerce_shipping_calculator_enable_postcode', '__return_true' );
+		add_filter( 'woocommerce_shipping_calculator_enable_state', '__return_true' );
 		add_filter( 'woocommerce_shipping_calculator_enable_city', '__return_true' );
+		add_filter( 'woocommerce_shipping_calculator_enable_address_1', '__return_true' );
+		add_filter( 'woocommerce_shipping_calculator_enable_address_2', '__return_true' );
 
 		// Add custom action hook to woocommerce_before_checkout_form.
 		add_action( 'woocommerce_before_checkout_form', array( $this, 'hook_before_checkout_form' ) );
@@ -2160,6 +2164,12 @@ class Wcsdm extends WC_Shipping_Method {
 	 */
 	public function hook_after_shipping_calculator() {
 		if ( $this->get_instance_id() ) {
+			// Print hidden element for the custom address 1 field and address 2 field value in shipping calculator form.
+			?>
+			<div id="wcsdm-calc-shipping-field-value-address_1" style="display: none;"><?php echo esc_html( WC()->cart->get_customer()->get_shipping_address() ); ?></div>
+			<div id="wcsdm-calc-shipping-field-value-address_2" style="display: none;"><?php echo esc_html( WC()->cart->get_customer()->get_shipping_address_2() ); ?></div>
+			<?php
+
 			/**
 			 * Developers can add custom action to access Wcsdm via action hooks.
 			 *
@@ -2186,6 +2196,22 @@ class Wcsdm extends WC_Shipping_Method {
 	public function hook_footer() {
 		if ( $this->get_instance_id() ) {
 			/**
+			 * Developers can add custom action to access Wcsdm via action hooks.
+			 *
+			 * @since 2.0
+			 * @param int   $instance_id Instance ID.
+			 *
+			 * This example shows debug Wcsdm class:
+			 *
+			 *      add_action( 'wcsdm_footer', 'my_footer' );
+			 *
+			 *      function my_footer( $instance_id ) {
+			 *          // Do anything here
+			 *      }
+			 */
+			do_action( 'wcsdm_footer', $this->get_instance_id() );
+
+			/**
 			 * Enqueue scripts in the frontend area.
 			 *
 			 * @since    2.0
@@ -2202,22 +2228,6 @@ class Wcsdm extends WC_Shipping_Method {
 				WCSDM_VERSION, // Define a version (optional).
 				true // Specify whether to put in footer (leave this true).
 			);
-
-			/**
-			 * Developers can add custom action to access Wcsdm via action hooks.
-			 *
-			 * @since 2.0
-			 * @param int   $instance_id Instance ID.
-			 *
-			 * This example shows debug Wcsdm class:
-			 *
-			 *      add_action( 'wcsdm_footer', 'my_footer' );
-			 *
-			 *      function my_footer( $instance_id ) {
-			 *          // Do anything here
-			 *      }
-			 */
-			do_action( 'wcsdm_footer', $this->get_instance_id() );
 		}
 	}
 
