@@ -285,7 +285,7 @@ class Wcsdm extends WC_Shipping_Method {
 				),
 				'api_request' => 'units',
 			),
-			'prefered_route'        => array(
+			'preferred_route'        => array(
 				'title'       => __( 'Preferred Route', 'wcsdm' ),
 				'type'        => 'wcsdm',
 				'orig_type'   => 'select',
@@ -1435,7 +1435,7 @@ class Wcsdm extends WC_Shipping_Method {
 			}
 
 			if ( count( $results ) > 1 ) {
-				switch ( $settings['prefered_route'] ) {
+				switch ( $settings['preferred_route'] ) {
 					case 'longest_duration':
 						usort( $results, array( $this, 'longest_duration_results' ) );
 						break;
