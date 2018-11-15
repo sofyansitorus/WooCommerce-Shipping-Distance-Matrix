@@ -242,6 +242,18 @@ class Wcsdm extends WC_Shipping_Method {
 				'type'        => 'store_location_picker',
 				'description' => __( 'Drag the store icon marker or search your address in the input box below.', 'wcsdm' ),
 			),
+			'origin_type'           => array(
+				'title'       => __( 'Origin Type', 'wcsdm' ),
+				'type'        => 'wcsdm',
+				'orig_type'   => 'select',
+				'description' => __( 'Set whih data will be used as the origin info when calculating the distance.', 'wcsdm' ),
+				'desc_tip'    => true,
+				'default'     => 'address',
+				'options'     => array(
+					'address'    => __( 'Address', 'wcsdm' ),
+					'coordinate' => __( 'Coordinate', 'wcsdm' ),
+				),
+			),
 			'travel_mode'           => array(
 				'title'       => __( 'Travel Mode', 'wcsdm' ),
 				'type'        => 'wcsdm',
@@ -285,7 +297,7 @@ class Wcsdm extends WC_Shipping_Method {
 				),
 				'api_request' => 'units',
 			),
-			'preferred_route'        => array(
+			'preferred_route'       => array(
 				'title'       => __( 'Preferred Route', 'wcsdm' ),
 				'type'        => 'wcsdm',
 				'orig_type'   => 'select',
@@ -1878,13 +1890,19 @@ class Wcsdm extends WC_Shipping_Method {
 	private function get_origin_info( $package ) {
 		$origin_info = array();
 
-		if ( $this->is_pro() && ! empty( $this->origin_lat ) && ! empty( $this->origin_lng ) ) {
-			$origin_info['origin_lat'] = $this->origin_lat;
-			$origin_info['origin_lng'] = $this->origin_lng;
-		}
+		switch ( $this->origin_type ) {
+			case 'coordinate':
+				if ( ! empty( $this->origin_lat ) && ! empty( $this->origin_lng ) ) {
+					$origin_info['origin_lat'] = $this->origin_lat;
+					$origin_info['origin_lng'] = $this->origin_lng;
+				}
+				break;
 
-		if ( ! $this->is_pro() && ! empty( $this->origin_address ) ) {
-			$origin_info['origin_address'] = $this->origin_address;
+			default:
+				if ( ! empty( $this->origin_address ) ) {
+					$origin_info['origin_address'] = $this->origin_address;
+				}
+				break;
 		}
 
 		/**
