@@ -165,13 +165,9 @@ var wcsdmTableRates = {
         var $row = $('#wcsdm-table-dummy tbody tr.editing');
         if ($row.length) {
             $row.addClass('highlighted');
-            var $modal = $('.wc-modal-shipping-method-settings');
-            var $table = $('#wcsdm-row-dummy');
-            var scrollToTop = ($row.offset().top - $table.offset().top) + $modal.offset().top;
-            $modal.scrollTop(scrollToTop);
             setTimeout(function () {
                 $row.removeClass('highlighted');
-            }, 600);
+            }, 1000);
         }
         $('#wcsdm-table-dummy tbody tr').removeClass('editing');
     },
