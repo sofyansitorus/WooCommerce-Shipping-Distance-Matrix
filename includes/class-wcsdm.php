@@ -246,7 +246,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'title'       => __( 'Origin Type', 'wcsdm' ),
 				'type'        => 'wcsdm',
 				'orig_type'   => 'select',
-				'description' => __( 'Set whih data will be used as the origin info when calculating the distance.', 'wcsdm' ),
+				'description' => __( 'Preferred data that will be used as the origin info when calculating the distance.', 'wcsdm' ),
 				'desc_tip'    => true,
 				'default'     => 'address',
 				'options'     => array(
