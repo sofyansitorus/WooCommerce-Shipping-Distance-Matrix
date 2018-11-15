@@ -12,7 +12,8 @@ var wcsdmFrontendForm = {
 
             if ($wrapper && $wrapper.length) {
                 // Add address_1 & address_2 fields to calc_shipping form
-                if (form.prefix === 'calc_shipping') {
+                if (form.prefix === 'calc_shipping' &&
+                    (wcsdm_frontend.shipping_calculator_postcode || wcsdm_frontend.shipping_calculator_city)) {
                     var $cloneFieldWrap = $wrapper.find('#calc_shipping_postcode_field');
 
                     if (!$cloneFieldWrap || !$cloneFieldWrap.length) {
@@ -20,12 +21,20 @@ var wcsdmFrontendForm = {
                     }
 
                     if ($cloneFieldWrap && $cloneFieldWrap.length) {
-                        _.each(['address_1', 'address_2'], function (addressField) {
+                        var addressFields = [];
+
+                        if (wcsdm_frontend.shipping_calculator_address_1) {
+                            addressFields.push('address_1');
+                        }
+
+                        if (wcsdm_frontend.shipping_calculator_address_2) {
+                            addressFields.push('address_2');
+                        }
+
+                        _.each(addressFields, function (addressField) {
                             var $addresFieldWrap = $cloneFieldWrap.clone().attr({
                                 id: 'calc_shipping_' + addressField + '_field'
                             });
-
-                            console.log('addressField', $('#wcsdm-calc-shipping-field-value-' + addressField).val());
 
                             $addresFieldWrap.find('input').attr({
                                 id: 'calc_shipping_' + addressField,

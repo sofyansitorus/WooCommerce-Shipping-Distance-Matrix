@@ -250,6 +250,21 @@ function wcsdm_enqueue_scripts_frontend() {
 		WCSDM_VERSION, // Define a version (optional).
 		true // Specify whether to put in footer (leave this true).
 	);
+
+	$fields = array(
+		'postcode',
+		'state',
+		'city',
+		'address_1',
+		'address_2',
+	);
+
+	// Localize the script data.
+	$wcsdm_frontend = array();
+	foreach ( $fields as $field ) {
+		$wcsdm_frontend[ 'shipping_calculator_' . $field ] = apply_filters( 'woocommerce_shipping_calculator_enable_' . $field, true );
+	}
+	wp_localize_script( 'wcsdm-frontend', 'wcsdm_frontend', $wcsdm_frontend );
 }
 add_action( 'wp_enqueue_scripts', 'wcsdm_enqueue_scripts_frontend' );
 
@@ -266,12 +281,21 @@ function wcsdm_after_shipping_calculator() {
 		return;
 	}
 
-	$address_1 = WC()->cart->get_customer()->get_shipping_address();
-	$address_2 = WC()->cart->get_customer()->get_shipping_address_2();
-	?>
-	<input type="hidden" id="wcsdm-calc-shipping-field-value-address_1" value="<?php echo esc_attr( $address_1 ); ?>" />
-	<input type="hidden" id="wcsdm-calc-shipping-field-value-address_2" value="<?php echo esc_attr( $address_2 ); ?>" />
-	<?php
+	// Address 1 hidden field.
+	if ( apply_filters( 'woocommerce_shipping_calculator_enable_address_1', true ) ) {
+		$address_1 = WC()->cart->get_customer()->get_shipping_address();
+		?>
+		<input type="hidden" id="wcsdm-calc-shipping-field-value-address_1" value="<?php echo esc_attr( $address_1 ); ?>" />
+		<?php
+	}
+
+	// Address 2 hidden field.
+	if ( apply_filters( 'woocommerce_shipping_calculator_enable_address_2', true ) ) {
+		$address_2 = WC()->cart->get_customer()->get_shipping_address_2();
+		?>
+		<input type="hidden" id="wcsdm-calc-shipping-field-value-address_2" value="<?php echo esc_attr( $address_2 ); ?>" />
+		<?php
+	}
 }
 add_action( 'woocommerce_after_shipping_calculator', 'wcsdm_after_shipping_calculator' );
 
