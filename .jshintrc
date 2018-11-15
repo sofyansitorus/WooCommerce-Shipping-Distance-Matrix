@@ -26,8 +26,10 @@
 		"$": false,
 		"google": false,
 		"console": false,
-		"wcsdm_params": false,
+		"wcsdm_backend": false,
 		"wc_country_select_params": false,
-		"wc_address_i18n_params": false
+		"wc_address_i18n_params": false,
+		"wcsdmTableRates": false,
+		"wcsdmMapPicker": false
 	}
 }
