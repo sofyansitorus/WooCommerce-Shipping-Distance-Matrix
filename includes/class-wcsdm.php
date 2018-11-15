@@ -131,28 +131,6 @@ class Wcsdm extends WC_Shipping_Method {
 
 		// Hook to woocommerce_cart_shipping_packages to inject filed address_2.
 		add_filter( 'woocommerce_cart_shipping_packages', array( $this, 'inject_cart_shipping_packages' ), 10 );
-
-		// Show fields in the shipping calculator form.
-		add_filter( 'woocommerce_shipping_calculator_enable_postcode', '__return_true' );
-		add_filter( 'woocommerce_shipping_calculator_enable_state', '__return_true' );
-		add_filter( 'woocommerce_shipping_calculator_enable_city', '__return_true' );
-		add_filter( 'woocommerce_shipping_calculator_enable_address_1', '__return_true' );
-		add_filter( 'woocommerce_shipping_calculator_enable_address_2', '__return_true' );
-
-		// Add custom action hook to woocommerce_before_checkout_form.
-		add_action( 'woocommerce_before_checkout_form', array( $this, 'hook_before_checkout_form' ) );
-
-		// Add custom action hook to woocommerce_after_checkout_form.
-		add_action( 'woocommerce_after_checkout_form', array( $this, 'hook_after_checkout_form' ) );
-
-		// Add custom action hook to woocommerce_before_shipping_calculator.
-		add_action( 'woocommerce_before_shipping_calculator', array( $this, 'hook_before_shipping_calculator' ) );
-
-		// Add custom action hook to woocommerce_after_shipping_calculator.
-		add_action( 'woocommerce_after_shipping_calculator', array( $this, 'hook_after_shipping_calculator' ) );
-
-		// Add custom action hook to wp_footer.
-		add_action( 'wp_footer', array( $this, 'hook_footer' ) );
 	}
 
 	/**
@@ -307,8 +285,8 @@ class Wcsdm extends WC_Shipping_Method {
 				),
 				'api_request' => 'units',
 			),
-			'prefered_route'        => array(
-				'title'       => __( 'Prefered Route', 'wcsdm' ),
+			'preferred_route'        => array(
+				'title'       => __( 'Preferred Route', 'wcsdm' ),
 				'type'        => 'wcsdm',
 				'orig_type'   => 'select',
 				'description' => __( 'Prefered route that will be used for calculation if API provide several routes', 'wcsdm' ),
@@ -1430,7 +1408,6 @@ class Wcsdm extends WC_Shipping_Method {
 					}
 
 					$results[] = array(
-						// 'distance'      => $this->convert_distance( $element['distance']['value'] ),
 						'distance'      => $element['distance']['value'],
 						'distance_text' => $element['distance']['text'],
 						'duration'      => $element['duration']['value'],
@@ -1458,7 +1435,7 @@ class Wcsdm extends WC_Shipping_Method {
 			}
 
 			if ( count( $results ) > 1 ) {
-				switch ( $settings['prefered_route'] ) {
+				switch ( $settings['preferred_route'] ) {
 					case 'longest_duration':
 						usort( $results, array( $this, 'longest_duration_results' ) );
 						break;
@@ -1981,7 +1958,11 @@ class Wcsdm extends WC_Shipping_Method {
 
 		// Validate shiipping fields.
 		foreach ( $rules as $rule_key => $rule ) {
-			if ( in_array( $rule_key, array( 'first_name', 'last_name', 'company' ) ) ) {
+			if ( in_array( $rule_key, array( 'first_name', 'last_name', 'company' ), true ) ) {
+				continue;
+			}
+
+			if ( ! apply_filters( 'woocommerce_shipping_calculator_enable_' . $rule_key, true ) ) {
 				continue;
 			}
 
@@ -2015,6 +1996,10 @@ class Wcsdm extends WC_Shipping_Method {
 			foreach ( $destination_info as $key => $value ) {
 				// Skip for empty field.
 				if ( ! strlen( strval( $field_value ) ) ) {
+					continue;
+				}
+
+				if ( ! apply_filters( 'woocommerce_shipping_calculator_enable_' . $key, true ) ) {
 					continue;
 				}
 
@@ -2080,155 +2065,6 @@ class Wcsdm extends WC_Shipping_Method {
 		 *      }
 		 */
 		return apply_filters( $this->id . '_destination_info', $destination_info, $package, $this->get_instance_id() );
-	}
-
-	/**
-	 * Custom hook will be excuted in woocommerce_before_checkout_form.
-	 *
-	 * @return void
-	 */
-	public function hook_before_checkout_form() {
-		if ( $this->get_instance_id() ) {
-			/**
-			 * Developers can add custom action to access Wcsdm via action hooks.
-			 *
-			 * @since 2.0
-			 * @param int   $instance_id Instance ID.
-			 *
-			 * This example shows debug Wcsdm class:
-			 *
-			 *      add_action( 'wcsdm_before_checkout_form', 'my_before_checkout_form' );
-			 *
-			 *      function my_before_checkout_form( $instance_id ) {
-			 *          // Do anything here
-			 *      }
-			 */
-			do_action( 'wcsdm_before_checkout_form', $this->get_instance_id() );
-		}
-	}
-
-	/**
-	 * Custom hook will be excuted in woocommerce_after_checkout_form.
-	 *
-	 * @return void
-	 */
-	public function hook_after_checkout_form() {
-		if ( $this->get_instance_id() ) {
-			/**
-			 * Developers can add custom action to access Wcsdm via action hooks.
-			 *
-			 * @since 2.0
-			 * @param int   $instance_id Instance ID.
-			 *
-			 * This example shows debug Wcsdm class:
-			 *
-			 *      add_action( 'wcsdm_after_checkout_form', 'my_after_checkout_form' );
-			 *
-			 *      function my_after_checkout_form( $instance_id ) {
-			 *          // Do anything here
-			 *      }
-			 */
-			do_action( 'wcsdm_after_checkout_form', $this->get_instance_id() );
-		}
-	}
-
-	/**
-	 * Custom hook will be excuted in woocommerce_before_shipping_calculator.
-	 *
-	 * @return void
-	 */
-	public function hook_before_shipping_calculator() {
-		if ( $this->get_instance_id() ) {
-			/**
-			 * Developers can add custom action to access Wcsdm via action hooks.
-			 *
-			 * @since 2.0
-			 * @param int   $instance_id Instance ID.
-			 *
-			 * This example shows debug Wcsdm class:
-			 *
-			 *      add_action( 'wcsdm_before_shipping_calculator', 'my_before_shipping_calculator' );
-			 *
-			 *      function my_before_shipping_calculator( $instance_id ) {
-			 *          // Do anything here
-			 *      }
-			 */
-			do_action( 'wcsdm_before_shipping_calculator', $this->get_instance_id() );
-		}
-	}
-
-	/**
-	 * Custom hook will be excuted in woocommerce_after_shipping_calculator.
-	 *
-	 * @return void
-	 */
-	public function hook_after_shipping_calculator() {
-		if ( $this->get_instance_id() ) {
-			// Print hidden element for the custom address 1 field and address 2 field value in shipping calculator form.
-			?>
-			<div id="wcsdm-calc-shipping-field-value-address_1" style="display: none;"><?php echo esc_html( WC()->cart->get_customer()->get_shipping_address() ); ?></div>
-			<div id="wcsdm-calc-shipping-field-value-address_2" style="display: none;"><?php echo esc_html( WC()->cart->get_customer()->get_shipping_address_2() ); ?></div>
-			<?php
-
-			/**
-			 * Developers can add custom action to access Wcsdm via action hooks.
-			 *
-			 * @since 2.0
-			 * @param int   $instance_id Instance ID.
-			 *
-			 * This example shows debug Wcsdm class:
-			 *
-			 *      add_action( 'wcsdm_after_shipping_calculator', 'my_after_shipping_calculator' );
-			 *
-			 *      function my_after_shipping_calculator( $instance_id ) {
-			 *          // Do anything here
-			 *      }
-			 */
-			do_action( 'wcsdm_after_shipping_calculator', $this->get_instance_id() );
-		}
-	}
-
-	/**
-	 * Custom hook will be excuted in wp_footer.
-	 *
-	 * @return void
-	 */
-	public function hook_footer() {
-		if ( $this->get_instance_id() ) {
-			/**
-			 * Developers can add custom action to access Wcsdm via action hooks.
-			 *
-			 * @since 2.0
-			 * @param int   $instance_id Instance ID.
-			 *
-			 * This example shows debug Wcsdm class:
-			 *
-			 *      add_action( 'wcsdm_footer', 'my_footer' );
-			 *
-			 *      function my_footer( $instance_id ) {
-			 *          // Do anything here
-			 *      }
-			 */
-			do_action( 'wcsdm_footer', $this->get_instance_id() );
-
-			/**
-			 * Enqueue scripts in the frontend area.
-			 *
-			 * @since    2.0
-			 */
-			$js_url = WCSDM_URL . 'assets/js/wcsdm-frontend.min.js';
-			if ( defined( 'WCSDM_DEV' ) && WCSDM_DEV ) {
-				$js_url = add_query_arg( array( 't' => time() ), str_replace( '.min', '', $js_url ) );
-			}
-
-			wp_enqueue_script(
-				'wcsdm-frontend', // Give the script a unique ID.
-				$js_url, // Define the path to the JS file.
-				array( 'jquery', 'wp-util' ), // Define dependencies.
-				WCSDM_VERSION, // Define a version (optional).
-				true // Specify whether to put in footer (leave this true).
-			);
-		}
 	}
 
 	/**

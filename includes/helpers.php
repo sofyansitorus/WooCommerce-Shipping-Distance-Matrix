@@ -99,3 +99,39 @@ function wcsdm_i18n( $key = '', $default = '' ) {
 
 	return $i18n;
 }
+
+/**
+ * Get shipping method instances
+ *
+ * @since 2.0
+ *
+ * @param bool $enabled_only Filter to includes only enabled instances.
+ * @return array
+ */
+function wcsdm_instances( $enabled_only = true ) {
+	$instances = array();
+
+	$zones = WC_Shipping_Zones::get_zones();
+
+	if ( ! empty( $zones ) ) {
+		foreach ( $zones as $zone ) {
+			foreach ( $zone['shipping_methods'] as $shipping_method ) {
+
+				if ( WCSDM_METHOD_ID !== $shipping_method->id ) {
+					continue;
+				}
+
+				if ( $enabled_only && 'yes' !== $shipping_method->enabled ) {
+					continue;
+				}
+
+				$instances[] = array(
+					'zone_id'     => $zone['id'],
+					'instance_id' => $shipping_method->get_instance_id(),
+				);
+			}
+		}
+	}
+
+	return apply_filters( 'wcsdm_instances', $instances );
+}
