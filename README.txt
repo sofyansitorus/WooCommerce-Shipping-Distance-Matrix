@@ -5,7 +5,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Requires at least: 4.8
 Tested up to: 4.9.5
 Requires PHP: 5.6
-Stable tag: 2.0.4
+Stable tag: 2.0.5
 License: GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -99,6 +99,9 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 5. Cart Page - Free Shipping
 
 == Changelog ==
+
+= 2.0.5 =
+* Fix - Fixed address 1 & 2 fields not displayed when no shipping zone defined.
 
 = 2.0.4 =
 * Fix - Fixed the frontend script not loaded.
@@ -284,6 +287,6 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 * Feature - Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
 
 == Upgrade Notice ==
-= 2.0.4 =
+= 2.0.5 =
 
 This version includes fixes and enhancements. Upgrade immediately is always recommended.
