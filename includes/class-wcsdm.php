@@ -250,8 +250,8 @@ class Wcsdm extends WC_Shipping_Method {
 				'desc_tip'    => true,
 				'default'     => 'address',
 				'options'     => array(
-					'address'    => __( 'Address', 'wcsdm' ),
-					'coordinate' => __( 'Coordinate', 'wcsdm' ),
+					'address'    => __( 'Store Location Address', 'wcsdm' ),
+					'coordinate' => __( 'Store Location Coordinate', 'wcsdm' ),
 				),
 			),
 			'travel_mode'           => array(
