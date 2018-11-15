@@ -286,7 +286,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'api_request' => 'units',
 			),
 			'prefered_route'        => array(
-				'title'       => __( 'Prefered Route', 'wcsdm' ),
+				'title'       => __( 'Preferred Route', 'wcsdm' ),
 				'type'        => 'wcsdm',
 				'orig_type'   => 'select',
 				'description' => __( 'Prefered route that will be used for calculation if API provide several routes', 'wcsdm' ),
