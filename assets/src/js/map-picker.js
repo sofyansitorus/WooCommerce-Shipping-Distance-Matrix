@@ -6,7 +6,7 @@ var windowConsoleError = window.console.error;
 window.console.error = function () {
     if (arguments[0].toLowerCase().indexOf('google') !== 1) {
         isMapError = arguments[0];
-        alert(isMapError);
+        window.alert(isMapError);
         $('#api_key_browser').trigger('click');
         $('#woocommerce_wcsdm_api_key_browser').val(wcsdmMapPicker.apiKeyBrowser);
     }
@@ -25,7 +25,7 @@ var wcsdmMapPicker = {
     zoomLevel: 16,
     apiKeyBrowser: '',
     init: function (params) {
-        "use strict";
+        'use strict';
 
         wcsdmMapPicker.params = params;
 
@@ -64,7 +64,7 @@ var wcsdmMapPicker = {
         $(document).on('click', '#wcsdm-btn--get-api-key', wcsdmMapPicker.openLinkToGoogle);
     },
     editApiKey: function (e) {
-        "use strict";
+        'use strict';
 
         e.preventDefault();
 
@@ -92,7 +92,7 @@ var wcsdmMapPicker = {
                 var $d = $.Deferred();
                 $link.hide();
                 $spinner.css('visibility', 'visible');
-                $('.wcsdm-buttons-item,.wcsdm-link').prop('disabled', true).css('opacity', .5);
+                $('.wcsdm-buttons-item,.wcsdm-link').prop('disabled', true).css('opacity', 0.5);
 
                 setTimeout(function () {
                     $link.show();
@@ -102,7 +102,7 @@ var wcsdmMapPicker = {
                 }, timeout);
 
                 return $d.promise();
-            }
+            };
 
             switch ($link.attr('id')) {
                 case 'api_key_browser': {
@@ -137,7 +137,7 @@ var wcsdmMapPicker = {
         }
     },
     editApiKeyCancel: function (e) {
-        "use strict";
+        'use strict';
 
         e.preventDefault();
 
@@ -156,14 +156,14 @@ var wcsdmMapPicker = {
         }
     },
     openLinkToGoogle: function (e) {
-        "use strict";
+        'use strict';
 
         e.preventDefault();
 
         window.open('https://cloud.google.com/maps-platform/#get-started', '_blank').focus();
     },
     toggleMapSearch: function (e) {
-        "use strict";
+        'use strict';
 
         e.preventDefault();
 
@@ -173,12 +173,12 @@ var wcsdmMapPicker = {
         $('#wcsdm-map-search-panel-main').toggleClass('wcsdm-hidden');
     },
     tweakShowMapFormLink: function () {
-        "use strict";
+        'use strict';
 
         $('.wcsdm-edit-location').closest('p').css('display', 'inline-block');
     },
     showInstructions: function (e) {
-        "use strict";
+        'use strict';
 
         e.preventDefault();
 
@@ -186,12 +186,12 @@ var wcsdmMapPicker = {
             left: {
                 id: 'close-instructions',
                 label: 'back',
-                icon: 'undo',
+                icon: 'undo'
             },
             right: {
                 id: 'get-api-key',
                 label: 'get_api_key',
-                icon: 'admin-links',
+                icon: 'admin-links'
             }
         });
 
@@ -200,7 +200,7 @@ var wcsdmMapPicker = {
         $('.modal-close-link').hide();
     },
     closeInstructions: function (e) {
-        "use strict";
+        'use strict';
 
         e.preventDefault();
 
@@ -211,12 +211,12 @@ var wcsdmMapPicker = {
         toggleBottons();
     },
     showForm: function (e) {
-        "use strict";
+        'use strict';
 
         e.preventDefault();
 
         if (isMapError) {
-            alert(isMapError);
+            window.alert(isMapError);
             return;
         }
 
@@ -226,12 +226,12 @@ var wcsdmMapPicker = {
             left: {
                 id: 'map-cancel',
                 label: 'cancel',
-                icon: 'undo',
+                icon: 'undo'
             },
             right: {
                 id: 'map-apply',
                 label: 'apply',
-                icon: 'editor-spellcheck',
+                icon: 'editor-spellcheck'
             }
         });
 
@@ -240,7 +240,7 @@ var wcsdmMapPicker = {
         wcsdmMapPicker.initMap();
     },
     hideForm: function (e) {
-        "use strict";
+        'use strict';
 
         e.preventDefault();
 
@@ -253,7 +253,7 @@ var wcsdmMapPicker = {
         $('#wcsdm-row-map-picker').hide().siblings().not('.wcsdm-hidden').show();
     },
     applyForm: function (e) {
-        "use strict";
+        'use strict';
 
         e.preventDefault();
 
@@ -301,12 +301,12 @@ var wcsdmMapPicker = {
                 }
 
                 if (isMapError) {
-                    alert(isMapError);
+                    window.alert(isMapError);
 
                     return;
                 }
 
-                alert(status);
+                window.alert(status);
             });
     },
     destroyMap: function () {
@@ -336,7 +336,7 @@ var wcsdmMapPicker = {
 
         var currentLatLng = {
             lat: _.isEmpty(wcsdmMapPicker.origin_lat) ? parseFloat(wcsdmMapPicker.params.defaultLat) : parseFloat(wcsdmMapPicker.origin_lat),
-            lng: _.isEmpty(wcsdmMapPicker.origin_lng) ? parseFloat(wcsdmMapPicker.params.defaultLng) : parseFloat(wcsdmMapPicker.origin_lng),
+            lng: _.isEmpty(wcsdmMapPicker.origin_lng) ? parseFloat(wcsdmMapPicker.params.defaultLng) : parseFloat(wcsdmMapPicker.origin_lng)
         };
 
         var map = new google.maps.Map(
@@ -346,7 +346,7 @@ var wcsdmMapPicker = {
                 center: currentLatLng,
                 zoom: wcsdmMapPicker.zoomLevel,
                 streetViewControl: false,
-                mapTypeControl: false,
+                mapTypeControl: false
             }
         );
 
@@ -451,7 +451,7 @@ var wcsdmMapPicker = {
                 if (status === google.maps.GeocoderStatus.OK && results[0]) {
                     var infowindowContents = [
                         wcsdmMapPicker.params.i18n.latitude + ': ' + location.lat().toString(),
-                        wcsdmMapPicker.params.i18n.longitude + ': ' + location.lng().toString(),
+                        wcsdmMapPicker.params.i18n.longitude + ': ' + location.lng().toString()
                     ];
 
                     infowindow.setContent(infowindowContents.join('<br />'));
