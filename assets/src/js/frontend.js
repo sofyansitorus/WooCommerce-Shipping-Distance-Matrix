@@ -25,11 +25,13 @@ var wcsdmFrontendForm = {
                                 id: 'calc_shipping_' + addressField + '_field'
                             });
 
+                            console.log('addressField', $('#wcsdm-calc-shipping-field-value-' + addressField).val());
+
                             $addresFieldWrap.find('input').attr({
                                 id: 'calc_shipping_' + addressField,
                                 name: 'calc_shipping_' + addressField,
                                 placeholder: wcsdmFrontendForm.fields['default'][addressField].placeholder,
-                                value: $('#wcsdm-calc-shipping-field-value-' + addressField).text()
+                                value: $('#wcsdm-calc-shipping-field-value-' + addressField).val()
                             }).trigger('change');
 
                             $cloneFieldWrap.before($addresFieldWrap);
