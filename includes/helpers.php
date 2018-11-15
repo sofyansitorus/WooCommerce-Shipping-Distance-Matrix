@@ -111,24 +111,41 @@ function wcsdm_i18n( $key = '', $default = '' ) {
 function wcsdm_instances( $enabled_only = true ) {
 	$instances = array();
 
+	$zone_data_store = new WC_Shipping_Zone_Data_Store();
+
+	$shipping_methods = $zone_data_store->get_methods( '0', $enabled_only );
+
+	if ( $shipping_methods ) {
+		foreach ( $shipping_methods as $shipping_method ) {
+			if ( WCSDM_METHOD_ID !== $shipping_method->method_id ) {
+				continue;
+			}
+
+			$instances[] = array(
+				'zone_id'     => 0,
+				'method_id'   => $shipping_method->method_id,
+				'instance_id' => $shipping_method->instance_id,
+			);
+		}
+	}
+
 	$zones = WC_Shipping_Zones::get_zones();
 
 	if ( ! empty( $zones ) ) {
 		foreach ( $zones as $zone ) {
-			foreach ( $zone['shipping_methods'] as $shipping_method ) {
+			$shipping_methods = $zone_data_store->get_methods( $zone['id'], $enabled_only );
+			if ( $shipping_methods ) {
+				foreach ( $shipping_methods as $shipping_method ) {
+					if ( WCSDM_METHOD_ID !== $shipping_method->method_id ) {
+						continue;
+					}
 
-				if ( WCSDM_METHOD_ID !== $shipping_method->id ) {
-					continue;
+					$instances[] = array(
+						'zone_id'     => 0,
+						'method_id'   => $shipping_method->method_id,
+						'instance_id' => $shipping_method->instance_id,
+					);
 				}
-
-				if ( $enabled_only && 'yes' !== $shipping_method->enabled ) {
-					continue;
-				}
-
-				$instances[] = array(
-					'zone_id'     => $zone['id'],
-					'instance_id' => $shipping_method->get_instance_id(),
-				);
 			}
 		}
 	}
