@@ -163,7 +163,7 @@ function wcsdm_shipping_methods( $methods ) {
 add_filter( 'woocommerce_shipping_methods', 'wcsdm_shipping_methods' );
 
 /**
- * Enqueue both scripts and styles in the admin area.
+ * Enqueue both scripts and styles in the backend area.
  *
  * @since    1.0.0
  * @param    string $hook Current admin page hook.
@@ -172,12 +172,13 @@ function wcsdm_enqueue_scripts_backend( $hook ) {
 	if ( false !== strpos( $hook, 'wc-settings' ) ) {
 		$is_debug = defined( 'WCSDM_DEV' ) && WCSDM_DEV;
 
-		// Enqueue admin styles.
+		// Define the styles URL.
 		$css_url = WCSDM_URL . 'assets/css/wcsdm-backend.min.css';
 		if ( $is_debug ) {
 			$css_url = add_query_arg( array( 't' => time() ), str_replace( '.min', '', $css_url ) );
 		}
 
+		// Enqueue admin styles.
 		wp_enqueue_style(
 			'wcsdm-backend', // Give the script a unique ID.
 			$css_url, // Define the path to the JS file.
@@ -186,12 +187,13 @@ function wcsdm_enqueue_scripts_backend( $hook ) {
 			false // Specify whether to put in footer (leave this false).
 		);
 
-		// Enqueue admin scripts.
+		// Define the scripts URL.
 		$js_url = WCSDM_URL . 'assets/js/wcsdm-backend.min.js';
 		if ( $is_debug ) {
 			$js_url = add_query_arg( array( 't' => time() ), str_replace( '.min', '', $js_url ) );
 		}
 
+		// Enqueue admin scripts.
 		wp_enqueue_script(
 			'wcsdm-backend', // Give the script a unique ID.
 			$js_url, // Define the path to the JS file.
@@ -200,9 +202,10 @@ function wcsdm_enqueue_scripts_backend( $hook ) {
 			true // Specify whether to put in footer (leave this true).
 		);
 
+		// Localize the script data.
 		wp_localize_script(
 			'wcsdm-backend',
-			'wcsdm_params',
+			'wcsdm_backend',
 			array(
 				'showSettings' => isset( $_GET['wcsdm_settings'] ) && is_admin(),
 				'methodId'     => WCSDM_METHOD_ID,
@@ -221,3 +224,60 @@ function wcsdm_enqueue_scripts_backend( $hook ) {
 	}
 }
 add_action( 'admin_enqueue_scripts', 'wcsdm_enqueue_scripts_backend' );
+
+/**
+ * Enqueue scripts in the frontend area.
+ *
+ * @since    2.0
+ */
+function wcsdm_enqueue_scripts_frontend() {
+	// Bail early if there is no instances enabled.
+	if ( ! wcsdm_instances() ) {
+		return;
+	}
+
+	// Define scripts URL.
+	$js_url = WCSDM_URL . 'assets/js/wcsdm-frontend.min.js';
+	if ( defined( 'WCSDM_DEV' ) && WCSDM_DEV ) {
+		$js_url = add_query_arg( array( 't' => time() ), str_replace( '.min', '', $js_url ) );
+	}
+
+	// Enqueue scripts.
+	wp_enqueue_script(
+		'wcsdm-frontend', // Give the script a unique ID.
+		$js_url, // Define the path to the JS file.
+		array( 'jquery', 'wp-util' ), // Define dependencies.
+		WCSDM_VERSION, // Define a version (optional).
+		true // Specify whether to put in footer (leave this true).
+	);
+}
+add_action( 'wp_enqueue_scripts', 'wcsdm_enqueue_scripts_frontend' );
+
+/**
+ * Print hidden element for the custom address 1 field and address 2 field value
+ * in shipping calculator form.
+ *
+ * @since 2.0
+ * @return void
+ */
+function wcsdm_after_shipping_calculator() {
+	// Bail early if there is no instances enabled.
+	if ( ! wcsdm_instances() ) {
+		return;
+	}
+
+	$address_1 = WC()->cart->get_customer()->get_shipping_address();
+	$address_2 = WC()->cart->get_customer()->get_shipping_address_2();
+	?>
+	<input type="hidden" id="wcsdm-calc-shipping-field-value-address_1" value="<?php echo esc_attr( $address_1 ); ?>" />
+	<input type="hidden" id="wcsdm-calc-shipping-field-value-address_2" value="<?php echo esc_attr( $address_2 ); ?>" />
+	<?php
+}
+add_action( 'woocommerce_after_shipping_calculator', 'wcsdm_after_shipping_calculator' );
+
+// Show fields in the shipping calculator form.
+add_filter( 'woocommerce_shipping_calculator_enable_postcode', '__return_true' );
+add_filter( 'woocommerce_shipping_calculator_enable_state', '__return_true' );
+add_filter( 'woocommerce_shipping_calculator_enable_city', '__return_true' );
+add_filter( 'woocommerce_shipping_calculator_enable_address_1', '__return_true' );
+add_filter( 'woocommerce_shipping_calculator_enable_address_2', '__return_true' );
