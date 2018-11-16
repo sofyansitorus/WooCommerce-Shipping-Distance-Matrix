@@ -1349,8 +1349,8 @@ class Wcsdm extends WC_Shipping_Method {
 			}
 
 			$api_request_data = array(
-				'origins'      => is_array( $origin ) ? implode( ',', $origin ) : $origin,
-				'destinations' => is_array( $destination ) ? implode( ',', $destination ) : $destination,
+				'origins'      => is_array( $origin ) ? implode( ', ', $origin ) : $origin,
+				'destinations' => is_array( $destination ) ? implode( ', ', $destination ) : $destination,
 				'language'     => get_locale(),
 			);
 
@@ -2007,9 +2007,9 @@ class Wcsdm extends WC_Shipping_Method {
 			// Reset destionation info if error.
 			$destination_info = array();
 		} else {
-			$destination = array();
-			$states      = WC()->countries->states;
-			$countries   = WC()->countries->countries;
+			$destination_array = array();
+			$states            = WC()->countries->states;
+			$countries         = WC()->countries->countries;
 
 			foreach ( $destination_info as $key => $value ) {
 				// Skip for empty field.
@@ -2027,7 +2027,7 @@ class Wcsdm extends WC_Shipping_Method {
 							$country_code = $value;
 						}
 
-						$destination[ $key ] = isset( $countries[ $value ] ) ? $countries[ $value ] : $value; // Set country full name.
+						$destination_array[ $key ] = isset( $countries[ $value ] ) ? $countries[ $value ] : $value; // Set country full name.
 						break;
 
 					case 'state':
@@ -2035,38 +2035,16 @@ class Wcsdm extends WC_Shipping_Method {
 							$country_code = isset( $destination_info['country'] ) ? $destination_info['country'] : 'undefined';
 						}
 
-						$destination[ $key ] = isset( $states[ $country_code ][ $value ] ) ? $states[ $country_code ][ $value ] : $value; // Set state full name.
+						$destination_array[ $key ] = isset( $states[ $country_code ][ $value ] ) ? $states[ $country_code ][ $value ] : $value; // Set state full name.
 						break;
 
 					default:
-						$destination[ $key ] = $value;
+						$destination_array[ $key ] = $value;
 						break;
 				}
 			}
 
-			if ( ! $country_code ) {
-				$country_code = isset( $destination['country'] ) ? $destination['country'] : false;
-			}
-
-			// Try to format the address.
-			if ( $country_code ) {
-				$formats = WC()->countries->get_address_formats();
-				$format  = isset( $formats[ $country_code ] ) ? $formats[ $country_code ] : $formats['default'];
-
-				if ( $format ) {
-					$destination_format = array();
-					$parts              = explode( "\n", str_replace( array( '{', '}' ), '', $format ) );
-					foreach ( $parts as $part ) {
-						if ( isset( $destination[ $part ] ) ) {
-							$destination_format[ $part ] = $destination[ $part ];
-						}
-					}
-
-					$destination = $destination_format;
-				}
-			}
-
-			$destination_info = $destination;
+			$destination_info = WC()->countries->get_formatted_address( $destination_array, ', ' );
 		}
 
 		/**
