@@ -3,9 +3,9 @@ Contributors: sofyansitorus
 Tags: woocommerce,woocommerce-shipping,local-shipping,private-shipping
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=DGSVXLV7R8BTY
 Requires at least: 4.8
-Tested up to: 4.9.5
+Tested up to: 4.9.8
 Requires PHP: 5.6
-Stable tag: 2.0.5
+Stable tag: 2.0.6
 License: GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -99,6 +99,15 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 5. Cart Page - Free Shipping
 
 == Changelog ==
+
+> **WARNING:**
+> 
+> Upgrading from version 1.x to version 2.x is a major update and has breaking changes. Some **settings data will be lost** and **re-setup the plugin** is required after the upgrade.
+> 
+> **Please upgrade wisely and carefully.**
+
+= 2.0.6 =
+* Fix - Fixed Wrong Shipping Address Format for US Based Address.
 
 = 2.0.5 =
 * Fix - Fixed address 1 & 2 fields not displayed when no shipping zone defined.
@@ -287,6 +296,6 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 * Feature - Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
 
 == Upgrade Notice ==
-= 2.0.5 =
+= 2.0.6 =
 
-This version includes fixes and enhancements. Upgrade immediately is always recommended.
+WARNING: Upgrading from version 1.x to version 2.x is a major update and has breaking changes. Some settings data will be lost and re-setup the plugin is required after the upgrade. Please upgrade wisely and carefully.
