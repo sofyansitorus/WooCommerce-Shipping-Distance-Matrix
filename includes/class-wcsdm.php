@@ -374,7 +374,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'orig_type'   => 'total_cost',
 				'title'       => __( 'Total Cost Type', 'wcsdm' ),
 				'default'     => 'flat__highest',
-				'description' => __( 'Determine how is the total shipping cost calculated.', 'wcsdm' ),
+				'description' => __( 'Determine how is the total shipping cost will be calculated.', 'wcsdm' ),
 				'desc_tip'    => true,
 				'is_required' => true,
 			),
@@ -383,7 +383,6 @@ class Wcsdm extends WC_Shipping_Method {
 				'orig_type'   => 'title',
 				'class'       => 'wcsdm-field-group',
 				'title'       => __( 'Table Rates Settings', 'wcsdm' ),
-				'description' => __( 'Determine how is the total shipping cost calculated when the cart contents is more than 1 item.', 'wcsdm' ),
 			),
 			'table_rates'                     => array(
 				'type'  => 'table_rates',
@@ -394,7 +393,6 @@ class Wcsdm extends WC_Shipping_Method {
 				'orig_type'   => 'title',
 				'class'       => 'wcsdm-field-group wcsdm-field-group-hidden',
 				'title'       => __( 'Advanced Rate Settings', 'wcsdm' ),
-				'description' => __( 'Determine how is the total shipping cost calculated when the cart contents is more than 1 item.', 'wcsdm' ),
 			),
 			'advanced_rate'                   => array(
 				'type'  => 'advanced_rate',
@@ -1628,7 +1626,7 @@ class Wcsdm extends WC_Shipping_Method {
 
 		$data_classes = isset( $data['class'] ) ? explode( ' ', $data['class'] ) : [];
 
-		array_push( $data_classes, 'wcsdm-field', 'wcsdm-field-type--' . $data['type'] );
+		array_push( $data_classes, 'wcsdm-field', 'wcsdm-field-key--' . $key, 'wcsdm-field-type--' . $data['type'] );
 
 		if ( isset( $data['is_rate'] ) && $data['is_rate'] ) {
 			array_push( $data_classes, 'wcsdm-field--rate' );
@@ -1637,10 +1635,9 @@ class Wcsdm extends WC_Shipping_Method {
 		}
 
 		if ( isset( $data['context'] ) && $data['context'] ) {
-			array_push( $data_classes, 'wcsdm-field--context' );
 			array_push( $data_classes, 'wcsdm-field--context--' . $data['context'] );
-			array_push( $data_classes, 'wcsdm-field--context--' . $data['type'] );
-			array_push( $data_classes, 'wcsdm-field--context--' . $key );
+			array_push( $data_classes, 'wcsdm-field--context--' . $data['context'] . '--' . $data['type'] );
+			array_push( $data_classes, 'wcsdm-field--context--' . $data['context'] . '--' . $key );
 
 			if ( 'dummy' === $data['context'] ) {
 				array_push( $data_classes, 'wcsdm-fullwidth' );

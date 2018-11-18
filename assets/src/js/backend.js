@@ -57,6 +57,8 @@ var wcsdmBackendForm = {
 
         wcsdmTableRates.init(params);
         wcsdmMapPicker.init(params);
+
+        toggleBottons();
     },
     showFrom: function () {
         // Try show settings modal on settings page.
