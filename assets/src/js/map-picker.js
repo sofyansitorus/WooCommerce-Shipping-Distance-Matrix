@@ -29,39 +29,33 @@ var wcsdmMapPicker = {
 
         wcsdmMapPicker.params = params;
 
-        wcsdmMapPicker.tweakShowMapFormLink();
-
-        // Show map
+        // Edit Api Key
         $(document).off('click', '.wcsdm-edit-api-key', wcsdmMapPicker.editApiKey);
         $(document).on('click', '.wcsdm-edit-api-key', wcsdmMapPicker.editApiKey);
 
-        // Show map
+        // Cancel Edit Api Key
         $(document).off('click', '.wcsdm-edit-api-key-cancel', wcsdmMapPicker.editApiKeyCancel);
         $(document).on('click', '.wcsdm-edit-api-key-cancel', wcsdmMapPicker.editApiKeyCancel);
 
-        // Show map
-        $(document).off('click', '.wcsdm-edit-location', wcsdmMapPicker.showForm);
-        $(document).on('click', '.wcsdm-edit-location', wcsdmMapPicker.showForm);
+        // Get API Key
+        $(document).off('click', '#wcsdm-btn--get-api-key', wcsdmMapPicker.getApiKey);
+        $(document).on('click', '#wcsdm-btn--get-api-key', wcsdmMapPicker.getApiKey);
 
+        // Show Store Location Picker
+        $(document).off('click', '.wcsdm-edit-location', wcsdmMapPicker.showStoreLocationPicker);
+        $(document).on('click', '.wcsdm-edit-location', wcsdmMapPicker.showStoreLocationPicker);
+
+        // Hide Store Location Picker
+        $(document).off('click', '#wcsdm-btn--map-cancel', wcsdmMapPicker.hideStoreLocationPicker);
+        $(document).on('click', '#wcsdm-btn--map-cancel', wcsdmMapPicker.hideStoreLocationPicker);
+
+        // Apply Store Location
+        $(document).off('click', '#wcsdm-btn--map-apply', wcsdmMapPicker.applyStoreLocation);
+        $(document).on('click', '#wcsdm-btn--map-apply', wcsdmMapPicker.applyStoreLocation);
+
+        // Toggle Map Search Panel
         $(document).off('click', '#wcsdm-map-search-panel-toggle', wcsdmMapPicker.toggleMapSearch);
         $(document).on('click', '#wcsdm-map-search-panel-toggle', wcsdmMapPicker.toggleMapSearch);
-        // Hide form
-        $(document).off('click', '#wcsdm-btn--map-cancel', wcsdmMapPicker.hideForm);
-        $(document).on('click', '#wcsdm-btn--map-cancel', wcsdmMapPicker.hideForm);
-
-        // Apply form
-        $(document).off('click', '#wcsdm-btn--map-apply', wcsdmMapPicker.applyForm);
-        $(document).on('click', '#wcsdm-btn--map-apply', wcsdmMapPicker.applyForm);
-
-        // Togle instructions
-        $(document).off('click', '.wcsdm-show-instructions', wcsdmMapPicker.showInstructions);
-        $(document).on('click', '.wcsdm-show-instructions', wcsdmMapPicker.showInstructions);
-
-        $(document).off('click', '#wcsdm-btn--close-instructions', wcsdmMapPicker.closeInstructions);
-        $(document).on('click', '#wcsdm-btn--close-instructions', wcsdmMapPicker.closeInstructions);
-
-        $(document).off('click', '#wcsdm-btn--get-api-key', wcsdmMapPicker.openLinkToGoogle);
-        $(document).on('click', '#wcsdm-btn--get-api-key', wcsdmMapPicker.openLinkToGoogle);
     },
     editApiKey: function (e) {
         'use strict';
@@ -155,62 +149,14 @@ var wcsdmMapPicker = {
             isMapError = false;
         }
     },
-    openLinkToGoogle: function (e) {
+    getApiKey: function (e) {
         'use strict';
 
         e.preventDefault();
 
         window.open('https://cloud.google.com/maps-platform/#get-started', '_blank').focus();
     },
-    toggleMapSearch: function (e) {
-        'use strict';
-
-        e.preventDefault();
-
-        $(e.currentTarget).find('span').toggleClass('dashicons-search').toggleClass('dashicons-dismiss');
-
-        $('#wcsdm-map-search-panel').toggleClass('hide-main');
-        $('#wcsdm-map-search-panel-main').toggleClass('wcsdm-hidden');
-    },
-    tweakShowMapFormLink: function () {
-        'use strict';
-
-        $('.wcsdm-edit-location').closest('p').css('display', 'inline-block');
-    },
-    showInstructions: function (e) {
-        'use strict';
-
-        e.preventDefault();
-
-        toggleBottons({
-            left: {
-                id: 'close-instructions',
-                label: 'back',
-                icon: 'undo'
-            },
-            right: {
-                id: 'get-api-key',
-                label: 'get_api_key',
-                icon: 'admin-links'
-            }
-        });
-
-        $('#wcsdm-row-map-instructions').show().siblings().hide();
-
-        $('.modal-close-link').hide();
-    },
-    closeInstructions: function (e) {
-        'use strict';
-
-        e.preventDefault();
-
-        $('#wcsdm-row-map-instructions').hide().siblings().not('.wcsdm-hidden').show();
-
-        $('.modal-close-link').show();
-
-        toggleBottons();
-    },
-    showForm: function (e) {
+    showStoreLocationPicker: function (e) {
         'use strict';
 
         e.preventDefault();
@@ -235,11 +181,11 @@ var wcsdmMapPicker = {
             }
         });
 
-        $('#wcsdm-row-map-picker').show().siblings().hide();
+        $('#wcsdm-field-group-wrap--location_picker').fadeIn().siblings().hide();
 
         wcsdmMapPicker.initMap();
     },
-    hideForm: function (e) {
+    hideStoreLocationPicker: function (e) {
         'use strict';
 
         e.preventDefault();
@@ -250,9 +196,9 @@ var wcsdmMapPicker = {
 
         toggleBottons();
 
-        $('#wcsdm-row-map-picker').hide().siblings().not('.wcsdm-hidden').show();
+        $('#wcsdm-field-group-wrap--location_picker').hide().siblings().not('.wcsdm-hidden').fadeIn();
     },
-    applyForm: function (e) {
+    applyStoreLocation: function (e) {
         'use strict';
 
         e.preventDefault();
@@ -295,7 +241,7 @@ var wcsdmMapPicker = {
                     $('#woocommerce_wcsdm_origin_lat').val(wcsdmMapPicker.origin_lat);
                     $('#woocommerce_wcsdm_origin_lng').val(wcsdmMapPicker.origin_lng);
                     $('#woocommerce_wcsdm_origin_address').val(wcsdmMapPicker.origin_address);
-                    wcsdmMapPicker.hideForm(e);
+                    wcsdmMapPicker.hideStoreLocationPicker(e);
 
                     return;
                 }
@@ -308,6 +254,16 @@ var wcsdmMapPicker = {
 
                 window.alert(status);
             });
+    },
+    toggleMapSearch: function (e) {
+        'use strict';
+
+        e.preventDefault();
+
+        $(e.currentTarget).find('span').toggleClass('dashicons-search').toggleClass('dashicons-dismiss');
+
+        $('#wcsdm-map-search-panel').toggleClass('hide-main');
+        $('#wcsdm-map-search-panel-main').toggleClass('wcsdm-hidden');
     },
     destroyMap: function () {
         window.google = undefined;

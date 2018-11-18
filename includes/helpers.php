@@ -152,3 +152,63 @@ function wcsdm_instances( $enabled_only = true ) {
 
 	return apply_filters( 'wcsdm_instances', $instances );
 }
+
+/**
+ * Inserts a new key/value before the key in the array.
+ *
+ * @since 2.0.7
+ *
+ * @param string $before_key The key to insert before.
+ * @param array  $array An array to insert in to.
+ * @param string $new_key The new key to insert.
+ * @param mixed  $new_value The new value to insert.
+ *
+ * @return array
+ */
+function wcsdm_array_insert_before( $before_key, $array, $new_key, $new_value ) {
+	if ( ! array_key_exists( $before_key, $array ) ) {
+		return $array;
+	}
+
+	$new = array();
+
+	foreach ( $array as $k => $value ) {
+		if ( $k === $before_key ) {
+			$new[ $new_key ] = $new_value;
+		}
+
+		$new[ $k ] = $value;
+	}
+
+	return $new;
+}
+
+/**
+ * Inserts a new key/value after the key in the array.
+ *
+ * @since 2.0.7
+ *
+ * @param string $after_key The key to insert after.
+ * @param array  $array An array to insert in to.
+ * @param string $new_key The new key to insert.
+ * @param mixed  $new_value The new value to insert.
+ *
+ * @return array
+ */
+function wcsdm_array_insert_after( $after_key, $array, $new_key, $new_value ) {
+	if ( ! array_key_exists( $after_key, $array ) ) {
+		return $array;
+	}
+
+	$new = array();
+
+	foreach ( $array as $k => $value ) {
+		$new[ $k ] = $value;
+
+		if ( $k === $after_key ) {
+			$new[ $new_key ] = $new_value;
+		}
+	}
+
+	return $new;
+}
