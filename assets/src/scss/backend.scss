@@ -34,14 +34,16 @@
     }
     &-buttons {
         &-item {
+            &.button-large {
+                .dashicons {
+                    margin-top: 5px;
+                    &:before {
+                        font-size: 1em;
+                    }
+                }
+            }
             &--left {
                 float: left;
-            }
-            .dashicons {
-                margin-top: 5px;
-                &:before {
-                    font-size: 1em;
-                }
             }
         }
     }
@@ -66,7 +68,7 @@
         }
     }
     &-table {
-        &--table_rates {
+        &--table_rates--dummy {
             max-width: 100%;
             tr {
                 .wcsdm-col {
@@ -84,41 +86,68 @@
                         width: 96px;
                         text-align: center;
                     }
+                    &+.wcsdm-col {
+                        border-left: 1px solid $seashell;
+                    }
                 }
             }
             thead {
                 tr {
                     .wcsdm-col {
                         font-weight: 600;
-                        &+.wcsdm-col {
-                            border-left: 1px solid $white;
-                        }
                     }
                 }
             }
             tbody {
                 tr {
                     .wcsdm-col {
-                        &+.wcsdm-col {
-                            border-left: 1px solid $seashell;
-                        }
+                        padding-top: 9px !important;
+                        padding-bottom: 9px !important;
                     }
                     &.highlighted {
                         .wcsdm-col {
                             animation: highlighted 0.5s infinite;
                         }
                     }
+                    &:nth-child(odd) {
+                        .wcsdm-col {
+                            background-color: rgba($anakiwa, 0.1);
+                        }
+                    }
+                    &:nth-child(even) {
+                        .wcsdm-col {
+                            background-color: $white;
+                        }
+                    }
+                    &:last-child {
+                        td,
+                        th {
+                            border-bottom: 0px solid rgba($alabaster, 0) !important;
+                        }
+                    }
+                    &:hover {
+                        .wcsdm-col {
+                            background-color: rgba($anakiwa, 0.2);
+                        }
+                    }
                 }
             }
         }
         &--advanced_rate {
-            .wcsdm-field-type--title {
-                margin-top: 10px;
-                margin-bottom: 10px;
-            }
-            .form-table {
-                border-top: 1px solid $alabaster;
-                margin-bottom: 0 !important;
+            .wcsdm-no-padding {
+                .wcsdm-field-type--title {
+                    margin-top: 0;
+                    margin-bottom: 0;
+                    padding-top: 5px;
+                    padding-bottom: 5px;
+                    background: rgba($alabaster, 0.6);
+                    border-top: 1px solid $alabaster;
+                    border-bottom: 1px solid $alabaster;
+                }
+                .form-table {
+                    border-top: 1px solid $alabaster;
+                    margin-bottom: 0 !important;
+                }
             }
         }
     }
@@ -209,10 +238,10 @@
         background-color: $white;
     }
     50% {
-        background-color: rgba($rice-flower, 0.3);
+        background-color: rgba($anakiwa, 0.3);
     }
     99% {
-        background-color: rgba($rice-flower, 0.3);
+        background-color: rgba($anakiwa, 0.3);
     }
     100% {
         background-color: $white;

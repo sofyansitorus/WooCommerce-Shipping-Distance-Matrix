@@ -97,12 +97,12 @@ var wcsdmBackendForm = {
         toggleBottons({
             left: {
                 id: 'close-instructions',
-                label: 'back',
+                label: 'Back',
                 icon: 'undo'
             },
             right: {
                 id: 'get-api-key',
-                label: 'get_api_key',
+                label: 'Get API Key',
                 icon: 'admin-links'
             }
         });

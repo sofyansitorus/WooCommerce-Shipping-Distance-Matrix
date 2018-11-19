@@ -162,7 +162,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @since    1.0.0
 	 */
 	public function init_form_fields() {
-		$instance_form_fields = array(
+		$form_fields = array(
 			'field_group_general'             => array(
 				'type'      => 'wcsdm',
 				'orig_type' => 'title',
@@ -173,7 +173,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'title'       => __( 'Label', 'wcsdm' ),
 				'type'        => 'wcsdm',
 				'orig_type'   => 'text',
-				'description' => __( 'This controls the label which the user sees during checkout. This setting can be overridden for each table rates row.', 'wcsdm' ),
+				'description' => __( 'This controls the label which the user sees during checkout.', 'wcsdm' ),
 				'default'     => $this->method_title,
 				'desc_tip'    => true,
 				'is_required' => true,
@@ -371,28 +371,37 @@ class Wcsdm extends WC_Shipping_Method {
 			),
 			'total_cost_type'                 => array(
 				'type'        => 'wcsdm',
-				'orig_type'   => 'total_cost',
+				'orig_type'   => 'select',
 				'title'       => __( 'Total Cost Type', 'wcsdm' ),
 				'default'     => 'flat__highest',
 				'description' => __( 'Determine how is the total shipping cost will be calculated.', 'wcsdm' ),
 				'desc_tip'    => true,
 				'is_required' => true,
+				'options'     => array(
+					'flat__highest'                   => __( 'Max - Set highest item cost as total (Flat)', 'wcsdm' ),
+					'flat__average'                   => __( 'Average - Set average item cost as total (Flat)', 'wcsdm' ),
+					'flat__lowest'                    => __( 'Min - Set lowest item cost as total (Flat)', 'wcsdm' ),
+					'progressive__per_shipping_class' => __( 'Per Class - Accumulate total by grouping the product shipping class (Progressive)', 'wcsdm' ),
+					'progressive__per_product'        => __( 'Per Product - Accumulate total by grouping the product ID (Progressive)', 'wcsdm' ),
+					'progressive__per_item'           => __( 'Per Piece - Accumulate total by multiplying the quantity (Progressive)', 'wcsdm' ),
+					'formula'                         => __( 'Advanced - Use math formula to calculate the total', 'wcsdm' ) . ( $this->is_pro() ? '' : ' (' . __( 'Pro Version', 'wcsdm' ) . ')' ),
+				),
 			),
 			'field_group_table_rates'         => array(
-				'type'        => 'wcsdm',
-				'orig_type'   => 'title',
-				'class'       => 'wcsdm-field-group',
-				'title'       => __( 'Table Rates Settings', 'wcsdm' ),
+				'type'      => 'wcsdm',
+				'orig_type' => 'title',
+				'class'     => 'wcsdm-field-group',
+				'title'     => __( 'Table Rates Settings', 'wcsdm' ),
 			),
 			'table_rates'                     => array(
 				'type'  => 'table_rates',
 				'title' => __( 'Table Rates Settings', 'wcsdm' ),
 			),
 			'field_group_advanced_rate'       => array(
-				'type'        => 'wcsdm',
-				'orig_type'   => 'title',
-				'class'       => 'wcsdm-field-group wcsdm-field-group-hidden',
-				'title'       => __( 'Advanced Rate Settings', 'wcsdm' ),
+				'type'      => 'wcsdm',
+				'orig_type' => 'title',
+				'class'     => 'wcsdm-field-group wcsdm-field-group-hidden',
+				'title'     => __( 'Advanced Rate Settings', 'wcsdm' ),
 			),
 			'advanced_rate'                   => array(
 				'type'  => 'advanced_rate',
@@ -420,12 +429,11 @@ class Wcsdm extends WC_Shipping_Method {
 				'type'  => 'api_key_instruction',
 			),
 			'js_template'                     => array(
-				'type'      => 'wcsdm',
-				'orig_type' => 'js_template',
+				'type' => 'js_template',
 			),
 		);
 
-		$this->instance_form_fields = apply_filters( $this->id . '_form_fields', $instance_form_fields, $this->get_instance_id() );
+		$this->instance_form_fields = apply_filters( $this->id . '_form_fields', $form_fields, $this->get_instance_id() );
 	}
 
 	/**
@@ -434,7 +442,8 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @since    2.0
 	 */
 	public function init_rate_fields() {
-		$instance_rate_fields = array(
+		$form_fields = $this->instance_form_fields;
+		$rate_fields = array(
 			'section_general'        => array(
 				'type'        => 'title',
 				'title'       => __( 'General', 'wcsdm' ),
@@ -442,13 +451,13 @@ class Wcsdm extends WC_Shipping_Method {
 				'is_dummy'    => false,
 				'is_hidden'   => false,
 			),
-			'title_rate'             => array_merge(
-				$this->instance_form_fields['title'], array(
-					'description' => $this->instance_form_fields['title']['description'] . ' ' . __( 'Leave blank to inherit the global setting.', 'wcsdm' ),
+			'title'                  => array_merge(
+				$form_fields['title'], array(
+					'description' => $form_fields['title']['description'] . ' ' . __( 'Leave blank to inherit from the global setting.', 'wcsdm' ),
 					'default'     => '',
 					'desc_tip'    => true,
 					'is_advanced' => true,
-					'is_dummy'    => false,
+					'is_dummy'    => true,
 					'is_hidden'   => true,
 					'is_required' => false,
 				)
@@ -585,8 +594,8 @@ class Wcsdm extends WC_Shipping_Method {
 				'is_hidden'   => false,
 			),
 			'surcharge'              => array_merge(
-				$this->instance_form_fields['surcharge'], array(
-					'description' => $this->instance_form_fields['surcharge']['description'] . ' ' . __( 'Leave blank to inherit the global setting.', 'wcsdm' ),
+				$form_fields['surcharge'], array(
+					'description' => $form_fields['surcharge']['description'] . ' ' . __( 'Leave blank to inherit from the global setting.', 'wcsdm' ),
 					'default'     => '',
 					'is_required' => false,
 					'is_advanced' => true,
@@ -595,10 +604,13 @@ class Wcsdm extends WC_Shipping_Method {
 				)
 			),
 			'total_cost_type'        => array_merge(
-				$this->instance_form_fields['total_cost_type'], array(
+				$form_fields['total_cost_type'], array(
 					'default'     => 'inherit',
-					'options'     => array(
-						'inherit' => __( 'Inherit global setting', 'wcsdm' ),
+					'options'     => wcsdm_array_insert_before(
+						'flat__highest',
+						$form_fields['total_cost_type']['options'],
+						'inherit',
+						__( 'Inherit - Use global setting', 'wcsdm' )
 					),
 					'is_advanced' => true,
 					'is_dummy'    => false,
@@ -621,32 +633,27 @@ class Wcsdm extends WC_Shipping_Method {
 		}
 
 		if ( $shipping_classes ) {
-			$new_fields = array();
-			foreach ( $instance_rate_fields as $key => $field ) {
-				$new_fields[ $key ] = $field;
-				if ( 'rate_class_0' === $key ) {
-					foreach ( $shipping_classes as $class_id => $class_obj ) {
-						$new_fields[ 'rate_class_' . $class_id ] = array_merge(
-							$field, array(
-								// translators: %s is Product shipping class name.
-								'title'       => sprintf( __( '"%s" Shipping Class Rate', 'wcsdm' ), $class_obj->name ),
-								// translators: %s is Product shipping class name.
-								'description' => sprintf( __( 'Rate for "%s" shipping class products. Leave blank to use defined default rate above.', 'wcsdm' ), $class_obj->name ),
-								'default'     => '',
-								'desc_tip'    => true,
-								'is_advanced' => true,
-								'is_dummy'    => false,
-								'is_hidden'   => true,
-								'is_required' => false,
-							)
-						);
-					}
-				}
+			$rate_class_0 = $rate_fields['rate_class_0'];
+			foreach ( $shipping_classes as $class_id => $class_obj ) {
+				$rate_class_data = array_merge(
+					$rate_class_0, array(
+						// translators: %s is Product shipping class name.
+						'title'       => sprintf( __( '"%s" Shipping Class Rate', 'wcsdm' ), $class_obj->name ),
+						// translators: %s is Product shipping class name.
+						'description' => sprintf( __( 'Rate for "%s" shipping class products. Leave blank to use defined default rate above.', 'wcsdm' ), $class_obj->name ),
+						'default'     => '',
+						'is_advanced' => true,
+						'is_dummy'    => false,
+						'is_hidden'   => true,
+						'is_required' => false,
+					)
+				);
+
+				$rate_fields = wcsdm_array_insert_after( 'rate_class_0', $rate_fields, 'rate_class_' . $class_id, $rate_class_data );
 			}
-			$instance_rate_fields = $new_fields;
 		}
 
-		$this->_instance_rate_fields = apply_filters( $this->id . '_rate_fields', $instance_rate_fields, $this->get_instance_id() );
+		$this->_instance_rate_fields = apply_filters( $this->id . '_rate_fields', $rate_fields, $this->get_instance_id() );
 	}
 
 	/**
@@ -703,65 +710,6 @@ class Wcsdm extends WC_Shipping_Method {
 		$data = $this->populate_field( $key, $data );
 
 		return $this->generate_settings_html( array( $key => $data ), false );
-	}
-
-	/**
-	 * Generate total_cost field.
-	 *
-	 * @since    1.0.0
-	 * @param string $key Input field key.
-	 * @param array  $data Settings field data.
-	 */
-	public function generate_total_cost_html( $key, $data ) {
-		$field_key = $this->get_field_key( $key );
-		$defaults  = array(
-			'title'             => '',
-			'disabled'          => false,
-			'class'             => '',
-			'css'               => '',
-			'placeholder'       => '',
-			'type'              => 'text',
-			'desc_tip'          => false,
-			'description'       => '',
-			'custom_attributes' => array(),
-			'options'           => array(),
-		);
-
-		$data = wp_parse_args( $data, $defaults );
-
-		$options = array(
-			'flat__highest'                   => __( 'Max - Set highest item cost as total (Flat)', 'wcsdm' ),
-			'flat__average'                   => __( 'Average - Set average item cost as total (Flat)', 'wcsdm' ),
-			'flat__lowest'                    => __( 'Min - Set lowest item cost as total (Flat)', 'wcsdm' ),
-			'progressive__per_shipping_class' => __( 'Per Class - Accumulate total by grouping the product shipping class (Progressive)', 'wcsdm' ),
-			'progressive__per_product'        => __( 'Per Product - Accumulate total by grouping the product ID (Progressive)', 'wcsdm' ),
-			'progressive__per_item'           => __( 'Per Piece - Accumulate total by multiplying the quantity (Progressive)', 'wcsdm' ),
-			'formula'                         => __( 'Advanced - Use math formula to calculate the total', 'wcsdm' ) . ( $this->is_pro() ? '' : ' (' . __( 'Pro Version', 'wcsdm' ) . ')' ),
-		);
-
-		$data['options'] = array_merge( $data['options'], $options );
-
-		ob_start();
-		?>
-		<tr valign="top">
-			<th scope="row" class="titledesc">
-				<label for="<?php echo esc_attr( $field_key ); ?>"><?php echo wp_kses_post( $data['title'] ); ?> <?php echo $this->get_tooltip_html( $data ); // WPCS: XSS ok. ?></label>
-			</th>
-			<td class="forminp">
-				<fieldset>
-					<legend class="screen-reader-text"><span><?php echo wp_kses_post( $data['title'] ); ?></span></legend>
-					<select class="select <?php echo esc_attr( $data['class'] ); ?>" name="<?php echo esc_attr( $field_key ); ?>" id="<?php echo esc_attr( $field_key ); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" <?php disabled( $data['disabled'], true ); ?> <?php echo $this->get_custom_attribute_html( $data ); // WPCS: XSS ok. ?>>
-						<?php foreach ( (array) $data['options'] as $option_key => $option_value ) : ?>
-							<option value="<?php echo esc_attr( $option_key ); ?>" <?php selected( (string) $option_key, esc_attr( $this->get_option( $key ) ) ); ?>><?php echo esc_attr( $option_value ); ?></option>
-						<?php endforeach; ?>
-					</select>
-					<?php echo $this->get_description_html( $data ); // WPCS: XSS ok. ?>
-				</fieldset>
-			</td>
-		</tr>
-		<?php
-
-		return ob_get_clean();
 	}
 
 	/**
@@ -1014,7 +962,7 @@ class Wcsdm extends WC_Shipping_Method {
 		?>
 		<tr valign="top">
 			<td colspan="2" class="wcsdm-no-padding">
-				<table id="wcsdm-table--table_rates--dummy" class="form-table">
+				<table id="wcsdm-table--table_rates--dummy" class="form-table wcsdm-table wcsdm-table--table_rates--dummy">
 					<thead>
 						<tr>
 							<td class="wcsdm-col wcsdm-col--select-item">
@@ -1072,25 +1020,29 @@ class Wcsdm extends WC_Shipping_Method {
 						?>
 						<a href="#" class="<?php echo esc_attr( $data['class'] ); ?>" title="<?php echo esc_attr( $data['title'] ); ?>"><span class="dashicons dashicons-admin-generic"></span></a>
 						<?php
-						foreach ( $this->get_rates_fields( 'hidden' ) as $hidden_key => $hidden_data ) :
-							$hidden_data        = $this->populate_field( $hidden_key, $hidden_data );
-							$hidden_field_value = isset( $rate[ $hidden_key ] ) ? $rate[ $hidden_key ] : $hidden_data['default'];
+						foreach ( $this->get_rates_fields( 'hidden' ) as $hidden_key => $hidden_field ) :
+							$hidden_field = $this->populate_field( $hidden_key, $hidden_field );
+							$hidden_value = isset( $rate[ $hidden_key ] ) ? $rate[ $hidden_key ] : $hidden_field['default'];
 						?>
-						<input class="<?php echo esc_attr( $hidden_data['class'] ); ?>" type="hidden" name="<?php echo esc_attr( $field_key ); ?>__<?php echo esc_attr( $hidden_key ); ?>[]" value="<?php echo esc_attr( $hidden_field_value ); ?>" <?php echo $this->get_custom_attribute_html( $hidden_data ); // WPCS: XSS ok. ?> />
+						<input class="<?php echo esc_attr( $hidden_field['class'] ); ?>" type="hidden" name="<?php echo esc_attr( $field_key ); ?>__<?php echo esc_attr( $hidden_key ); ?>[]" value="<?php echo esc_attr( $hidden_value ); ?>" <?php echo $this->get_custom_attribute_html( $hidden_field ); // WPCS: XSS ok. ?> />
 						<?php
 						endforeach;
 						break;
 
 					default:
-						$html = $this->generate_settings_html( array( $key => $data ), false );
+						$html = $this->generate_settings_html( array( 'fake--field--' . $key => $data ), false );
 
 						preg_match( '/<fieldset>(.*?)<\/fieldset>/s', $html, $matches );
 
 						if ( ! empty( $matches[0] ) ) {
+							$output = preg_replace( '#\s(name|id)="[^"]+"#', '', $matches[0] );
+
 							$find    = 'select' === $data['type'] ? 'value="' . $field_value . '"' : 'value=""';
 							$replace = 'select' === $data['type'] ? 'value="' . $field_value . '" ' . selected( true, true, false ) : 'value="' . $field_value . '"';
 
-							echo preg_replace( '#\s(name|id)="[^"]+"#', '', str_replace( $find, $replace, $matches[0] ) ); // WPCS: XSS ok.
+							$output = str_replace( $find, $replace, $output );
+
+							echo $output; // WPCS: XSS ok.
 						}
 						break;
 				}
@@ -1124,7 +1076,8 @@ class Wcsdm extends WC_Shipping_Method {
 				<table id="wcsdm-table--advanced-rate" class="form-table wcsdm-table wcsdm-table--advanced-rate">
 					<?php
 					foreach ( $this->get_rates_fields( 'advanced' ) as $key => $data ) {
-						echo preg_replace( '#\s(name|id)="[^"]+"#', '', $this->generate_wcsdm_html( $key, $data ) ); // WPCS: XSS ok.
+						$data = $this->populate_field( $key, $data );
+						echo preg_replace( '#\s(name|id)="[^"]+"#', '', $this->generate_settings_html( array( 'fake--field--' . $key => $data ), false ) ); // WPCS: XSS ok.
 					}
 					?>
 				</table>
@@ -1942,8 +1895,10 @@ class Wcsdm extends WC_Shipping_Method {
 
 					$cost = 0;
 
-					if ( strpos( $rate['total_cost_type'], 'flat__' ) === 0 ) {
-						$total_cost_type = str_replace( 'flat__', '', $rate['total_cost_type'] );
+					$rate_total_cost_type = 'inherit' === $rate['total_cost_type'] ? $this->total_cost_type : $rate['total_cost_type'];
+
+					if ( strpos( $rate_total_cost_type, 'flat__' ) === 0 ) {
+						$total_cost_type = str_replace( 'flat__', '', $rate_total_cost_type );
 						switch ( $total_cost_type ) {
 							case 'lowest':
 								$cost = min( $flat );
@@ -1957,8 +1912,8 @@ class Wcsdm extends WC_Shipping_Method {
 								$cost = max( $flat );
 								break;
 						}
-					} elseif ( strpos( $rate['total_cost_type'], 'progressive__' ) === 0 ) {
-						$total_cost_type = str_replace( 'progressive__', '', $rate['total_cost_type'] );
+					} elseif ( strpos( $rate_total_cost_type, 'progressive__' ) === 0 ) {
+						$total_cost_type = str_replace( 'progressive__', '', $rate_total_cost_type );
 						switch ( $total_cost_type ) {
 							case 'per_shipping_class':
 								$costs = array();
@@ -1986,13 +1941,15 @@ class Wcsdm extends WC_Shipping_Method {
 						}
 					}
 
-					if ( $rate['surcharge'] ) {
-						$cost += $rate['surcharge'];
+					$surcharge = strlen( $rate['surcharge'] ) ? $rate['surcharge'] : $this->surcharge;
+
+					if ( $surcharge ) {
+						$cost += $surcharge;
 					}
 
 					$result = array(
 						'cost'      => $cost,
-						'label'     => $rate['title_rate'],
+						'label'     => empty( $rate['title'] ) ? $this->title : $rate['title'],
 						'meta_data' => array(
 							'api_response' => $api_response,
 						),

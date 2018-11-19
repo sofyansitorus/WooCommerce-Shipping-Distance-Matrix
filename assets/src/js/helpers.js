@@ -201,9 +201,11 @@ function toggleBottons(args) {
 function getButton(args) {
     'use strict';
 
+    var buttonLabels = wcsdm_backend.i18n.buttons;
+
     var leftButtonDefaultId = 'add-rate';
     var leftButtonDefaultIcon = 'plus';
-    var leftButtonDefaultLabel = 'add';
+    var leftButtonDefaultLabel = 'Add New Rate';
 
     var leftButtonDefault = {
         id: leftButtonDefaultId,
@@ -213,7 +215,7 @@ function getButton(args) {
 
     var rightButtonDefaultIcon = 'yes';
     var rightButtonDefaultId = 'save-settings';
-    var rightButtonDefaultLabel = 'save';
+    var rightButtonDefaultLabel = 'Save Changes';
 
     var rightButtonDefault = {
         id: rightButtonDefaultId,
@@ -228,8 +230,8 @@ function getButton(args) {
     if (_.has(args, 'left')) {
         leftButton = _.defaults(args.left, leftButtonDefault);
 
-        if (_.has(wcsdm_backend.i18n, leftButton.label)) {
-            leftButton.label = wcsdm_backend.i18n[leftButton.label];
+        if (_.has(buttonLabels, leftButton.label)) {
+            leftButton.label = buttonLabels[leftButton.label];
         }
 
         selected.btn_left = leftButton;
@@ -238,8 +240,8 @@ function getButton(args) {
     if (_.has(args, 'right')) {
         rightButton = _.defaults(args.right, rightButtonDefault);
 
-        if (_.has(wcsdm_backend.i18n, rightButton.label)) {
-            rightButton.label = wcsdm_backend.i18n[rightButton.label];
+        if (_.has(buttonLabels, rightButton.label)) {
+            rightButton.label = buttonLabels[rightButton.label];
         }
 
         selected.btn_right = rightButton;
@@ -248,16 +250,16 @@ function getButton(args) {
     if (_.isEmpty(selected)) {
         leftButton = _.defaults({}, leftButtonDefault);
 
-        if (_.has(wcsdm_backend.i18n, leftButton.label)) {
-            leftButton.label = wcsdm_backend.i18n[leftButton.label];
+        if (_.has(buttonLabels, leftButton.label)) {
+            leftButton.label = buttonLabels[leftButton.label];
         }
 
         selected.btn_left = leftButton;
 
         rightButton = _.defaults({}, rightButtonDefault);
 
-        if (_.has(wcsdm_backend.i18n, rightButton.label)) {
-            rightButton.label = wcsdm_backend.i18n[rightButton.label];
+        if (_.has(buttonLabels, rightButton.label)) {
+            rightButton.label = buttonLabels[rightButton.label];
         }
 
         selected.btn_right = rightButton;

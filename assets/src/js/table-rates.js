@@ -48,7 +48,7 @@ var wcsdmTableRates = {
         $(document).off('input', '.wcsdm-field--context--dummy:not(a)');
         $(document).on('input', '.wcsdm-field--context--dummy:not(a)', debounce(function (e) {
             wcsdmTableRates.handleRateFieldDummy(e);
-        }, 800));
+        }, 500));
 
         // Toggle selected row
         $(document).off('change', '#woocommerce_wcsdm_distance_unit', wcsdmTableRates.initForm);
@@ -63,7 +63,7 @@ var wcsdmTableRates = {
     initForm: function () {
         'use strict';
 
-        $('.wcsdm-field-type--total_cost > option[value="formula"]').prop('disabled', !wcsdmTableRates.params.isPro);
+        $('.wcsdm-field-key--total_cost_type > option[value="formula"]').prop('disabled', !wcsdmTableRates.params.isPro);
         $('.wcsdm-field-key--cost_type > option[value="flexible"]').text(wcsdmTableRates.params.i18n.per_unit.replace('%s', $('#woocommerce_wcsdm_distance_unit option:selected').text()));
     },
     handleAddRateButton: function (e) {
@@ -105,12 +105,12 @@ var wcsdmTableRates = {
         toggleBottons({
             left: {
                 id: 'cancel-advanced',
-                label: 'cancel',
+                label: 'Cancel',
                 icon: 'undo'
             },
             right: {
                 id: 'apply-advanced',
-                label: 'apply',
+                label: 'Apply Changes',
                 icon: 'editor-spellcheck'
             }
         });
@@ -182,12 +182,12 @@ var wcsdmTableRates = {
         toggleBottons({
             left: {
                 id: 'delete-rate-cancel',
-                label: 'cancel',
+                label: 'Cancel',
                 icon: 'undo'
             },
             right: {
                 id: 'delete-rate-confirm',
-                label: 'confirm',
+                label: 'Confirm Delete',
                 icon: 'trash'
             }
         });
@@ -205,7 +205,7 @@ var wcsdmTableRates = {
         toggleBottons({
             left: {
                 id: 'delete-rate-select',
-                label: 'delete',
+                label: 'Delete Selected Rates',
                 icon: 'trash'
             }
         });
@@ -238,7 +238,7 @@ var wcsdmTableRates = {
             toggleBottons({
                 left: {
                     id: 'delete-rate-select',
-                    label: 'delete',
+                    label: 'Delete Selected Rates',
                     icon: 'trash'
                 }
             });
@@ -259,7 +259,7 @@ var wcsdmTableRates = {
             toggleBottons({
                 left: {
                     id: 'delete-rate-select',
-                    label: 'delete',
+                    label: 'Delete Selected Rates',
                     icon: 'trash'
                 }
             });

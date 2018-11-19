@@ -171,12 +171,12 @@ var wcsdmMapPicker = {
         toggleBottons({
             left: {
                 id: 'map-cancel',
-                label: 'cancel',
+                label: 'Cancel',
                 icon: 'undo'
             },
             right: {
                 id: 'map-apply',
-                label: 'apply',
+                label: 'Apply Changes',
                 icon: 'editor-spellcheck'
             }
         });
