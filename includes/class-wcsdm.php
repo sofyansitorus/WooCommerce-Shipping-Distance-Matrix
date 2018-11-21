@@ -444,24 +444,6 @@ class Wcsdm extends WC_Shipping_Method {
 	public function init_rate_fields() {
 		$form_fields = $this->instance_form_fields;
 		$rate_fields = array(
-			'section_general'        => array(
-				'type'        => 'title',
-				'title'       => __( 'General', 'wcsdm' ),
-				'is_advanced' => true,
-				'is_dummy'    => false,
-				'is_hidden'   => false,
-			),
-			'title'                  => array_merge(
-				$form_fields['title'], array(
-					'description' => $form_fields['title']['description'] . ' ' . __( 'Leave blank to inherit from the global setting.', 'wcsdm' ),
-					'default'     => '',
-					'desc_tip'    => true,
-					'is_advanced' => true,
-					'is_dummy'    => true,
-					'is_hidden'   => true,
-					'is_required' => false,
-				)
-			),
 			'section_shipping_rules' => array(
 				'type'        => 'title',
 				'title'       => __( 'Shipping Rules', 'wcsdm' ),
@@ -615,6 +597,24 @@ class Wcsdm extends WC_Shipping_Method {
 					'is_advanced' => true,
 					'is_dummy'    => false,
 					'is_hidden'   => true,
+				)
+			),
+			'section_general'        => array(
+				'type'        => 'title',
+				'title'       => __( 'General', 'wcsdm' ),
+				'is_advanced' => true,
+				'is_dummy'    => false,
+				'is_hidden'   => false,
+			),
+			'title'                  => array_merge(
+				$form_fields['title'], array(
+					'description' => $form_fields['title']['description'] . ' ' . __( 'Leave blank to inherit from the global setting.', 'wcsdm' ),
+					'default'     => '',
+					'desc_tip'    => true,
+					'is_advanced' => true,
+					'is_dummy'    => true,
+					'is_hidden'   => true,
+					'is_required' => false,
 				)
 			),
 			'link_advanced'          => array(
@@ -1778,8 +1778,9 @@ class Wcsdm extends WC_Shipping_Method {
 				throw new Exception( $api_response->get_error_message() );
 			}
 
+			// Bail early if the API response is empty.
 			if ( ! $api_response ) {
-				return;
+				throw new Exception( __( 'API Response data is empty', 'wcsdm' ) );
 			}
 
 			$calculated = $this->calculate_shipping_cost( $api_response, $package );
@@ -1789,30 +1790,25 @@ class Wcsdm extends WC_Shipping_Method {
 				throw new Exception( $calculated->get_error_message() );
 			}
 
-			// Set shipping cost.
-			$cost = isset( $calculated['cost'] ) ? $calculated['cost'] : 0;
+			// Bail early if the calculated data format is invalid.
+			if ( ! is_array( $calculated ) || ! isset( $calculated['cost'] ) ) {
+				throw new Exception( __( 'Calculated shipping data format is invalid', 'wcsdm' ) );
+			}
 
-			// Set shipping courier label.
-			$label = empty( $calculated['label'] ) ? $this->title : $calculated['label'];
+			$calculated = wp_parse_args( $calculated, array(
+				'id'        => $this->get_rate_id(),
+				'label'     => $this->title,
+				'package'   => $package,
+				'meta_data' => array( 'api_response' => $api_response ),
+			) );
 
 			// Show the distance info.
 			if ( 'yes' === $this->show_distance && ! empty( $api_response['distance_text'] ) ) {
-				$label = sprintf( '%s (%s)', $label, $api_response['distance_text'] );
+				$calculated['label'] = sprintf( '%s (%s)', $calculated['label'], $api_response['distance_text'] );
 			}
 
-			// Set meta_data info.
-			$meta_data = isset( $calculated['meta_data'] ) ? $calculated['meta_data'] : $api_response;
-
-			$rate = array(
-				'id'        => $this->get_rate_id(),
-				'label'     => $label,
-				'cost'      => $cost,
-				'package'   => $package,
-				'meta_data' => $meta_data,
-			);
-
 			// Register shipping rate to cart.
-			$this->add_rate( $rate );
+			$this->add_rate( $calculated );
 		} catch ( Exception $e ) {
 			$this->show_debug( $e->getMessage(), 'error' );
 		}
