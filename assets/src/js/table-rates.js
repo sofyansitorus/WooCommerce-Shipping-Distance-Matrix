@@ -307,7 +307,9 @@ var wcsdmTableRates = {
         });
 
         $.each(rows, function (index, row) {
+            var $row = $(row).hide();
             $('#wcsdm-table--table_rates--dummy').children('tbody').append(row);
+            $row.fadeIn('slow');
         });
 
         setTimeout(function () {
