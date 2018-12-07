@@ -217,6 +217,24 @@ class Wcsdm extends WC_Shipping_Method {
 				'is_required' => true,
 				'api_request' => 'key',
 			),
+			'origin_type'                     => array(
+				'title'       => __( 'Store Origin Type', 'wcsdm' ),
+				'type'        => 'wcsdm',
+				'orig_type'   => 'select',
+				'description' => __( 'Preferred data that will be used as the origin info when calculating the distance.', 'wcsdm' ),
+				'desc_tip'    => true,
+				'default'     => 'address',
+				'options'     => array(
+					'address'    => __( 'Store Location Address', 'wcsdm' ),
+					'coordinate' => __( 'Store Location Coordinate', 'wcsdm' ),
+				),
+				'custom_attributes' => array(
+					'data-fields' => wp_json_encode( array(
+						'address' => array('woocommerce_wcsdm_origin_address'),
+						'coordinate' => array('woocommerce_wcsdm_origin_lat', 'woocommerce_wcsdm_origin_lng'),
+					) ),
+				),
+			),
 			'origin_lat'                      => array(
 				'title'       => __( 'Store Location Latitude', 'wcsdm' ),
 				'type'        => 'wcsdm',
@@ -249,18 +267,6 @@ class Wcsdm extends WC_Shipping_Method {
 				'placeholder' => __( 'Click the icon on the right to edit', 'wcsdm' ),
 				'is_required' => true,
 				'disabled'    => true,
-			),
-			'origin_type'                     => array(
-				'title'       => __( 'Origin Type', 'wcsdm' ),
-				'type'        => 'wcsdm',
-				'orig_type'   => 'select',
-				'description' => __( 'Preferred data that will be used as the origin info when calculating the distance.', 'wcsdm' ),
-				'desc_tip'    => true,
-				'default'     => 'address',
-				'options'     => array(
-					'address'    => __( 'Store Location Address', 'wcsdm' ),
-					'coordinate' => __( 'Store Location Coordinate', 'wcsdm' ),
-				),
 			),
 			'enable_address_picker'           => array(
 				'title'       => __( 'Frontend Address Picker', 'wcsdm' ),

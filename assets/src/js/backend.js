@@ -2,8 +2,10 @@
  * Backend Scripts
  */
 
-var wcsdmBackendForm = {
+var wcsdmBackend = {
     initFrom: function () {
+        $('#woocommerce_wcsdm_origin_type').trigger('change');
+
         $('.wc-modal-shipping-method-settings table.form-table').each(function (index, table) {
             var $rows = $(table).find('tr');
             if (!$rows.length) {
@@ -60,7 +62,7 @@ var wcsdmBackendForm = {
 
         toggleBottons();
     },
-    showFrom: function () {
+    maybeOpenModal: function () {
         // Try show settings modal on settings page.
         if (wcsdm_backend.showSettings) {
             setTimeout(function () {
@@ -122,25 +124,45 @@ var wcsdmBackendForm = {
 
         toggleBottons();
     },
-    init: function () {
+    toggleStoreOriginFields: function (e) {
+        e.preventDefault();
+        var selected = $(this).val();
+        var fields = $(this).data('fields');
+        _.each(fields, function (fieldIds, fieldValue) {
+            _.each(fieldIds, function (fieldId) {
+                if (fieldValue !== selected) {
+                    $('#' + fieldId).closest('tr').hide();
+                } else {
+                    $('#' + fieldId).closest('tr').show();
+                }
+            });
+        });
+    },
+    bindEvents: function () {
         // Init form
-        $(document).off('click', '.wc-shipping-zone-method-settings', wcsdmBackendForm.initFrom);
-        $(document).on('click', '.wc-shipping-zone-method-settings', wcsdmBackendForm.initFrom);
+        $(document.body).off('wc_backbone_modal_loaded', wcsdmBackend.initFrom);
+        $(document.body).on('wc_backbone_modal_loaded', wcsdmBackend.initFrom);
 
         // Submit form
-        $(document).off('click', '#wcsdm-btn--save-settings', wcsdmBackendForm.submitForm);
-        $(document).on('click', '#wcsdm-btn--save-settings', wcsdmBackendForm.submitForm);
+        $(document).off('click', '#wcsdm-btn--save-settings', wcsdmBackend.submitForm);
+        $(document).on('click', '#wcsdm-btn--save-settings', wcsdmBackend.submitForm);
 
         // Show API Key instruction
-        $(document).off('click', '.wcsdm-show-instructions', wcsdmBackendForm.showApiKeyInstructions);
-        $(document).on('click', '.wcsdm-show-instructions', wcsdmBackendForm.showApiKeyInstructions);
+        $(document).off('click', '.wcsdm-show-instructions', wcsdmBackend.showApiKeyInstructions);
+        $(document).on('click', '.wcsdm-show-instructions', wcsdmBackend.showApiKeyInstructions);
 
         // Close API Key instruction
-        $(document).off('click', '#wcsdm-btn--close-instructions', wcsdmBackendForm.closeApiKeyInstructions);
-        $(document).on('click', '#wcsdm-btn--close-instructions', wcsdmBackendForm.closeApiKeyInstructions);
+        $(document).off('click', '#wcsdm-btn--close-instructions', wcsdmBackend.closeApiKeyInstructions);
+        $(document).on('click', '#wcsdm-btn--close-instructions', wcsdmBackend.closeApiKeyInstructions);
 
-        wcsdmBackendForm.showFrom();
+        // Toggle Store Origin Fields
+        $(document).off('change', '#woocommerce_wcsdm_origin_type', wcsdmBackend.toggleStoreOriginFields);
+        $(document).on('change', '#woocommerce_wcsdm_origin_type', wcsdmBackend.toggleStoreOriginFields);
+    },
+    init: function () {
+        wcsdmBackend.bindEvents();
+        wcsdmBackend.maybeOpenModal();
     }
 };
 
-$(document).ready(wcsdmBackendForm.init);
+$(document).ready(wcsdmBackend.init);
