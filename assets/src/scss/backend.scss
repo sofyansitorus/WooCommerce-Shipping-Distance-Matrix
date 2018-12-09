@@ -12,6 +12,14 @@
             display: none;
         }
     }
+    &-no-padding {
+        padding: 0 !important;
+    }
+    &-spinner {
+        float: none;
+        margin-top: 0;
+        margin-left: 7px;
+    }
     &-link {
         text-decoration: none;
         &:active,
@@ -24,148 +32,131 @@
         display: block;
         width: 100% !important;
     }
-    &-no-padding {
-        padding: 0 !important;
-    }
-    &-settings-form-title {
-        text-align: center;
-        padding: 0.7em !important;
-        margin: 0 !important;
-        background-color: $white;
-    }
-    &-settings-sub-title {
-        font-size: 1em;
-        padding: 0.5em 1em;
-        margin: 0;
-        background-color: $alabaster;
-    }
-    &-edit-api-links {
-        a {
-            &+a {
-                margin-left: 10px;
-            }
-        }
-    }
-    &-spinner{
-        float: none;
-        margin-top: 0;
-        margin-left: 7px;
-    }
     &-buttons {
         &-item {
+            &.button-large {
+                .dashicons {
+                    margin-top: 5px;
+                    &:before {
+                        font-size: 1em;
+                    }
+                }
+            }
             &--left {
                 float: left;
             }
-            .dashicons {
-                margin-top: 5px;
-                &:before {
-                    font-size: 1em;
-                }
-            }
-        }
-    }
-    &-errors {
-        margin-bottom: 2em;
-        &--heading {
-            font-weight: 700;
-            font-size: 1.2em;
-            border-bottom: 1px solid $alto;
-            margin-bottom: 8px;
-            padding-bottom: 8px;
         }
     }
     &-field {
-        &--rate {
-            &--error {
-                border: 1px solid $punch !important;
-                background-color: rgba($punch, .1) !important;
+        &:disabled {
+            background: $alabaster;
+        }
+        &-type--title {
+            padding-left: 14px !important;
+            &~p {
+                padding-left: 14px !important;
             }
-            &--dummy:not(a) {
-                min-width: 150px !important;
+        }
+        &-group-wrap {
+            padding-top: 1px;
+            margin-bottom: 1em;
+            box-shadow: 0px 0px 1px 0px rgba($black, 0.1);
+            >.form-table {
+                border-top: 1px solid $alabaster;
+                box-shadow: 0px -1px 0px 0px rgba($black, 0.1);
+            }
+            &--api_key_instruction,
+            &--location_picker,
+            &--advanced_rate {
+                >h3 {
+                    text-align: center;
+                }
             }
         }
     }
-    &-location-field-wrap {
-        padding-right: 50px;
-        position: relative;
-        cursor: pointer;
-        &:after {
-            content: "\f231";
-            font-family: dashicons;
-            font-size: 2em;
-            position: absolute;
-            top: 0;
-            right: 10px;
-        }
-    }
-    &-row-dummy {
-        .wcsdm-col {
-            padding: 10px !important;
-            &--select-item {
-                width: 50px;
-                text-align: center;
-                input[type=checkbox] {
-                    margin: 0;
-                    padding: 0;
-                }
-            }
-            &--link_advanced {
-                width: 100px;
-                text-align: center;
-                a {
-                    text-decoration: none;
-                    &:active,
-                    &:focus {
-                        text-decoration: none;
-                        box-shadow: none;
-                    }
-                }
-            }
-        }
-        thead {
-            .wcsdm-col {
-                background-color: $seashell;
-                &+.wcsdm-col {
-                    border-left: 1px solid $white;
-                }
-            }
-        }
-        tbody {
+    &-table {
+        &--table_rates--dummy {
+            max-width: 100%;
             tr {
                 .wcsdm-col {
+                    box-sizing: border-box;
                     background-color: $white;
-                    border-bottom: 1px solid $alabaster;
-                    &+.wcsdm-col {
-                        border-left: 1px solid $alabaster;
+                    &--select-item {
+                        width: 50px;
+                        text-align: center;
+                        input {
+                            margin: 0;
+                            padding: 0;
+                        }
                     }
-                    &:first-child {
-                        border-left: 1px solid $alabaster;
+                    &--link_advanced {
+                        width: 96px;
+                        text-align: center;
+                    }
+                    &+.wcsdm-col {
+                        border-left: 1px solid $seashell;
+                    }
+                }
+            }
+            thead {
+                tr {
+                    .wcsdm-col {
+                        font-weight: 600;
+                    }
+                }
+            }
+            tbody {
+                tr {
+                    .wcsdm-col {
+                        padding-top: 9px !important;
+                        padding-bottom: 9px !important;
+                    }
+                    &.highlighted {
+                        .wcsdm-col {
+                            animation: highlighted 0.5s infinite;
+                        }
+                    }
+                    &:nth-child(odd) {
+                        .wcsdm-col {
+                            background-color: rgba($anakiwa, 0.1);
+                        }
+                    }
+                    &:nth-child(even) {
+                        .wcsdm-col {
+                            background-color: $white;
+                        }
                     }
                     &:last-child {
-                        border-right: 1px solid $alabaster;
+                        td,
+                        th {
+                            border-bottom: 0px solid rgba($alabaster, 0) !important;
+                        }
                     }
-                    &.hidden {
-                        display: none;
+                    &:hover {
+                        .wcsdm-col {
+                            background-color: rgba($anakiwa, 0.2);
+                        }
                     }
-                }
-                &.selected {
-                    .wcsdm-col {
-                        background-color: rgba($anakiwa, .5);
-                    }
-                    a {
-                        color: $anakiwa;
-                        opacity: .3;
-                    }
-                }
-                &.highlighted {
-                    .wcsdm-col {
-                        background-color: rgba($rice-flower, .5);
+                    .wcsdm-field--context--dummy:not(a) {
+                        min-width: 100px !important;
                     }
                 }
-                &.deleted {
-                    .wcsdm-col {
-                        background-color: rgba($lemon-chiffon, .5);
-                    }
+            }
+        }
+        &--advanced_rate {
+            .wcsdm-no-padding {
+                .wcsdm-field-type--title {
+                    margin-top: 0;
+                    margin-bottom: 0;
+                    padding-top: 5px;
+                    padding-bottom: 5px;
+                    background: rgba($alabaster, 0.6);
+                    border-top: 1px solid $alabaster;
+                    border-bottom: 1px solid $alabaster;
+                }
+                .form-table {
+                    border-top: 1px solid $alabaster;
+                    margin-bottom: 0 !important;
                 }
             }
         }
@@ -208,6 +199,7 @@
         margin: 10px;
         background-color: $lemon-chiffon;
         border: 1px solid darken($lemon-chiffon, 30%);
+        box-shadow: 0px 0px 5px 1px rgba($black, 0.4);
         h3,
         p {
             text-align: center;
@@ -234,6 +226,7 @@
             border-radius: 0px;
             background-color: $white;
             border: 1px solid darken($white, 10%);
+            box-shadow: 0px 0px 5px 1px rgba($black, 0);
         }
     }
     &-map-search-input {
@@ -245,4 +238,22 @@
 
 .pac-container {
     z-index: 9999999;
+}
+
+@keyframes highlighted {
+    0% {
+        background-color: $white;
+    }
+    49% {
+        background-color: $white;
+    }
+    50% {
+        background-color: rgba($anakiwa, 0.3);
+    }
+    99% {
+        background-color: rgba($anakiwa, 0.3);
+    }
+    100% {
+        background-color: $white;
+    }
 }

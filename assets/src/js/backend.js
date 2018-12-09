@@ -2,105 +2,48 @@
  * Backend Scripts
  */
 
-function toggleBottons(args) {
-    'use strict';
+var wcsdmBackend = {
+    initFrom: function () {
+        $('#woocommerce_wcsdm_origin_type').trigger('change');
 
-    var data = getButton(args);
-    $('#wcsdm-buttons').remove();
-    $('#btn-ok').hide().after(wp.template('wcsdm-buttons')(data));
-}
-
-function getButton(args) {
-    'use strict';
-
-    var leftButtonDefaultId = 'add-rate';
-    var leftButtonDefaultIcon = 'plus';
-    var leftButtonDefaultLabel = 'add';
-
-    var leftButtonDefault = {
-        id: leftButtonDefaultId,
-        icon: leftButtonDefaultIcon,
-        label: leftButtonDefaultLabel
-    };
-
-    var rightButtonDefaultIcon = 'yes';
-    var rightButtonDefaultId = 'save-settings';
-    var rightButtonDefaultLabel = 'save';
-
-    var rightButtonDefault = {
-        id: rightButtonDefaultId,
-        icon: rightButtonDefaultIcon,
-        label: rightButtonDefaultLabel
-    };
-
-    var selected = {};
-    var leftButton;
-    var rightButton;
-
-    if (_.has(args, 'left')) {
-        leftButton = _.defaults(args.left, leftButtonDefault);
-
-        if (_.has(wcsdm_backend.i18n, leftButton.label)) {
-            leftButton.label = wcsdm_backend.i18n[leftButton.label];
-        }
-
-        selected.btn_left = leftButton;
-    }
-
-    if (_.has(args, 'right')) {
-        rightButton = _.defaults(args.right, rightButtonDefault);
-
-        if (_.has(wcsdm_backend.i18n, rightButton.label)) {
-            rightButton.label = wcsdm_backend.i18n[rightButton.label];
-        }
-
-        selected.btn_right = rightButton;
-    }
-
-    if (_.isEmpty(selected)) {
-        leftButton = _.defaults({}, leftButtonDefault);
-
-        if (_.has(wcsdm_backend.i18n, leftButton.label)) {
-            leftButton.label = wcsdm_backend.i18n[leftButton.label];
-        }
-
-        selected.btn_left = leftButton;
-
-        rightButton = _.defaults({}, rightButtonDefault);
-
-        if (_.has(wcsdm_backend.i18n, rightButton.label)) {
-            rightButton.label = wcsdm_backend.i18n[rightButton.label];
-        }
-
-        selected.btn_right = rightButton;
-    }
-
-    return selected;
-}
-
-$(document).ready(function () {
-    // Try show settings modal on settings page.
-    if (wcsdm_backend.showSettings) {
-        setTimeout(function () {
-            var isMethodAdded = false;
-            var methods = $(document).find('.wc-shipping-zone-method-type');
-            for (var i = 0; i < methods.length; i++) {
-                var method = methods[i];
-                if ($(method).text() === wcsdm_backend.methodTitle) {
-                    $(method).closest('tr').find('.row-actions .wc-shipping-zone-method-settings').trigger('click');
-                    isMethodAdded = true;
-                    return;
-                }
+        $('.wc-modal-shipping-method-settings table.form-table').each(function (index, table) {
+            var $rows = $(table).find('tr');
+            if (!$rows.length) {
+                $(table).remove();
             }
-            // Show Add shipping method modal if the shipping is not added.
-            if (!isMethodAdded) {
-                $('.wc-shipping-zone-add-method').trigger('click');
-                $('select[name="add_method_id"]').val(wcsdm_backend.methodId).trigger('change');
-            }
-        }, 400);
-    }
+        });
 
-    $(document).on('click', '.wc-shipping-zone-method-settings', function () {
+        $('.wcsdm-field-group').each(function (index, fieldGroup) {
+            var fieldGroupId = $(fieldGroup)
+                .attr('id')
+                .replace('woocommerce_wcsdm_field_group_', '');
+
+            var $fieldGroupDescription = $(fieldGroup)
+                .next('p')
+                .detach();
+
+            var $fieldGroupTable = $(fieldGroup)
+                .nextAll('table.form-table')
+                .first()
+                .attr('id', 'wcsdm-table--' + fieldGroupId)
+                .addClass('wcsdm-table wcsdm-table--' + fieldGroupId)
+                .detach();
+
+            $(fieldGroup)
+                .wrap('<div id="wcsdm-field-group-wrap--' + fieldGroupId + '" class="wcsdm-field-group-wrap wcsdm-field-group-wrap--' + fieldGroupId + '"></div>');
+
+            $fieldGroupDescription
+                .appendTo('#wcsdm-field-group-wrap--' + fieldGroupId);
+
+            $fieldGroupTable
+                .appendTo('#wcsdm-field-group-wrap--' + fieldGroupId);
+
+            if ($(fieldGroup).hasClass('wcsdm-field-group-hidden')) {
+                $('#wcsdm-field-group-wrap--' + fieldGroupId)
+                    .addClass('wcsdm-hidden');
+            }
+        });
+
         var params = _.mapObject(wcsdm_backend, function (val, key) {
             switch (key) {
                 case 'default_lat':
@@ -114,13 +57,112 @@ $(document).ready(function () {
             }
         });
 
-        // Bail early if the link clicked others shipping method
-        var methodTitle = $(this).closest('tr').find('.wc-shipping-zone-method-type').text();
-        if (methodTitle !== params.methodTitle) {
-            return;
-        }
-
         wcsdmTableRates.init(params);
         wcsdmMapPicker.init(params);
-    });
-});
+
+        toggleBottons();
+    },
+    maybeOpenModal: function () {
+        // Try show settings modal on settings page.
+        if (wcsdm_backend.showSettings) {
+            setTimeout(function () {
+                var isMethodAdded = false;
+                var methods = $(document).find('.wc-shipping-zone-method-type');
+                for (var i = 0; i < methods.length; i++) {
+                    var method = methods[i];
+                    if ($(method).text() === wcsdm_backend.methodTitle) {
+                        $(method).closest('tr').find('.row-actions .wc-shipping-zone-method-settings').trigger('click');
+                        isMethodAdded = true;
+                        return;
+                    }
+                }
+
+                // Show Add shipping method modal if the shipping is not added.
+                if (!isMethodAdded) {
+                    $('.wc-shipping-zone-add-method').trigger('click');
+                    $('select[name="add_method_id"]').val(wcsdm_backend.methodId).trigger('change');
+                }
+            }, 500);
+        }
+    },
+    submitForm: function (e) {
+        'use strict';
+        e.preventDefault();
+
+        $('#btn-ok').trigger('click');
+    },
+    showApiKeyInstructions: function (e) {
+        'use strict';
+
+        e.preventDefault();
+
+        toggleBottons({
+            left: {
+                id: 'close-instructions',
+                label: 'Back',
+                icon: 'undo'
+            },
+            right: {
+                id: 'get-api-key',
+                label: 'Get API Key',
+                icon: 'admin-links'
+            }
+        });
+
+        $('#wcsdm-field-group-wrap--api_key_instruction').fadeIn().siblings().hide();
+
+        $('.modal-close-link').hide();
+    },
+    closeApiKeyInstructions: function (e) {
+        'use strict';
+
+        e.preventDefault();
+
+        $('#wcsdm-field-group-wrap--api_key_instruction').hide().siblings().not('.wcsdm-hidden').fadeIn();
+
+        $('.modal-close-link').show();
+
+        toggleBottons();
+    },
+    toggleStoreOriginFields: function (e) {
+        e.preventDefault();
+        var selected = $(this).val();
+        var fields = $(this).data('fields');
+        _.each(fields, function (fieldIds, fieldValue) {
+            _.each(fieldIds, function (fieldId) {
+                if (fieldValue !== selected) {
+                    $('#' + fieldId).closest('tr').hide();
+                } else {
+                    $('#' + fieldId).closest('tr').show();
+                }
+            });
+        });
+    },
+    bindEvents: function () {
+        // Init form
+        $(document.body).off('wc_backbone_modal_loaded', wcsdmBackend.initFrom);
+        $(document.body).on('wc_backbone_modal_loaded', wcsdmBackend.initFrom);
+
+        // Submit form
+        $(document).off('click', '#wcsdm-btn--save-settings', wcsdmBackend.submitForm);
+        $(document).on('click', '#wcsdm-btn--save-settings', wcsdmBackend.submitForm);
+
+        // Show API Key instruction
+        $(document).off('click', '.wcsdm-show-instructions', wcsdmBackend.showApiKeyInstructions);
+        $(document).on('click', '.wcsdm-show-instructions', wcsdmBackend.showApiKeyInstructions);
+
+        // Close API Key instruction
+        $(document).off('click', '#wcsdm-btn--close-instructions', wcsdmBackend.closeApiKeyInstructions);
+        $(document).on('click', '#wcsdm-btn--close-instructions', wcsdmBackend.closeApiKeyInstructions);
+
+        // Toggle Store Origin Fields
+        $(document).off('change', '#woocommerce_wcsdm_origin_type', wcsdmBackend.toggleStoreOriginFields);
+        $(document).on('change', '#woocommerce_wcsdm_origin_type', wcsdmBackend.toggleStoreOriginFields);
+    },
+    init: function () {
+        wcsdmBackend.bindEvents();
+        wcsdmBackend.maybeOpenModal();
+    }
+};
+
+$(document).ready(wcsdmBackend.init);

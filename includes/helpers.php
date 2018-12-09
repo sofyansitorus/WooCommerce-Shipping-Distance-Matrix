@@ -43,27 +43,23 @@ function wcsdm_is_pro() {
  */
 function wcsdm_i18n( $key = '', $default = '' ) {
 	$i18n = array(
-		'drag_marker'         => __( 'Drag this marker or search your address at the input above.', 'wcsdm' ),
+		'drag_marker'  => __( 'Drag this marker or search your address at the input above.', 'wcsdm' ),
 		// translators: %s = distance unit.
-		'per_unit'            => __( 'Per %s', 'wcsdm' ),
-		'map_is_error'        => __( 'Map is error', 'wcsdm' ),
-		'latitude'            => __( 'Latitude', 'wcsdm' ),
-		'longitude'           => __( 'Longitude', 'wcsdm' ),
-		'cancel'              => __( 'Cancel', 'wcsdm' ),
-		'add_rate'            => __( 'Add Rate', 'wcsdm' ),
-		'delete_rate'         => __( 'Delete Selected Rates', 'wcsdm' ),
-		'delete_rate_confirm' => __( 'Confirm Delete', 'wcsdm' ),
-		'save_changes'        => __( 'Save Changes', 'wcsdm' ),
-		'apply_changes'       => __( 'Apply Changes', 'wcsdm' ),
-		'add'                 => __( 'Add', 'wcsdm' ),
-		'save'                => __( 'Save', 'wcsdm' ),
-		'apply'               => __( 'Apply', 'wcsdm' ),
-		'close'               => __( 'Close', 'wcsdm' ),
-		'back'                => __( 'Back', 'wcsdm' ),
-		'delete'              => __( 'Delete', 'wcsdm' ),
-		'confirm'             => __( 'Confirm', 'wcsdm' ),
-		'get_api_key'         => __( 'Get API Key', 'wcsdm' ),
-		'errors'              => array(
+		'per_unit'     => __( 'Per %s', 'wcsdm' ),
+		'map_is_error' => __( 'Map is error', 'wcsdm' ),
+		'latitude'     => __( 'Latitude', 'wcsdm' ),
+		'longitude'    => __( 'Longitude', 'wcsdm' ),
+		'buttons'      => array(
+			'Get API Key'           => __( 'Get API Key', 'wcsdm' ),
+			'Back'                  => __( 'Back', 'wcsdm' ),
+			'Cancel'                => __( 'Cancel', 'wcsdm' ),
+			'Apply Changes'         => __( 'Apply Changes', 'wcsdm' ),
+			'Confirm Delete'        => __( 'Confirm Delete', 'wcsdm' ),
+			'Delete Selected Rates' => __( 'Delete Selected Rates', 'wcsdm' ),
+			'Add New Rate'          => __( 'Add New Rate', 'wcsdm' ),
+			'Save Changes'          => __( 'Save Changes', 'wcsdm' ),
+		),
+		'errors'       => array(
 			// translators: %s = Field name.
 			'field_required'        => __( '%s field is required', 'wcsdm' ),
 			// translators: %1$s = Field name, %2$d = Minimum field value rule.
@@ -84,6 +80,8 @@ function wcsdm_i18n( $key = '', $default = '' ) {
 				'total_cost_type' => __( 'Total cost type "Match Formula" options only available in pro version. Please upgrade!', 'wcsdm' ),
 			),
 		),
+		'Save Changes' => __( 'Save Changes', 'wcsdm' ),
+		'Add New Rate' => __( 'Add New Rate', 'wcsdm' ),
 	);
 
 	if ( ! empty( $key ) && is_string( $key ) ) {
@@ -151,4 +149,64 @@ function wcsdm_instances( $enabled_only = true ) {
 	}
 
 	return apply_filters( 'wcsdm_instances', $instances );
+}
+
+/**
+ * Inserts a new key/value before the key in the array.
+ *
+ * @since 2.0.7
+ *
+ * @param string $before_key The key to insert before.
+ * @param array  $array An array to insert in to.
+ * @param string $new_key The new key to insert.
+ * @param mixed  $new_value The new value to insert.
+ *
+ * @return array
+ */
+function wcsdm_array_insert_before( $before_key, $array, $new_key, $new_value ) {
+	if ( ! array_key_exists( $before_key, $array ) ) {
+		return $array;
+	}
+
+	$new = array();
+
+	foreach ( $array as $k => $value ) {
+		if ( $k === $before_key ) {
+			$new[ $new_key ] = $new_value;
+		}
+
+		$new[ $k ] = $value;
+	}
+
+	return $new;
+}
+
+/**
+ * Inserts a new key/value after the key in the array.
+ *
+ * @since 2.0.7
+ *
+ * @param string $after_key The key to insert after.
+ * @param array  $array An array to insert in to.
+ * @param string $new_key The new key to insert.
+ * @param mixed  $new_value The new value to insert.
+ *
+ * @return array
+ */
+function wcsdm_array_insert_after( $after_key, $array, $new_key, $new_value ) {
+	if ( ! array_key_exists( $after_key, $array ) ) {
+		return $array;
+	}
+
+	$new = array();
+
+	foreach ( $array as $k => $value ) {
+		$new[ $k ] = $value;
+
+		if ( $k === $after_key ) {
+			$new[ $new_key ] = $new_value;
+		}
+	}
+
+	return $new;
 }
