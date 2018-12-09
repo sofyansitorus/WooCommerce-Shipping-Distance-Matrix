@@ -106,6 +106,10 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 > 
 > **Please upgrade wisely and carefully.**
 
+= 2.0.7 =
+* Enhancement - Added minimum cost option in favor removed distance cost type option.
+* Enhancement - Improved backend area
+
 = 2.0.6 =
 * Fix - Fixed Wrong Shipping Address Format for US Based Address.
 
@@ -296,6 +300,6 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 * Feature - Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
 
 == Upgrade Notice ==
-= 2.0.6 =
+= 2.0.7 =
 
 WARNING: Upgrading from version 1.x to version 2.x is a major update and has breaking changes. Some settings data will be lost and re-setup the plugin is required after the upgrade. Please upgrade wisely and carefully.
