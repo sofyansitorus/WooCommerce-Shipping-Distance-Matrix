@@ -30,7 +30,7 @@ var wcsdmBackend = {
                 .detach();
 
             $(fieldGroup)
-                .wrap('<div id="wcsdm-field-group-wrap--' + fieldGroupId + '" class="wcsdm-field-group-wrap"></div>');
+                .wrap('<div id="wcsdm-field-group-wrap--' + fieldGroupId + '" class="wcsdm-field-group-wrap wcsdm-field-group-wrap--' + fieldGroupId + '"></div>');
 
             $fieldGroupDescription
                 .appendTo('#wcsdm-field-group-wrap--' + fieldGroupId);

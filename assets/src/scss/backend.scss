@@ -61,9 +61,16 @@
             padding-top: 1px;
             margin-bottom: 1em;
             box-shadow: 0px 0px 1px 0px rgba($black, 0.1);
-            &>.form-table {
+            >.form-table {
                 border-top: 1px solid $alabaster;
                 box-shadow: 0px -1px 0px 0px rgba($black, 0.1);
+            }
+            &--api_key_instruction,
+            &--location_picker,
+            &--advanced_rate {
+                >h3 {
+                    text-align: center;
+                }
             }
         }
     }
@@ -129,6 +136,9 @@
                         .wcsdm-col {
                             background-color: rgba($anakiwa, 0.2);
                         }
+                    }
+                    .wcsdm-field--context--dummy:not(a) {
+                        min-width: 100px !important;
                     }
                 }
             }

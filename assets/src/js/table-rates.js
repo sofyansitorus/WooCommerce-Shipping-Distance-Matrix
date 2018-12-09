@@ -64,7 +64,15 @@ var wcsdmTableRates = {
         'use strict';
 
         $('.wcsdm-field-key--total_cost_type > option[value="formula"]').prop('disabled', !wcsdmTableRates.params.isPro);
-        $('.wcsdm-field-key--cost_type > option[value="flexible"]').text(wcsdmTableRates.params.i18n.per_unit.replace('%s', $('#woocommerce_wcsdm_distance_unit option:selected').text()));
+
+        var distanceUnitSelected = $('#woocommerce_wcsdm_distance_unit').val();
+        var $distanceUnitFields = $('#woocommerce_wcsdm_distance_unit').data('fields');
+        var label = _.has($distanceUnitFields.label, distanceUnitSelected) ? $distanceUnitFields.label[distanceUnitSelected] : '';
+        if (label && label.length) {
+            _.each($distanceUnitFields.targets, function (target) {
+                $(target).text(label);
+            });
+        }
     },
     handleAddRateButton: function (e) {
         'use strict';
