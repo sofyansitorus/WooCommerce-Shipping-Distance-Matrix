@@ -3,9 +3,9 @@ Contributors: sofyansitorus
 Tags: woocommerce,woocommerce-shipping,local-shipping,private-shipping
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=DGSVXLV7R8BTY
 Requires at least: 4.8
-Tested up to: 4.9.8
+Tested up to: 5.2.2
 Requires PHP: 5.6
-Stable tag: 2.0.7
+Stable tag: 2.0.8
 License: GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -105,6 +105,10 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 > Upgrading from version 1.x to version 2.x is a major update and has breaking changes. Some **settings data will be lost** and **re-setup the plugin** is required after the upgrade.
 > 
 > **Please upgrade wisely and carefully.**
+
+= 2.0.8 =
+* Enhancement - Fixed Unable to Calculate distnance in some cases
+* Enhancement - Improved UI/UX backend area
 
 = 2.0.7 =
 * Enhancement - Added minimum cost option in favor removed distance cost type option.
