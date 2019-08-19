@@ -67,7 +67,9 @@ var wcsdmTableRates = {
 
         var distanceUnitSelected = $('#woocommerce_wcsdm_distance_unit').val();
         var $distanceUnitFields = $('#woocommerce_wcsdm_distance_unit').data('fields');
-        var label = _.has($distanceUnitFields.label, distanceUnitSelected) ? $distanceUnitFields.label[distanceUnitSelected] : '';
+
+        var label = $distanceUnitFields && _.has($distanceUnitFields.label, distanceUnitSelected) ? $distanceUnitFields.label[distanceUnitSelected] : '';
+
         if (label && label.length) {
             _.each($distanceUnitFields.targets, function (target) {
                 $(target).text(label);

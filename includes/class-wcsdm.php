@@ -197,20 +197,20 @@ class Wcsdm extends WC_Shipping_Method {
 				'title'     => __( 'Store Location Settings', 'wcsdm' ),
 			),
 			'api_key_browser'                 => array(
-				'title'       => __( 'Browser API Key', 'wcsdm' ),
+				'title'       => __( 'Browser Side API Key', 'wcsdm' ),
 				'type'        => 'wcsdm',
 				'orig_type'   => 'api_key',
-				'description' => __( 'Google maps platform API Key for usage in browser side request. This API Key will be used by Store Location Latitude/Longitude setting fields and customer checkout Address Picker that available in Pro Version. This API Key MUST be has HTTP referrers restriction setting activated.', 'wcsdm' ),
+				'description' => __( 'Google maps platform API Key for usage in browser side request. This API Key will be used by Store Location Latitude/Longitude setting fields and customer checkout Address Picker that available in Pro Version.', 'wcsdm' ),
 				'desc_tip'    => true,
 				'default'     => '',
 				'placeholder' => __( 'Click the icon on the right to edit', 'wcsdm' ),
 				'is_required' => true,
 			),
 			'api_key_server'                  => array(
-				'title'       => __( 'Server API Key', 'wcsdm' ),
+				'title'       => __( 'Server Side API Key', 'wcsdm' ),
 				'type'        => 'wcsdm',
 				'orig_type'   => 'api_key',
-				'description' => __( 'Google maps platform API Key for usage in server side request. This API Key will be used to calculate the distance of the customer during checkout. This API Key MUST be has IP addresses restriction setting activated.', 'wcsdm' ),
+				'description' => __( 'Google maps platform API Key for usage in server side request. This API Key will be used to calculate the distance of the customer during checkout.', 'wcsdm' ),
 				'desc_tip'    => true,
 				'default'     => '',
 				'placeholder' => __( 'Click the icon on the right to edit', 'wcsdm' ),
@@ -223,16 +223,16 @@ class Wcsdm extends WC_Shipping_Method {
 				'orig_type'         => 'select',
 				'description'       => __( 'Preferred data that will be used as the origin info when calculating the distance.', 'wcsdm' ),
 				'desc_tip'          => true,
-				'default'           => 'address',
+				'default'           => 'coordinate',
 				'options'           => array(
-					'address'    => __( 'Store Location Address', 'wcsdm' ),
-					'coordinate' => __( 'Store Location Coordinate', 'wcsdm' ),
+					'coordinate' => __( 'Store Location Coordinate (Recommended)', 'wcsdm' ),
+					'address'    => __( 'Store Location Address (Less Accurate)', 'wcsdm' ),
 				),
 				'custom_attributes' => array(
 					'data-fields' => wp_json_encode(
 						array(
-							'address'    => array( 'woocommerce_wcsdm_origin_address' ),
 							'coordinate' => array( 'woocommerce_wcsdm_origin_lat', 'woocommerce_wcsdm_origin_lng' ),
+							'address'    => array( 'woocommerce_wcsdm_origin_address' ),
 						)
 					),
 				),
@@ -845,9 +845,7 @@ class Wcsdm extends WC_Shipping_Method {
 					<legend class="screen-reader-text"><span><?php echo wp_kses_post( $data['title'] ); ?></span></legend>
 					<input type="hidden" name="<?php echo esc_attr( $field_key ); ?>" id="<?php echo esc_attr( $field_key ); ?>" value="<?php echo esc_attr( $this->get_option( $key ) ); ?>" />
 					<input class="input-text regular-input <?php echo esc_attr( $data['class'] ); ?>" type="text" id="<?php echo esc_attr( $field_key ); ?>--dummy" style="<?php echo esc_attr( $data['css'] ); ?>" value="<?php echo esc_attr( $this->get_option( $key ) ); ?>" placeholder="<?php echo esc_attr( $data['placeholder'] ); ?>" readonly="readonly" /> 
-					<a href="#" class="button button-primary button-small wcsdm-edit-api-key wcsdm-link" id="<?php echo esc_attr( $key ); ?>"><span class="dashicons dashicons-edit"></span></a> 
-					<a href="#" class="button button-secondary button-small wcsdm-edit-api-key-cancel wcsdm-link wcsdm-hidden"><span class="dashicons dashicons-undo"></span></a>
-					<span class="spinner wcsdm-spinner"></span>
+					<a href="#" class="button button-secondary button-small wcsdm-edit-api-key wcsdm-link" id="<?php echo esc_attr( $key ); ?>"><span class="dashicons dashicons-edit"></span><span class="dashicons dashicons-yes"></span><span class="spinner wcsdm-spinner"></span></a>
 					<div>
 					<a href="#" class="wcsdm-show-instructions wcsdm-link"><?php esc_html_e( 'How to Get API Key?', 'wcsdm' ); ?></a>
 					</div>
@@ -893,7 +891,7 @@ class Wcsdm extends WC_Shipping_Method {
 				<fieldset>
 					<legend class="screen-reader-text"><span><?php echo wp_kses_post( $data['title'] ); ?></span></legend>
 					<input class="input-text regular-input <?php echo esc_attr( $data['class'] ); ?>" type="text" name="<?php echo esc_attr( $field_key ); ?>" id="<?php echo esc_attr( $field_key ); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" value="<?php echo esc_attr( $this->get_option( $key ) ); ?>" placeholder="<?php echo esc_attr( $data['placeholder'] ); ?>" readonly="readonly" /> 
-					<a href="#" class="button button-primary button-small wcsdm-link wcsdm-edit-location"><span class="dashicons dashicons-location-alt"></span></a>
+					<a href="#" class="button button-secondary button-small wcsdm-link wcsdm-edit-location"><span class="dashicons dashicons-location"></span></a>
 					<?php echo $this->get_description_html( $data ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				</fieldset>
 			</td>
@@ -977,7 +975,7 @@ class Wcsdm extends WC_Shipping_Method {
 				<div id="wcsdm-map-instructions">
 					<div class="wcsdm-map-instructions">
 						<p><?php echo wp_kses_post( __( 'This plugin uses Google Maps Platform APIs where users are required to have a valid API key to be able to use their APIs. Make sure you checked 3 the checkboxes as shown below when creating the API Key.', 'wcsdm' ) ); ?></p>
-						<img src="<?php echo esc_attr( WCSDM_URL ); ?>assets/img/map-instructions.jpg" />
+						<a href="https://cloud.google.com/maps-platform/#get-started" target="_blank" title="<?php echo esc_attr__( 'Enable Google Maps Platform', 'wcsdm' ); ?>"><img src="<?php echo esc_attr( WCSDM_URL ); ?>assets/img/map-instructions.jpg" /></a>
 					</div>
 				</div>
 			</td>
@@ -1334,15 +1332,10 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @return array
 	 */
 	public function validate_api_key_field( $key, $value ) {
-		if ( 'api_key_server' === $key && ! empty( $value ) ) {
-			$response = $this->api_request(
-				array(
-					'origin'      => array( WCSDM_DEFAULT_LAT, WCSDM_DEFAULT_LNG ),
-					'destination' => array( WCSDM_TEST_LAT, WCSDM_TEST_LNG ),
-					'settings'    => array( 'api_key_server' => $value ),
-				),
-				false
-			);
+		if ( 'api_key_server' === $key && ! empty( $value ) && $value !== $this->api_key_server ) {
+			$api = new Wcsdm_API();
+
+			$response = $api->calculate_distance( array( 'key' => $value ), true );
 
 			if ( is_wp_error( $response ) ) {
 				// translators: %s = API response error message.
@@ -1436,8 +1429,8 @@ class Wcsdm extends WC_Shipping_Method {
 			}
 
 			$api_request_data = array(
-				'origins'      => is_array( $origin ) ? implode( ', ', $origin ) : $origin,
-				'destinations' => is_array( $destination ) ? implode( ', ', $destination ) : $destination,
+				'origins'      => $origin,
+				'destinations' => $destination,
 				'language'     => get_locale(),
 			);
 
@@ -1449,88 +1442,12 @@ class Wcsdm extends WC_Shipping_Method {
 				$api_request_data[ $field['api_request'] ] = isset( $settings[ $key ] ) ? $settings[ $key ] : '';
 			}
 
-			foreach ( $api_request_data as $key => $value ) {
-				$api_request_data[ $key ] = is_array( $value ) ? array_map( 'rawurlencode', $value ) : rawurlencode( $value );
-			}
+			$api = new Wcsdm_API();
 
-			$request_url = add_query_arg( $api_request_data, $this->google_api_url );
+			$results = $api->calculate_distance( $api_request_data );
 
-			$this->show_debug( __( 'API Request URL', 'wcsdm' ) . ': ' . $request_url );
-
-			$raw_response = wp_remote_get( esc_url_raw( $request_url ) );
-
-			// Check if HTTP request is error.
-			if ( is_wp_error( $raw_response ) ) {
-				throw new Exception( $raw_response->get_error_message() );
-			}
-
-			$response_body = wp_remote_retrieve_body( $raw_response );
-
-			// Check if API response is empty.
-			if ( empty( $response_body ) ) {
-				throw new Exception( __( 'API response is empty', 'wcsdm' ) );
-			}
-
-			// Decode API response body.
-			$response_data = json_decode( $response_body, true );
-
-			// Check if JSON data is valid.
-			$json_last_error_msg = json_last_error_msg();
-			if ( $json_last_error_msg && 'No error' !== $json_last_error_msg ) {
-				// translators: %s = Json error message.
-				$error_message = sprintf( __( 'Error occured while decoding API response: %s', 'wcsdm' ), $json_last_error_msg );
-
-				throw new Exception( $error_message );
-			}
-
-			// Check API response is OK.
-			$status = isset( $response_data['status'] ) ? $response_data['status'] : '';
-			if ( 'OK' !== $status ) {
-				$error_message = __( 'API Response Error', 'wcsdm' ) . ': ' . $status;
-				if ( isset( $response_data['error_message'] ) ) {
-					$error_message .= ' - ' . $response_data['error_message'];
-				}
-
-				throw new Exception( $error_message );
-			}
-
-			$errors  = array();
-			$results = array();
-
-			// Get the shipping distance.
-			foreach ( $response_data['rows'] as $row ) {
-				foreach ( $row['elements'] as $element ) {
-					// Check element status code.
-					if ( 'OK' !== $element['status'] ) {
-						$errors[] = $element['status'];
-						continue;
-					}
-
-					$results[] = array(
-						'distance'      => $element['distance']['value'],
-						'distance_text' => $element['distance']['text'],
-						'duration'      => $element['duration']['value'],
-						'duration_text' => $element['duration']['text'],
-					);
-				}
-			}
-
-			if ( empty( $results ) ) {
-				$error_template = array(
-					'NOT_FOUND'                 => __( 'Origin and/or destination of this pairing could not be geocoded', 'wcsdm' ),
-					'ZERO_RESULTS'              => __( 'No route could be found between the origin and destination', 'wcsdm' ),
-					'MAX_ROUTE_LENGTH_EXCEEDED' => __( 'Requested route is too long and cannot be processed', 'wcsdm' ),
-				);
-
-				if ( ! empty( $errors ) ) {
-					foreach ( $errors as $error_key ) {
-						if ( isset( $error_template[ $error_key ] ) ) {
-							throw new Exception( __( 'API Response Error', 'wcsdm' ) . ': ' . $error_template[ $error_key ] );
-						}
-					}
-				}
-
-				throw new Exception( __( 'API Response Error', 'wcsdm' ) . ': ' . __( 'No results found', 'wcsdm' ) );
+			if ( is_wp_error( $results ) ) {
+				throw new Exception( __( 'API Response Error', 'wcsdm' ) . ': ' . $results->get_error_message() );
 			}
 
 			if ( count( $results ) > 1 ) {
@@ -1564,12 +1481,11 @@ class Wcsdm extends WC_Shipping_Method {
 			}
 
 			$result = array(
-				'distance'          => $distance,
-				'distance_text'     => sprintf( '%s %s', $distance, ( 'metric' === $this->distance_unit ? 'km' : 'mi' ) ),
-				'duration'          => $results[0]['duration'],
-				'duration_text'     => $results[0]['duration_text'],
-				'api_response_data' => $response_data,
-				'api_request_data'  => $api_request_data,
+				'distance'         => $distance,
+				'distance_text'    => sprintf( '%s %s', $distance, ( 'metric' === $this->distance_unit ? 'km' : 'mi' ) ),
+				'duration'         => $results[0]['duration'],
+				'duration_text'    => $results[0]['duration_text'],
+				'api_request_data' => $api_request_data,
 			);
 
 			if ( $cache && ! $this->is_debug_mode() ) {
@@ -1595,7 +1511,6 @@ class Wcsdm extends WC_Shipping_Method {
 			 *              'distance_text'     => '40 km',
 			 *              'duration'          => 3593,
 			 *              'duration_text'     => '1 hour 5 mins',
-			 *              'api_response_data' => array() // Raw response from API server
 			 *              'api_request_data'  => array() // API request parameters
 			 *          );
 			 *      }
@@ -2389,6 +2304,8 @@ class Wcsdm extends WC_Shipping_Method {
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
 			return;
 		}
+
+		$message = is_array( $message ) ? wp_json_encode( $message ) : $message;
 
 		$debug_key = md5( $message );
 

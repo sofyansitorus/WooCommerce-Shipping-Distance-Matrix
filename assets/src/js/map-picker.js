@@ -1,14 +1,12 @@
 
 // Taking Over window.console.error
-var isMapError = false;
+var isMapError = undefined, isMapErrorInterval;
 
 var windowConsoleError = window.console.error;
+
 window.console.error = function () {
-    if (arguments[0].toLowerCase().indexOf('google') !== 1) {
+    if (arguments[0].toLowerCase().indexOf('google') !== -1) {
         isMapError = arguments[0];
-        window.alert(isMapError);
-        $('#api_key_browser').trigger('click');
-        $('#woocommerce_wcsdm_api_key_browser').val(wcsdmMapPicker.apiKeyBrowser);
     }
 
     windowConsoleError.apply(windowConsoleError, arguments);
@@ -33,10 +31,6 @@ var wcsdmMapPicker = {
         $(document).off('click', '.wcsdm-edit-api-key', wcsdmMapPicker.editApiKey);
         $(document).on('click', '.wcsdm-edit-api-key', wcsdmMapPicker.editApiKey);
 
-        // Cancel Edit Api Key
-        $(document).off('click', '.wcsdm-edit-api-key-cancel', wcsdmMapPicker.editApiKeyCancel);
-        $(document).on('click', '.wcsdm-edit-api-key-cancel', wcsdmMapPicker.editApiKeyCancel);
-
         // Get API Key
         $(document).off('click', '#wcsdm-btn--get-api-key', wcsdmMapPicker.getApiKey);
         $(document).on('click', '#wcsdm-btn--get-api-key', wcsdmMapPicker.getApiKey);
@@ -57,96 +51,107 @@ var wcsdmMapPicker = {
         $(document).off('click', '#wcsdm-map-search-panel-toggle', wcsdmMapPicker.toggleMapSearch);
         $(document).on('click', '#wcsdm-map-search-panel-toggle', wcsdmMapPicker.toggleMapSearch);
     },
+    testDistanceMatrix: function () {
+        var origin = new google.maps.LatLng(parseFloat(wcsdmMapPicker.params.defaultLat), parseFloat(wcsdmMapPicker.params.defaultLng));
+        var destination = new google.maps.LatLng(parseFloat(wcsdmMapPicker.params.testLat), parseFloat(wcsdmMapPicker.params.testLng));
+        var service = new google.maps.DistanceMatrixService();
+
+        service.getDistanceMatrix(
+            {
+                origins: [origin],
+                destinations: [destination],
+                travelMode: 'DRIVING',
+                unitSystem: google.maps.UnitSystem.METRIC
+            }, function (response, status) {
+                if (status.toLowerCase() === 'ok') {
+                    isMapError = false;
+                } else {
+                    if (response.error_message) {
+                        isMapError = response.error_message;
+                    } else {
+                        isMapError = 'Error: ' + status;
+                    }
+                }
+            });
+    },
     editApiKey: function (e) {
         'use strict';
 
         e.preventDefault();
 
         var $link = $(e.currentTarget);
-        var $linkCancel = $link.next('a');
         var $input = $link.closest('tr').find('input[type=hidden]');
         var $inputDummy = $link.closest('tr').find('input[type=text]');
-        var $spinner = $link.closest('tr').find('.spinner');
-        var $icon = $link.find('.dashicons');
-
         var apiKey = $input.val();
         var apiKeyDummy = $inputDummy.val();
 
         if ($link.hasClass('editing')) {
-            if (!apiKeyDummy.length) {
-                return;
-            }
+            if (apiKey !== apiKeyDummy) {
+                $link.addClass('loading').attr('disabled', true);
 
-            $linkCancel.addClass('wcsdm-hidden');
-            $link.removeClass('editing');
-            $inputDummy.prop('readonly', true);
-            $icon.toggleClass('dashicons-edit').toggleClass('dashicons-yes');
+                switch ($link.attr('id')) {
+                    case 'api_key_browser': {
+                        wcsdmMapPicker.initMap(apiKeyDummy, wcsdmMapPicker.testDistanceMatrix);
 
-            var toggleControls = function (timeout) {
-                var $d = $.Deferred();
-                $link.hide();
-                $spinner.css('visibility', 'visible');
-                $('.wcsdm-buttons-item,.wcsdm-link').prop('disabled', true).css('opacity', 0.5);
+                        clearInterval(isMapErrorInterval);
 
-                setTimeout(function () {
-                    $link.show();
-                    $spinner.css('visibility', 'hidden');
-                    $('.wcsdm-buttons-item,.wcsdm-link').prop('disabled', false).css('opacity', 1);
-                    $d.resolve(true);
-                }, timeout);
+                        isMapErrorInterval = setInterval(function () {
+                            if (typeof isMapError !== 'undefined') {
+                                clearInterval(isMapErrorInterval);
 
-                return $d.promise();
-            };
+                                if (isMapError) {
+                                    $inputDummy.val(apiKey);
+                                    window.alert(isMapError);
+                                } else {
+                                    $input.val(apiKeyDummy);
+                                }
 
-            switch ($link.attr('id')) {
-                case 'api_key_browser': {
-                    wcsdmMapPicker.apiKeyBrowser = $input.val();
-
-                    // Unset current google instance
-                    window.google = undefined;
-                    isMapError = false;
-
-                    $.getScript('https://maps.googleapis.com/maps/api/js?libraries=geometry,places&key=' + apiKeyDummy, function () {
-                        toggleControls(5000).then(function () {
-                            if (!isMapError) {
-                                $input.val(apiKeyDummy);
+                                $link.removeClass('loading editing').attr('disabled', false);
+                                $inputDummy.prop('readonly', true);
                             }
-                        });
-                    });
-                    break;
-                }
+                        }, 100);
+                        break;
+                    }
 
-                default:
-                    toggleControls(500).then(function () {
-                        $input.val(apiKeyDummy);
-                    });
-                    break;
+                    default: {
+                        $.ajax({
+                            method: "POST",
+                            url: wcsdmMapPicker.params.ajax_url,
+                            data: {
+                                action: "wcsdm_validate_api_key_server",
+                                nonce: wcsdmMapPicker.params.validate_api_key_nonce,
+                                key: apiKeyDummy,
+                            }
+                        }).done(function () {
+                            // Set new API Key value
+                            $input.val(apiKeyDummy);
+                        }).fail(function (error) {
+                            // Restore existing API Key value
+                            $inputDummy.val(apiKey);
+
+                            // Show error
+                            if (error.responseJSON && error.responseJSON.data) {
+                                return window.alert(error.responseJSON.data);
+                            }
+
+                            if (error.statusText) {
+                                return window.alert(error.statusText);
+                            }
+
+                            window.alert('Error');
+                        }).always(function () {
+                            $link.removeClass('loading editing').attr('disabled', false);
+                            $inputDummy.prop('readonly', true);
+                        });
+                    }
+                }
+            } else {
+                $link.removeClass('editing');
+                $inputDummy.prop('readonly', true);
             }
         } else {
-            $link.show().addClass('editing');
-            $linkCancel.removeClass('wcsdm-hidden');
-            $icon.toggleClass('dashicons-edit').toggleClass('dashicons-yes');
-            $inputDummy.prop('readonly', false).val(apiKey);
-            $spinner.css('visibility', 'hidden');
-        }
-    },
-    editApiKeyCancel: function (e) {
-        'use strict';
-
-        e.preventDefault();
-
-        var $link = $(e.currentTarget);
-        var $linkEdit = $link.prev('a');
-        var $iconEdit = $linkEdit.find('.dashicons');
-        var $input = $link.closest('tr').find('input[type=hidden]');
-        var $inputDummy = $link.closest('tr').find('input[type=text]');
-
-        $link.addClass('wcsdm-hidden');
-        $linkEdit.removeClass('editing');
-        $iconEdit.toggleClass('dashicons-yes').toggleClass('dashicons-edit');
-        $inputDummy.prop('readonly', true).val($input.val());
-        if ($input.val().length) {
-            isMapError = false;
+            $link.addClass('editing');
+            $inputDummy.prop('readonly', false);
         }
     },
     getApiKey: function (e) {
@@ -160,11 +165,6 @@ var wcsdmMapPicker = {
         'use strict';
 
         e.preventDefault();
-
-        if (isMapError) {
-            window.alert(isMapError);
-            return;
-        }
 
         $('.modal-close-link').hide();
 
@@ -183,7 +183,7 @@ var wcsdmMapPicker = {
 
         $('#wcsdm-field-group-wrap--location_picker').fadeIn().siblings().hide();
 
-        wcsdmMapPicker.initMap();
+        wcsdmMapPicker.initMap($('#woocommerce_wcsdm_api_key_browser').val(), wcsdmMapPicker.renderMap);
     },
     hideStoreLocationPicker: function (e) {
         'use strict';
@@ -207,53 +207,24 @@ var wcsdmMapPicker = {
             return;
         }
 
-        var apiKey = $('#woocommerce_wcsdm_api_key_browser').val();
-        if (_.isEmpty(apiKey)) {
-            return;
-        }
+        wcsdmMapPicker.initMap($('#woocommerce_wcsdm_api_key_browser').val(), wcsdmMapPicker.testDistanceMatrix);
 
-        var testDistanceMatrix = function () {
-            var dfd = jQuery.Deferred();
+        clearInterval(isMapErrorInterval);
 
-            var origin = new google.maps.LatLng(parseFloat(wcsdmMapPicker.params.defaultLat), parseFloat(wcsdmMapPicker.params.defaultLng));
-            var destination = new google.maps.LatLng(parseFloat(wcsdmMapPicker.params.testLat), parseFloat(wcsdmMapPicker.params.testLng));
-            var service = new google.maps.DistanceMatrixService();
-            service.getDistanceMatrix(
-                {
-                    origins: [origin],
-                    destinations: [destination],
-                    travelMode: 'DRIVING',
-                    unitSystem: google.maps.UnitSystem.METRIC
-                }, function (response, status) {
-                    if (status.toLowerCase() === 'ok') {
-                        dfd.resolve(status, response);
-                    } else {
-                        dfd.reject(status, response);
-                    }
-                });
+        isMapErrorInterval = setInterval(function () {
+            if (typeof isMapError !== 'undefined') {
+                clearInterval(isMapErrorInterval);
 
-            return dfd.promise();
-        };
-
-        $.when(testDistanceMatrix())
-            .then(function (status) {
-                if (status.toLowerCase() === 'ok' && !isMapError) {
+                if (isMapError) {
+                    window.alert(isMapError);
+                } else {
                     $('#woocommerce_wcsdm_origin_lat').val(wcsdmMapPicker.origin_lat);
                     $('#woocommerce_wcsdm_origin_lng').val(wcsdmMapPicker.origin_lng);
                     $('#woocommerce_wcsdm_origin_address').val(wcsdmMapPicker.origin_address);
                     wcsdmMapPicker.hideStoreLocationPicker(e);
-
-                    return;
                 }
-
-                if (isMapError) {
-                    window.alert(isMapError);
-
-                    return;
-                }
-
-                window.alert(status);
-            });
+            }
+        }, 100);
     },
     toggleMapSearch: function (e) {
         'use strict';
@@ -265,26 +236,16 @@ var wcsdmMapPicker = {
         $('#wcsdm-map-search-panel').toggleClass('hide-main');
         $('#wcsdm-map-search-panel-main').toggleClass('wcsdm-hidden');
     },
-    destroyMap: function () {
-        window.google = undefined;
-        $('#wcsdm-map-canvas').empty();
-        $('#wcsdm-map-search-panel').remove();
-    },
-    initMap: function () {
+    initMap: function (apiKey, callback) {
         wcsdmMapPicker.destroyMap();
 
-        isMapError = false;
-
-        var apiKey = $('#woocommerce_wcsdm_api_key_browser').val();
+        isMapError = undefined;
 
         if (_.isEmpty(apiKey)) {
             apiKey = 'InvalidKey';
         }
 
-        var scriptUrl = 'https://maps.googleapis.com/maps/api/js?libraries=geometry,places&key=' + apiKey;
-        $.getScript(scriptUrl, function () {
-            wcsdmMapPicker.renderMap();
-        });
+        $.getScript('https://maps.googleapis.com/maps/api/js?libraries=geometry,places&key=' + apiKey, callback);
     },
     renderMap: function () {
         wcsdmMapPicker.origin_lat = $('#woocommerce_wcsdm_origin_lat').val();
@@ -395,6 +356,14 @@ var wcsdmMapPicker = {
 
             map.fitBounds(bounds);
         });
+    },
+    destroyMap: function () {
+        if (window.google) {
+            window.google = undefined;
+        }
+
+        $('#wcsdm-map-canvas').empty();
+        $('#wcsdm-map-search-panel').remove();
     },
     setLatLng: function (location, marker, map, infowindow) {
         var geocoder = new google.maps.Geocoder();

@@ -3,33 +3,56 @@
  */
 
 var wcsdmBackend = {
-    initFrom: function () {
+    renderForm: function () {
+        if (!$('#woocommerce_wcsdm_origin_type') || !$('#woocommerce_wcsdm_origin_type').length) {
+            return;
+        }
+
+        // Submit form
+        $(document).off('click', '#wcsdm-btn--save-settings', wcsdmBackend.submitForm);
+        $(document).on('click', '#wcsdm-btn--save-settings', wcsdmBackend.submitForm);
+
+        // Show API Key instruction
+        $(document).off('click', '.wcsdm-show-instructions', wcsdmBackend.showApiKeyInstructions);
+        $(document).on('click', '.wcsdm-show-instructions', wcsdmBackend.showApiKeyInstructions);
+
+        // Close API Key instruction
+        $(document).off('click', '#wcsdm-btn--close-instructions', wcsdmBackend.closeApiKeyInstructions);
+        $(document).on('click', '#wcsdm-btn--close-instructions', wcsdmBackend.closeApiKeyInstructions);
+
+        // Toggle Store Origin Fields
+        $(document).off('change', '#woocommerce_wcsdm_origin_type', wcsdmBackend.toggleStoreOriginFields);
+        $(document).on('change', '#woocommerce_wcsdm_origin_type', wcsdmBackend.toggleStoreOriginFields);
+
         $('#woocommerce_wcsdm_origin_type').trigger('change');
 
-        $('.wc-modal-shipping-method-settings table.form-table').each(function (index, table) {
-            var $rows = $(table).find('tr');
+        $('.wc-modal-shipping-method-settings table.form-table').each(function () {
+            var $table = $(this);
+            var $rows = $table.find('tr');
             if (!$rows.length) {
-                $(table).remove();
+                $table.remove();
             }
         });
 
-        $('.wcsdm-field-group').each(function (index, fieldGroup) {
-            var fieldGroupId = $(fieldGroup)
+        $('.wcsdm-field-group').each(function () {
+            var $fieldGroup = $(this);
+
+            var fieldGroupId = $fieldGroup
                 .attr('id')
                 .replace('woocommerce_wcsdm_field_group_', '');
 
-            var $fieldGroupDescription = $(fieldGroup)
+            var $fieldGroupDescription = $fieldGroup
                 .next('p')
                 .detach();
 
-            var $fieldGroupTable = $(fieldGroup)
+            var $fieldGroupTable = $fieldGroup
                 .nextAll('table.form-table')
                 .first()
                 .attr('id', 'wcsdm-table--' + fieldGroupId)
                 .addClass('wcsdm-table wcsdm-table--' + fieldGroupId)
                 .detach();
 
-            $(fieldGroup)
+            $fieldGroup
                 .wrap('<div id="wcsdm-field-group-wrap--' + fieldGroupId + '" class="wcsdm-field-group-wrap wcsdm-field-group-wrap--' + fieldGroupId + '"></div>');
 
             $fieldGroupDescription
@@ -38,7 +61,7 @@ var wcsdmBackend = {
             $fieldGroupTable
                 .appendTo('#wcsdm-field-group-wrap--' + fieldGroupId);
 
-            if ($(fieldGroup).hasClass('wcsdm-field-group-hidden')) {
+            if ($fieldGroup.hasClass('wcsdm-field-group-hidden')) {
                 $('#wcsdm-field-group-wrap--' + fieldGroupId)
                     .addClass('wcsdm-hidden');
             }
@@ -138,29 +161,13 @@ var wcsdmBackend = {
             });
         });
     },
-    bindEvents: function () {
+    initForm: function () {
         // Init form
-        $(document.body).off('wc_backbone_modal_loaded', wcsdmBackend.initFrom);
-        $(document.body).on('wc_backbone_modal_loaded', wcsdmBackend.initFrom);
-
-        // Submit form
-        $(document).off('click', '#wcsdm-btn--save-settings', wcsdmBackend.submitForm);
-        $(document).on('click', '#wcsdm-btn--save-settings', wcsdmBackend.submitForm);
-
-        // Show API Key instruction
-        $(document).off('click', '.wcsdm-show-instructions', wcsdmBackend.showApiKeyInstructions);
-        $(document).on('click', '.wcsdm-show-instructions', wcsdmBackend.showApiKeyInstructions);
-
-        // Close API Key instruction
-        $(document).off('click', '#wcsdm-btn--close-instructions', wcsdmBackend.closeApiKeyInstructions);
-        $(document).on('click', '#wcsdm-btn--close-instructions', wcsdmBackend.closeApiKeyInstructions);
-
-        // Toggle Store Origin Fields
-        $(document).off('change', '#woocommerce_wcsdm_origin_type', wcsdmBackend.toggleStoreOriginFields);
-        $(document).on('change', '#woocommerce_wcsdm_origin_type', wcsdmBackend.toggleStoreOriginFields);
+        $(document.body).off('wc_backbone_modal_loaded', wcsdmBackend.renderForm);
+        $(document.body).on('wc_backbone_modal_loaded', wcsdmBackend.renderForm);
     },
     init: function () {
-        wcsdmBackend.bindEvents();
+        wcsdmBackend.initForm();
         wcsdmBackend.maybeOpenModal();
     }
 };

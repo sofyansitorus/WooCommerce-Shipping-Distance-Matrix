@@ -8,63 +8,100 @@
 .wcsdm {
     &-hidden {
         display: none;
+
         &.button {
             display: none;
         }
     }
+
     &-no-padding {
         padding: 0 !important;
     }
+
     &-spinner {
         float: none;
         margin-top: 0;
         margin-left: 7px;
     }
+
     &-link {
         text-decoration: none;
+        width: 60px;
+        text-align: center;
+
         &:active,
         &:focus {
             text-decoration: none;
             box-shadow: none;
         }
     }
+
+    &-edit-api-key.editing .dashicons-edit {
+        display: none;
+    }
+
+    &-edit-api-key:not(.editing) .dashicons-yes {
+        display: none;
+    }
+
+    &-edit-api-key.loading .dashicons {
+        display: none;
+    }
+
+    &-edit-api-key:not(.loading) .spinner {
+        display: none;
+    }
+
+    &-edit-api-key.loading .spinner {
+        visibility: visible;
+    }
+
     &-fullwidth:not(a) {
         display: block;
         width: 100% !important;
     }
+
     &-buttons {
         &-item {
             &.button-large {
                 .dashicons {
                     margin-top: 5px;
+
                     &:before {
                         font-size: 1em;
                     }
                 }
             }
+
             &--left {
                 float: left;
             }
         }
     }
+
     &-field {
         &:disabled {
             background: $alabaster;
         }
+
         &-type--title {
             padding-left: 14px !important;
+
             &~p {
                 padding-left: 14px !important;
             }
         }
+
         &-group-wrap {
             padding-top: 1px;
             margin-bottom: 1em;
             box-shadow: 0px 0px 1px 0px rgba($black, 0.1);
+
             >.form-table {
                 border-top: 1px solid $alabaster;
                 box-shadow: 0px -1px 0px 0px rgba($black, 0.1);
             }
+
             &--api_key_instruction,
             &--location_picker,
             &--advanced_rate {
@@ -74,30 +111,37 @@
             }
         }
     }
+
     &-table {
         &--table_rates--dummy {
             max-width: 100%;
+
             tr {
                 .wcsdm-col {
                     box-sizing: border-box;
                     background-color: $white;
+
                     &--select-item {
                         width: 50px;
                         text-align: center;
+
                         input {
                             margin: 0;
                             padding: 0;
                         }
                     }
+
                     &--link_advanced {
                         width: 96px;
                         text-align: center;
                     }
+
                     &+.wcsdm-col {
                         border-left: 1px solid $seashell;
                     }
                 }
             }
+
             thead {
                 tr {
                     .wcsdm-col {
@@ -105,44 +149,53 @@
                     }
                 }
             }
+
             tbody {
                 tr {
                     .wcsdm-col {
                         padding-top: 9px !important;
                         padding-bottom: 9px !important;
                     }
+
                     &.highlighted {
                         .wcsdm-col {
                             animation: highlighted 0.5s infinite;
                         }
                     }
+
                     &:nth-child(odd) {
                         .wcsdm-col {
                             background-color: rgba($anakiwa, 0.1);
                         }
                     }
+
                     &:nth-child(even) {
                         .wcsdm-col {
                             background-color: $white;
                         }
                     }
+
                     &:last-child {
+
                         td,
                         th {
                             border-bottom: 0px solid rgba($alabaster, 0) !important;
                         }
                     }
+
                     &:hover {
                         .wcsdm-col {
                             background-color: rgba($anakiwa, 0.2);
                         }
                     }
+
                     .wcsdm-field--context--dummy:not(a) {
                         min-width: 100px !important;
                     }
                 }
             }
         }
+
         &--advanced_rate {
             .wcsdm-no-padding {
                 .wcsdm-field-type--title {
@@ -154,6 +207,7 @@
                     border-top: 1px solid $alabaster;
                     border-bottom: 1px solid $alabaster;
                 }
+
                 .form-table {
                     border-top: 1px solid $alabaster;
                     margin-bottom: 0 !important;
@@ -161,6 +215,7 @@
             }
         }
     }
+
     &-map-instructions {
         background-color: $double-pearl-lusta;
         border: 1px solid darken($double-pearl-lusta, 20%);
@@ -169,6 +224,7 @@
         max-width: 760px;
         margin: 50px auto 50px;
         border-radius: 5px;
+
         img {
             display: block;
             margin: 20px auto 0;
@@ -176,17 +232,21 @@
             width: 100%;
         }
     }
+
     &-map-wrap {
         position: relative;
         padding: 0;
     }
+
     &-map-canvas {
         height: 450px;
     }
+
     &-map-error {
         text-align: center;
         padding-top: 100px;
     }
+
     &-map-search-panel {
         display: none;
         position: absolute;
@@ -200,26 +260,32 @@
         background-color: $lemon-chiffon;
         border: 1px solid darken($lemon-chiffon, 30%);
         box-shadow: 0px 0px 5px 1px rgba($black, 0.4);
+
         h3,
         p {
             text-align: center;
             margin: 0px !important;
         }
+
         .gm-style & {
             display: block;
         }
+
         &-toggle {
             position: absolute;
             top: 10px;
             right: 10px;
+
             .hide-main & {
                 left: 6px;
                 top: 6px;
+
                 .dashicons {
                     font-size: 2.4em;
                 }
             }
         }
+
         &.hide-main {
             width: 40px;
             height: 40px;
@@ -229,6 +295,7 @@
             box-shadow: 0px 0px 5px 1px rgba($black, 0);
         }
     }
+
     &-map-search-input {
         display: block;
         margin: 10px 0 0;
@@ -244,15 +311,19 @@
     0% {
         background-color: $white;
     }
+
     49% {
         background-color: $white;
     }
+
     50% {
         background-color: rgba($anakiwa, 0.3);
     }
+
     99% {
         background-color: rgba($anakiwa, 0.3);
     }
+
     100% {
         background-color: $white;
     }

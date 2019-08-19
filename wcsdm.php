@@ -80,6 +80,7 @@ if ( ! defined( 'WCSDM_METHOD_TITLE' ) ) {
  * Include required core files.
  */
 require_once WCSDM_PATH . '/includes/helpers.php';
+require_once WCSDM_PATH . '/includes/class-wcsdm-api.php';
 
 /**
  * Check if WooCommerce plugin is active
@@ -208,18 +209,20 @@ function wcsdm_enqueue_scripts_backend( $hook ) {
 			'wcsdm-backend',
 			'wcsdm_backend',
 			array(
-				'showSettings' => isset( $_GET['wcsdm_settings'] ) && is_admin(), // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-				'methodId'     => WCSDM_METHOD_ID,
-				'methodTitle'  => wcsdm_is_pro() ? WCSDM_PRO_METHOD_TITLE : WCSDM_METHOD_TITLE,
-				'marker'       => WCSDM_URL . 'assets/img/marker.png',
-				'defaultLat'   => WCSDM_DEFAULT_LAT,
-				'defaultLng'   => WCSDM_DEFAULT_LNG,
-				'testLat'      => WCSDM_TEST_LAT,
-				'testLng'      => WCSDM_TEST_LNG,
-				'language'     => get_locale(),
-				'isPro'        => wcsdm_is_pro(),
-				'isDebug'      => $is_debug,
-				'i18n'         => wcsdm_i18n(),
+				'showSettings'           => isset( $_GET['wcsdm_settings'] ) && is_admin(), // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				'methodId'               => WCSDM_METHOD_ID,
+				'methodTitle'            => wcsdm_is_pro() ? WCSDM_PRO_METHOD_TITLE : WCSDM_METHOD_TITLE,
+				'marker'                 => WCSDM_URL . 'assets/img/marker.png',
+				'defaultLat'             => WCSDM_DEFAULT_LAT,
+				'defaultLng'             => WCSDM_DEFAULT_LNG,
+				'testLat'                => WCSDM_TEST_LAT,
+				'testLng'                => WCSDM_TEST_LNG,
+				'language'               => get_locale(),
+				'isPro'                  => wcsdm_is_pro(),
+				'isDebug'                => $is_debug,
+				'i18n'                   => wcsdm_i18n(),
+				'ajax_url'               => admin_url( 'admin-ajax.php' ),
+				'validate_api_key_nonce' => wp_create_nonce( 'wcsdm_validate_api_key_server' ),
 			)
 		);
 	}
@@ -306,3 +309,37 @@ add_filter( 'woocommerce_shipping_calculator_enable_state', '__return_true' );
 add_filter( 'woocommerce_shipping_calculator_enable_city', '__return_true' );
 add_filter( 'woocommerce_shipping_calculator_enable_address_1', '__return_true' );
 add_filter( 'woocommerce_shipping_calculator_enable_address_2', '__return_true' );
+
+/**
+ * AJAX handler for Server Side API Key validation.
+ *
+ * @since 2.0.8
+ *
+ * @return void
+ */
+function wcsdm_validate_api_key_server() {
+	$key = isset( $_POST['key'] ) ? sanitize_text_field( wp_unslash( $_POST['key'] ) ) : '';
+	if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'wcsdm_validate_api_key_server' ) ) {
+		wp_send_json_error( 'Sorry, your nonce did not verify.', 400 );
+	}
+
+	if ( ! $key ) {
+		$key = 'InvalidKey';
+	}
+
+	$api = new Wcsdm_API();
+
+	$distance = $api->calculate_distance(
+		array(
+			'key' => $key,
+		),
+		true
+	);
+
+	if ( is_wp_error( $distance ) ) {
+		wp_send_json_error( $distance->get_error_message(), 400 );
+	}
+
+	wp_send_json_success( $distance );
+}
+add_action( 'wp_ajax_wcsdm_validate_api_key_server', 'wcsdm_validate_api_key_server' );
