@@ -59,20 +59,20 @@ if ( ! function_exists( 'get_plugin_data' ) ) {
 	require_once ABSPATH . 'wp-admin/includes/plugin.php';
 }
 
-$plugin_data = get_plugin_data( WCSDM_FILE, false, false );
+$wcsdm_plugin_data = get_plugin_data( WCSDM_FILE, false, false );
 
 if ( ! defined( 'WCSDM_VERSION' ) ) {
-	$wcsdm_version = isset( $plugin_data['Version'] ) ? $plugin_data['Version'] : '1.0.0';
+	$wcsdm_version = isset( $wcsdm_plugin_data['Version'] ) ? $wcsdm_plugin_data['Version'] : '1.0.0';
 	define( 'WCSDM_VERSION', $wcsdm_version );
 }
 
 if ( ! defined( 'WCSDM_METHOD_ID' ) ) {
-	$wcsdm_method_id = isset( $plugin_data['TextDomain'] ) ? $plugin_data['TextDomain'] : 'wcsdm';
+	$wcsdm_method_id = isset( $wcsdm_plugin_data['TextDomain'] ) ? $wcsdm_plugin_data['TextDomain'] : 'wcsdm';
 	define( 'WCSDM_METHOD_ID', $wcsdm_method_id );
 }
 
 if ( ! defined( 'WCSDM_METHOD_TITLE' ) ) {
-	$wcsdm_method_title = isset( $plugin_data['Name'] ) ? $plugin_data['Name'] : 'WooCommerce Shipping Distance Matrix';
+	$wcsdm_method_title = isset( $wcsdm_plugin_data['Name'] ) ? $wcsdm_plugin_data['Name'] : 'WooCommerce Shipping Distance Matrix';
 	define( 'WCSDM_METHOD_TITLE', $wcsdm_method_title );
 }
 
@@ -118,7 +118,8 @@ function wcsdm_plugin_action_links( $links ) {
 						'tab'            => 'shipping',
 						'zone_id'        => 0,
 						'wcsdm_settings' => true,
-					), admin_url( 'admin.php' )
+					),
+					admin_url( 'admin.php' )
 				)
 			) . '">' . __( 'Settings', 'wcsdm' ) . '</a>',
 		),
@@ -207,7 +208,7 @@ function wcsdm_enqueue_scripts_backend( $hook ) {
 			'wcsdm-backend',
 			'wcsdm_backend',
 			array(
-				'showSettings' => isset( $_GET['wcsdm_settings'] ) && is_admin(),
+				'showSettings' => isset( $_GET['wcsdm_settings'] ) && is_admin(), // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				'methodId'     => WCSDM_METHOD_ID,
 				'methodTitle'  => wcsdm_is_pro() ? WCSDM_PRO_METHOD_TITLE : WCSDM_METHOD_TITLE,
 				'marker'       => WCSDM_URL . 'assets/img/marker.png',
@@ -262,7 +263,7 @@ function wcsdm_enqueue_scripts_frontend() {
 	// Localize the script data.
 	$wcsdm_frontend = array();
 	foreach ( $fields as $field ) {
-		$wcsdm_frontend[ 'shipping_calculator_' . $field ] = apply_filters( 'woocommerce_shipping_calculator_enable_' . $field, true );
+		$wcsdm_frontend[ 'shipping_calculator_' . $field ] = apply_filters( 'woocommerce_shipping_calculator_enable_' . $field, true ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 	}
 	wp_localize_script( 'wcsdm-frontend', 'wcsdm_frontend', $wcsdm_frontend );
 }
@@ -282,7 +283,7 @@ function wcsdm_after_shipping_calculator() {
 	}
 
 	// Address 1 hidden field.
-	if ( apply_filters( 'woocommerce_shipping_calculator_enable_address_1', true ) ) {
+	if ( apply_filters( 'woocommerce_shipping_calculator_enable_address_1', true ) ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 		$address_1 = WC()->cart->get_customer()->get_shipping_address();
 		?>
 		<input type="hidden" id="wcsdm-calc-shipping-field-value-address_1" value="<?php echo esc_attr( $address_1 ); ?>" />
@@ -290,7 +291,7 @@ function wcsdm_after_shipping_calculator() {
 	}
 
 	// Address 2 hidden field.
-	if ( apply_filters( 'woocommerce_shipping_calculator_enable_address_2', true ) ) {
+	if ( apply_filters( 'woocommerce_shipping_calculator_enable_address_2', true ) ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 		$address_2 = WC()->cart->get_customer()->get_shipping_address_2();
 		?>
 		<input type="hidden" id="wcsdm-calc-shipping-field-value-address_2" value="<?php echo esc_attr( $address_2 ); ?>" />

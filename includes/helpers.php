@@ -9,13 +9,18 @@
  * @subpackage Wcsdm/includes
  */
 
+// If this file is called directly, abort.
+if ( ! defined( 'ABSPATH' ) ) {
+	die;
+}
+
 /**
  * Check if plugin is active
  *
  * @param string $plugin_file Plugin file name.
  */
 function wcsdm_is_plugin_active( $plugin_file ) {
-	$active_plugins = (array) apply_filters( 'active_plugins', get_option( 'active_plugins', array() ) );
+	$active_plugins = (array) apply_filters( 'active_plugins', get_option( 'active_plugins', array() ) ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 
 	if ( is_multisite() ) {
 		$active_plugins = array_merge( $active_plugins, (array) get_site_option( 'active_sitewide_plugins', array() ) );

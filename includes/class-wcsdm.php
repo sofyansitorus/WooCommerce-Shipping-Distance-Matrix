@@ -34,7 +34,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @since    1.0.0
 	 * @var string
 	 */
-	private $_google_api_url = 'https://maps.googleapis.com/maps/api/distancematrix/json';
+	private $google_api_url = 'https://maps.googleapis.com/maps/api/distancematrix/json';
 
 	/**
 	 * All options data
@@ -42,7 +42,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @since    1.4.2
 	 * @var array
 	 */
-	private $_options = array();
+	private $options = array();
 
 	/**
 	 * All debugs data
@@ -50,7 +50,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @since    1.4.2
 	 * @var array
 	 */
-	private $_debugs = array();
+	private $debugs = array();
 
 	/**
 	 * Rate fields data
@@ -58,7 +58,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @since    2.0
 	 * @var array
 	 */
-	private $_instance_rate_fields = array();
+	private $instance_rate_fields = array();
 
 	/**
 	 * Default data
@@ -66,7 +66,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @since    2.0
 	 * @var array
 	 */
-	private $_field_default = array(
+	private $field_default = array(
 		'title'             => '',
 		'disabled'          => false,
 		'class'             => '',
@@ -150,9 +150,9 @@ class Wcsdm extends WC_Shipping_Method {
 		foreach ( $this->instance_form_fields as $key => $field ) {
 			$default = isset( $field['default'] ) ? $field['default'] : null;
 
-			$this->_options[ $key ] = $this->get_option( $key, $default );
+			$this->options[ $key ] = $this->get_option( $key, $default );
 
-			$this->{$key} = $this->_options[ $key ];
+			$this->{$key} = $this->options[ $key ];
 		}
 	}
 
@@ -182,7 +182,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'title'       => __( 'Tax Status', 'wcsdm' ),
 				'type'        => 'wcsdm',
 				'orig_type'   => 'select',
-				'description' => __( 'Tax status of fee.', 'woocommerce' ),
+				'description' => __( 'Tax status of fee.', 'wcsdm' ),
 				'desc_tip'    => true,
 				'default'     => 'taxable',
 				'options'     => array(
@@ -467,7 +467,7 @@ class Wcsdm extends WC_Shipping_Method {
 			),
 		);
 
-		$this->instance_form_fields = apply_filters( $this->id . '_form_fields', $form_fields, $this->get_instance_id() );
+		$this->instance_form_fields = apply_filters( $this->id . '_form_fields', $form_fields, $this->get_instance_id() ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound
 	}
 
 	/**
@@ -595,7 +595,8 @@ class Wcsdm extends WC_Shipping_Method {
 				'is_hidden'   => false,
 			),
 			'min_cost'               => array_merge(
-				$form_fields['min_cost'], array(
+				$form_fields['min_cost'],
+				array(
 					'description' => $form_fields['min_cost']['description'] . ' ' . __( 'Leave blank to inherit from the global setting.', 'wcsdm' ),
 					'default'     => '',
 					'is_required' => false,
@@ -605,7 +606,8 @@ class Wcsdm extends WC_Shipping_Method {
 				)
 			),
 			'surcharge'              => array_merge(
-				$form_fields['surcharge'], array(
+				$form_fields['surcharge'],
+				array(
 					'description' => $form_fields['surcharge']['description'] . ' ' . __( 'Leave blank to inherit from the global setting.', 'wcsdm' ),
 					'default'     => '',
 					'is_required' => false,
@@ -615,7 +617,8 @@ class Wcsdm extends WC_Shipping_Method {
 				)
 			),
 			'total_cost_type'        => array_merge(
-				$form_fields['total_cost_type'], array(
+				$form_fields['total_cost_type'],
+				array(
 					'default'     => 'inherit',
 					'options'     => wcsdm_array_insert_before(
 						'flat__highest',
@@ -636,7 +639,8 @@ class Wcsdm extends WC_Shipping_Method {
 				'is_hidden'   => false,
 			),
 			'title'                  => array_merge(
-				$form_fields['title'], array(
+				$form_fields['title'],
+				array(
 					'description' => $form_fields['title']['description'] . ' ' . __( 'Leave blank to inherit from the global setting.', 'wcsdm' ),
 					'default'     => '',
 					'desc_tip'    => true,
@@ -665,7 +669,8 @@ class Wcsdm extends WC_Shipping_Method {
 			$rate_class_0 = $rate_fields['rate_class_0'];
 			foreach ( $shipping_classes as $class_id => $class_obj ) {
 				$rate_class_data = array_merge(
-					$rate_class_0, array(
+					$rate_class_0,
+					array(
 						// translators: %s is Product shipping class name.
 						'title'       => sprintf( __( '"%s" Shipping Class Rate', 'wcsdm' ), $class_obj->name ),
 						// translators: %s is Product shipping class name.
@@ -682,7 +687,7 @@ class Wcsdm extends WC_Shipping_Method {
 			}
 		}
 
-		$this->_instance_rate_fields = apply_filters( $this->id . '_rate_fields', $rate_fields, $this->get_instance_id() );
+		$this->instance_rate_fields = apply_filters( $this->id . '_rate_fields', $rate_fields, $this->get_instance_id() ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound
 	}
 
 	/**
@@ -696,7 +701,7 @@ class Wcsdm extends WC_Shipping_Method {
 	public function get_rates_fields( $context = '' ) {
 		$rates_fields = array();
 
-		foreach ( $this->_instance_rate_fields as $key => $field ) {
+		foreach ( $this->instance_rate_fields as $key => $field ) {
 			if ( ! empty( $context ) && ( ! isset( $field[ 'is_' . $context ] ) || ! $field[ 'is_' . $context ] ) ) {
 				continue;
 			}
@@ -833,7 +838,7 @@ class Wcsdm extends WC_Shipping_Method {
 		?>
 		<tr valign="top">
 			<th scope="row" class="titledesc">
-				<label for="<?php echo esc_attr( $field_key ); ?>"><?php echo wp_kses_post( $data['title'] ); ?> <?php echo $this->get_tooltip_html( $data ); // WPCS: XSS ok. ?></label>
+				<label for="<?php echo esc_attr( $field_key ); ?>"><?php echo wp_kses_post( $data['title'] ); ?> <?php echo $this->get_tooltip_html( $data ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
 			</th>
 			<td class="forminp">
 				<fieldset>
@@ -846,7 +851,7 @@ class Wcsdm extends WC_Shipping_Method {
 					<div>
 					<a href="#" class="wcsdm-show-instructions wcsdm-link"><?php esc_html_e( 'How to Get API Key?', 'wcsdm' ); ?></a>
 					</div>
-					<?php echo $this->get_description_html( $data ); // WPCS: XSS ok. ?>
+					<?php echo $this->get_description_html( $data ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				</fieldset>
 			</td>
 		</tr>
@@ -882,14 +887,14 @@ class Wcsdm extends WC_Shipping_Method {
 		?>
 		<tr valign="top">
 			<th scope="row" class="titledesc">
-				<label for="<?php echo esc_attr( $field_key ); ?>"><?php echo wp_kses_post( $data['title'] ); ?> <?php echo $this->get_tooltip_html( $data ); // WPCS: XSS ok. ?></label>
+				<label for="<?php echo esc_attr( $field_key ); ?>"><?php echo wp_kses_post( $data['title'] ); ?> <?php echo $this->get_tooltip_html( $data ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
 			</th>
 			<td class="forminp">
 				<fieldset>
 					<legend class="screen-reader-text"><span><?php echo wp_kses_post( $data['title'] ); ?></span></legend>
 					<input class="input-text regular-input <?php echo esc_attr( $data['class'] ); ?>" type="text" name="<?php echo esc_attr( $field_key ); ?>" id="<?php echo esc_attr( $field_key ); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" value="<?php echo esc_attr( $this->get_option( $key ) ); ?>" placeholder="<?php echo esc_attr( $data['placeholder'] ); ?>" readonly="readonly" /> 
 					<a href="#" class="button button-primary button-small wcsdm-link wcsdm-edit-location"><span class="dashicons dashicons-location-alt"></span></a>
-					<?php echo $this->get_description_html( $data ); // WPCS: XSS ok. ?>
+					<?php echo $this->get_description_html( $data ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				</fieldset>
 			</td>
 		</tr>
@@ -906,8 +911,6 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @param array  $data Settings field data.
 	 */
 	public function generate_store_location_picker_html( $key, $data ) {
-		$field_key = $this->get_field_key( $key );
-
 		$defaults = array(
 			'title'             => '',
 			'disabled'          => false,
@@ -951,8 +954,6 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @param array  $data Settings field data.
 	 */
 	public function generate_api_key_instruction_html( $key, $data ) {
-		$field_key = $this->get_field_key( $key );
-
 		$defaults = array(
 			'title'             => '',
 			'disabled'          => false,
@@ -1021,7 +1022,7 @@ class Wcsdm extends WC_Shipping_Method {
 							</td>
 							<?php foreach ( $this->get_rates_fields( 'dummy' ) as $key => $field ) : ?>
 								<td class="wcsdm-col wcsdm-col--<?php echo esc_html( $key ); ?>">
-									<label><span class="label-text"><?php echo esc_html( $field['title'] ); ?></span><?php echo $this->get_tooltip_html( $field ); // WPCS: XSS ok. ?></label>
+									<label><span class="label-text"><?php echo esc_html( $field['title'] ); ?></span><?php echo $this->get_tooltip_html( $field ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
 								</td>
 							<?php endforeach; ?>
 						</tr>
@@ -1061,7 +1062,7 @@ class Wcsdm extends WC_Shipping_Method {
 			<?php
 			foreach ( $this->get_rates_fields( 'dummy' ) as $key => $data ) :
 				$data = $this->populate_field( $key, $data );
-			?>
+				?>
 			<td class="wcsdm-col wcsdm-col--<?php echo esc_html( $key ); ?>">
 				<?php
 				$field_value = $this->get_rate_field_value( $key, $rate, $data['default'] );
@@ -1074,9 +1075,9 @@ class Wcsdm extends WC_Shipping_Method {
 						foreach ( $this->get_rates_fields( 'hidden' ) as $hidden_key => $hidden_field ) :
 							$hidden_field = $this->populate_field( $hidden_key, $hidden_field );
 							$hidden_value = $this->get_rate_field_value( $hidden_key, $rate, $hidden_field['default'] );
-						?>
-						<input class="<?php echo esc_attr( $hidden_field['class'] ); ?>" type="hidden" name="<?php echo esc_attr( $field_key ); ?>__<?php echo esc_attr( $hidden_key ); ?>[]" value="<?php echo esc_attr( $hidden_value ); ?>" <?php echo $this->get_custom_attribute_html( $hidden_field ); // WPCS: XSS ok. ?> />
-						<?php
+							?>
+						<input class="<?php echo esc_attr( $hidden_field['class'] ); ?>" type="hidden" name="<?php echo esc_attr( $field_key ); ?>__<?php echo esc_attr( $hidden_key ); ?>[]" value="<?php echo esc_attr( $hidden_value ); ?>" <?php echo $this->get_custom_attribute_html( $hidden_field ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> />
+							<?php
 						endforeach;
 						break;
 
@@ -1093,7 +1094,7 @@ class Wcsdm extends WC_Shipping_Method {
 
 							$output = str_replace( $find, $replace, $output );
 
-							echo $output; // WPCS: XSS ok.
+							echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 						}
 						break;
 				}
@@ -1112,8 +1113,6 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @param array  $data Settings field data.
 	 */
 	public function generate_advanced_rate_html( $key, $data ) {
-		$field_key = $this->get_field_key( $key );
-
 		$defaults = array(
 			'title' => '',
 		);
@@ -1128,7 +1127,7 @@ class Wcsdm extends WC_Shipping_Method {
 					<?php
 					foreach ( $this->get_rates_fields( 'advanced' ) as $key => $data ) {
 						$data = $this->populate_field( $key, $data );
-						echo preg_replace( '#\s(name|id)="[^"]+"#', '', $this->generate_settings_html( array( 'fake--field--' . $key => $data ), false ) ); // WPCS: XSS ok.
+						echo preg_replace( '#\s(name|id)="[^"]+"#', '', $this->generate_settings_html( array( 'fake--field--' . $key => $data ), false ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 					}
 					?>
 				</table>
@@ -1151,7 +1150,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 */
 	public function validate_wcsdm_field( $key, $value, $is_rate_field = false ) {
 		if ( $is_rate_field ) {
-			$field = isset( $this->_instance_rate_fields[ $key ] ) ? $this->_instance_rate_fields[ $key ] : false;
+			$field = isset( $this->instance_rate_fields[ $key ] ) ? $this->instance_rate_fields[ $key ] : false;
 		} else {
 			$field = isset( $this->instance_form_fields[ $key ] ) ? $this->instance_form_fields[ $key ] : false;
 		}
@@ -1322,7 +1321,7 @@ class Wcsdm extends WC_Shipping_Method {
 			$filtered
 		);
 
-		return apply_filters( $this->id . '_validate_table_rates', $filtered, $this->get_instance_id() );
+		return apply_filters( $this->id . '_validate_table_rates', $filtered, $this->get_instance_id() ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound
 	}
 
 	/**
@@ -1341,7 +1340,8 @@ class Wcsdm extends WC_Shipping_Method {
 					'origin'      => array( WCSDM_DEFAULT_LAT, WCSDM_DEFAULT_LNG ),
 					'destination' => array( WCSDM_TEST_LAT, WCSDM_TEST_LNG ),
 					'settings'    => array( 'api_key_server' => $value ),
-				), false
+				),
+				false
 			);
 
 			if ( is_wp_error( $response ) ) {
@@ -1382,7 +1382,7 @@ class Wcsdm extends WC_Shipping_Method {
 		 *          );
 		 *      }
 		 */
-		$pre = apply_filters( $this->id . '_api_request_pre', false, $args, $cache, $this );
+		$pre = apply_filters( $this->id . '_api_request_pre', false, $args, $cache, $this ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound
 
 		if ( false !== $pre ) {
 			return $pre;
@@ -1390,7 +1390,8 @@ class Wcsdm extends WC_Shipping_Method {
 
 		try {
 			$args = wp_parse_args(
-				$args, array(
+				$args,
+				array(
 					'origin'      => array(),
 					'destination' => array(),
 					'settings'    => array(),
@@ -1398,10 +1399,10 @@ class Wcsdm extends WC_Shipping_Method {
 				)
 			);
 
-			// Imports variables from $args: $origin, $destination, $settings, $package.
+			// Imports variables from args: origin, destination, settings, package.
 			$origin      = $args['origin'];
 			$destination = $args['destination'];
-			$settings    = wp_parse_args( $args['settings'], $this->_options );
+			$settings    = wp_parse_args( $args['settings'], $this->options );
 			$package     = $args['package'];
 
 			// Check origin parameter.
@@ -1449,10 +1450,10 @@ class Wcsdm extends WC_Shipping_Method {
 			}
 
 			foreach ( $api_request_data as $key => $value ) {
-				$api_request_data[ $key ] = is_array( $value ) ? array_map( $value, 'rawurlencode' ) : rawurlencode( $value );
+				$api_request_data[ $key ] = is_array( $value ) ? array_map( 'rawurlencode', $value ) : rawurlencode( $value );
 			}
 
-			$request_url = add_query_arg( $api_request_data, $this->_google_api_url );
+			$request_url = add_query_arg( $api_request_data, $this->google_api_url );
 
 			$this->show_debug( __( 'API Request URL', 'wcsdm' ) . ': ' . $request_url );
 
@@ -1576,7 +1577,7 @@ class Wcsdm extends WC_Shipping_Method {
 				set_transient( $cache_key, $result, HOUR_IN_SECONDS ); // Store the data to transient with expiration in 1 hour for later use.
 			}
 
-			$this->show_debug( __( 'API Response', 'wcsdm' ) . ': ' . print_r( $result, true ) );
+			$this->show_debug( __( 'API Response', 'wcsdm' ) . ': ' . is_string( $result ) ? $result : wp_json_encode( $result ) );
 
 			/**
 			 * Developers can modify the api request $result via filter hooks.
@@ -1599,7 +1600,7 @@ class Wcsdm extends WC_Shipping_Method {
 			 *          );
 			 *      }
 			 */
-			return apply_filters( $this->id . '_api_request', $result, $this );
+			return apply_filters( $this->id . '_api_request', $result, $this ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound
 		} catch ( Exception $e ) {
 			$this->show_debug( $e->getMessage(), 'error' );
 
@@ -1618,7 +1619,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @return array
 	 */
 	private function populate_field( $key, $data ) {
-		$data = wp_parse_args( $data, $this->_field_default );
+		$data = wp_parse_args( $data, $this->field_default );
 
 		if ( isset( $data['orig_type'] ) ) {
 			$data['type'] = $data['orig_type'];
@@ -1695,7 +1696,7 @@ class Wcsdm extends WC_Shipping_Method {
 		}
 
 		// Check we are processing the correct form for this instance.
-		if ( ! isset( $_REQUEST['instance_id'] ) || absint( $_REQUEST['instance_id'] ) !== $this->instance_id ) { // WPCS: input var ok, CSRF ok.
+		if ( ! isset( $_REQUEST['instance_id'] ) || absint( $_REQUEST['instance_id'] ) !== $this->instance_id ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			return false;
 		}
 
@@ -1730,7 +1731,7 @@ class Wcsdm extends WC_Shipping_Method {
 			}
 		}
 
-		return update_option( $this->get_instance_option_key(), apply_filters( 'woocommerce_shipping_' . $this->id . '_instance_settings_values', $this->instance_settings, $this ), 'yes' );
+		return update_option( $this->get_instance_option_key(), apply_filters( 'woocommerce_shipping_' . $this->id . '_instance_settings_values', $this->instance_settings, $this ), 'yes' ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 	}
 
 	/**
@@ -1742,7 +1743,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 */
 	public function instance_settings_values( $settings ) {
 		if ( $this->get_errors() ) {
-			return $this->_options;
+			return $this->options;
 		}
 
 		return $settings;
@@ -1813,8 +1814,6 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @return void
 	 */
 	public function calculate_shipping( $package = array() ) {
-		global $woocommerce;
-
 		try {
 			$api_response = $this->api_request(
 				array(
@@ -1847,7 +1846,8 @@ class Wcsdm extends WC_Shipping_Method {
 			}
 
 			$calculated = wp_parse_args(
-				$calculated, array(
+				$calculated,
+				array(
 					'id'        => $this->get_rate_id(),
 					'label'     => $this->title,
 					'package'   => $package,
@@ -1894,7 +1894,7 @@ class Wcsdm extends WC_Shipping_Method {
 		 *          );
 		 *      }
 		 */
-		$pre = apply_filters( $this->id . '_calculate_shipping_cost_pre', false, $api_response, $package, $this );
+		$pre = apply_filters( $this->id . '_calculate_shipping_cost_pre', false, $api_response, $package, $this ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound
 
 		if ( false !== $pre ) {
 			return $pre;
@@ -1904,7 +1904,7 @@ class Wcsdm extends WC_Shipping_Method {
 			$offset = 0;
 			foreach ( $this->table_rates as $rate ) {
 				if ( $api_response['distance'] > $offset && $api_response['distance'] <= $rate['max_distance'] ) {
-					$this->show_debug( __( 'Rate Match', 'wcsdm' ) . ': ' . print_r( $rate, true ) );
+					$this->show_debug( __( 'Rate Match', 'wcsdm' ) . ': ' . is_string( $rate ) ? $rate : wp_json_encode( $rate ) );
 
 					// Hold costs data for flat total_cost_type.
 					$flat = array();
@@ -2034,7 +2034,7 @@ class Wcsdm extends WC_Shipping_Method {
 					 *          );
 					 *      }
 					 */
-					return apply_filters( $this->id . '_calculate_shipping_cost', $result, $api_response, $package, $this );
+					return apply_filters( $this->id . '_calculate_shipping_cost', $result, $api_response, $package, $this ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound
 				}
 
 				$offset = $rate['max_distance'];
@@ -2083,7 +2083,7 @@ class Wcsdm extends WC_Shipping_Method {
 		 *          return '1600 Amphitheatre Parkway,Mountain View,CA,94043';
 		 *      }
 		 */
-		return apply_filters( $this->id . '_origin_info', $origin_info, $package, $this->get_instance_id() );
+		return apply_filters( $this->id . '_origin_info', $origin_info, $package, $this->get_instance_id() ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound
 	}
 
 	/**
@@ -2109,7 +2109,7 @@ class Wcsdm extends WC_Shipping_Method {
 		 *          return '1600 Amphitheatre Parkway, Mountain View, CA, 94043';
 		 *      }
 		 */
-		$pre = apply_filters( $this->id . '_destination_info_pre', false, $package, $this->get_instance_id() );
+		$pre = apply_filters( $this->id . '_destination_info_pre', false, $package, $this->get_instance_id() ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound
 		if ( false !== $pre ) {
 			return $pre;
 		}
@@ -2145,7 +2145,7 @@ class Wcsdm extends WC_Shipping_Method {
 				continue;
 			}
 
-			if ( ! apply_filters( 'woocommerce_shipping_calculator_enable_' . $rule_key, true ) ) {
+			if ( ! apply_filters( 'woocommerce_shipping_calculator_enable_' . $rule_key, true ) ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 				continue;
 			}
 
@@ -2182,7 +2182,7 @@ class Wcsdm extends WC_Shipping_Method {
 					continue;
 				}
 
-				if ( ! apply_filters( 'woocommerce_shipping_calculator_enable_' . $key, true ) ) {
+				if ( ! apply_filters( 'woocommerce_shipping_calculator_enable_' . $key, true ) ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 					continue;
 				}
 
@@ -2225,7 +2225,7 @@ class Wcsdm extends WC_Shipping_Method {
 		 *          return '1600 Amphitheatre Parkway, Mountain View, CA, 94043';
 		 *      }
 		 */
-		return apply_filters( $this->id . '_destination_info', $destination_info, $package, $this->get_instance_id() );
+		return apply_filters( $this->id . '_destination_info', $destination_info, $package, $this->get_instance_id() ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound
 	}
 
 	/**
@@ -2392,11 +2392,11 @@ class Wcsdm extends WC_Shipping_Method {
 
 		$debug_key = md5( $message );
 
-		if ( isset( $this->_debugs[ $debug_key ] ) ) {
+		if ( isset( $this->debugs[ $debug_key ] ) ) {
 			return;
 		}
 
-		$this->_debugs[ $debug_key ] = $message;
+		$this->debugs[ $debug_key ] = $message;
 
 		$debug_prefix = strtoupper( $this->id ) . '_' . $this->get_instance_id();
 
