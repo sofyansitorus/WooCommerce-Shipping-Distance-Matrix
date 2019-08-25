@@ -218,15 +218,15 @@ class Wcsdm extends WC_Shipping_Method {
 				'api_request' => 'key',
 			),
 			'origin_type'                     => array(
-				'title'             => __( 'Store Origin Type', 'wcsdm' ),
+				'title'             => __( 'Store Origin Data Type', 'wcsdm' ),
 				'type'              => 'wcsdm',
 				'orig_type'         => 'select',
 				'description'       => __( 'Preferred data that will be used as the origin info when calculating the distance.', 'wcsdm' ),
 				'desc_tip'          => true,
 				'default'           => 'coordinate',
 				'options'           => array(
-					'coordinate' => __( 'Store Location Coordinate (Recommended)', 'wcsdm' ),
-					'address'    => __( 'Store Location Address (Less Accurate)', 'wcsdm' ),
+					'coordinate' => __( 'Coordinate (Recommended)', 'wcsdm' ),
+					'address'    => __( 'Address (Less Accurate)', 'wcsdm' ),
 				),
 				'custom_attributes' => array(
 					'data-fields' => wp_json_encode(
@@ -798,12 +798,9 @@ class Wcsdm extends WC_Shipping_Method {
 			</div>
 		</script>
 		<script type="text/template" id="tmpl-wcsdm-map-search-panel">
-			<div id="wcsdm-map-search-panel" class="wcsdm-map-search-panel">
-				<a href="#" id="wcsdm-map-search-panel-toggle" class="wcsdm-map-search-panel-toggle wcsdm-link"><span class="dashicons dashicons-dismiss"></span></a>
-				<div id="wcsdm-map-search-panel-main">
-					<p class="description"><?php esc_html_e( 'Drag the store icon marker or search your address in the input box below.', 'wcsdm' ); ?></p>
-					<input id="wcsdm-map-search-input" class="wcsdm-fullwidth wcsdm-map-search-input" type="search" placeholder="Search your store address here" autocomplete="off">
-				</div>
+			<div id="wcsdm-map-search-panel" class="wcsdm-map-search-panel wcsdm-hidden expanded">
+				<button type="button" id="wcsdm-map-search-panel-toggle" class="wcsdm-map-search-element"><span class="dashicons"></button>
+				<input id="wcsdm-map-search-input" class="wcsdm-fullwidth wcsdm-map-search-input wcsdm-map-search-element" type="search" placeholder="<?php echo esc_html__( 'Type your store location address...', 'wcsdm' ); ?>" autocomplete="off">
 			</div>
 		</script>
 		<?php

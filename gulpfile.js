@@ -171,8 +171,8 @@ const phpcsHandler = function (asset) {
     });
 
     const config = Object.assign({}, asset.config, {
-        bin: '/usr/local/bin/phpcs',
-        standard: 'WordPress',
+        bin: 'vendor/bin/phpcs',
+        standard: '.phpcs.xml',
         warningSeverity: 0,
     });
 

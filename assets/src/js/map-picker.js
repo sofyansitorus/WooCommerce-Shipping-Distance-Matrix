@@ -231,10 +231,7 @@ var wcsdmMapPicker = {
 
         e.preventDefault();
 
-        $(e.currentTarget).find('span').toggleClass('dashicons-search').toggleClass('dashicons-dismiss');
-
-        $('#wcsdm-map-search-panel').toggleClass('hide-main');
-        $('#wcsdm-map-search-panel-main').toggleClass('wcsdm-hidden');
+        $("#wcsdm-map-search-panel").toggleClass('expanded');
     },
     initMap: function (apiKey, callback) {
         wcsdmMapPicker.destroyMap();
@@ -356,6 +353,10 @@ var wcsdmMapPicker = {
 
             map.fitBounds(bounds);
         });
+
+        setTimeout(function () {
+            $('#wcsdm-map-search-panel').removeClass('wcsdm-hidden');
+        }, 500);
     },
     destroyMap: function () {
         if (window.google) {

@@ -248,58 +248,64 @@
     }
 
     &-map-search-panel {
-        display: none;
-        position: absolute;
-        background-color: $white;
-        border: 1px solid darken($white, 10%);
-        padding: 10px 10px 15px;
-        width: 100%;
-        max-width: 560px;
-        border-radius: 15px;
         margin: 10px;
-        background-color: $lemon-chiffon;
-        border: 1px solid darken($lemon-chiffon, 30%);
-        box-shadow: 0px 0px 5px 1px rgba($black, 0.4);
+        position: absolute;
+        top: 10px;
+        left: 10px;
 
-        h3,
-        p {
-            text-align: center;
-            margin: 0px !important;
+        .wcsdm-map-search-element {
+            margin: 0;
+            line-height: 1;
+            float: left;
         }
 
-        .gm-style & {
+        #wcsdm-map-search-input {
+            width: 540px !important;
+            max-width: calc(100% - 60px) !important;
+            height: 40px !important;
+            display: none;
+            transition: all 2s ease;
+        }
+
+        #wcsdm-map-search-panel-toggle {
+            width: 40px !important;
+            height: 40px !important;
             display: block;
-        }
+            cursor: pointer;
+            background: none rgb(255, 255, 255);
+            box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px;
 
-        &-toggle {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-
-            .hide-main & {
-                left: 6px;
-                top: 6px;
-
-                .dashicons {
-                    font-size: 2.4em;
+            .dashicons {
+                &:before {
+                    content: "\f179";
                 }
             }
         }
 
-        &.hide-main {
-            width: 40px;
-            height: 40px;
-            border-radius: 0px;
-            background-color: $white;
-            border: 1px solid darken($white, 10%);
-            box-shadow: 0px 0px 5px 1px rgba($black, 0);
+        &.expanded {
+            #wcsdm-map-search-input {
+                display: block;
+            }
+
+            #wcsdm-map-search-panel-toggle {
+                .dashicons {
+                    &:before {
+                        content: "\f171";
+                    }
+                }
+            }
+        }
+
+        &:after {
+            clear: both;
         }
     }
 
     &-map-search-input {
         display: block;
         margin: 10px 0 0;
-        border-radius: 5px;
+        border-radius: 0;
+        height: 36px;
     }
 }
 

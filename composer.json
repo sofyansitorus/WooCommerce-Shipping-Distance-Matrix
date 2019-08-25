@@ -35,5 +35,9 @@
                 "woocommerce/woocommerce-rest-api"
             ]
         }
+    },
+    "scripts": {
+        "phpcs": "vendor/bin/phpcs",
+        "phpcbf": "vendor/bin/phpcbf"
     }
 }
