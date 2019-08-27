@@ -29,14 +29,6 @@
 class Wcsdm extends WC_Shipping_Method {
 
 	/**
-	 * URL of Google Maps Distance Matrix API
-	 *
-	 * @since    1.0.0
-	 * @var string
-	 */
-	private $google_api_url = 'https://maps.googleapis.com/maps/api/distancematrix/json';
-
-	/**
 	 * All options data
 	 *
 	 * @since    1.4.2
@@ -168,15 +160,6 @@ class Wcsdm extends WC_Shipping_Method {
 				'orig_type' => 'title',
 				'class'     => 'wcsdm-field-group',
 				'title'     => __( 'General Settings', 'wcsdm' ),
-			),
-			'title'                           => array(
-				'title'       => __( 'Label', 'wcsdm' ),
-				'type'        => 'wcsdm',
-				'orig_type'   => 'text',
-				'description' => __( 'This controls the label which the user sees during checkout.', 'wcsdm' ),
-				'default'     => $this->method_title,
-				'desc_tip'    => true,
-				'is_required' => true,
 			),
 			'tax_status'                      => array(
 				'title'       => __( 'Tax Status', 'wcsdm' ),
@@ -374,10 +357,20 @@ class Wcsdm extends WC_Shipping_Method {
 				'desc_tip'    => true,
 			),
 			'field_group_total_cost'          => array(
-				'type'      => 'wcsdm',
-				'orig_type' => 'title',
-				'class'     => 'wcsdm-field-group',
-				'title'     => __( 'Global Total Cost Settings', 'wcsdm' ),
+				'type'        => 'wcsdm',
+				'orig_type'   => 'title',
+				'class'       => 'wcsdm-field-group',
+				'title'       => __( 'Global Rates Settings', 'wcsdm' ),
+				'description' => __( 'Default settings that will be inherited by certain settings in table rates when it is empty.', 'wcsdm' ),
+			),
+			'title'                           => array(
+				'title'       => __( 'Label', 'wcsdm' ),
+				'type'        => 'wcsdm',
+				'orig_type'   => 'text',
+				'description' => __( 'This controls the label which the user sees during checkout.', 'wcsdm' ),
+				'default'     => $this->method_title,
+				'desc_tip'    => true,
+				'is_required' => true,
 			),
 			'min_cost'                        => array(
 				'type'              => 'wcsdm',
@@ -422,10 +415,11 @@ class Wcsdm extends WC_Shipping_Method {
 				),
 			),
 			'field_group_table_rates'         => array(
-				'type'      => 'wcsdm',
-				'orig_type' => 'title',
-				'class'     => 'wcsdm-field-group',
-				'title'     => __( 'Table Rates Settings', 'wcsdm' ),
+				'type'        => 'wcsdm',
+				'orig_type'   => 'title',
+				'class'       => 'wcsdm-field-group',
+				'title'       => __( 'Table Rates Settings', 'wcsdm' ),
+				'description' => __( 'Determine the shipping cost based on the distance and rules.', 'wcsdm' ),
 			),
 			'table_rates'                     => array(
 				'type'  => 'table_rates',
@@ -574,7 +568,7 @@ class Wcsdm extends WC_Shipping_Method {
 			),
 			'rate_class_0'           => array(
 				'type'              => 'text',
-				'title'             => __( 'Default Shipping Rate', 'wcsdm' ),
+				'title'             => __( 'Distance Unit Rate', 'wcsdm' ),
 				'description'       => __( 'The shipping rate within the distances range. Zero value will be assumed as free shipping.', 'wcsdm' ),
 				'desc_tip'          => true,
 				'is_advanced'       => true,
@@ -1121,8 +1115,7 @@ class Wcsdm extends WC_Shipping_Method {
 				<table id="wcsdm-table--advanced-rate" class="form-table wcsdm-table wcsdm-table--advanced-rate">
 					<?php
 					foreach ( $this->get_rates_fields( 'advanced' ) as $key => $data ) {
-						$data = $this->populate_field( $key, $data );
-						echo preg_replace( '#\s(name|id)="[^"]+"#', '', $this->generate_settings_html( array( 'fake--field--' . $key => $data ), false ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+						$this->generate_settings_html( array( 'fake--field--' . $key => $this->populate_field( $key, $data ) ) );
 					}
 					?>
 				</table>
