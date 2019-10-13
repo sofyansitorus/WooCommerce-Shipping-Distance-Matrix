@@ -1,6 +1,6 @@
 
 // Taking Over window.console.error
-var isMapError = undefined, isMapErrorInterval;
+var isMapError = null, isMapErrorInterval;
 
 var windowConsoleError = window.console.error;
 
@@ -23,8 +23,6 @@ var wcsdmMapPicker = {
     zoomLevel: 16,
     apiKeyBrowser: '',
     init: function (params) {
-        'use strict';
-
         wcsdmMapPicker.params = params;
 
         // Edit Api Key
@@ -51,32 +49,85 @@ var wcsdmMapPicker = {
         $(document).off('click', '#wcsdm-map-search-panel-toggle', wcsdmMapPicker.toggleMapSearch);
         $(document).on('click', '#wcsdm-map-search-panel-toggle', wcsdmMapPicker.toggleMapSearch);
     },
-    testDistanceMatrix: function () {
-        var origin = new google.maps.LatLng(parseFloat(wcsdmMapPicker.params.defaultLat), parseFloat(wcsdmMapPicker.params.defaultLng));
-        var destination = new google.maps.LatLng(parseFloat(wcsdmMapPicker.params.testLat), parseFloat(wcsdmMapPicker.params.testLng));
-        var service = new google.maps.DistanceMatrixService();
+    validateAPIKeyBrowserSide: function(apiKey, apiKeyDummy, $input, $inputDummy, $link) {
+        wcsdmMapPicker.initMap(apiKeyDummy, function () {
+            var origin = new google.maps.LatLng(parseFloat(wcsdmMapPicker.params.defaultLat), parseFloat(wcsdmMapPicker.params.defaultLng));
+            var destination = new google.maps.LatLng(parseFloat(wcsdmMapPicker.params.testLat), parseFloat(wcsdmMapPicker.params.testLng));
+            var service = new google.maps.DistanceMatrixService();
 
-        service.getDistanceMatrix(
-            {
-                origins: [origin],
-                destinations: [destination],
-                travelMode: 'DRIVING',
-                unitSystem: google.maps.UnitSystem.METRIC
-            }, function (response, status) {
-                if (status.toLowerCase() === 'ok') {
-                    isMapError = false;
-                } else {
-                    if (response.error_message) {
-                        isMapError = response.error_message;
+            service.getDistanceMatrix(
+                {
+                    origins: [origin],
+                    destinations: [destination],
+                    travelMode: 'DRIVING',
+                    unitSystem: google.maps.UnitSystem.METRIC
+                }, function (response, status) {
+                    if (status.toLowerCase() === 'ok') {
+                        isMapError = false;
                     } else {
-                        isMapError = 'Error: ' + status;
+                        if (response.error_message) {
+                            isMapError = response.error_message;
+                        } else {
+                            isMapError = 'Error: ' + status;
+                        }
                     }
+                });
+        });
+
+        clearInterval(isMapErrorInterval);
+
+        isMapErrorInterval = setInterval(function () {
+            if (isMapError === null) {
+                clearInterval(isMapErrorInterval);
+
+                if (isMapError) {
+                    $inputDummy.val(apiKey);
+                    window.alert(isMapError);
+                } else {
+                    $input.val(apiKeyDummy);
                 }
-            });
+
+                $link.removeClass('loading editing').attr('disabled', false);
+                $inputDummy.prop('readonly', true);
+            }
+        }, 100);
+    },
+    validateAPIKeyServerSide: function(apiKey, apiKeyDummy, $input, $inputDummy, $link, callback) {
+        $.ajax({
+            method: 'POST',
+            url: wcsdmMapPicker.params.ajax_url,
+            data: {
+                action: 'wcsdm_validate_api_key_server',
+                nonce: wcsdmMapPicker.params.validate_api_key_nonce,
+                key: apiKeyDummy
+            }
+        }).done(function () {
+            if (callback && typeof callback === 'function') {
+                callback(apiKey, apiKeyDummy, $input, $inputDummy, $link);
+            } else {
+                // Set new API Key value
+                $input.val(apiKeyDummy);
+            }
+        }).fail(function (error) {
+            // Restore existing API Key value
+            $inputDummy.val(apiKey);
+
+            // Show error
+            if (error.responseJSON && error.responseJSON.data) {
+                return window.alert(error.responseJSON.data);
+            }
+
+            if (error.statusText) {
+                return window.alert(error.statusText);
+            }
+
+            window.alert('Error');
+        }).always(function () {
+            $link.removeClass('loading editing').attr('disabled', false);
+            $inputDummy.prop('readonly', true);
+        });
     },
     editApiKey: function (e) {
-        'use strict';
-
         e.preventDefault();
 
         var $link = $(e.currentTarget);
@@ -89,61 +140,25 @@ var wcsdmMapPicker = {
             if (apiKey !== apiKeyDummy) {
                 $link.addClass('loading').attr('disabled', true);
 
-                switch ($link.attr('id')) {
-                    case 'api_key_browser': {
-                        wcsdmMapPicker.initMap(apiKeyDummy, wcsdmMapPicker.testDistanceMatrix);
+                var validateBrowserSide = false;
+                var validateServerSide = false;
 
-                        clearInterval(isMapErrorInterval);
+                if ($link.attr('id') === 'api_key') {
+                    validateBrowserSide = true;
 
-                        isMapErrorInterval = setInterval(function () {
-                            if (typeof isMapError !== 'undefined') {
-                                clearInterval(isMapErrorInterval);
-
-                                if (isMapError) {
-                                    $inputDummy.val(apiKey);
-                                    window.alert(isMapError);
-                                } else {
-                                    $input.val(apiKeyDummy);
-                                }
-
-                                $link.removeClass('loading editing').attr('disabled', false);
-                                $inputDummy.prop('readonly', true);
-                            }
-                        }, 100);
-                        break;
+                    if (!$('#woocommerce_wcsdm_api_key_split').is(':checked')) {
+                        validateServerSide = true;
                     }
+                } else {
+                    validateServerSide = true;
+                }
 
-                    default: {
-                        $.ajax({
-                            method: "POST",
-                            url: wcsdmMapPicker.params.ajax_url,
-                            data: {
-                                action: "wcsdm_validate_api_key_server",
-                                nonce: wcsdmMapPicker.params.validate_api_key_nonce,
-                                key: apiKeyDummy,
-                            }
-                        }).done(function () {
-                            // Set new API Key value
-                            $input.val(apiKeyDummy);
-                        }).fail(function (error) {
-                            // Restore existing API Key value
-                            $inputDummy.val(apiKey);
-
-                            // Show error
-                            if (error.responseJSON && error.responseJSON.data) {
-                                return window.alert(error.responseJSON.data);
-                            }
-
-                            if (error.statusText) {
-                                return window.alert(error.statusText);
-                            }
-
-                            window.alert('Error');
-                        }).always(function () {
-                            $link.removeClass('loading editing').attr('disabled', false);
-                            $inputDummy.prop('readonly', true);
-                        });
-                    }
+                if (validateServerSide && validateBrowserSide) {
+                    wcsdmMapPicker.validateAPIKeyServerSide(apiKey, apiKeyDummy, $input, $inputDummy, $link, wcsdmMapPicker.validateAPIKeyBrowserSide);
+                } else if (validateServerSide) {
+                    wcsdmMapPicker.validateAPIKeyServerSide(apiKey, apiKeyDummy, $input, $inputDummy, $link);
+                } else if (validateBrowserSide) {
+                    wcsdmMapPicker.validateAPIKeyBrowserSide(apiKey, apiKeyDummy, $input, $inputDummy, $link);
                 }
             } else {
                 $link.removeClass('editing');
@@ -155,15 +170,11 @@ var wcsdmMapPicker = {
         }
     },
     getApiKey: function (e) {
-        'use strict';
-
         e.preventDefault();
 
         window.open('https://cloud.google.com/maps-platform/#get-started', '_blank').focus();
     },
     showStoreLocationPicker: function (e) {
-        'use strict';
-
         e.preventDefault();
 
         $('.modal-close-link').hide();
@@ -183,11 +194,9 @@ var wcsdmMapPicker = {
 
         $('#wcsdm-field-group-wrap--location_picker').fadeIn().siblings().hide();
 
-        wcsdmMapPicker.initMap($('#woocommerce_wcsdm_api_key_browser').val(), wcsdmMapPicker.renderMap);
+        wcsdmMapPicker.initMap($('#woocommerce_wcsdm_api_key').val(), wcsdmMapPicker.renderMap);
     },
     hideStoreLocationPicker: function (e) {
-        'use strict';
-
         e.preventDefault();
 
         wcsdmMapPicker.destroyMap();
@@ -199,44 +208,26 @@ var wcsdmMapPicker = {
         $('#wcsdm-field-group-wrap--location_picker').hide().siblings().not('.wcsdm-hidden').fadeIn();
     },
     applyStoreLocation: function (e) {
-        'use strict';
-
         e.preventDefault();
 
         if (isMapError) {
             return;
         }
 
-        wcsdmMapPicker.initMap($('#woocommerce_wcsdm_api_key_browser').val(), wcsdmMapPicker.testDistanceMatrix);
-
-        clearInterval(isMapErrorInterval);
-
-        isMapErrorInterval = setInterval(function () {
-            if (typeof isMapError !== 'undefined') {
-                clearInterval(isMapErrorInterval);
-
-                if (isMapError) {
-                    window.alert(isMapError);
-                } else {
-                    $('#woocommerce_wcsdm_origin_lat').val(wcsdmMapPicker.origin_lat);
-                    $('#woocommerce_wcsdm_origin_lng').val(wcsdmMapPicker.origin_lng);
-                    $('#woocommerce_wcsdm_origin_address').val(wcsdmMapPicker.origin_address);
-                    wcsdmMapPicker.hideStoreLocationPicker(e);
-                }
-            }
-        }, 100);
+        $('#woocommerce_wcsdm_origin_lat').val(wcsdmMapPicker.origin_lat);
+        $('#woocommerce_wcsdm_origin_lng').val(wcsdmMapPicker.origin_lng);
+        $('#woocommerce_wcsdm_origin_address').val(wcsdmMapPicker.origin_address);
+        wcsdmMapPicker.hideStoreLocationPicker(e);
     },
     toggleMapSearch: function (e) {
-        'use strict';
-
         e.preventDefault();
 
-        $("#wcsdm-map-search-panel").toggleClass('expanded');
+        $('#wcsdm-map-search-panel').toggleClass('expanded');
     },
     initMap: function (apiKey, callback) {
         wcsdmMapPicker.destroyMap();
 
-        isMapError = undefined;
+        isMapError = null;
 
         if (_.isEmpty(apiKey)) {
             apiKey = 'InvalidKey';

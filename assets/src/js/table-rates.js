@@ -5,7 +5,6 @@ var wcsdmTableRates = {
     params: {},
     errorId: 'wcsdm-errors-rate-fields',
     init: function (params) {
-        'use strict';
         wcsdmTableRates.params = params;
 
         // Show advanced rate form
@@ -61,8 +60,6 @@ var wcsdmTableRates = {
         }
     },
     initForm: function () {
-        'use strict';
-
         $('.wcsdm-field-key--total_cost_type > option[value="formula"]').prop('disabled', !wcsdmTableRates.params.isPro);
 
         var distanceUnitSelected = $('#woocommerce_wcsdm_distance_unit').val();
@@ -77,7 +74,6 @@ var wcsdmTableRates = {
         }
     },
     handleAddRateButton: function (e) {
-        'use strict';
         e.preventDefault();
         $(e.currentTarget).prop('disabled', true);
 
@@ -86,7 +82,6 @@ var wcsdmTableRates = {
         $(e.currentTarget).prop('disabled', false);
     },
     handleRateFieldDummy: function (e) {
-        'use strict';
         e.preventDefault();
 
         var $field = $(e.target);
@@ -100,7 +95,6 @@ var wcsdmTableRates = {
         }
     },
     showAdvancedRateForm: function (e) {
-        'use strict';
         e.preventDefault();
 
         $('#wcsdm-table--table_rates--dummy .select-item').prop('checked', false);
@@ -130,7 +124,6 @@ var wcsdmTableRates = {
         $('#wcsdm-field-group-wrap--advanced_rate').fadeIn().siblings('.wcsdm-field-group-wrap').hide();
     },
     applyAdvancedForm: function (e) {
-        'use strict';
         e.preventDefault();
 
         $('.wcsdm-field--context--advanced').each(function (index, field) {
@@ -142,7 +135,6 @@ var wcsdmTableRates = {
         wcsdmTableRates.closeAdvancedRateForm(e);
     },
     closeAdvancedRateForm: function (e) {
-        'use strict';
         e.preventDefault();
         $('#wcsdm-field-group-wrap--advanced_rate').hide().siblings('.wcsdm-field-group-wrap').not('.wcsdm-hidden').fadeIn();
         toggleBottons();
@@ -151,7 +143,6 @@ var wcsdmTableRates = {
         wcsdmTableRates.sortRateRows();
     },
     highlightRow: function () {
-        'use strict';
         var $row = $('#wcsdm-table--table_rates--dummy tbody tr.editing');
         if ($row.length) {
             $row.addClass('highlighted');
@@ -162,7 +153,6 @@ var wcsdmTableRates = {
         $('#wcsdm-table--table_rates--dummy tbody tr').removeClass('editing');
     },
     addRateRow: function () {
-        'use strict';
         var $lastRow = $('#wcsdm-table--table_rates--dummy tbody tr:last-child');
 
         $('#wcsdm-table--table_rates--dummy tbody').append(wp.template('wcsdm-dummy-row'));
@@ -180,7 +170,6 @@ var wcsdmTableRates = {
         wcsdmTableRates.initForm();
     },
     deleteRateRow: function (e) {
-        'use strict';
         e.preventDefault();
 
         $('#wcsdm-table--table_rates--dummy tbody .select-item:not(:checked)').closest('tr').hide();
@@ -203,7 +192,6 @@ var wcsdmTableRates = {
         });
     },
     deleteRateRowCancel: function (e) {
-        'use strict';
         e.preventDefault();
 
         $('#wcsdm-table--table_rates--dummy tbody tr').show();
@@ -221,7 +209,6 @@ var wcsdmTableRates = {
         });
     },
     deleteRateRowConfirm: function (e) {
-        'use strict';
         e.preventDefault();
 
         $('#wcsdm-table--table_rates--dummy tbody .select-item:checked').closest('tr').remove();
@@ -237,7 +224,6 @@ var wcsdmTableRates = {
         }
     },
     toggleRows: function (e) {
-        'use strict';
         e.preventDefault();
 
         $.each($('#wcsdm-table--table_rates--dummy tbody tr'), function (index, row) {
@@ -257,7 +243,6 @@ var wcsdmTableRates = {
         }
     },
     toggleRow: function (e) {
-        'use strict';
         e.preventDefault();
 
         var $field = $(e.target);
@@ -293,7 +278,6 @@ var wcsdmTableRates = {
         }
     },
     sortRateRows: function () {
-        'use strict';
         var rows = $('#wcsdm-table--table_rates--dummy > tbody > tr').get().sort(function (a, b) {
             var valueADistance = $(a).find('.wcsdm-field--context--dummy--max_distance').val();
             var valueBDistance = $(b).find('.wcsdm-field--context--dummy--max_distance').val();

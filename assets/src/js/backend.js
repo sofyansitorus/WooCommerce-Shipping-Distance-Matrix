@@ -24,7 +24,12 @@ var wcsdmBackend = {
         $(document).off('change', '#woocommerce_wcsdm_origin_type', wcsdmBackend.toggleStoreOriginFields);
         $(document).on('change', '#woocommerce_wcsdm_origin_type', wcsdmBackend.toggleStoreOriginFields);
 
+        // Toggle Server Side API Key
+        $(document).off('change', '#woocommerce_wcsdm_api_key_split', wcsdmBackend.toggleServerSideAPIKey);
+        $(document).on('change', '#woocommerce_wcsdm_api_key_split', wcsdmBackend.toggleServerSideAPIKey);
+
         $('#woocommerce_wcsdm_origin_type').trigger('change');
+        $('#woocommerce_wcsdm_api_key_split').trigger('change');
 
         $('.wc-modal-shipping-method-settings table.form-table').each(function () {
             var $table = $(this);
@@ -109,14 +114,11 @@ var wcsdmBackend = {
         }
     },
     submitForm: function (e) {
-        'use strict';
         e.preventDefault();
 
         $('#btn-ok').trigger('click');
     },
     showApiKeyInstructions: function (e) {
-        'use strict';
-
         e.preventDefault();
 
         toggleBottons({
@@ -137,8 +139,6 @@ var wcsdmBackend = {
         $('.modal-close-link').hide();
     },
     closeApiKeyInstructions: function (e) {
-        'use strict';
-
         e.preventDefault();
 
         $('#wcsdm-field-group-wrap--api_key_instruction').hide().siblings().not('.wcsdm-hidden').fadeIn();
@@ -146,6 +146,13 @@ var wcsdmBackend = {
         $('.modal-close-link').show();
 
         toggleBottons();
+    },
+    toggleServerSideAPIKey: function (e) {
+        if ($(e.target).is(':checked')) {
+            $('#woocommerce_wcsdm_api_key_server').closest('tr').removeClass('wcsdm-hidden');
+        } else {
+            $('#woocommerce_wcsdm_api_key_server').closest('tr').addClass('wcsdm-hidden');
+        }
     },
     toggleStoreOriginFields: function (e) {
         e.preventDefault();

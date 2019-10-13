@@ -31,7 +31,7 @@
   "scripts": {
     "dev": "gulp",
     "build": "gulp build",
-    "export": "gulp export",
+    "dist": "gulp dist",
     "phpcs": "gulp phpcs",
     "phpcbf": "gulp phpcbf"
   }

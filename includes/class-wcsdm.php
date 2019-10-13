@@ -179,26 +179,29 @@ class Wcsdm extends WC_Shipping_Method {
 				'class'     => 'wcsdm-field-group',
 				'title'     => __( 'Store Location Settings', 'wcsdm' ),
 			),
-			'api_key_browser'                 => array(
-				'title'       => __( 'Browser Side API Key', 'wcsdm' ),
+			'api_key'                         => array(
+				'title'       => __( 'API Key', 'wcsdm' ),
 				'type'        => 'wcsdm',
 				'orig_type'   => 'api_key',
-				'description' => __( 'Google maps platform API Key for usage in browser side request. This API Key will be used by Store Location Latitude/Longitude setting fields and customer checkout Address Picker that available in Pro Version.', 'wcsdm' ),
+				'description' => __( 'Google maps platform API Key for usage in browser side request and server side request when the alternate server side API Key is disabled.', 'wcsdm' ),
 				'desc_tip'    => true,
 				'default'     => '',
 				'placeholder' => __( 'Click the icon on the right to edit', 'wcsdm' ),
-				'is_required' => true,
+			),
+			'api_key_split'                   => array(
+				'title'     => '',
+				'label'     => __( 'Use different API Key for server side request', 'wcsdm' ),
+				'type'      => 'wcsdm',
+				'orig_type' => 'checkbox',
 			),
 			'api_key_server'                  => array(
 				'title'       => __( 'Server Side API Key', 'wcsdm' ),
 				'type'        => 'wcsdm',
 				'orig_type'   => 'api_key',
-				'description' => __( 'Google maps platform API Key for usage in server side request. This API Key will be used to calculate the distance of the customer during checkout.', 'wcsdm' ),
+				'description' => __( 'Google maps platform API Key for usage in server side request.', 'wcsdm' ),
 				'desc_tip'    => true,
 				'default'     => '',
 				'placeholder' => __( 'Click the icon on the right to edit', 'wcsdm' ),
-				'is_required' => true,
-				'api_request' => 'key',
 			),
 			'origin_type'                     => array(
 				'title'             => __( 'Store Origin Data Type', 'wcsdm' ),
@@ -793,7 +796,7 @@ class Wcsdm extends WC_Shipping_Method {
 		</script>
 		<script type="text/template" id="tmpl-wcsdm-map-search-panel">
 			<div id="wcsdm-map-search-panel" class="wcsdm-map-search-panel wcsdm-hidden expanded">
-				<button type="button" id="wcsdm-map-search-panel-toggle" class="wcsdm-map-search-element"><span class="dashicons"></button>
+				<button type="button" id="wcsdm-map-search-panel-toggle" class="wcsdm-map-search-panel-toggle wcsdm-map-search-element"><span class="dashicons"></button>
 				<input id="wcsdm-map-search-input" class="wcsdm-fullwidth wcsdm-map-search-input wcsdm-map-search-element" type="search" placeholder="<?php echo esc_html__( 'Type your store location address...', 'wcsdm' ); ?>" autocomplete="off">
 			</div>
 		</script>
@@ -1313,27 +1316,18 @@ class Wcsdm extends WC_Shipping_Method {
 	}
 
 	/**
-	 * Validate and format api_key settings field.
+	 * Get API Key for the API request
 	 *
-	 * @since    1.0.0
-	 * @param string $key Input field key.
-	 * @param string $value Input field currenet value.
-	 * @throws Exception If the field value is invalid.
-	 * @return array
+	 * @since 2.0.8
+	 *
+	 * @return string
 	 */
-	public function validate_api_key_field( $key, $value ) {
-		if ( 'api_key_server' === $key && ! empty( $value ) && $value !== $this->api_key_server ) {
-			$api = new Wcsdm_API();
-
-			$response = $api->calculate_distance( array( 'key' => $value ), true );
-
-			if ( is_wp_error( $response ) ) {
-				// translators: %s = API response error message.
-				throw new Exception( sprintf( __( 'Server API Key Error: %s', 'wcsdm' ), $response->get_error_message() ) );
-			}
+	private function api_request_key() {
+		if ( 'yes' === $this->api_key_split ) {
+			return $this->api_key_server;
 		}
 
-		return $value;
+		return $this->api_key;
 	}
 
 	/**
@@ -1422,6 +1416,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'origins'      => $origin,
 				'destinations' => $destination,
 				'language'     => get_locale(),
+				'key'          => $this->api_request_key(),
 			);
 
 			foreach ( $this->instance_form_fields as $key => $field ) {

@@ -104,7 +104,7 @@ const scriptsHandler = function (asset, isMinify) {
         .pipe(errorHandler())
         .pipe(concat(asset.target + '.js'))
         .pipe(gulpif(asset.isIife, iife({
-            useStrict: true,
+            useStrict: false,
             trimCode: true,
             prependSemicolon: false,
             bindThis: false,
