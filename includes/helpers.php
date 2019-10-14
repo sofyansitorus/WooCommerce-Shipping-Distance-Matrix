@@ -215,3 +215,63 @@ function wcsdm_array_insert_after( $after_key, $array, $new_key, $new_value ) {
 
 	return $new;
 }
+
+/**
+ * Check is in development environment.
+ *
+ * @since ??
+ *
+ * @return bool
+ */
+function wcsdm_is_dev_env() {
+	if ( defined( 'WCSDM_DEV' ) && WCSDM_DEV ) {
+		return true;
+	}
+
+	if ( function_exists( 'getenv' ) && getenv( 'WCSDM_DEV' ) ) {
+		return true;
+	}
+
+	return false;
+}
+
+if ( ! function_exists( 'wcsdm_autoload' ) ) :
+	/**
+	 * Class autoload
+	 *
+	 * @since ??
+	 *
+	 * @param string $class Class name.
+	 *
+	 * @return void
+	 */
+	function wcsdm_autoload( $class ) {
+		$class = strtolower( $class );
+
+		if ( strpos( $class, 'wcsdm' ) !== 0 ) {
+			return;
+		}
+
+		require_once WCSDM_PATH . 'includes/classes/class-' . str_replace( '_', '-', $class ) . '.php';
+	}
+endif;
+
+if ( ! function_exists( 'wcsdm_is_calc_shipping' ) ) :
+	/**
+	 * Check if current request is shipping calculator form.
+	 *
+	 * @since ??
+	 *
+	 * @return bool
+	 */
+	function wcsdm_is_calc_shipping() {
+		$field  = 'woocommerce-shipping-calculator-nonce';
+		$action = 'woocommerce-shipping-calculator';
+
+		if ( isset( $_POST['calc_shipping'], $_POST[ $field ] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST[ $field ] ) ), $action ) ) {
+			return true;
+		}
+
+		return false;
+	}
+endif;

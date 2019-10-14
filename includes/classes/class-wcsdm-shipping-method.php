@@ -12,6 +12,11 @@
  * @subpackage Wcsdm/includes
  */
 
+// If this file is called directly, abort.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * The core plugin class.
  *
@@ -26,7 +31,7 @@
  * @subpackage Wcsdm/includes
  * @author     Sofyan Sitorus <sofyansitorus@gmail.com>
  */
-class Wcsdm extends WC_Shipping_Method {
+class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 
 	/**
 	 * All options data
@@ -102,27 +107,7 @@ class Wcsdm extends WC_Shipping_Method {
 			'instance-settings-modal',
 		);
 
-		$this->init_hooks();
 		$this->init();
-	}
-
-	/**
-	 * Register actions/filters hooks
-	 *
-	 * @return void
-	 */
-	private function init_hooks() {
-		// Save settings in admin if you have any defined.
-		add_action( 'woocommerce_update_options_shipping_' . $this->id, array( $this, 'process_admin_options' ) );
-
-		// Check if this shipping method is availbale for current order.
-		add_filter( 'woocommerce_shipping_' . $this->id . '_is_available', array( $this, 'check_is_available' ), 10, 2 );
-
-		// Sanitize settings fields.
-		add_filter( 'woocommerce_shipping_' . $this->id . '_instance_settings_values', array( $this, 'instance_settings_values' ), 10 );
-
-		// Hook to woocommerce_cart_shipping_packages to inject filed address_2.
-		add_filter( 'woocommerce_cart_shipping_packages', array( $this, 'inject_cart_shipping_packages' ), 10 );
 	}
 
 	/**
@@ -132,6 +117,9 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @return void
 	 */
 	public function init() {
+		// Register hooks.
+		$this->init_hooks();
+
 		// Load the settings API.
 		$this->init_form_fields(); // This is part of the settings API. Override the method to add your own settings.
 		$this->init_settings(); // This is part of the settings API. Loads settings you previously init.
@@ -146,6 +134,19 @@ class Wcsdm extends WC_Shipping_Method {
 
 			$this->{$key} = $this->options[ $key ];
 		}
+	}
+
+	/**
+	 * Register actions/filters hooks
+	 *
+	 * @return void
+	 */
+	private function init_hooks() {
+		// Save settings in admin if you have any defined.
+		add_action( 'woocommerce_update_options_shipping_' . $this->id, array( $this, 'process_admin_options' ) );
+
+		// Sanitize settings fields.
+		add_filter( 'woocommerce_shipping_' . $this->id . '_instance_settings_values', array( $this, 'instance_settings_values' ), 10 );
 	}
 
 	/**
@@ -306,7 +307,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'title'       => __( 'Preferred Route', 'wcsdm' ),
 				'type'        => 'wcsdm',
 				'orig_type'   => 'select',
-				'description' => __( 'Prefered route that will be used for calculation if API provide several routes', 'wcsdm' ),
+				'description' => __( 'Preferred route that will be used for calculation if API provide several routes', 'wcsdm' ),
 				'desc_tip'    => true,
 				'default'     => 'shortest_distance',
 				'options'     => array(
@@ -1199,7 +1200,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 *
 	 * @since    1.0.0
 	 * @param string $key Input field key.
-	 * @param string $value Input field currenet value.
+	 * @param string $value Input field current value.
 	 * @throws Exception If the field value is invalid.
 	 * @return array
 	 */
@@ -1404,7 +1405,7 @@ class Wcsdm extends WC_Shipping_Method {
 					)
 				);
 
-				// Check if the data already chached and return it.
+				// Check if the data already cached and return it.
 				$cached_data = get_transient( $cache_key );
 
 				if ( false !== $cached_data ) {
@@ -1647,62 +1648,6 @@ class Wcsdm extends WC_Shipping_Method {
 		}
 
 		return $settings;
-	}
-
-	/**
-	 * Inject cart cart packages to calculate shipping for addres 2 field.
-	 *
-	 * @since 1.0.0
-	 * @param array $packages Current cart contents packages.
-	 * @return array
-	 */
-	public function inject_cart_shipping_packages( $packages ) {
-		if ( ! $this->is_calc_shipping() ) {
-			return $packages;
-		}
-
-		$nonce_field  = 'woocommerce-shipping-calculator-nonce';
-		$nonce_action = 'woocommerce-shipping-calculator';
-
-		$address_1 = false;
-		$address_2 = false;
-
-		if ( isset( $_POST['calc_shipping_address_1'], $_POST['calc_shipping_address_2'], $_POST[ $nonce_field ] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST[ $nonce_field ] ) ), $nonce_action ) ) {
-			$address_1 = sanitize_text_field( wp_unslash( $_POST['calc_shipping_address_1'] ) );
-			$address_2 = sanitize_text_field( wp_unslash( $_POST['calc_shipping_address_2'] ) );
-		}
-
-		foreach ( $packages as $key => $package ) {
-			if ( false !== $address_1 ) {
-				WC()->customer->set_billing_address_1( $address_1 );
-				WC()->customer->set_shipping_address_1( $address_1 );
-				$packages[ $key ]['destination']['address_1'] = $address_1;
-			}
-
-			if ( false !== $address_2 ) {
-				WC()->customer->set_billing_address_2( $address_2 );
-				WC()->customer->set_shipping_address_2( $address_2 );
-				$packages[ $key ]['destination']['address_2'] = $address_2;
-			}
-		}
-
-		return $packages;
-	}
-
-	/**
-	 * Check if this method available
-	 *
-	 * @since    1.0.0
-	 * @param boolean $available Current status is available.
-	 * @param array   $package Current order package data.
-	 * @return bool
-	 */
-	public function check_is_available( $available, $package ) {
-		if ( empty( $package['contents'] ) || empty( $package['destination'] ) ) {
-			return false;
-		}
-
-		return $available;
 	}
 
 	/**
@@ -1980,7 +1925,7 @@ class Wcsdm extends WC_Shipping_Method {
 		 *      add_filter( 'wcsdm_origin_info', 'my_origin_info', 10, 3 );
 		 *
 		 *      function my_origin_info( $origin_info, $package, $instance_id ) {
-		 *          return '1600 Amphitheatre Parkway,Mountain View,CA,94043';
+		 *          return '1600 Amphitheater Parkway,Mountain View,CA,94043';
 		 *      }
 		 */
 		return apply_filters( $this->id . '_origin_info', $origin_info, $package, $this->get_instance_id() ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound
@@ -2006,7 +1951,7 @@ class Wcsdm extends WC_Shipping_Method {
 		 *
 		 *      function my_destination_info_pre( $false, $package, $instance_id ) {
 		 *          // Return the cost data array
-		 *          return '1600 Amphitheatre Parkway, Mountain View, CA, 94043';
+		 *          return '1600 Amphitheater Parkway, Mountain View, CA, 94043';
 		 *      }
 		 */
 		$pre = apply_filters( $this->id . '_destination_info_pre', false, $package, $this->get_instance_id() ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound
@@ -2039,7 +1984,7 @@ class Wcsdm extends WC_Shipping_Method {
 			$rules = array_merge( $rules, $country_locale[ $country_code ] );
 		}
 
-		// Validate shiipping fields.
+		// Validate shipping fields.
 		foreach ( $rules as $rule_key => $rule ) {
 			if ( in_array( $rule_key, array( 'first_name', 'last_name', 'company' ), true ) ) {
 				continue;
@@ -2069,7 +2014,7 @@ class Wcsdm extends WC_Shipping_Method {
 				$this->show_debug( $error, 'error' );
 			}
 
-			// Reset destionation info if error.
+			// Reset destination info if error.
 			$destination_info = array();
 		} else {
 			$destination_array = array();
@@ -2122,26 +2067,10 @@ class Wcsdm extends WC_Shipping_Method {
 		 *      add_filter( 'wcsdm_destination_info', 'my_destination_info', 10, 3 );
 		 *
 		 *      function my_destination_info( $destination_info, $package, $instance_id ) {
-		 *          return '1600 Amphitheatre Parkway, Mountain View, CA, 94043';
+		 *          return '1600 Amphitheater Parkway, Mountain View, CA, 94043';
 		 *      }
 		 */
 		return apply_filters( $this->id . '_destination_info', $destination_info, $package, $this->get_instance_id() ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound
-	}
-
-	/**
-	 * Check if current request is shipping calculator form.
-	 *
-	 * @return bool
-	 */
-	public function is_calc_shipping() {
-		$nonce_field  = 'woocommerce-shipping-calculator-nonce';
-		$nonce_action = 'woocommerce-shipping-calculator';
-
-		if ( isset( $_POST['calc_shipping'], $_POST[ $nonce_field ] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST[ $nonce_field ] ) ), $nonce_action ) ) {
-			return true;
-		}
-
-		return false;
 	}
 
 	/**
@@ -2167,7 +2096,7 @@ class Wcsdm extends WC_Shipping_Method {
 	}
 
 	/**
-	 * Convert Meters to Kilometres
+	 * Convert Meters to Kilometers
 	 *
 	 * @since    1.3.2
 	 * @param int $meters Number of meters to convert.

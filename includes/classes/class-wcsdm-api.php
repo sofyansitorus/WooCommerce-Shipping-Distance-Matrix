@@ -9,6 +9,11 @@
  * @subpackage Wcsdm/includes
  */
 
+// If this file is called directly, abort.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * The API request class.
  *
@@ -81,7 +86,7 @@ class Wcsdm_API {
 
 			if ( $json_last_error_msg && 'No error' !== $json_last_error_msg ) {
 				// translators: %s is json decoding error message.
-				throw new Exception( sprintf( __( 'Error occured while decoding API response: %s', 'wcsdm' ), $json_last_error_msg ) );
+				throw new Exception( sprintf( __( 'Error occurred while decoding API response: %s', 'wcsdm' ), $json_last_error_msg ) );
 			}
 
 			// Check API response is OK.

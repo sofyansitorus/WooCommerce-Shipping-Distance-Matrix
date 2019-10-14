@@ -14,11 +14,7 @@ var wcsdmFrontendForm = {
                 // Add address_1 & address_2 fields to calc_shipping form
                 if (form.prefix === 'calc_shipping' &&
                     (wcsdm_frontend.shipping_calculator_postcode || wcsdm_frontend.shipping_calculator_city)) {
-                    var $cloneFieldWrap = $wrapper.find('#calc_shipping_postcode_field');
-
-                    if (!$cloneFieldWrap || !$cloneFieldWrap.length) {
-                        $cloneFieldWrap = $wrapper.find('#calc_shipping_city_field');
-                    }
+                    var $cloneFieldWrap = $wrapper.find('#calc_shipping_city_field, #calc_shipping_postcode_field').first();
 
                     if ($cloneFieldWrap && $cloneFieldWrap.length) {
                         var addressFields = [];
