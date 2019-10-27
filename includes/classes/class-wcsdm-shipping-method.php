@@ -1378,10 +1378,10 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			);
 
 			// Imports variables from args: origin, destination, settings, package.
-			$origin      = $args['origin'];
-			$destination = $args['destination'];
 			$settings    = wp_parse_args( $args['settings'], $this->options );
 			$package     = $args['package'];
+			$origin      = $args['origin'];
+			$destination = $args['destination'];
 
 			// Check origin parameter.
 			if ( empty( $origin ) ) {
@@ -2054,7 +2054,8 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				}
 			}
 
-			$destination_info = WC()->countries->get_formatted_address( $destination_array, ', ' );
+			$destination_array = is_array( $destination_array ) ? array_map( 'rawurlencode', $destination_array ) : rawurlencode( $destination_array );
+			$destination_info  = WC()->countries->get_formatted_address( $destination_array, ', ' );
 		}
 
 		/**
