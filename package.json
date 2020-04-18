@@ -8,6 +8,9 @@
     "type": "git",
     "url": "https://github.com/sofyansitorus/WooCommerce-Shipping-Distance-Matrix.git"
   },
+  "engines": {
+    "node": ">=8.0.0 <10"
+  },
   "devDependencies": {
     "browser-sync": "^2.24.4",
     "gulp": "^3.9.1",

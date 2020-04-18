@@ -31,6 +31,7 @@ const assets = [
         target: 'backend',
         sources: [
             'helpers.js',
+            'console-listener.js',
             'map-picker.js',
             'table-rates.js',
             'backend.js',

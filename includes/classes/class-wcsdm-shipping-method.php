@@ -838,8 +838,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			<td class="forminp">
 				<fieldset>
 					<legend class="screen-reader-text"><span><?php echo wp_kses_post( $data['title'] ); ?></span></legend>
-					<input type="hidden" name="<?php echo esc_attr( $field_key ); ?>" id="<?php echo esc_attr( $field_key ); ?>" value="<?php echo esc_attr( $this->get_option( $key ) ); ?>" />
-					<input class="input-text regular-input <?php echo esc_attr( $data['class'] ); ?>" type="text" id="<?php echo esc_attr( $field_key ); ?>--dummy" style="<?php echo esc_attr( $data['css'] ); ?>" value="<?php echo esc_attr( $this->get_option( $key ) ); ?>" placeholder="<?php echo esc_attr( $data['placeholder'] ); ?>" readonly="readonly" /> 
+					<input type="text" class="input-text regular-input <?php echo esc_attr( $data['class'] ); ?>" name="<?php echo esc_attr( $field_key ); ?>" id="<?php echo esc_attr( $field_key ); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" value="<?php echo esc_attr( $this->get_option( $key ) ); ?>" placeholder="<?php echo esc_attr( $data['placeholder'] ); ?>" readonly="readonly" /> 
 					<a href="#" class="button button-secondary button-small wcsdm-edit-api-key wcsdm-link" id="<?php echo esc_attr( $key ); ?>"><span class="dashicons dashicons-edit"></span><span class="dashicons dashicons-yes"></span><span class="spinner wcsdm-spinner"></span></a>
 					<div>
 					<a href="#" class="wcsdm-show-instructions wcsdm-link"><?php esc_html_e( 'How to Get API Key?', 'wcsdm' ); ?></a>
@@ -1433,7 +1432,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			$results = $api->calculate_distance( $api_request_data );
 
 			if ( is_wp_error( $results ) ) {
-				throw new Exception( __( 'API Response Error', 'wcsdm' ) . ': ' . $results->get_error_message() );
+				throw new Exception( __( 'Google API Response Error', 'wcsdm' ) . ': ' . $results->get_error_message() );
 			}
 
 			if ( count( $results ) > 1 ) {
@@ -1530,7 +1529,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			$data['type'] = 'text';
 		}
 
-		$data_classes = isset( $data['class'] ) ? explode( ' ', $data['class'] ) : [];
+		$data_classes = isset( $data['class'] ) ? explode( ' ', $data['class'] ) : array();
 
 		array_push( $data_classes, 'wcsdm-field', 'wcsdm-field-key--' . $key, 'wcsdm-field-type--' . $data['type'] );
 

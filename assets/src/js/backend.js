@@ -116,7 +116,11 @@ var wcsdmBackend = {
     submitForm: function (e) {
         e.preventDefault();
 
-        $('#btn-ok').trigger('click');
+        if (wcsdmMapPicker.apiKeyError) {
+            alert(wcsdmMapPicker.apiKeyError);
+        } else {
+            $('#btn-ok').trigger('click');
+        }
     },
     showApiKeyInstructions: function (e) {
         e.preventDefault();
