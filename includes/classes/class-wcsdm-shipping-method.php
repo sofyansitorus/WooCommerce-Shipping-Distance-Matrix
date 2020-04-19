@@ -94,7 +94,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		$this->title = $this->method_title;
 
 		// Description shown in admin.
-		$this->method_description = __( 'Shipping rates calculator that allows you to easily offer shipping rates based on the distance.', 'wcsdm' );
+		$this->method_description = __( 'WooCommerce shipping rates calculator allows you to easily offer shipping rates based on the distance calculated using Google Maps Distance Matrix Service API.', 'wcsdm' );
 
 		$this->enabled = $this->get_option( 'enabled' );
 
