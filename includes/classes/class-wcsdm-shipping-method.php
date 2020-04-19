@@ -464,9 +464,9 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		 *
 		 * This example shows how you can modify the form fields data via custom function:
 		 *
-		 *      add_filter( 'wcsdm_form_fields', 'my_form_fields', 10, 2 );
+		 *      add_filter( 'wcsdm_form_fields', 'my_wcsdm_form_fields', 10, 2 );
 		 *
-		 *      function my_form_fields( $form_fields, $instance_id ) {
+		 *      function my_wcsdm_form_fields( $form_fields, $instance_id ) {
 		 *          return array();
 		 *      }
 		 */
@@ -697,9 +697,9 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		 *
 		 * This example shows how you can modify the rate fields data via custom function:
 		 *
-		 *      add_filter( 'wcsdm_rate_fields', 'my_rate_fields', 10, 2 );
+		 *      add_filter( 'wcsdm_rate_fields', 'my_wcsdm_rate_fields', 10, 2 );
 		 *
-		 *      function my_rate_fields( $rate_fields, $instance_id ) {
+		 *      function my_wcsdm_rate_fields( $rate_fields, $instance_id ) {
 		 *          return array();
 		 *      }
 		 */
@@ -1300,9 +1300,9 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		 *
 		 * This example shows how you can modify the filtered table rates data via custom function:
 		 *
-		 *      add_filter( 'wcsdm_validate_table_rates', 'my_validate_table_rates', 10, 2 );
+		 *      add_filter( 'wcsdm_validate_table_rates', 'my_wcsdm_validate_table_rates', 10, 2 );
 		 *
-		 *      function my_validate_table_rates( $filtered, $instance_id ) {
+		 *      function my_wcsdm_validate_table_rates( $filtered, $instance_id ) {
 		 *          return array();
 		 *      }
 		 */
@@ -1336,9 +1336,9 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		 *
 		 * This example shows how you can modify the $pre var via custom function:
 		 *
-		 *      add_filter( 'wcsdm_api_request_pre', 'my_api_request_pre', 10, 4 );
+		 *      add_filter( 'wcsdm_api_request_pre', 'my_wcsdm_api_request_pre', 10, 4 );
 		 *
-		 *      function my_api_request_pre( $false, $args, $cache, $obj ) {
+		 *      function my_wcsdm_api_request_pre( $false, $args, $cache, $obj ) {
 		 *          // Return the response data array
 		 *          return array(
 		 *              'distance'      => 40,
@@ -1477,9 +1477,9 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			 *
 			 * This example shows how you can modify the $pre var via custom function:
 			 *
-			 *      add_filter( 'wcsdm_api_request', 'my_api_request', 10, 2 );
+			 *      add_filter( 'wcsdm_api_request', 'my_wcsdm_api_request', 10, 2 );
 			 *
-			 *      function my_api_request( $result, $obj ) {
+			 *      function my_wcsdm_api_request( $result, $obj ) {
 			 *          // Return the response data array
 			 *          return array(
 			 *              'distance'          => 40,
@@ -1719,9 +1719,9 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		 *
 		 * This example shows how you can modify the $pre var via custom function:
 		 *
-		 *      add_filter( 'wcsdm_calculate_shipping_cost_pre', 'my_calculate_shipping_cost_pre', 10, 4 );
+		 *      add_filter( 'wcsdm_calculate_shipping_cost_pre', 'my_wcsdm_calculate_shipping_cost_pre', 10, 4 );
 		 *
-		 *      function my_calculate_shipping_cost_pre( $false, $api_response, $package, $obj ) {
+		 *      function my_wcsdm_calculate_shipping_cost_pre( $false, $api_response, $package, $obj ) {
 		 *          // Return the cost data array
 		 *          return array(
 		 *              'cost'      => 0,
@@ -1788,9 +1788,9 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				 *
 				 * This example shows how you can modify the $rate var via custom function:
 				 *
-				 *      add_filter( 'wcsdm_table_rates_row', 'my_table_rates_row', 10, 5 );
+				 *      add_filter( 'wcsdm_table_rates_row', 'my_wcsdm_table_rates_row', 10, 5 );
 				 *
-				 *      function my_table_rates_row( $rate, $index, $api_response, $package, $object ) {
+				 *      function my_wcsdm_table_rates_row( $rate, $index, $api_response, $package, $object ) {
 				 *          // Return the rate row data array
 				 *          return array(
 				 *              'max_distance' => '8',
@@ -1928,9 +1928,9 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					 *
 					 * This example shows how you can modify the $result var via custom function:
 					 *
-					 *      add_filter( 'wcsdm_calculate_shipping_cost', 'my_get_rate', 10, 4 );
+					 *      add_filter( 'wcsdm_calculate_shipping_cost', 'my_wcsdm_calculate_shipping_cost', 10, 4 );
 					 *
-					 *      function my_calculate_shipping_cost( $rate, $api_response, $package, $obj ) {
+					 *      function my_wcsdm_calculate_shipping_cost( $result, $api_response, $package, $obj ) {
 					 *          // Return the cost data array
 					 *          return array(
 					 *              'cost'      => 0,
@@ -1982,10 +1982,12 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		 *
 		 * This example shows how you can modify the $origin_info var via custom function:
 		 *
-		 *      add_filter( 'wcsdm_origin_info', 'my_origin_info', 10, 3 );
+		 *      add_filter( 'wcsdm_origin_info', 'my_wcsdm_origin_info', 10, 3 );
 		 *
-		 *      function my_origin_info( $origin_info, $package, $instance_id ) {
-		 *          return '1600 Amphitheater Parkway,Mountain View,CA,94043';
+		 *      function my_wcsdm_origin_info( $origin_info, $package, $instance_id ) {
+		 *          return array(
+		 *               'origin_address' => '1600 Amphitheater Parkway,Mountain View,CA,94043',
+		 *          );
 		 *      }
 		 */
 		return apply_filters( 'wcsdm_origin_info', $origin_info, $package, $this->get_instance_id() );
@@ -2007,9 +2009,9 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		 *
 		 * This example shows how you can modify the shipping destination info via custom function:
 		 *
-		 *      add_filter( 'wcsdm_destination_info_pre', 'my_destination_info_pre', 10, 3 );
+		 *      add_filter( 'wcsdm_destination_info_pre', 'my_wcsdm_destination_info_pre', 10, 3 );
 		 *
-		 *      function my_destination_info_pre( $false, $package, $instance_id ) {
+		 *      function my_wcsdm_destination_info_pre( $false, $package, $instance_id ) {
 		 *          return '1600 Amphitheater Parkway, Mountain View, CA, 94043, United State';
 		 *      }
 		 */
@@ -2125,9 +2127,9 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		 *
 		 * This example shows how you can modify the shipping destination info via custom function:
 		 *
-		 *      add_filter( 'wcsdm_destination_info', 'my_destination_info', 10, 3 );
+		 *      add_filter( 'wcsdm_destination_info', 'my_wcsdm_destination_info', 10, 3 );
 		 *
-		 *      function my_destination_info( $destination_info, $package, $instance_id ) {
+		 *      function my_wcsdm_destination_info( $destination_info, $package, $instance_id ) {
 		 *          return '1600 Amphitheater Parkway, Mountain View, CA, 94043, United State';
 		 *      }
 		 */
