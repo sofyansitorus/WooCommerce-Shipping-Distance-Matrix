@@ -32,10 +32,10 @@
     "yargs": "^11.0.0"
   },
   "scripts": {
-    "dev": "gulp",
-    "build": "gulp build",
-    "dist": "gulp dist",
-    "phpcs": "gulp phpcs",
-    "phpcbf": "gulp phpcbf"
+    "dev": "./node_modules/.bin/gulp",
+    "build": "./node_modules/.bin/gulp build",
+    "dist": "./node_modules/.bin/gulp dist",
+    "phpcs": "./node_modules/.bin/gulp phpcs",
+    "phpcbf": "./node_modules/.bin/gulp phpcbf"
   }
 }

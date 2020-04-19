@@ -4,275 +4,332 @@
 
 /* End Import */
 
+.wc-backbone-modal-header h1 span {
+  &:before {
+    content: "» ";
+  }
+}
+
 .wcsdm {
-	&-hidden {
-		display: none;
-		&.button {
-			display: none;
-		}
-	}
-	&-no-padding {
-		padding: 0 !important;
-	}
-	&-spinner {
-		float: none;
-		margin-left: 7px;
-		margin-top: 0;
-	}
-	&-link {
-		text-align: center;
-		text-decoration: none;
-		width: 60px;
-		&:active,
-        &:focus {
-			box-shadow: none;
-			text-decoration: none;
-		}
-	}
-	&-edit-api-key.editing .dashicons-edit {
-		display: none;
-	}
-	&-edit-api-key:not(.editing) .dashicons-yes {
-		display: none;
-	}
-	&-edit-api-key.loading .dashicons {
-		display: none;
-	}
-	&-edit-api-key:not(.loading) .spinner {
-		display: none;
-	}
-	&-edit-api-key.loading .spinner {
-		visibility: visible;
-	}
-	&-fullwidth:not(a) {
-		display: block;
-		width: 100% !important;
-	}
-	&-buttons {
-		&-item {
-			&.button-large {
-				.dashicons {
-					margin-top: 5px;
-					&:before {
-						font-size: 1em;
-					}
-				}
-			}
-			&--left {
-				float: left;
-			}
-		}
-	}
-	&-field {
-		&:disabled {
-			background: $alabaster;
-		}
-		&-type--title {
-			padding-left: 14px !important;
-			&~p {
-				padding-left: 14px !important;
-			}
-		}
-		&-group-wrap {
-			box-shadow: 0px 0px 1px 0px rgba($black, 0.1);
-			margin-bottom: 1em;
-			padding-top: 1px;
-			>.form-table {
-				border-top: 1px solid $alabaster;
-				box-shadow: 0px -1px 0px 0px rgba($black, 0.1);
-			}
-			&--api_key_instruction,
-            &--location_picker,
-            &--advanced_rate {
-				>h3 {
-					text-align: center;
-				}
-			}
-		}
-	}
-	&-table {
-		&--table_rates--dummy {
-			max-width: 100%;
-			tr {
-				.wcsdm-col {
-					background-color: $white;
-					box-sizing: border-box;
-					&--select-item {
-						text-align: center;
-						width: 50px;
-						input {
-							margin: 0;
-							padding: 0;
-						}
-					}
-					&--link_advanced {
-						text-align: center;
-						width: 96px;
-					}
-					&+.wcsdm-col {
-						border-left: 1px solid $seashell;
-					}
-				}
-			}
-			thead {
-				tr {
-					.wcsdm-col {
-						font-weight: 600;
-					}
-				}
-			}
-			tbody {
-				tr {
-					.wcsdm-col {
-						padding-bottom: 9px !important;
-						padding-top: 9px !important;
-					}
-					&.highlighted {
-						.wcsdm-col {
-							animation: highlighted 0.5s infinite;
-						}
-					}
-					&:nth-child(odd) {
-						.wcsdm-col {
-							background-color: rgba($anakiwa, 0.1);
-						}
-					}
-					&:nth-child(even) {
-						.wcsdm-col {
-							background-color: $white;
-						}
-					}
-					&:last-child {
-						td,
-                        th {
-							border-bottom: 0px solid rgba($alabaster, 0) !important;
-						}
-					}
-					&:hover {
-						.wcsdm-col {
-							background-color: rgba($anakiwa, 0.2);
-						}
-					}
-					.wcsdm-field--context--dummy:not(a) {
-						min-width: 100px !important;
-					}
-				}
-			}
-		}
-		&--advanced_rate {
-			.wcsdm-no-padding {
-				.wcsdm-field-type--title {
-					background: rgba($alabaster, 0.6);
-					border-bottom: 1px solid $alabaster;
-					border-top: 1px solid $alabaster;
-					margin-bottom: 0;
-					margin-top: 0;
-					padding-bottom: 5px;
-					padding-top: 5px;
-				}
-				.form-table {
-					border-top: 1px solid $alabaster;
-					margin-bottom: 0 !important;
-				}
-			}
-		}
-	}
-	&-map-instructions {
-		background-color: $double-pearl-lusta;
-		border: 1px solid darken($double-pearl-lusta, 20%);
-		border-radius: 5px;
-		margin: 50px auto 50px;
-		max-width: 760px;
-		padding: 30px 30px;
-		text-align: center;
-		img {
-			display: block;
-			margin: 20px auto 0;
-			max-width: 100%;
-			width: 100%;
-		}
-	}
-	&-map-wrap {
-		padding: 0;
-		position: relative;
-	}
-	&-map-canvas {
-		height: 450px;
-	}
-	&-map-error {
-		padding-top: 100px;
-		text-align: center;
-	}
-	&-map-search-panel {
-		left: 10px;
-		margin: 10px;
-		position: absolute;
-		top: 10px;
-		.wcsdm-map-search-element {
-			float: left;
-			line-height: 1;
-			margin: 0;
-		}
-		#wcsdm-map-search-input {
-			display: none;
-			height: 40px !important;
-			max-width: calc(100% - 60px) !important;
-			transition: all 2s ease;
-			width: 540px !important;
-		}
-		#wcsdm-map-search-panel-toggle {
-			background: none rgb(255, 255, 255);
-			box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px;
-			cursor: pointer;
-			display: block;
-			height: 40px !important;
-			width: 40px !important;
-			.dashicons {
-				&:before {
-					content: "\f179";
-				}
-			}
-		}
-		&.expanded {
-			#wcsdm-map-search-input {
-				display: block;
-			}
-			#wcsdm-map-search-panel-toggle {
-				.dashicons {
-					&:before {
-						content: "\f171";
-					}
-				}
-			}
-		}
-		&:after {
-			clear: both;
-		}
-	}
-	&-map-search-input {
-		border-radius: 0;
-		display: block;
-		height: 36px;
-		margin: 10px 0 0;
-	}
+  &-hidden {
+    display: none;
+
+    &.button {
+      display: none;
+    }
+  }
+
+  &-no-padding {
+    padding: 0 !important;
+  }
+
+  &-spinner {
+    float: none;
+    margin-left: 7px;
+    margin-top: 0;
+  }
+
+  &-link {
+    text-align: center;
+    text-decoration: none;
+    width: 60px;
+
+    &:active,
+    &:focus {
+      box-shadow: none;
+      text-decoration: none;
+    }
+  }
+
+  &-edit-location-manual.editing .dashicons-edit,
+  &-edit-api-key.editing .dashicons-edit {
+    display: none;
+  }
+
+  &-edit-location-manual:not(.editing) .dashicons-yes,
+  &-edit-api-key:not(.editing) .dashicons-yes {
+    display: none;
+  }
+
+  &-edit-api-key.loading .dashicons {
+    display: none;
+  }
+
+  &-edit-api-key:not(.loading) .spinner {
+    display: none;
+  }
+
+  &-edit-api-key.loading .spinner {
+    visibility: visible;
+  }
+
+  &-fullwidth:not(a) {
+    display: block;
+    width: 100% !important;
+  }
+
+  &-buttons {
+    &-item {
+      &.button-large {
+        .dashicons {
+          margin-top: 5px;
+
+          &:before {
+            font-size: 1em;
+          }
+        }
+      }
+
+      &--left {
+        float: left;
+      }
+    }
+
+    &--has-icon {
+      position: relative;
+
+      .dashicons {
+        width: 20px;
+        height: 20px;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        margin-top: -10px;
+        margin-left: -10px;
+      }
+    }
+  }
+
+  &-field {
+    &:disabled {
+      background: $alabaster;
+    }
+
+    &-type--title {
+      padding-left: 14px !important;
+
+      &~p {
+        padding-top: 8px !important;
+        margin: 14px !important;
+        border-top: 1px solid $iron;
+      }
+    }
+
+    &-group-wrap {
+      padding-top: 1px;
+      margin-bottom: 1em;
+
+      >.wc-settings-sub-title:not(.wcsdm-hidden) {
+        &~.form-table {
+          border-top: 1px solid $iron !important;
+          border-bottom: 1px solid $iron !important;
+        }
+      }
+    }
+  }
+
+  &-table {
+    &--table_rates--dummy {
+      max-width: 100%;
+
+      tr {
+        .wcsdm-col {
+          background-color: $white;
+          box-sizing: border-box;
+
+          &--select-item {
+            text-align: center;
+            width: 50px;
+
+            input {
+              margin: 0;
+              padding: 0;
+            }
+          }
+
+          &--link_advanced {
+            text-align: center;
+            width: 96px;
+          }
+
+          &+.wcsdm-col {
+            border-left: 1px solid $seashell;
+          }
+        }
+      }
+
+      thead {
+        tr {
+          .wcsdm-col {
+            font-weight: 600;
+          }
+        }
+      }
+
+      tbody {
+        tr {
+          .wcsdm-col {
+            padding-bottom: 9px !important;
+            padding-top: 9px !important;
+          }
+
+          &.highlighted {
+            .wcsdm-col {
+              animation: highlighted 0.5s infinite;
+            }
+          }
+
+          &:nth-child(odd) {
+            .wcsdm-col {
+              background-color: rgba($anakiwa, 0.1);
+            }
+          }
+
+          &:nth-child(even) {
+            .wcsdm-col {
+              background-color: $white;
+            }
+          }
+
+          &:last-child {
+
+            td,
+            th {
+              border-bottom: 0px solid rgba($alabaster, 0) !important;
+            }
+          }
+
+          &:hover {
+            .wcsdm-col {
+              background-color: rgba($anakiwa, 0.2);
+            }
+          }
+
+          .wcsdm-field--context--dummy:not(a) {
+            min-width: 100px !important;
+          }
+        }
+      }
+    }
+
+    &--advanced_rate {
+      .wcsdm-no-padding {
+        .wcsdm-field-type--title {
+          margin-bottom: 0;
+          margin-top: 0;
+          padding-bottom: 5px;
+          padding-top: 5px;
+          background: $seashell;
+          background: linear-gradient(to bottom, $seashell 0%, lighten($seashell, 3%) 47%, lighten($seashell, 3%) 53%, $seashell 100%);
+          border: 1px solid $seashell;
+          font-size: 1.1em;
+        }
+
+        .form-table {
+          margin-bottom: 0 !important;
+        }
+      }
+    }
+  }
+
+  &-map-wrap {
+    padding: 0;
+    position: relative;
+  }
+
+  &-map-canvas {
+    height: 450px;
+  }
+
+  &-map-error {
+    padding-top: 100px;
+    text-align: center;
+  }
+
+  &-map-search-panel {
+    left: 10px;
+    margin: 10px;
+    position: absolute;
+    top: 10px;
+
+    .wcsdm-map-search-element {
+      float: left;
+      line-height: 1;
+      margin: 0;
+    }
+
+    #wcsdm-map-search-input {
+      display: none;
+      height: 40px !important;
+      max-width: calc(100% - 60px) !important;
+      transition: all 2s ease;
+      width: 540px !important;
+    }
+
+    #wcsdm-map-search-panel-toggle {
+      background: none rgb(255, 255, 255);
+      box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px;
+      cursor: pointer;
+      display: block;
+      height: 40px !important;
+      width: 40px !important;
+
+      .dashicons {
+        &:before {
+          content: "\f179";
+        }
+      }
+    }
+
+    &.expanded {
+      #wcsdm-map-search-input {
+        display: block;
+      }
+
+      #wcsdm-map-search-panel-toggle {
+        .dashicons {
+          &:before {
+            content: "\f171";
+          }
+        }
+      }
+    }
+
+    &:after {
+      clear: both;
+    }
+  }
+
+  &-map-search-input {
+    border-radius: 0;
+    display: block;
+    height: 36px;
+    margin: 10px 0 0;
+  }
 }
+
 .pac-container {
-	z-index: 9999999;
+  z-index: 9999999;
 }
+
 @keyframes highlighted {
-	0% {
-		background-color: $white;
-	}
-	49% {
-		background-color: $white;
-	}
-	50% {
-		background-color: rgba($anakiwa, 0.3);
-	}
-	99% {
-		background-color: rgba($anakiwa, 0.3);
-	}
-	100% {
-		background-color: $white;
-	}
+  0% {
+    background-color: $white;
+  }
+
+  49% {
+    background-color: $white;
+  }
+
+  50% {
+    background-color: rgba($anakiwa, 0.3);
+  }
+
+  99% {
+    background-color: rgba($anakiwa, 0.3);
+  }
+
+  100% {
+    background-color: $white;
+  }
 }

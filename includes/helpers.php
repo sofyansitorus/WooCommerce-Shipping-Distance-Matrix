@@ -84,6 +84,7 @@ function wcsdm_i18n( $key = '', $default = '' ) {
 				'general'         => __( '%s field value only changeable in pro version. Please upgrade!', 'wcsdm' ),
 				'total_cost_type' => __( 'Total cost type "Match Formula" options only available in pro version. Please upgrade!', 'wcsdm' ),
 			),
+			'finish_editing_api'    => __( 'Please finish the API Key Editing first!', 'wcsdm' ),
 		),
 		'Save Changes' => __( 'Save Changes', 'wcsdm' ),
 		'Add New Rate' => __( 'Add New Rate', 'wcsdm' ),
