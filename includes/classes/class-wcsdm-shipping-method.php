@@ -443,6 +443,13 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			'js_template'                 => array(
 				'type' => 'js_template',
 			),
+			'field_group_third_party'     => array(
+				'type'        => 'wcsdm',
+				'orig_type'   => 'title',
+				'class'       => 'wcsdm-field-group',
+				'title'       => __( 'Third-Party Settings', 'wcsdm' ),
+				'description' => __( 'Settings added by third-party plugins.', 'wcsdm' ),
+			),
 		);
 
 		/**
