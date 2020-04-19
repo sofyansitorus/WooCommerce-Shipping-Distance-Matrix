@@ -23,12 +23,6 @@
     padding: 0 !important;
   }
 
-  &-spinner {
-    float: none;
-    margin-left: 7px;
-    margin-top: 0;
-  }
-
   &-link {
     text-align: center;
     text-decoration: none;
@@ -41,26 +35,26 @@
     }
   }
 
-  &-edit-location-manual.editing .dashicons-edit,
-  &-edit-api-key.editing .dashicons-edit {
-    display: none;
+  &-edit-api-key {
+    .dashicons:before {
+      content: "\f464";
+    }
   }
 
-  &-edit-location-manual:not(.editing) .dashicons-yes,
-  &-edit-api-key:not(.editing) .dashicons-yes {
-    display: none;
+  &-edit-api-key.editing {
+    .dashicons:before {
+      content: "\f147";
+    }
   }
 
-  &-edit-api-key.loading .dashicons {
-    display: none;
-  }
+  &-edit-api-key.loading {
+    .dashicons {
+      animation: rotation 1s infinite linear;
 
-  &-edit-api-key:not(.loading) .spinner {
-    display: none;
-  }
-
-  &-edit-api-key.loading .spinner {
-    visibility: visible;
+      &:before {
+        content: "\f113";
+      }
+    }
   }
 
   &-fullwidth:not(a) {
@@ -241,11 +235,6 @@
     height: 450px;
   }
 
-  &-map-error {
-    padding-top: 100px;
-    text-align: center;
-  }
-
   &-map-search-panel {
     left: 10px;
     margin: 10px;
@@ -331,5 +320,15 @@
 
   100% {
     background-color: $white;
+  }
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0);
+  }
+
+  100% {
+    transform: rotate(360deg);
   }
 }
