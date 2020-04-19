@@ -5,7 +5,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Requires at least: 4.8
 Tested up to: 5.4
 Requires PHP: 5.6
-Stable tag: 2.1.0
+Stable tag: 2.1.1
 License: GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -101,12 +101,18 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 >
 > **Please upgrade wisely and carefully.**
 
+= 2.1.1 =
+* Fix - Fixed bulk delete table rates checkbox still checked after delete done
+* Fix - Fixed settings fields added by third-party not visible
+* Fix - Added missing title attribute fro edit API Key button
+
 = 2.1.0 =
 * Enhancement - Added new shipping rule: Minimum Order Quantity
 * Enhancement - Added new shipping rule: Maximum Order Quantity
 * Enhancement - Added new shipping rule: Minimum Order Amount
 * Enhancement - Added new shipping rule: Maximum Order Amount
 * Fix - Fixed issue fail to calculate distance when there is pound character in the address data
+* Fix - Fixed JS Error in cart page when certain fields is disabled
 
 = 2.0.8 =
 * Enhancement - Fixed Unable to Calculate distnance in some cases
