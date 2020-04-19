@@ -1719,9 +1719,9 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		 *
 		 * This example shows how you can modify the $pre var via custom function:
 		 *
-		 *      add_filter( 'wcsdm_calculate_shipping_cost_pre', 'my_get_rate_pre', 10, 4 );
+		 *      add_filter( 'wcsdm_calculate_shipping_cost_pre', 'my_calculate_shipping_cost_pre', 10, 4 );
 		 *
-		 *      function my_get_rate_pre( $false, $api_response, $package, $obj ) {
+		 *      function my_calculate_shipping_cost_pre( $false, $api_response, $package, $obj ) {
 		 *          // Return the cost data array
 		 *          return array(
 		 *              'cost'      => 0,
@@ -1736,9 +1736,78 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			return $pre;
 		}
 
-		if ( $this->table_rates ) {
+		/**
+		 * Developers can modify the $table_rates data via filter hooks.
+		 *
+		 * @since 2.1.0
+		 *
+		 * This example shows how you can modify the $table_rates var via custom function:
+		 *
+		 *      add_filter( 'wcsdm_table_rates', 'my_wcsdm_table_rates', 10, 4 );
+		 *
+		 *      function my_wcsdm_table_rates( $table_rates, $api_response, $package, $object ) {
+		 *          // Return the table rates data array
+		 *          return array(
+		 *              array(
+		 *                  'max_distance' => '1',
+		 *                  'min_order_quantity' => '0',
+		 *                  'max_order_quantity' => '0',
+		 *                  'min_order_amount' => '0',
+		 *                  'max_order_amount' => '0',
+		 *                  'rate_class_0' => '10',
+		 *                  'min_cost' => '',
+		 *                  'surcharge' => '',
+		 *                  'total_cost_type' => 'inherit',
+		 *                  'title' => '',
+		 *              ),
+		 *              array(
+		 *                  'max_distance' => '1000',
+		 *                  'min_order_quantity' => '0',
+		 *                  'max_order_quantity' => '0',
+		 *                  'min_order_amount' => '0',
+		 *                  'max_order_amount' => '0',
+		 *                  'rate_class_0' => '5',
+		 *                  'min_cost' => '',
+		 *                  'surcharge' => '',
+		 *                  'total_cost_type' => 'inherit',
+		 *                  'title' => '',
+		 *              )
+		 *          );
+		 *      }
+		 */
+		$table_rates = apply_filters( 'wcsdm_table_rates', $this->table_rates, $api_response, $package, $this );
+
+		if ( $table_rates ) {
 			$offset = 0;
-			foreach ( $this->table_rates as $rate ) {
+
+			foreach ( $table_rates as $index => $rate ) {
+				/**
+				 * Developers can modify the $rate data via filter hooks.
+				 *
+				 * @since 2.1.0
+				 *
+				 * This example shows how you can modify the $rate var via custom function:
+				 *
+				 *      add_filter( 'wcsdm_table_rates_row', 'my_table_rates_row', 10, 5 );
+				 *
+				 *      function my_table_rates_row( $rate, $index, $api_response, $package, $object ) {
+				 *          // Return the rate row data array
+				 *          return array(
+				 *              'max_distance' => '8',
+				 *              'min_order_quantity' => '0',
+				 *              'max_order_quantity' => '0',
+				 *              'min_order_amount' => '0',
+				 *              'max_order_amount' => '0',
+				 *              'rate_class_0' => '1000',
+				 *              'min_cost' => '',
+				 *              'surcharge' => '',
+				 *              'total_cost_type' => 'inherit',
+				 *              'title' => '',
+				 *          );
+				 *      }
+				 */
+				$rate = apply_filters( 'wcsdm_table_rates_row', $rate, $index, $api_response, $package, $this );
+
 				if ( $api_response['distance'] > $offset && $api_response['distance'] <= $rate['max_distance'] ) {
 					$this->show_debug( __( 'Rate Match', 'wcsdm' ) . ': ' . is_string( $rate ) ? $rate : wp_json_encode( $rate ) );
 
