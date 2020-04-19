@@ -150,17 +150,6 @@ class Wcsdm {
 			$links
 		);
 
-		if ( ! wcsdm_is_pro() ) {
-			$link_pro = array(
-				'<a href="https://wooreer.com/?utm_source=wp-admin&utm_medium=action_links" target="_blank">' . __( 'Get Pro Version', 'wcsdm' ) . '</a>',
-			);
-
-			$links = array_merge(
-				$links,
-				$link_pro
-			);
-		}
-
 		return $links;
 	}
 
@@ -214,14 +203,13 @@ class Wcsdm {
 			array(
 				'showSettings'           => isset( $_GET['wcsdm_settings'] ) && is_admin(), // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				'methodId'               => WCSDM_METHOD_ID,
-				'methodTitle'            => wcsdm_is_pro() ? WCSDM_PRO_METHOD_TITLE : WCSDM_METHOD_TITLE,
+				'methodTitle'            => WCSDM_METHOD_TITLE,
 				'marker'                 => WCSDM_URL . 'assets/img/marker.png',
 				'defaultLat'             => WCSDM_DEFAULT_LAT,
 				'defaultLng'             => WCSDM_DEFAULT_LNG,
 				'testLat'                => WCSDM_TEST_LAT,
 				'testLng'                => WCSDM_TEST_LNG,
 				'language'               => get_locale(),
-				'isPro'                  => wcsdm_is_pro(),
 				'isDevEnv'               => $is_dev_env,
 				'i18n'                   => wcsdm_i18n(),
 				'ajax_url'               => admin_url( 'admin-ajax.php' ),

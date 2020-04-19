@@ -60,8 +60,6 @@ var wcsdmTableRates = {
     }
   },
   initForm: function () {
-    $('.wcsdm-field-key--total_cost_type > option[value="formula"]').prop('disabled', !wcsdmTableRates.params.isPro);
-
     var distanceUnitSelected = $('#woocommerce_wcsdm_distance_unit').val();
     var $distanceUnitFields = $('#woocommerce_wcsdm_distance_unit').data('fields');
 

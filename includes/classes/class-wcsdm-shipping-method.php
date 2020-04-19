@@ -75,7 +75,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		'default'           => '',
 		'custom_attributes' => array(),
 		'is_required'       => false,
-		'is_pro'            => false,
 	);
 
 	/**
@@ -89,7 +88,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		$this->id = WCSDM_METHOD_ID;
 
 		// Title shown in admin.
-		$this->method_title = $this->is_pro() ? WCSDM_PRO_METHOD_TITLE : WCSDM_METHOD_TITLE;
+		$this->method_title = WCSDM_METHOD_TITLE;
 
 		// Title shown in admin.
 		$this->title = $this->method_title;
@@ -259,16 +258,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					'readonly' => true,
 				),
 			),
-			'enable_address_picker'       => array(
-				'title'       => __( 'Frontend Address Picker', 'wcsdm' ),
-				'label'       => __( 'Enable', 'wcsdm' ),
-				'type'        => 'wcsdm',
-				'orig_type'   => 'checkbox',
-				'description' => __( 'Enable the map address picker to user during checkout so can get more accurate distance and the address form will be autocomplete upon an address selected.', 'wcsdm' ),
-				'desc_tip'    => true,
-				'default'     => 'no',
-				'is_pro'      => true,
-			),
 			'field_group_route'           => array(
 				'type'      => 'wcsdm',
 				'orig_type' => 'title',
@@ -417,7 +406,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					'progressive__per_shipping_class' => __( 'Per Class - Accumulate total by grouping the product shipping class (Progressive)', 'wcsdm' ),
 					'progressive__per_product'        => __( 'Per Product - Accumulate total by grouping the product ID (Progressive)', 'wcsdm' ),
 					'progressive__per_item'           => __( 'Per Piece - Accumulate total by multiplying the quantity (Progressive)', 'wcsdm' ),
-					'formula'                         => __( 'Advanced - Use math formula to calculate the total', 'wcsdm' ) . ( $this->is_pro() ? '' : ' (' . __( 'Pro Version', 'wcsdm' ) . ')' ),
 				),
 			),
 			'field_group_table_rates'     => array(
@@ -1160,11 +1148,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				}
 			}
 
-			// Validate pro field.
-			if ( $field['is_pro'] && ! $this->is_pro() && $value !== $field['default'] ) {
-				throw new Exception( wp_sprintf( wcsdm_i18n( 'errors.need_upgrade.general' ), $field['title'] ) );
-			}
-
 			return $value;
 		}
 
@@ -1196,13 +1179,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 
 			foreach ( $values as $index => $value ) {
 				try {
-					$value = $this->validate_wcsdm_field( $rate_field_key, $value, true );
-
-					if ( 'total_cost_type' === $rate_field_key && ! $this->is_pro() && 'formula' === $value ) {
-						throw new Exception( wcsdm_i18n( 'errors.need_upgrade.total_cost_type' ) );
-					}
-
-					$rates[ $index ][ $rate_field_key ] = $value;
+					$rates[ $index ][ $rate_field_key ] = $this->validate_wcsdm_field( $rate_field_key, $value, true );
 				} catch ( Exception $e ) {
 					// translators: %1$d = row number, %2$s = error message.
 					$errors[] = wp_sprintf( __( 'Table rates row %1$d: %2$s', 'wcsdm' ), ( $index + 1 ), $e->getMessage() );
@@ -1541,17 +1518,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			array_push( $data_classes, 'wcsdm-field--is-required' );
 		}
 
-		$data_is_pro = isset( $data['is_pro'] ) && $data['is_pro'];
-
-		if ( $data_is_pro ) {
-			array_push( $data_classes, 'wcsdm-field--is-pro' );
-
-			if ( ! $this->is_pro() ) {
-				$data['title']    = $data['title'] . ' (' . __( 'Pro Version', 'wcsdm' ) . ')';
-				$data['disabled'] = true;
-			}
-		}
-
 		$data['class'] = implode( ' ', array_map( 'trim', array_unique( array_filter( $data_classes ) ) ) );
 
 		$custom_attributes = array(
@@ -1584,23 +1550,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		// Check we are processing the correct form for this instance.
 		if ( ! isset( $_REQUEST['instance_id'] ) || absint( $_REQUEST['instance_id'] ) !== $this->instance_id ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			return false;
-		}
-
-		// Check duplicate method.
-		if ( ! $this->is_pro() ) {
-			$zone = WC_Shipping_Zones::get_zone_by( 'instance_id', $this->instance_id );
-			if ( $zone ) {
-				$duplicate = array();
-				foreach ( $zone->get_shipping_methods() as $shipping_method ) {
-					if ( $shipping_method->id === $this->id ) {
-						$duplicate[] = $shipping_method->get_instance_id();
-					}
-				}
-
-				if ( count( $duplicate ) > 1 ) {
-					return $this->add_error( __( 'Multiple instances shipping method WooCommerce Shipping Distance Matrix within the same zone only available in Pro Version. Please upgrade.', 'wcsdm' ) );
-				}
-			}
 		}
 
 		$this->init_instance_settings();
@@ -2330,16 +2279,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			return 0;
 		}
 		return ( $a['max_distance'] > $b['max_distance'] ) ? -1 : 1;
-	}
-
-	/**
-	 * Check if pro version plugin is installed and activated
-	 *
-	 * @since    1.5.0
-	 * @return bool
-	 */
-	public function is_pro() {
-		return wcsdm_is_pro();
 	}
 
 	/**

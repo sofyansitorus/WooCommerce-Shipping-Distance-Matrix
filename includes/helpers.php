@@ -30,16 +30,6 @@ function wcsdm_is_plugin_active( $plugin_file ) {
 }
 
 /**
- * Check if pro version plugin is installed and activated
- *
- * @since    1.5.0
- * @return bool
- */
-function wcsdm_is_pro() {
-	return wcsdm_is_plugin_active( 'wcsdm-pro/wcsdm-pro.php' );
-}
-
-/**
  * Get i18n strings
  *
  * @param string $key Strings key.
@@ -79,11 +69,6 @@ function wcsdm_i18n( $key = '', $default = '' ) {
 			'field_select'          => __( '%s field value selected is not exists', 'wcsdm' ),
 			// translators: %1$d = row number, %2$s = error message.
 			'duplicate_rate'        => __( 'Each shipping rules combination for each row must be unique. Please fix duplicate shipping rules for rate row %1$d: %2$s', 'wcsdm' ),
-			'need_upgrade'          => array(
-				// translators: %s = Field name.
-				'general'         => __( '%s field value only changeable in pro version. Please upgrade!', 'wcsdm' ),
-				'total_cost_type' => __( 'Total cost type "Match Formula" options only available in pro version. Please upgrade!', 'wcsdm' ),
-			),
 			'finish_editing_api'    => __( 'Please finish the API Key Editing first!', 'wcsdm' ),
 		),
 		'Save Changes' => __( 'Save Changes', 'wcsdm' ),
