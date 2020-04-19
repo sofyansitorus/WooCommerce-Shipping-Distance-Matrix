@@ -24,12 +24,12 @@ var wcsdmTableRates = {
     $(document).on('click', '#wcsdm-btn--add-rate', wcsdmTableRates.handleAddRateButton);
 
     // Delete rate row
-    $(document).off('click', '#wcsdm-btn--delete-rate-select', wcsdmTableRates.showDeleteRateRowForm);
-    $(document).on('click', '#wcsdm-btn--delete-rate-select', wcsdmTableRates.showDeleteRateRowForm);
+    $(document).off('click', '#wcsdm-btn--delete-rate-select', wcsdmTableRates.showDeleteRateRowsForm);
+    $(document).on('click', '#wcsdm-btn--delete-rate-select', wcsdmTableRates.showDeleteRateRowsForm);
 
     // Cancel delete rate row
-    $(document).off('click', '#wcsdm-btn--delete-rate-cancel', wcsdmTableRates.closeDeleteRateRowForm);
-    $(document).on('click', '#wcsdm-btn--delete-rate-cancel', wcsdmTableRates.closeDeleteRateRowForm);
+    $(document).off('click', '#wcsdm-btn--delete-rate-cancel', wcsdmTableRates.closeDeleteRateRowsForm);
+    $(document).on('click', '#wcsdm-btn--delete-rate-cancel', wcsdmTableRates.closeDeleteRateRowsForm);
 
     // Confirm delete rate row
     $(document).off('click', '#wcsdm-btn--delete-rate-confirm', wcsdmTableRates.deleteRateRows);
@@ -186,7 +186,7 @@ var wcsdmTableRates = {
 
     wcsdmTableRates.initForm();
   },
-  showDeleteRateRowForm: function (e) {
+  showDeleteRateRowsForm: function (e) {
     e.preventDefault();
 
     $('#wcsdm-table--table_rates--dummy tbody .select-item:not(:checked)').closest('tr').hide();
@@ -212,7 +212,7 @@ var wcsdmTableRates = {
       }
     });
   },
-  closeDeleteRateRowForm: function (e) {
+  closeDeleteRateRowsForm: function (e) {
     e.preventDefault();
 
     $('#wcsdm-table--table_rates--dummy tbody tr').show();
@@ -236,10 +236,14 @@ var wcsdmTableRates = {
     $('#wcsdm-table--table_rates--dummy tbody .select-item:checked').closest('tr').remove();
 
     if (!$('#wcsdm-table--table_rates--dummy tbody tr').length) {
+      if ($('#wcsdm-table--table_rates--dummy thead .select-item').is(':checked')) {
+        $('#wcsdm-table--table_rates--dummy thead .select-item').prop('checked', false).trigger('change');
+      }
+
       wcsdmTableRates.addRateRow();
     }
 
-    wcsdmTableRates.closeDeleteRateRowForm(e);
+    wcsdmTableRates.closeDeleteRateRowsForm(e);
   },
   toggleRows: function (e) {
     e.preventDefault();

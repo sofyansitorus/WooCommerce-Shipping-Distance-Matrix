@@ -443,6 +443,13 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			'js_template'                 => array(
 				'type' => 'js_template',
 			),
+			'field_group_third_party'     => array(
+				'type'        => 'wcsdm',
+				'orig_type'   => 'title',
+				'class'       => 'wcsdm-field-group',
+				'title'       => __( 'Third-Party Settings', 'wcsdm' ),
+				'description' => __( 'Settings added by third-party plugins.', 'wcsdm' ),
+			),
 		);
 
 		/**
@@ -841,7 +848,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				<fieldset>
 					<legend class="screen-reader-text"><span><?php echo wp_kses_post( $data['title'] ); ?></span></legend>
 					<input type="text" class="input-text regular-input <?php echo esc_attr( $data['class'] ); ?>" name="<?php echo esc_attr( $field_key ); ?>" id="<?php echo esc_attr( $field_key ); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" value="<?php echo esc_attr( $this->get_option( $key ) ); ?>" placeholder="<?php echo esc_attr( $data['placeholder'] ); ?>" readonly="readonly" />
-					<a href="#" class="button button-secondary wcsdm-buttons--has-icon wcsdm-edit-api-key wcsdm-link" id="<?php echo esc_attr( $key ); ?>"><span class="dashicons"></span></a>
+					<a href="#" class="button button-secondary wcsdm-buttons--has-icon wcsdm-edit-api-key wcsdm-link" id="<?php echo esc_attr( $key ); ?>" title="<?php esc_attr_e( 'Edit API Key', 'wcsdm' ); ?>"><span class="dashicons"></span></a>
 					<a href="https://cloud.google.com/maps-platform/#get-started" target="_blank" class="button button-secondary wcsdm-buttons--has-icon wcsdm-link" id="<?php echo esc_attr( $key ); ?>" title="<?php esc_attr_e( 'Get API Key', 'wcsdm' ); ?>"><span class="dashicons dashicons-admin-network"></span></a>
 					<?php echo $this->get_description_html( $data ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				</fieldset>

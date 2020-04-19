@@ -54,9 +54,13 @@ var wcsdmBackend = {
       $fieldGroupTable
         .appendTo('#wcsdm-field-group-wrap--' + fieldGroupId);
 
-      if ($fieldGroup.hasClass('wcsdm-field-group-hidden')) {
-        $('#wcsdm-field-group-wrap--' + fieldGroupId)
-          .addClass('wcsdm-hidden');
+      if ($fieldGroupTable && $fieldGroupTable.length) {
+        if ($fieldGroup.hasClass('wcsdm-field-group-hidden')) {
+          $('#wcsdm-field-group-wrap--' + fieldGroupId)
+            .addClass('wcsdm-hidden');
+        }
+      } else {
+        $('#wcsdm-field-group-wrap--' + fieldGroupId).remove();
       }
     });
 
