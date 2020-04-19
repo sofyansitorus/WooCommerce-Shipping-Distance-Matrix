@@ -1,6 +1,7 @@
 /**
  * Import modules
  */
+const packageJSON = require('./package.json');
 const gulp = require('gulp');
 const rename = require('gulp-rename');
 const uglify = require('gulp-uglify');
@@ -393,14 +394,27 @@ gulp.task('bump', function () {
 gulp.task('dist', function () {
     gulp.src([
         './**',
+        '!tests/',
+        '!bin/',
+        '!vendor/',
         '!dist/',
-        '!dist/**',
         '!node_modules/',
-        '!node_modules/**',
         '!assets/src/',
+        '!tests/**',
+        '!bin/**',
+        '!vendor/**',
+        '!dist/**',
+        '!node_modules/**',
         '!assets/src/**',
         '!gulpfile.js',
         '!package-lock.json',
-        '!package.json'
-    ]).pipe(gulp.dest('./dist'));
+        '!package.json',
+        '!composer.lock',
+        '!composer.json',
+        '!yarn.lock',
+        '!phpcs.xml',
+        '!phpunit.xml'
+    ])
+    .pipe(gulp.dest('./dist/trunk'))
+    .pipe(gulp.dest('./dist/tags/' + packageJSON.version));
 });
