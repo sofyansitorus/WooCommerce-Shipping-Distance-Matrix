@@ -514,7 +514,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'is_hidden'         => true,
 				'is_required'       => true,
 				'is_rule'           => true,
-				'is_pro'            => true,
 				'default'           => '0',
 				'custom_attributes' => array(
 					'min' => '0',
@@ -530,7 +529,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'is_hidden'         => true,
 				'is_required'       => true,
 				'is_rule'           => true,
-				'is_pro'            => true,
 				'default'           => '0',
 				'custom_attributes' => array(
 					'min' => '0',
@@ -546,7 +544,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'is_hidden'         => true,
 				'is_required'       => true,
 				'is_rule'           => true,
-				'is_pro'            => true,
 				'default'           => '0',
 				'custom_attributes' => array(
 					'min' => '0',
@@ -562,7 +559,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'is_hidden'         => true,
 				'is_required'       => true,
 				'is_rule'           => true,
-				'is_pro'            => true,
 				'default'           => '0',
 				'custom_attributes' => array(
 					'min' => '0',
@@ -764,7 +760,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			$value = 0;
 		}
 
-		if ( 'min_cost' === $key && isset( $rate['rate_class_0'] ) && isset( $rate['cost_type'] ) && 'fixed' === $rate['cost_type'] ) {
+		if ( 'min_cost' === $key && isset( $rate['rate_class_0'], $rate['cost_type'] ) && 'fixed' === $rate['cost_type'] ) {
 			$value = $rate['rate_class_0'];
 		}
 
@@ -1778,7 +1774,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		$table_rates = apply_filters( 'wcsdm_table_rates', $this->table_rates, $api_response, $package, $this );
 
 		if ( $table_rates ) {
-			$offset = 0;
+			$distance_offset = 0;
 
 			foreach ( $table_rates as $index => $rate ) {
 				/**
@@ -1808,8 +1804,14 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				 */
 				$rate = apply_filters( 'wcsdm_table_rates_row', $rate, $index, $api_response, $package, $this );
 
-				if ( $api_response['distance'] > $offset && $api_response['distance'] <= $rate['max_distance'] ) {
-					$this->show_debug( __( 'Rate Match', 'wcsdm' ) . ': ' . is_string( $rate ) ? $rate : wp_json_encode( $rate ) );
+				$rate = $this->norlmalize_table_rate_row( $rate );
+
+				if ( ! $rate ) {
+					continue;
+				}
+
+				if ( $this->table_rate_row_rules_match( $rate, $distance_offset, $api_response, $package ) ) {
+					$this->show_debug( __( 'Table Rate Row match', 'wcsdm' ) . ': ' . wp_json_encode( $rate ) );
 
 					// Hold costs data for flat total_cost_type.
 					$flat = array();
@@ -1818,6 +1820,10 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					$progressive = array();
 
 					foreach ( $package['contents'] as $hash => $item ) {
+						if ( ! $item['data']->needs_shipping() ) {
+							continue;
+						}
+
 						$class_id   = $item['data']->get_shipping_class_id();
 						$product_id = $item['data']->get_id();
 
@@ -1942,12 +1948,109 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					return apply_filters( 'wcsdm_calculate_shipping_cost', $result, $api_response, $package, $this );
 				}
 
-				$offset = $rate['max_distance'];
+				$distance_offset = $rate['max_distance'];
 			}
 		}
 
-		// translators: %1$s distance value, %2$s distance unit.
-		return new WP_Error( 'no_rates', sprintf( __( 'No shipping rates defined within distance range: %1$s %2$s', 'wcsdm' ), $api_response['distance'], 'imperial' === $this->distance_unit ? 'mi' : 'km' ) );
+		return new WP_Error( 'no_table_rates_rules_match', __( 'No shipping table rates rules match.', 'wcsdm' ) );
+	}
+
+	/**
+	 * Normalize table rate row data.
+	 *
+	 * @since 2.1.0
+	 *
+	 * @param array $rate Rate row data.
+	 *
+	 * @return array
+	 */
+	private function norlmalize_table_rate_row( $rate ) {
+		if ( ! is_array( $rate ) ) {
+			return false;
+		}
+
+		return wp_parse_args(
+			$rate,
+			array(
+				'max_distance'       => '0',
+				'min_order_quantity' => '0',
+				'max_order_quantity' => '0',
+				'min_order_amount'   => '0',
+				'max_order_amount'   => '0',
+				'rate_class_0'       => '',
+				'min_cost'           => '',
+				'surcharge'          => '',
+				'total_cost_type'    => 'inherit',
+				'title'              => '',
+			)
+		);
+	}
+
+	/**
+	 * Check if table rate row rules is match
+	 *
+	 * @since 2.1.0
+	 *
+	 * @param array $rate Rate row data.
+	 * @param int   $distance_offset Distance offset data.
+	 * @param array $api_response API response data.
+	 * @param array $package Cart data.
+	 *
+	 * @return bool
+	 */
+	private function table_rate_row_rules_match( $rate, $distance_offset, $api_response, $package ) {
+		$is_match = $api_response['distance'] > $distance_offset && $api_response['distance'] <= $rate['max_distance'];
+
+		$min_order_amount = $this->get_rate_field_value( 'min_order_amount', $rate );
+
+		if ( $is_match && $min_order_amount ) {
+			$is_match = $min_order_amount <= $package['cart_subtotal'];
+		}
+
+		$max_order_amount = $this->get_rate_field_value( 'max_order_amount', $rate );
+
+		if ( $is_match && $max_order_amount ) {
+			$is_match = $max_order_amount >= $package['cart_subtotal'];
+		}
+
+		if ( $is_match && ( isset( $rate['min_order_quantity'] ) || isset( $rate['max_order_quantity'] ) ) ) {
+			$cart_quantity = 0;
+
+			foreach ( $package['contents'] as $item ) {
+				if ( ! $item['data']->needs_shipping() ) {
+					continue;
+				}
+
+				$cart_quantity += $item['quantity'];
+			}
+
+			$min_order_quantity = $this->get_rate_field_value( 'min_order_quantity', $rate );
+
+			if ( $min_order_quantity ) {
+				$is_match = $min_order_quantity <= $cart_quantity;
+			}
+
+			$max_order_quantity = $this->get_rate_field_value( 'max_order_quantity', $rate );
+
+			if ( $max_order_quantity ) {
+				$is_match = $max_order_quantity >= $cart_quantity;
+			}
+		}
+
+		/**
+		 * Developers can modify the rate row rules via filter hooks.
+		 *
+		 * @since 2.1.0
+		 *
+		 * This example shows how you can modify the rate row rules var via custom function:
+		 *
+		 *      add_filter( 'wcsdm_table_rate_row_rules_match', 'my_wcsdm_table_rate_row_rules_match', 10, 6 );
+		 *
+		 *      function my_wcsdm_table_rate_row_rules_match( $is_match, $rate, $distance_offset, $api_response, $package, $object ) {
+		 *          return true;
+		 *      }
+		 */
+		return apply_filters( 'wcsdm_table_rate_row_rules_match', $is_match, $rate, $distance_offset, $api_response, $package, $this );
 	}
 
 	/**
