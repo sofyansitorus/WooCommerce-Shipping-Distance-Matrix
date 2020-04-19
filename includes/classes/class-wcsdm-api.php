@@ -9,6 +9,11 @@
  * @subpackage Wcsdm/includes
  */
 
+// If this file is called directly, abort.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * The API request class.
  *
@@ -81,13 +86,14 @@ class Wcsdm_API {
 
 			if ( $json_last_error_msg && 'No error' !== $json_last_error_msg ) {
 				// translators: %s is json decoding error message.
-				throw new Exception( sprintf( __( 'Error occured while decoding API response: %s', 'wcsdm' ), $json_last_error_msg ) );
+				throw new Exception( sprintf( __( 'Error occurred while decoding API response: %s', 'wcsdm' ), $json_last_error_msg ) );
 			}
 
 			// Check API response is OK.
 			$status = isset( $response_data['status'] ) ? $response_data['status'] : '';
 			if ( 'OK' !== $status ) {
-				$error_message = __( 'API Response Error', 'wcsdm' ) . ': ' . $status;
+				$error_message = __( 'Google API Response Error', 'wcsdm' ) . ': ' . $status;
+
 				if ( isset( $response_data['error_message'] ) ) {
 					$error_message .= ' - ' . $response_data['error_message'];
 				}
@@ -129,12 +135,12 @@ class Wcsdm_API {
 
 				foreach ( $errors as $error_key ) {
 					if ( isset( $error_template[ $error_key ] ) ) {
-						throw new Exception( __( 'API Response Error', 'wcsdm' ) . ': ' . $error_template[ $error_key ] );
+						throw new Exception( __( 'Google API Response Error', 'wcsdm' ) . ': ' . $error_template[ $error_key ] );
 					}
 				}
 			}
 
-			throw new Exception( __( 'API Response Error', 'wcsdm' ) . ': ' . __( 'No results found', 'wcsdm' ) );
+			throw new Exception( __( 'Google API Response Error', 'wcsdm' ) . ': ' . __( 'No results found', 'wcsdm' ) );
 		} catch ( Exception $e ) {
 			return new WP_Error( 'api_request', $e->getMessage() );
 		}

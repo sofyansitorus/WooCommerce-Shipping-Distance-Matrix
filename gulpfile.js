@@ -31,6 +31,7 @@ const assets = [
         target: 'backend',
         sources: [
             'helpers.js',
+            'console-listener.js',
             'map-picker.js',
             'table-rates.js',
             'backend.js',
@@ -104,7 +105,7 @@ const scriptsHandler = function (asset, isMinify) {
         .pipe(errorHandler())
         .pipe(concat(asset.target + '.js'))
         .pipe(gulpif(asset.isIife, iife({
-            useStrict: true,
+            useStrict: false,
             trimCode: true,
             prependSemicolon: false,
             bindThis: false,
@@ -171,8 +172,8 @@ const phpcsHandler = function (asset) {
     });
 
     const config = Object.assign({}, asset.config, {
-        bin: '/usr/local/bin/phpcs',
-        standard: 'WordPress',
+        bin: 'vendor/bin/phpcs',
+        standard: '.phpcs.xml',
         warningSeverity: 0,
     });
 

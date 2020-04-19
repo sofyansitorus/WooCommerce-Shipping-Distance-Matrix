@@ -12,6 +12,11 @@
  * @subpackage Wcsdm/includes
  */
 
+// If this file is called directly, abort.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * The core plugin class.
  *
@@ -26,15 +31,7 @@
  * @subpackage Wcsdm/includes
  * @author     Sofyan Sitorus <sofyansitorus@gmail.com>
  */
-class Wcsdm extends WC_Shipping_Method {
-
-	/**
-	 * URL of Google Maps Distance Matrix API
-	 *
-	 * @since    1.0.0
-	 * @var string
-	 */
-	private $google_api_url = 'https://maps.googleapis.com/maps/api/distancematrix/json';
+class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 
 	/**
 	 * All options data
@@ -78,7 +75,6 @@ class Wcsdm extends WC_Shipping_Method {
 		'default'           => '',
 		'custom_attributes' => array(),
 		'is_required'       => false,
-		'is_pro'            => false,
 	);
 
 	/**
@@ -92,7 +88,7 @@ class Wcsdm extends WC_Shipping_Method {
 		$this->id = WCSDM_METHOD_ID;
 
 		// Title shown in admin.
-		$this->method_title = $this->is_pro() ? WCSDM_PRO_METHOD_TITLE : WCSDM_METHOD_TITLE;
+		$this->method_title = WCSDM_METHOD_TITLE;
 
 		// Title shown in admin.
 		$this->title = $this->method_title;
@@ -110,27 +106,7 @@ class Wcsdm extends WC_Shipping_Method {
 			'instance-settings-modal',
 		);
 
-		$this->init_hooks();
 		$this->init();
-	}
-
-	/**
-	 * Register actions/filters hooks
-	 *
-	 * @return void
-	 */
-	private function init_hooks() {
-		// Save settings in admin if you have any defined.
-		add_action( 'woocommerce_update_options_shipping_' . $this->id, array( $this, 'process_admin_options' ) );
-
-		// Check if this shipping method is availbale for current order.
-		add_filter( 'woocommerce_shipping_' . $this->id . '_is_available', array( $this, 'check_is_available' ), 10, 2 );
-
-		// Sanitize settings fields.
-		add_filter( 'woocommerce_shipping_' . $this->id . '_instance_settings_values', array( $this, 'instance_settings_values' ), 10 );
-
-		// Hook to woocommerce_cart_shipping_packages to inject filed address_2.
-		add_filter( 'woocommerce_cart_shipping_packages', array( $this, 'inject_cart_shipping_packages' ), 10 );
 	}
 
 	/**
@@ -140,6 +116,9 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @return void
 	 */
 	public function init() {
+		// Register hooks.
+		$this->init_hooks();
+
 		// Load the settings API.
 		$this->init_form_fields(); // This is part of the settings API. Override the method to add your own settings.
 		$this->init_settings(); // This is part of the settings API. Loads settings you previously init.
@@ -157,28 +136,32 @@ class Wcsdm extends WC_Shipping_Method {
 	}
 
 	/**
+	 * Register actions/filters hooks
+	 *
+	 * @return void
+	 */
+	private function init_hooks() {
+		// Save settings in admin if you have any defined.
+		add_action( 'woocommerce_update_options_shipping_' . $this->id, array( $this, 'process_admin_options' ) );
+
+		// Sanitize settings fields.
+		add_filter( 'woocommerce_shipping_' . $this->id . '_instance_settings_values', array( $this, 'instance_settings_values' ), 10 );
+	}
+
+	/**
 	 * Init form fields.
 	 *
 	 * @since    1.0.0
 	 */
 	public function init_form_fields() {
 		$form_fields = array(
-			'field_group_general'             => array(
+			'field_group_general'         => array(
 				'type'      => 'wcsdm',
 				'orig_type' => 'title',
 				'class'     => 'wcsdm-field-group',
 				'title'     => __( 'General Settings', 'wcsdm' ),
 			),
-			'title'                           => array(
-				'title'       => __( 'Label', 'wcsdm' ),
-				'type'        => 'wcsdm',
-				'orig_type'   => 'text',
-				'description' => __( 'This controls the label which the user sees during checkout.', 'wcsdm' ),
-				'default'     => $this->method_title,
-				'desc_tip'    => true,
-				'is_required' => true,
-			),
-			'tax_status'                      => array(
+			'tax_status'                  => array(
 				'title'       => __( 'Tax Status', 'wcsdm' ),
 				'type'        => 'wcsdm',
 				'orig_type'   => 'select',
@@ -190,43 +173,42 @@ class Wcsdm extends WC_Shipping_Method {
 					'none'    => __( 'None', 'wcsdm' ),
 				),
 			),
-			'field_group_store_location'      => array(
+			'field_group_store_location'  => array(
 				'type'      => 'wcsdm',
 				'orig_type' => 'title',
 				'class'     => 'wcsdm-field-group',
 				'title'     => __( 'Store Location Settings', 'wcsdm' ),
 			),
-			'api_key_browser'                 => array(
-				'title'       => __( 'Browser Side API Key', 'wcsdm' ),
+			'api_key'                     => array(
+				'title'       => __( 'Distance Calculator API Key', 'wcsdm' ),
 				'type'        => 'wcsdm',
 				'orig_type'   => 'api_key',
-				'description' => __( 'Google maps platform API Key for usage in browser side request. This API Key will be used by Store Location Latitude/Longitude setting fields and customer checkout Address Picker that available in Pro Version.', 'wcsdm' ),
+				'description' => __( 'API Key used to calculate the shipping address distance. Required Google API Service: Distance Matrix API.', 'wcsdm' ),
 				'desc_tip'    => true,
 				'default'     => '',
 				'placeholder' => __( 'Click the icon on the right to edit', 'wcsdm' ),
 				'is_required' => true,
 			),
-			'api_key_server'                  => array(
-				'title'       => __( 'Server Side API Key', 'wcsdm' ),
+			'api_key_picker'              => array(
+				'title'       => __( 'Location Picker API Key', 'wcsdm' ),
 				'type'        => 'wcsdm',
 				'orig_type'   => 'api_key',
-				'description' => __( 'Google maps platform API Key for usage in server side request. This API Key will be used to calculate the distance of the customer during checkout.', 'wcsdm' ),
+				'description' => __( 'API Key used to render the location picker map. Required Google API Services: Maps JavaScript API, Geocoding API, Places API.', 'wcsdm' ),
 				'desc_tip'    => true,
 				'default'     => '',
 				'placeholder' => __( 'Click the icon on the right to edit', 'wcsdm' ),
 				'is_required' => true,
-				'api_request' => 'key',
 			),
-			'origin_type'                     => array(
-				'title'             => __( 'Store Origin Type', 'wcsdm' ),
+			'origin_type'                 => array(
+				'title'             => __( 'Store Origin Data Type', 'wcsdm' ),
 				'type'              => 'wcsdm',
-				'orig_type'         => 'select',
+				'orig_type'         => 'origin_type',
 				'description'       => __( 'Preferred data that will be used as the origin info when calculating the distance.', 'wcsdm' ),
 				'desc_tip'          => true,
 				'default'           => 'coordinate',
 				'options'           => array(
-					'coordinate' => __( 'Store Location Coordinate (Recommended)', 'wcsdm' ),
-					'address'    => __( 'Store Location Address (Less Accurate)', 'wcsdm' ),
+					'coordinate' => __( 'Coordinate (Recommended)', 'wcsdm' ),
+					'address'    => __( 'Address (Less Accurate)', 'wcsdm' ),
 				),
 				'custom_attributes' => array(
 					'data-fields' => wp_json_encode(
@@ -237,56 +219,52 @@ class Wcsdm extends WC_Shipping_Method {
 					),
 				),
 			),
-			'origin_lat'                      => array(
-				'title'       => __( 'Store Location Latitude', 'wcsdm' ),
-				'type'        => 'wcsdm',
-				'orig_type'   => 'store_location',
-				'description' => __( 'Store location latitude coordinates', 'wcsdm' ),
-				'desc_tip'    => true,
-				'default'     => '',
-				'placeholder' => __( 'Click the icon on the right to edit', 'wcsdm' ),
-				'is_required' => true,
-				'disabled'    => true,
+			'origin_lat'                  => array(
+				'title'             => __( 'Store Location Latitude', 'wcsdm' ),
+				'type'              => 'wcsdm',
+				'orig_type'         => 'text',
+				'description'       => __( 'Store location latitude coordinates', 'wcsdm' ),
+				'desc_tip'          => true,
+				'default'           => '',
+				'placeholder'       => __( 'Click the icon on the right to edit', 'wcsdm' ),
+				'is_required'       => true,
+				'custom_attributes' => array(
+					'readonly' => true,
+				),
 			),
-			'origin_lng'                      => array(
-				'title'       => __( 'Store Location Longitude', 'wcsdm' ),
-				'type'        => 'wcsdm',
-				'orig_type'   => 'store_location',
-				'description' => __( 'Store location longitude coordinates', 'wcsdm' ),
-				'desc_tip'    => true,
-				'default'     => '',
-				'placeholder' => __( 'Click the icon on the right to edit', 'wcsdm' ),
-				'is_required' => true,
-				'disabled'    => true,
+			'origin_lng'                  => array(
+				'title'             => __( 'Store Location Longitude', 'wcsdm' ),
+				'type'              => 'wcsdm',
+				'orig_type'         => 'text',
+				'description'       => __( 'Store location longitude coordinates', 'wcsdm' ),
+				'desc_tip'          => true,
+				'default'           => '',
+				'placeholder'       => __( 'Click the icon on the right to edit', 'wcsdm' ),
+				'is_required'       => true,
+				'custom_attributes' => array(
+					'readonly' => true,
+				),
 			),
-			'origin_address'                  => array(
-				'title'       => __( 'Store Location Address', 'wcsdm' ),
-				'type'        => 'wcsdm',
-				'orig_type'   => 'store_location',
-				'description' => __( 'Store location full address', 'wcsdm' ),
-				'desc_tip'    => true,
-				'default'     => '',
-				'placeholder' => __( 'Click the icon on the right to edit', 'wcsdm' ),
-				'is_required' => true,
-				'disabled'    => true,
+			'origin_address'              => array(
+				'title'             => __( 'Store Location Address', 'wcsdm' ),
+				'type'              => 'wcsdm',
+				'orig_type'         => 'text',
+				'description'       => __( 'Store location full address', 'wcsdm' ),
+				'desc_tip'          => true,
+				'default'           => '',
+				'placeholder'       => __( 'Click the icon on the right to edit', 'wcsdm' ),
+				'is_required'       => true,
+				'custom_attributes' => array(
+					'readonly' => true,
+				),
 			),
-			'enable_address_picker'           => array(
-				'title'       => __( 'Frontend Address Picker', 'wcsdm' ),
-				'label'       => __( 'Enable', 'wcsdm' ),
-				'type'        => 'wcsdm',
-				'orig_type'   => 'checkbox',
-				'description' => __( 'Enable the map address picker to user during checkout so can get more accurate distance and the address form will be autocomplete upon an address selected.', 'wcsdm' ),
-				'desc_tip'    => true,
-				'default'     => 'no',
-				'is_pro'      => true,
-			),
-			'field_group_route'               => array(
+			'field_group_route'           => array(
 				'type'      => 'wcsdm',
 				'orig_type' => 'title',
 				'class'     => 'wcsdm-field-group',
 				'title'     => __( 'Route Settings', 'wcsdm' ),
 			),
-			'travel_mode'                     => array(
+			'travel_mode'                 => array(
 				'title'       => __( 'Travel Mode', 'wcsdm' ),
 				'type'        => 'wcsdm',
 				'orig_type'   => 'select',
@@ -300,7 +278,7 @@ class Wcsdm extends WC_Shipping_Method {
 				),
 				'api_request' => 'mode',
 			),
-			'route_restrictions'              => array(
+			'route_restrictions'          => array(
 				'title'       => __( 'Route Restrictions', 'wcsdm' ),
 				'type'        => 'wcsdm',
 				'orig_type'   => 'select',
@@ -316,11 +294,11 @@ class Wcsdm extends WC_Shipping_Method {
 				),
 				'api_request' => 'avoid',
 			),
-			'preferred_route'                 => array(
+			'preferred_route'             => array(
 				'title'       => __( 'Preferred Route', 'wcsdm' ),
 				'type'        => 'wcsdm',
 				'orig_type'   => 'select',
-				'description' => __( 'Prefered route that will be used for calculation if API provide several routes', 'wcsdm' ),
+				'description' => __( 'Preferred route that will be used for calculation if API provide several routes', 'wcsdm' ),
 				'desc_tip'    => true,
 				'default'     => 'shortest_distance',
 				'options'     => array(
@@ -330,7 +308,7 @@ class Wcsdm extends WC_Shipping_Method {
 					'longest_duration'  => __( 'Longest Duration', 'wcsdm' ),
 				),
 			),
-			'distance_unit'                   => array(
+			'distance_unit'               => array(
 				'title'             => __( 'Distance Units', 'wcsdm' ),
 				'type'              => 'wcsdm',
 				'orig_type'         => 'select',
@@ -357,15 +335,15 @@ class Wcsdm extends WC_Shipping_Method {
 					),
 				),
 			),
-			'round_up_distance'               => array(
+			'round_up_distance'           => array(
 				'title'       => __( 'Round Up Distance', 'wcsdm' ),
 				'label'       => __( 'Yes', 'wcsdm' ),
 				'type'        => 'wcsdm',
 				'orig_type'   => 'checkbox',
-				'description' => __( 'Round the distance up to the nearest absolute number.', 'wcsdm' ),
+				'description' => __( 'Round up the calculated shipping distance with decimal to the nearest absolute number.', 'wcsdm' ),
 				'desc_tip'    => true,
 			),
-			'show_distance'                   => array(
+			'show_distance'               => array(
 				'title'       => __( 'Show Distance Info', 'wcsdm' ),
 				'label'       => __( 'Yes', 'wcsdm' ),
 				'type'        => 'wcsdm',
@@ -373,13 +351,23 @@ class Wcsdm extends WC_Shipping_Method {
 				'description' => __( 'Show the distance info to customer during checkout.', 'wcsdm' ),
 				'desc_tip'    => true,
 			),
-			'field_group_total_cost'          => array(
-				'type'      => 'wcsdm',
-				'orig_type' => 'title',
-				'class'     => 'wcsdm-field-group',
-				'title'     => __( 'Global Total Cost Settings', 'wcsdm' ),
+			'field_group_total_cost'      => array(
+				'type'        => 'wcsdm',
+				'orig_type'   => 'title',
+				'class'       => 'wcsdm-field-group',
+				'title'       => __( 'Global Rates Settings', 'wcsdm' ),
+				'description' => __( 'Default settings that will be inherited by certain settings in table rates when it is empty.', 'wcsdm' ),
 			),
-			'min_cost'                        => array(
+			'title'                       => array(
+				'title'       => __( 'Label', 'wcsdm' ),
+				'type'        => 'wcsdm',
+				'orig_type'   => 'text',
+				'description' => __( 'This controls the label which the user sees during checkout.', 'wcsdm' ),
+				'default'     => $this->method_title,
+				'desc_tip'    => true,
+				'is_required' => true,
+			),
+			'min_cost'                    => array(
 				'type'              => 'wcsdm',
 				'orig_type'         => 'text',
 				'title'             => __( 'Minimum Cost', 'wcsdm' ),
@@ -391,7 +379,7 @@ class Wcsdm extends WC_Shipping_Method {
 					'min' => '0',
 				),
 			),
-			'surcharge'                       => array(
+			'surcharge'                   => array(
 				'type'              => 'wcsdm',
 				'orig_type'         => 'text',
 				'title'             => __( 'Surcharge', 'wcsdm' ),
@@ -403,7 +391,7 @@ class Wcsdm extends WC_Shipping_Method {
 					'min' => '0',
 				),
 			),
-			'total_cost_type'                 => array(
+			'total_cost_type'             => array(
 				'type'        => 'wcsdm',
 				'orig_type'   => 'select',
 				'title'       => __( 'Total Cost Type', 'wcsdm' ),
@@ -418,56 +406,59 @@ class Wcsdm extends WC_Shipping_Method {
 					'progressive__per_shipping_class' => __( 'Per Class - Accumulate total by grouping the product shipping class (Progressive)', 'wcsdm' ),
 					'progressive__per_product'        => __( 'Per Product - Accumulate total by grouping the product ID (Progressive)', 'wcsdm' ),
 					'progressive__per_item'           => __( 'Per Piece - Accumulate total by multiplying the quantity (Progressive)', 'wcsdm' ),
-					'formula'                         => __( 'Advanced - Use math formula to calculate the total', 'wcsdm' ) . ( $this->is_pro() ? '' : ' (' . __( 'Pro Version', 'wcsdm' ) . ')' ),
 				),
 			),
-			'field_group_table_rates'         => array(
-				'type'      => 'wcsdm',
-				'orig_type' => 'title',
-				'class'     => 'wcsdm-field-group',
-				'title'     => __( 'Table Rates Settings', 'wcsdm' ),
+			'field_group_table_rates'     => array(
+				'type'        => 'wcsdm',
+				'orig_type'   => 'title',
+				'class'       => 'wcsdm-field-group',
+				'title'       => __( 'Table Rates Settings', 'wcsdm' ),
+				'description' => __( 'Determine the shipping cost based on the distance and rules.', 'wcsdm' ),
 			),
-			'table_rates'                     => array(
+			'table_rates'                 => array(
 				'type'  => 'table_rates',
 				'title' => __( 'Table Rates Settings', 'wcsdm' ),
 			),
-			'field_group_advanced_rate'       => array(
+			'field_group_advanced_rate'   => array(
 				'type'      => 'wcsdm',
 				'orig_type' => 'title',
 				'class'     => 'wcsdm-field-group wcsdm-field-group-hidden',
 				'title'     => __( 'Advanced Rate Settings', 'wcsdm' ),
 			),
-			'advanced_rate'                   => array(
+			'advanced_rate'               => array(
 				'type'  => 'advanced_rate',
 				'title' => __( 'Advanced Table Rate Settings', 'wcsdm' ),
 			),
-			'field_group_location_picker'     => array(
+			'field_group_location_picker' => array(
 				'type'      => 'wcsdm',
 				'orig_type' => 'title',
 				'class'     => 'wcsdm-field-group wcsdm-field-group-hidden',
 				'title'     => __( 'Store Location Picker', 'wcsdm' ),
 			),
-			'store_location_picker'           => array(
+			'store_location_picker'       => array(
 				'title'       => __( 'Store Location Picker', 'wcsdm' ),
 				'type'        => 'store_location_picker',
 				'description' => __( 'Drag the store icon marker or search your address in the input box below.', 'wcsdm' ),
 			),
-			'field_group_api_key_instruction' => array(
-				'type'      => 'wcsdm',
-				'orig_type' => 'title',
-				'class'     => 'wcsdm-field-group wcsdm-field-group-hidden',
-				'title'     => __( 'How To Get API Key?', 'wcsdm' ),
-			),
-			'api_key_instruction'             => array(
-				'title' => __( 'How To Get API Key?', 'wcsdm' ),
-				'type'  => 'api_key_instruction',
-			),
-			'js_template'                     => array(
+			'js_template'                 => array(
 				'type' => 'js_template',
 			),
 		);
 
-		$this->instance_form_fields = apply_filters( $this->id . '_form_fields', $form_fields, $this->get_instance_id() ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound
+		/**
+		 * Developers can modify the $form_fields var via filter hooks.
+		 *
+		 * @since 1.0.1
+		 *
+		 * This example shows how you can modify the form fields data via custom function:
+		 *
+		 *      add_filter( 'wcsdm_form_fields', 'my_wcsdm_form_fields', 10, 2 );
+		 *
+		 *      function my_wcsdm_form_fields( $form_fields, $instance_id ) {
+		 *          return array();
+		 *      }
+		 */
+		$this->instance_form_fields = apply_filters( 'wcsdm_form_fields', $form_fields, $this->get_instance_id() );
 	}
 
 	/**
@@ -511,7 +502,6 @@ class Wcsdm extends WC_Shipping_Method {
 				'is_hidden'         => true,
 				'is_required'       => true,
 				'is_rule'           => true,
-				'is_pro'            => true,
 				'default'           => '0',
 				'custom_attributes' => array(
 					'min' => '0',
@@ -527,7 +517,6 @@ class Wcsdm extends WC_Shipping_Method {
 				'is_hidden'         => true,
 				'is_required'       => true,
 				'is_rule'           => true,
-				'is_pro'            => true,
 				'default'           => '0',
 				'custom_attributes' => array(
 					'min' => '0',
@@ -543,7 +532,6 @@ class Wcsdm extends WC_Shipping_Method {
 				'is_hidden'         => true,
 				'is_required'       => true,
 				'is_rule'           => true,
-				'is_pro'            => true,
 				'default'           => '0',
 				'custom_attributes' => array(
 					'min' => '0',
@@ -559,7 +547,6 @@ class Wcsdm extends WC_Shipping_Method {
 				'is_hidden'         => true,
 				'is_required'       => true,
 				'is_rule'           => true,
-				'is_pro'            => true,
 				'default'           => '0',
 				'custom_attributes' => array(
 					'min' => '0',
@@ -574,7 +561,7 @@ class Wcsdm extends WC_Shipping_Method {
 			),
 			'rate_class_0'           => array(
 				'type'              => 'text',
-				'title'             => __( 'Default Shipping Rate', 'wcsdm' ),
+				'title'             => __( 'Distance Unit Rate', 'wcsdm' ),
 				'description'       => __( 'The shipping rate within the distances range. Zero value will be assumed as free shipping.', 'wcsdm' ),
 				'desc_tip'          => true,
 				'is_advanced'       => true,
@@ -687,7 +674,20 @@ class Wcsdm extends WC_Shipping_Method {
 			}
 		}
 
-		$this->instance_rate_fields = apply_filters( $this->id . '_rate_fields', $rate_fields, $this->get_instance_id() ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound
+		/**
+		 * Developers can modify the $rate_fields var via filter hooks.
+		 *
+		 * @since 1.0.1
+		 *
+		 * This example shows how you can modify the rate fields data via custom function:
+		 *
+		 *      add_filter( 'wcsdm_rate_fields', 'my_wcsdm_rate_fields', 10, 2 );
+		 *
+		 *      function my_wcsdm_rate_fields( $rate_fields, $instance_id ) {
+		 *          return array();
+		 *      }
+		 */
+		$this->instance_rate_fields = apply_filters( 'wcsdm_rate_fields', $rate_fields, $this->get_instance_id() );
 	}
 
 	/**
@@ -748,7 +748,7 @@ class Wcsdm extends WC_Shipping_Method {
 			$value = 0;
 		}
 
-		if ( 'min_cost' === $key && isset( $rate['rate_class_0'] ) && isset( $rate['cost_type'] ) && 'fixed' === $rate['cost_type'] ) {
+		if ( 'min_cost' === $key && isset( $rate['rate_class_0'], $rate['cost_type'] ) && 'fixed' === $rate['cost_type'] ) {
 			$value = $rate['rate_class_0'];
 		}
 
@@ -798,12 +798,9 @@ class Wcsdm extends WC_Shipping_Method {
 			</div>
 		</script>
 		<script type="text/template" id="tmpl-wcsdm-map-search-panel">
-			<div id="wcsdm-map-search-panel" class="wcsdm-map-search-panel">
-				<a href="#" id="wcsdm-map-search-panel-toggle" class="wcsdm-map-search-panel-toggle wcsdm-link"><span class="dashicons dashicons-dismiss"></span></a>
-				<div id="wcsdm-map-search-panel-main">
-					<p class="description"><?php esc_html_e( 'Drag the store icon marker or search your address in the input box below.', 'wcsdm' ); ?></p>
-					<input id="wcsdm-map-search-input" class="wcsdm-fullwidth wcsdm-map-search-input" type="search" placeholder="Search your store address here" autocomplete="off">
-				</div>
+			<div id="wcsdm-map-search-panel" class="wcsdm-map-search-panel wcsdm-hidden expanded">
+				<button type="button" id="wcsdm-map-search-panel-toggle" class="wcsdm-map-search-panel-toggle wcsdm-map-search-element"><span class="dashicons"></button>
+				<input id="wcsdm-map-search-input" class="wcsdm-fullwidth wcsdm-map-search-input wcsdm-map-search-element" type="search" placeholder="<?php echo esc_html__( 'Type your store location address...', 'wcsdm' ); ?>" autocomplete="off">
 			</div>
 		</script>
 		<?php
@@ -843,12 +840,9 @@ class Wcsdm extends WC_Shipping_Method {
 			<td class="forminp">
 				<fieldset>
 					<legend class="screen-reader-text"><span><?php echo wp_kses_post( $data['title'] ); ?></span></legend>
-					<input type="hidden" name="<?php echo esc_attr( $field_key ); ?>" id="<?php echo esc_attr( $field_key ); ?>" value="<?php echo esc_attr( $this->get_option( $key ) ); ?>" />
-					<input class="input-text regular-input <?php echo esc_attr( $data['class'] ); ?>" type="text" id="<?php echo esc_attr( $field_key ); ?>--dummy" style="<?php echo esc_attr( $data['css'] ); ?>" value="<?php echo esc_attr( $this->get_option( $key ) ); ?>" placeholder="<?php echo esc_attr( $data['placeholder'] ); ?>" readonly="readonly" /> 
-					<a href="#" class="button button-secondary button-small wcsdm-edit-api-key wcsdm-link" id="<?php echo esc_attr( $key ); ?>"><span class="dashicons dashicons-edit"></span><span class="dashicons dashicons-yes"></span><span class="spinner wcsdm-spinner"></span></a>
-					<div>
-					<a href="#" class="wcsdm-show-instructions wcsdm-link"><?php esc_html_e( 'How to Get API Key?', 'wcsdm' ); ?></a>
-					</div>
+					<input type="text" class="input-text regular-input <?php echo esc_attr( $data['class'] ); ?>" name="<?php echo esc_attr( $field_key ); ?>" id="<?php echo esc_attr( $field_key ); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" value="<?php echo esc_attr( $this->get_option( $key ) ); ?>" placeholder="<?php echo esc_attr( $data['placeholder'] ); ?>" readonly="readonly" />
+					<a href="#" class="button button-secondary wcsdm-buttons--has-icon wcsdm-edit-api-key wcsdm-link" id="<?php echo esc_attr( $key ); ?>"><span class="dashicons"></span></a>
+					<a href="https://cloud.google.com/maps-platform/#get-started" target="_blank" class="button button-secondary wcsdm-buttons--has-icon wcsdm-link" id="<?php echo esc_attr( $key ); ?>" title="<?php esc_attr_e( 'Get API Key', 'wcsdm' ); ?>"><span class="dashicons dashicons-admin-network"></span></a>
 					<?php echo $this->get_description_html( $data ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				</fieldset>
 			</td>
@@ -859,13 +853,13 @@ class Wcsdm extends WC_Shipping_Method {
 	}
 
 	/**
-	 * Generate store_location field.
+	 * Generate origin_type field.
 	 *
 	 * @since    1.0.0
 	 * @param string $key Input field key.
 	 * @param array  $data Settings field data.
 	 */
-	public function generate_store_location_html( $key, $data ) {
+	public function generate_origin_type_html( $key, $data ) {
 		$field_key = $this->get_field_key( $key );
 		$defaults  = array(
 			'title'             => '',
@@ -877,6 +871,7 @@ class Wcsdm extends WC_Shipping_Method {
 			'desc_tip'          => false,
 			'description'       => '',
 			'custom_attributes' => array(),
+			'options'           => array(),
 		);
 
 		$data = wp_parse_args( $data, $defaults );
@@ -890,8 +885,12 @@ class Wcsdm extends WC_Shipping_Method {
 			<td class="forminp">
 				<fieldset>
 					<legend class="screen-reader-text"><span><?php echo wp_kses_post( $data['title'] ); ?></span></legend>
-					<input class="input-text regular-input <?php echo esc_attr( $data['class'] ); ?>" type="text" name="<?php echo esc_attr( $field_key ); ?>" id="<?php echo esc_attr( $field_key ); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" value="<?php echo esc_attr( $this->get_option( $key ) ); ?>" placeholder="<?php echo esc_attr( $data['placeholder'] ); ?>" readonly="readonly" /> 
-					<a href="#" class="button button-secondary button-small wcsdm-link wcsdm-edit-location"><span class="dashicons dashicons-location"></span></a>
+					<select class="select <?php echo esc_attr( $data['class'] ); ?>" name="<?php echo esc_attr( $field_key ); ?>" id="<?php echo esc_attr( $field_key ); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" <?php disabled( $data['disabled'], true ); ?> <?php echo $this->get_custom_attribute_html( $data ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+						<?php foreach ( (array) $data['options'] as $option_key => $option_value ) : ?>
+							<option value="<?php echo esc_attr( $option_key ); ?>" <?php selected( (string) $option_key, esc_attr( $this->get_option( $key ) ) ); ?>><?php echo esc_attr( $option_value ); ?></option>
+						<?php endforeach; ?>
+					</select>
+					<a href="#" class="button button-secondary wcsdm-buttons--has-icon wcsdm-link wcsdm-edit-location-picker" title="<?php esc_attr_e( 'Pick Location', 'wcsdm' ); ?>"><span class="dashicons dashicons-location"></span></a>
 					<?php echo $this->get_description_html( $data ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				</fieldset>
 			</td>
@@ -938,46 +937,6 @@ class Wcsdm extends WC_Shipping_Method {
 						</td>
 					</tr>
 				</table>
-			</td>
-		</tr>
-		<?php
-		return ob_get_clean();
-	}
-
-	/**
-	 * Generate api_key_instruction field.
-	 *
-	 * @since    1.0.0
-	 * @param string $key Input field key.
-	 * @param array  $data Settings field data.
-	 */
-	public function generate_api_key_instruction_html( $key, $data ) {
-		$defaults = array(
-			'title'             => '',
-			'disabled'          => false,
-			'class'             => '',
-			'css'               => '',
-			'placeholder'       => '',
-			'type'              => 'text',
-			'desc_tip'          => false,
-			'description'       => '',
-			'custom_attributes' => array(),
-			'options'           => array(),
-			'default'           => '',
-		);
-
-		$data = wp_parse_args( $data, $defaults );
-
-		ob_start();
-		?>
-		<tr valign="top">
-			<td colspan="2" class="wcsdm-no-padding">
-				<div id="wcsdm-map-instructions">
-					<div class="wcsdm-map-instructions">
-						<p><?php echo wp_kses_post( __( 'This plugin uses Google Maps Platform APIs where users are required to have a valid API key to be able to use their APIs. Make sure you checked 3 the checkboxes as shown below when creating the API Key.', 'wcsdm' ) ); ?></p>
-						<a href="https://cloud.google.com/maps-platform/#get-started" target="_blank" title="<?php echo esc_attr__( 'Enable Google Maps Platform', 'wcsdm' ); ?>"><img src="<?php echo esc_attr( WCSDM_URL ); ?>assets/img/map-instructions.jpg" /></a>
-					</div>
-				</div>
 			</td>
 		</tr>
 		<?php
@@ -1124,8 +1083,7 @@ class Wcsdm extends WC_Shipping_Method {
 				<table id="wcsdm-table--advanced-rate" class="form-table wcsdm-table wcsdm-table--advanced-rate">
 					<?php
 					foreach ( $this->get_rates_fields( 'advanced' ) as $key => $data ) {
-						$data = $this->populate_field( $key, $data );
-						echo preg_replace( '#\s(name|id)="[^"]+"#', '', $this->generate_settings_html( array( 'fake--field--' . $key => $data ), false ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+						$this->generate_settings_html( array( 'fake--field--' . $key => $this->populate_field( $key, $data ) ) );
 					}
 					?>
 				</table>
@@ -1190,11 +1148,6 @@ class Wcsdm extends WC_Shipping_Method {
 				}
 			}
 
-			// Validate pro field.
-			if ( $field['is_pro'] && ! $this->is_pro() && $value !== $field['default'] ) {
-				throw new Exception( wp_sprintf( wcsdm_i18n( 'errors.need_upgrade.general' ), $field['title'] ) );
-			}
-
 			return $value;
 		}
 
@@ -1206,7 +1159,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 *
 	 * @since    1.0.0
 	 * @param string $key Input field key.
-	 * @param string $value Input field currenet value.
+	 * @param string $value Input field current value.
 	 * @throws Exception If the field value is invalid.
 	 * @return array
 	 */
@@ -1226,13 +1179,7 @@ class Wcsdm extends WC_Shipping_Method {
 
 			foreach ( $values as $index => $value ) {
 				try {
-					$value = $this->validate_wcsdm_field( $rate_field_key, $value, true );
-
-					if ( 'total_cost_type' === $rate_field_key && ! $this->is_pro() && 'formula' === $value ) {
-						throw new Exception( wcsdm_i18n( 'errors.need_upgrade.total_cost_type' ) );
-					}
-
-					$rates[ $index ][ $rate_field_key ] = $value;
+					$rates[ $index ][ $rate_field_key ] = $this->validate_wcsdm_field( $rate_field_key, $value, true );
 				} catch ( Exception $e ) {
 					// translators: %1$d = row number, %2$s = error message.
 					$errors[] = wp_sprintf( __( 'Table rates row %1$d: %2$s', 'wcsdm' ), ( $index + 1 ), $e->getMessage() );
@@ -1319,31 +1266,31 @@ class Wcsdm extends WC_Shipping_Method {
 			$filtered
 		);
 
-		return apply_filters( $this->id . '_validate_table_rates', $filtered, $this->get_instance_id() ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound
+		/**
+		 * Developers can modify the $filtered var via filter hooks.
+		 *
+		 * @since 1.0.1
+		 *
+		 * This example shows how you can modify the filtered table rates data via custom function:
+		 *
+		 *      add_filter( 'wcsdm_validate_table_rates', 'my_wcsdm_validate_table_rates', 10, 2 );
+		 *
+		 *      function my_wcsdm_validate_table_rates( $filtered, $instance_id ) {
+		 *          return array();
+		 *      }
+		 */
+		return apply_filters( 'wcsdm_validate_table_rates', $filtered, $this->get_instance_id() );
 	}
 
 	/**
-	 * Validate and format api_key settings field.
+	 * Get API Key for the API request
 	 *
-	 * @since    1.0.0
-	 * @param string $key Input field key.
-	 * @param string $value Input field currenet value.
-	 * @throws Exception If the field value is invalid.
-	 * @return array
+	 * @since 2.0.8
+	 *
+	 * @return string
 	 */
-	public function validate_api_key_field( $key, $value ) {
-		if ( 'api_key_server' === $key && ! empty( $value ) && $value !== $this->api_key_server ) {
-			$api = new Wcsdm_API();
-
-			$response = $api->calculate_distance( array( 'key' => $value ), true );
-
-			if ( is_wp_error( $response ) ) {
-				// translators: %s = API response error message.
-				throw new Exception( sprintf( __( 'Server API Key Error: %s', 'wcsdm' ), $response->get_error_message() ) );
-			}
-		}
-
-		return $value;
+	private function api_request_key() {
+		return $this->api_key;
 	}
 
 	/**
@@ -1362,9 +1309,9 @@ class Wcsdm extends WC_Shipping_Method {
 		 *
 		 * This example shows how you can modify the $pre var via custom function:
 		 *
-		 *      add_filter( 'wcsdm_api_request_pre', 'my_api_request_pre', 10, 4 );
+		 *      add_filter( 'wcsdm_api_request_pre', 'my_wcsdm_api_request_pre', 10, 4 );
 		 *
-		 *      function my_api_request_pre( $false, $args, $cache, $obj ) {
+		 *      function my_wcsdm_api_request_pre( $false, $args, $cache, $obj ) {
 		 *          // Return the response data array
 		 *          return array(
 		 *              'distance'      => 40,
@@ -1375,7 +1322,7 @@ class Wcsdm extends WC_Shipping_Method {
 		 *          );
 		 *      }
 		 */
-		$pre = apply_filters( $this->id . '_api_request_pre', false, $args, $cache, $this ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound
+		$pre = apply_filters( 'wcsdm_api_request_pre', false, $args, $cache, $this );
 
 		if ( false !== $pre ) {
 			return $pre;
@@ -1393,10 +1340,10 @@ class Wcsdm extends WC_Shipping_Method {
 			);
 
 			// Imports variables from args: origin, destination, settings, package.
-			$origin      = $args['origin'];
-			$destination = $args['destination'];
 			$settings    = wp_parse_args( $args['settings'], $this->options );
 			$package     = $args['package'];
+			$origin      = $args['origin'];
+			$destination = $args['destination'];
 
 			// Check origin parameter.
 			if ( empty( $origin ) ) {
@@ -1420,7 +1367,7 @@ class Wcsdm extends WC_Shipping_Method {
 					)
 				);
 
-				// Check if the data already chached and return it.
+				// Check if the data already cached and return it.
 				$cached_data = get_transient( $cache_key );
 
 				if ( false !== $cached_data ) {
@@ -1432,6 +1379,7 @@ class Wcsdm extends WC_Shipping_Method {
 				'origins'      => $origin,
 				'destinations' => $destination,
 				'language'     => get_locale(),
+				'key'          => $this->api_request_key(),
 			);
 
 			foreach ( $this->instance_form_fields as $key => $field ) {
@@ -1447,7 +1395,7 @@ class Wcsdm extends WC_Shipping_Method {
 			$results = $api->calculate_distance( $api_request_data );
 
 			if ( is_wp_error( $results ) ) {
-				throw new Exception( __( 'API Response Error', 'wcsdm' ) . ': ' . $results->get_error_message() );
+				throw new Exception( __( 'Google API Response Error', 'wcsdm' ) . ': ' . $results->get_error_message() );
 			}
 
 			if ( count( $results ) > 1 ) {
@@ -1502,9 +1450,9 @@ class Wcsdm extends WC_Shipping_Method {
 			 *
 			 * This example shows how you can modify the $pre var via custom function:
 			 *
-			 *      add_filter( 'wcsdm_api_request', 'my_api_request', 10, 2 );
+			 *      add_filter( 'wcsdm_api_request', 'my_wcsdm_api_request', 10, 2 );
 			 *
-			 *      function my_api_request( $false, $args, $cache, $obj ) {
+			 *      function my_wcsdm_api_request( $result, $obj ) {
 			 *          // Return the response data array
 			 *          return array(
 			 *              'distance'          => 40,
@@ -1515,7 +1463,7 @@ class Wcsdm extends WC_Shipping_Method {
 			 *          );
 			 *      }
 			 */
-			return apply_filters( $this->id . '_api_request', $result, $this ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound
+			return apply_filters( 'wcsdm_api_request', $result, $this );
 		} catch ( Exception $e ) {
 			$this->show_debug( $e->getMessage(), 'error' );
 
@@ -1544,7 +1492,7 @@ class Wcsdm extends WC_Shipping_Method {
 			$data['type'] = 'text';
 		}
 
-		$data_classes = isset( $data['class'] ) ? explode( ' ', $data['class'] ) : [];
+		$data_classes = isset( $data['class'] ) ? explode( ' ', $data['class'] ) : array();
 
 		array_push( $data_classes, 'wcsdm-field', 'wcsdm-field-key--' . $key, 'wcsdm-field-type--' . $data['type'] );
 
@@ -1568,17 +1516,6 @@ class Wcsdm extends WC_Shipping_Method {
 
 		if ( $data_is_required ) {
 			array_push( $data_classes, 'wcsdm-field--is-required' );
-		}
-
-		$data_is_pro = isset( $data['is_pro'] ) && $data['is_pro'];
-
-		if ( $data_is_pro ) {
-			array_push( $data_classes, 'wcsdm-field--is-pro' );
-
-			if ( ! $this->is_pro() ) {
-				$data['title']    = $data['title'] . ' (' . __( 'Pro Version', 'wcsdm' ) . ')';
-				$data['disabled'] = true;
-			}
 		}
 
 		$data['class'] = implode( ' ', array_map( 'trim', array_unique( array_filter( $data_classes ) ) ) );
@@ -1615,34 +1552,19 @@ class Wcsdm extends WC_Shipping_Method {
 			return false;
 		}
 
-		// Check duplicate method.
-		if ( ! $this->is_pro() ) {
-			$zone = WC_Shipping_Zones::get_zone_by( 'instance_id', $this->instance_id );
-			if ( $zone ) {
-				$duplicate = array();
-				foreach ( $zone->get_shipping_methods() as $shipping_method ) {
-					if ( $shipping_method->id === $this->id ) {
-						$duplicate[] = $shipping_method->get_instance_id();
-					}
-				}
-
-				if ( count( $duplicate ) > 1 ) {
-					return $this->add_error( __( 'Multiple instances shipping method WooCommerce Shipping Distance Matrix within the same zone only available in Pro Version. Please upgrade.', 'wcsdm' ) );
-				}
-			}
-		}
-
 		$this->init_instance_settings();
 
 		$post_data = $this->get_post_data();
 
 		foreach ( $this->get_instance_form_fields() as $key => $field ) {
-			if ( 'title' !== $this->get_field_type( $field ) ) {
-				try {
-					$this->instance_settings[ $key ] = $this->get_field_value( $key, $field, $post_data );
-				} catch ( Exception $e ) {
-					$this->add_error( $e->getMessage() );
-				}
+			if ( 'title' === $this->get_field_type( $field ) ) {
+				continue;
+			}
+
+			try {
+				$this->instance_settings[ $key ] = $this->get_field_value( $key, $field, $post_data );
+			} catch ( Exception $e ) {
+				$this->add_error( $e->getMessage() );
 			}
 		}
 
@@ -1662,62 +1584,6 @@ class Wcsdm extends WC_Shipping_Method {
 		}
 
 		return $settings;
-	}
-
-	/**
-	 * Inject cart cart packages to calculate shipping for addres 2 field.
-	 *
-	 * @since 1.0.0
-	 * @param array $packages Current cart contents packages.
-	 * @return array
-	 */
-	public function inject_cart_shipping_packages( $packages ) {
-		if ( ! $this->is_calc_shipping() ) {
-			return $packages;
-		}
-
-		$nonce_field  = 'woocommerce-shipping-calculator-nonce';
-		$nonce_action = 'woocommerce-shipping-calculator';
-
-		$address_1 = false;
-		$address_2 = false;
-
-		if ( isset( $_POST['calc_shipping_address_1'], $_POST['calc_shipping_address_2'], $_POST[ $nonce_field ] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST[ $nonce_field ] ) ), $nonce_action ) ) {
-			$address_1 = sanitize_text_field( wp_unslash( $_POST['calc_shipping_address_1'] ) );
-			$address_2 = sanitize_text_field( wp_unslash( $_POST['calc_shipping_address_2'] ) );
-		}
-
-		foreach ( $packages as $key => $package ) {
-			if ( false !== $address_1 ) {
-				WC()->customer->set_billing_address_1( $address_1 );
-				WC()->customer->set_shipping_address_1( $address_1 );
-				$packages[ $key ]['destination']['address_1'] = $address_1;
-			}
-
-			if ( false !== $address_2 ) {
-				WC()->customer->set_billing_address_2( $address_2 );
-				WC()->customer->set_shipping_address_2( $address_2 );
-				$packages[ $key ]['destination']['address_2'] = $address_2;
-			}
-		}
-
-		return $packages;
-	}
-
-	/**
-	 * Check if this method available
-	 *
-	 * @since    1.0.0
-	 * @param boolean $available Current status is available.
-	 * @param array   $package Current order package data.
-	 * @return bool
-	 */
-	public function check_is_available( $available, $package ) {
-		if ( empty( $package['contents'] ) || empty( $package['destination'] ) ) {
-			return false;
-		}
-
-		return $available;
 	}
 
 	/**
@@ -1798,9 +1664,9 @@ class Wcsdm extends WC_Shipping_Method {
 		 *
 		 * This example shows how you can modify the $pre var via custom function:
 		 *
-		 *      add_filter( 'wcsdm_calculate_shipping_cost_pre', 'my_get_rate_pre', 10, 4 );
+		 *      add_filter( 'wcsdm_calculate_shipping_cost_pre', 'my_wcsdm_calculate_shipping_cost_pre', 10, 4 );
 		 *
-		 *      function my_get_rate_pre( $false, $api_response, $package, $obj ) {
+		 *      function my_wcsdm_calculate_shipping_cost_pre( $false, $api_response, $package, $obj ) {
 		 *          // Return the cost data array
 		 *          return array(
 		 *              'cost'      => 0,
@@ -1809,17 +1675,92 @@ class Wcsdm extends WC_Shipping_Method {
 		 *          );
 		 *      }
 		 */
-		$pre = apply_filters( $this->id . '_calculate_shipping_cost_pre', false, $api_response, $package, $this ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound
+		$pre = apply_filters( 'wcsdm_calculate_shipping_cost_pre', false, $api_response, $package, $this );
 
 		if ( false !== $pre ) {
 			return $pre;
 		}
 
-		if ( $this->table_rates ) {
-			$offset = 0;
-			foreach ( $this->table_rates as $rate ) {
-				if ( $api_response['distance'] > $offset && $api_response['distance'] <= $rate['max_distance'] ) {
-					$this->show_debug( __( 'Rate Match', 'wcsdm' ) . ': ' . is_string( $rate ) ? $rate : wp_json_encode( $rate ) );
+		/**
+		 * Developers can modify the $table_rates data via filter hooks.
+		 *
+		 * @since 2.1.0
+		 *
+		 * This example shows how you can modify the $table_rates var via custom function:
+		 *
+		 *      add_filter( 'wcsdm_table_rates', 'my_wcsdm_table_rates', 10, 4 );
+		 *
+		 *      function my_wcsdm_table_rates( $table_rates, $api_response, $package, $object ) {
+		 *          // Return the table rates data array
+		 *          return array(
+		 *              array(
+		 *                  'max_distance' => '1',
+		 *                  'min_order_quantity' => '0',
+		 *                  'max_order_quantity' => '0',
+		 *                  'min_order_amount' => '0',
+		 *                  'max_order_amount' => '0',
+		 *                  'rate_class_0' => '10',
+		 *                  'min_cost' => '',
+		 *                  'surcharge' => '',
+		 *                  'total_cost_type' => 'inherit',
+		 *                  'title' => '',
+		 *              ),
+		 *              array(
+		 *                  'max_distance' => '1000',
+		 *                  'min_order_quantity' => '0',
+		 *                  'max_order_quantity' => '0',
+		 *                  'min_order_amount' => '0',
+		 *                  'max_order_amount' => '0',
+		 *                  'rate_class_0' => '5',
+		 *                  'min_cost' => '',
+		 *                  'surcharge' => '',
+		 *                  'total_cost_type' => 'inherit',
+		 *                  'title' => '',
+		 *              )
+		 *          );
+		 *      }
+		 */
+		$table_rates = apply_filters( 'wcsdm_table_rates', $this->table_rates, $api_response, $package, $this );
+
+		if ( $table_rates ) {
+			$distance_offset = 0;
+
+			foreach ( $table_rates as $index => $rate ) {
+				/**
+				 * Developers can modify the $rate data via filter hooks.
+				 *
+				 * @since 2.1.0
+				 *
+				 * This example shows how you can modify the $rate var via custom function:
+				 *
+				 *      add_filter( 'wcsdm_table_rates_row', 'my_wcsdm_table_rates_row', 10, 5 );
+				 *
+				 *      function my_wcsdm_table_rates_row( $rate, $index, $api_response, $package, $object ) {
+				 *          // Return the rate row data array
+				 *          return array(
+				 *              'max_distance' => '8',
+				 *              'min_order_quantity' => '0',
+				 *              'max_order_quantity' => '0',
+				 *              'min_order_amount' => '0',
+				 *              'max_order_amount' => '0',
+				 *              'rate_class_0' => '1000',
+				 *              'min_cost' => '',
+				 *              'surcharge' => '',
+				 *              'total_cost_type' => 'inherit',
+				 *              'title' => '',
+				 *          );
+				 *      }
+				 */
+				$rate = apply_filters( 'wcsdm_table_rates_row', $rate, $index, $api_response, $package, $this );
+
+				$rate = $this->norlmalize_table_rate_row( $rate );
+
+				if ( ! $rate ) {
+					continue;
+				}
+
+				if ( $this->table_rate_row_rules_match( $rate, $distance_offset, $api_response, $package ) ) {
+					$this->show_debug( __( 'Table Rate Row match', 'wcsdm' ) . ': ' . wp_json_encode( $rate ) );
 
 					// Hold costs data for flat total_cost_type.
 					$flat = array();
@@ -1828,6 +1769,10 @@ class Wcsdm extends WC_Shipping_Method {
 					$progressive = array();
 
 					foreach ( $package['contents'] as $hash => $item ) {
+						if ( ! $item['data']->needs_shipping() ) {
+							continue;
+						}
+
 						$class_id   = $item['data']->get_shipping_class_id();
 						$product_id = $item['data']->get_id();
 
@@ -1938,9 +1883,9 @@ class Wcsdm extends WC_Shipping_Method {
 					 *
 					 * This example shows how you can modify the $result var via custom function:
 					 *
-					 *      add_filter( 'wcsdm_calculate_shipping_cost', 'my_get_rate', 10, 4 );
+					 *      add_filter( 'wcsdm_calculate_shipping_cost', 'my_wcsdm_calculate_shipping_cost', 10, 4 );
 					 *
-					 *      function my_calculate_shipping_cost( $rate, $api_response, $package, $obj ) {
+					 *      function my_wcsdm_calculate_shipping_cost( $result, $api_response, $package, $obj ) {
 					 *          // Return the cost data array
 					 *          return array(
 					 *              'cost'      => 0,
@@ -1949,15 +1894,112 @@ class Wcsdm extends WC_Shipping_Method {
 					 *          );
 					 *      }
 					 */
-					return apply_filters( $this->id . '_calculate_shipping_cost', $result, $api_response, $package, $this ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound
+					return apply_filters( 'wcsdm_calculate_shipping_cost', $result, $api_response, $package, $this );
 				}
 
-				$offset = $rate['max_distance'];
+				$distance_offset = $rate['max_distance'];
 			}
 		}
 
-		// translators: %1$s distance value, %2$s distance unit.
-		return new WP_Error( 'no_rates', sprintf( __( 'No shipping rates defined within distance range: %1$s %2$s', 'wcsdm' ), $api_response['distance'], 'imperial' === $this->distance_unit ? 'mi' : 'km' ) );
+		return new WP_Error( 'no_table_rates_rules_match', __( 'No shipping table rates rules match.', 'wcsdm' ) );
+	}
+
+	/**
+	 * Normalize table rate row data.
+	 *
+	 * @since 2.1.0
+	 *
+	 * @param array $rate Rate row data.
+	 *
+	 * @return array
+	 */
+	private function norlmalize_table_rate_row( $rate ) {
+		if ( ! is_array( $rate ) ) {
+			return false;
+		}
+
+		return wp_parse_args(
+			$rate,
+			array(
+				'max_distance'       => '0',
+				'min_order_quantity' => '0',
+				'max_order_quantity' => '0',
+				'min_order_amount'   => '0',
+				'max_order_amount'   => '0',
+				'rate_class_0'       => '',
+				'min_cost'           => '',
+				'surcharge'          => '',
+				'total_cost_type'    => 'inherit',
+				'title'              => '',
+			)
+		);
+	}
+
+	/**
+	 * Check if table rate row rules is match
+	 *
+	 * @since 2.1.0
+	 *
+	 * @param array $rate Rate row data.
+	 * @param int   $distance_offset Distance offset data.
+	 * @param array $api_response API response data.
+	 * @param array $package Cart data.
+	 *
+	 * @return bool
+	 */
+	private function table_rate_row_rules_match( $rate, $distance_offset, $api_response, $package ) {
+		$is_match = $api_response['distance'] > $distance_offset && $api_response['distance'] <= $rate['max_distance'];
+
+		$min_order_amount = $this->get_rate_field_value( 'min_order_amount', $rate );
+
+		if ( $is_match && $min_order_amount ) {
+			$is_match = $min_order_amount <= $package['cart_subtotal'];
+		}
+
+		$max_order_amount = $this->get_rate_field_value( 'max_order_amount', $rate );
+
+		if ( $is_match && $max_order_amount ) {
+			$is_match = $max_order_amount >= $package['cart_subtotal'];
+		}
+
+		if ( $is_match && ( isset( $rate['min_order_quantity'] ) || isset( $rate['max_order_quantity'] ) ) ) {
+			$cart_quantity = 0;
+
+			foreach ( $package['contents'] as $item ) {
+				if ( ! $item['data']->needs_shipping() ) {
+					continue;
+				}
+
+				$cart_quantity += $item['quantity'];
+			}
+
+			$min_order_quantity = $this->get_rate_field_value( 'min_order_quantity', $rate );
+
+			if ( $min_order_quantity ) {
+				$is_match = $min_order_quantity <= $cart_quantity;
+			}
+
+			$max_order_quantity = $this->get_rate_field_value( 'max_order_quantity', $rate );
+
+			if ( $max_order_quantity ) {
+				$is_match = $max_order_quantity >= $cart_quantity;
+			}
+		}
+
+		/**
+		 * Developers can modify the rate row rules via filter hooks.
+		 *
+		 * @since 2.1.0
+		 *
+		 * This example shows how you can modify the rate row rules var via custom function:
+		 *
+		 *      add_filter( 'wcsdm_table_rate_row_rules_match', 'my_wcsdm_table_rate_row_rules_match', 10, 6 );
+		 *
+		 *      function my_wcsdm_table_rate_row_rules_match( $is_match, $rate, $distance_offset, $api_response, $package, $object ) {
+		 *          return true;
+		 *      }
+		 */
+		return apply_filters( 'wcsdm_table_rate_row_rules_match', $is_match, $rate, $distance_offset, $api_response, $package, $this );
 	}
 
 	/**
@@ -1992,13 +2034,15 @@ class Wcsdm extends WC_Shipping_Method {
 		 *
 		 * This example shows how you can modify the $origin_info var via custom function:
 		 *
-		 *      add_filter( 'wcsdm_origin_info', 'my_origin_info', 10, 3 );
+		 *      add_filter( 'wcsdm_origin_info', 'my_wcsdm_origin_info', 10, 3 );
 		 *
-		 *      function my_origin_info( $origin_info, $package, $instance_id ) {
-		 *          return '1600 Amphitheatre Parkway,Mountain View,CA,94043';
+		 *      function my_wcsdm_origin_info( $origin_info, $package, $instance_id ) {
+		 *          return array(
+		 *               'origin_address' => '1600 Amphitheater Parkway,Mountain View,CA,94043',
+		 *          );
 		 *      }
 		 */
-		return apply_filters( $this->id . '_origin_info', $origin_info, $package, $this->get_instance_id() ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound
+		return apply_filters( 'wcsdm_origin_info', $origin_info, $package, $this->get_instance_id() );
 	}
 
 	/**
@@ -2007,7 +2051,7 @@ class Wcsdm extends WC_Shipping_Method {
 	 * @since    1.0.0
 	 * @throws Exception Throw error if validation not passed.
 	 * @param array $package The cart content data.
-	 * @return array
+	 * @return string
 	 */
 	private function get_destination_info( $package ) {
 		/**
@@ -2017,14 +2061,14 @@ class Wcsdm extends WC_Shipping_Method {
 		 *
 		 * This example shows how you can modify the shipping destination info via custom function:
 		 *
-		 *      add_filter( 'wcsdm_destination_info_pre', 'my_destination_info_pre', 10, 3 );
+		 *      add_filter( 'wcsdm_destination_info_pre', 'my_wcsdm_destination_info_pre', 10, 3 );
 		 *
-		 *      function my_destination_info_pre( $false, $package, $instance_id ) {
-		 *          // Return the cost data array
-		 *          return '1600 Amphitheatre Parkway, Mountain View, CA, 94043';
+		 *      function my_wcsdm_destination_info_pre( $false, $package, $instance_id ) {
+		 *          return '1600 Amphitheater Parkway, Mountain View, CA, 94043, United State';
 		 *      }
 		 */
-		$pre = apply_filters( $this->id . '_destination_info_pre', false, $package, $this->get_instance_id() ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound
+		$pre = apply_filters( 'wcsdm_destination_info_pre', false, $package, $this->get_instance_id() );
+
 		if ( false !== $pre ) {
 			return $pre;
 		}
@@ -2054,7 +2098,7 @@ class Wcsdm extends WC_Shipping_Method {
 			$rules = array_merge( $rules, $country_locale[ $country_code ] );
 		}
 
-		// Validate shiipping fields.
+		// Validate shipping fields.
 		foreach ( $rules as $rule_key => $rule ) {
 			if ( in_array( $rule_key, array( 'first_name', 'last_name', 'company' ), true ) ) {
 				continue;
@@ -2084,7 +2128,7 @@ class Wcsdm extends WC_Shipping_Method {
 				$this->show_debug( $error, 'error' );
 			}
 
-			// Reset destionation info if error.
+			// Reset destination info if error.
 			$destination_info = array();
 		} else {
 			$destination_array = array();
@@ -2124,7 +2168,8 @@ class Wcsdm extends WC_Shipping_Method {
 				}
 			}
 
-			$destination_info = WC()->countries->get_formatted_address( $destination_array, ', ' );
+			$destination_array = is_array( $destination_array ) ? array_map( 'rawurlencode', $destination_array ) : rawurlencode( $destination_array );
+			$destination_info  = WC()->countries->get_formatted_address( $destination_array, ', ' );
 		}
 
 		/**
@@ -2134,29 +2179,13 @@ class Wcsdm extends WC_Shipping_Method {
 		 *
 		 * This example shows how you can modify the shipping destination info via custom function:
 		 *
-		 *      add_filter( 'wcsdm_destination_info', 'my_destination_info', 10, 3 );
+		 *      add_filter( 'wcsdm_destination_info', 'my_wcsdm_destination_info', 10, 3 );
 		 *
-		 *      function my_destination_info( $destination_info, $package, $instance_id ) {
-		 *          return '1600 Amphitheatre Parkway, Mountain View, CA, 94043';
+		 *      function my_wcsdm_destination_info( $destination_info, $package, $instance_id ) {
+		 *          return '1600 Amphitheater Parkway, Mountain View, CA, 94043, United State';
 		 *      }
 		 */
-		return apply_filters( $this->id . '_destination_info', $destination_info, $package, $this->get_instance_id() ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound
-	}
-
-	/**
-	 * Check if current request is shipping calculator form.
-	 *
-	 * @return bool
-	 */
-	public function is_calc_shipping() {
-		$nonce_field  = 'woocommerce-shipping-calculator-nonce';
-		$nonce_action = 'woocommerce-shipping-calculator';
-
-		if ( isset( $_POST['calc_shipping'], $_POST[ $nonce_field ] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST[ $nonce_field ] ) ), $nonce_action ) ) {
-			return true;
-		}
-
-		return false;
+		return apply_filters( 'wcsdm_destination_info', $destination_info, $package, $this->get_instance_id() );
 	}
 
 	/**
@@ -2182,7 +2211,7 @@ class Wcsdm extends WC_Shipping_Method {
 	}
 
 	/**
-	 * Convert Meters to Kilometres
+	 * Convert Meters to Kilometers
 	 *
 	 * @since    1.3.2
 	 * @param int $meters Number of meters to convert.
@@ -2250,16 +2279,6 @@ class Wcsdm extends WC_Shipping_Method {
 			return 0;
 		}
 		return ( $a['max_distance'] > $b['max_distance'] ) ? -1 : 1;
-	}
-
-	/**
-	 * Check if pro version plugin is installed and activated
-	 *
-	 * @since    1.5.0
-	 * @return bool
-	 */
-	public function is_pro() {
-		return wcsdm_is_pro();
 	}
 
 	/**

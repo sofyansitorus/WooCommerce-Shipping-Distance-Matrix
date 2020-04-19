@@ -1,7 +1,6 @@
 .DS_Store
 .wpt.yml
 package-lock.json
-composer.lock
 /.vscode/
 /node_modules
 /build

@@ -3,16 +3,16 @@ Contributors: sofyansitorus
 Tags: woocommerce,woocommerce-shipping,local-shipping,private-shipping
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=DGSVXLV7R8BTY
 Requires at least: 4.8
-Tested up to: 5.2.2
+Tested up to: 5.4
 Requires PHP: 5.6
-Stable tag: 2.0.8
+Stable tag: 2.1.0
 License: GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
-WooCommerce shipping rates calculator that allows you to easily offer shipping rates based on the distance that calculated using Google Maps Distance Matrix Service API.
+WooReer (formerly WooCommerce Shipping Distance Matrix) is a WooCommerce shipping rates calculator that allows you to easily offer shipping rates based on the distance that calculated using Google Maps Distance Matrix Service API.
 
 == Description ==
-WooCommerce shipping rates calculator that allows you to easily offer shipping rates based on the distance that calculated using Google Maps Distance Matrix Service API.
+WooReer (formerly WooCommerce Shipping Distance Matrix) is a WooCommerce shipping rates calculator that allows you to easily offer shipping rates based on the distance that calculated using Google Maps Distance Matrix Service API.
 
 This plugin perfect for the store owner who wants to charge customers for delivery of items based on how far away they are from the store. A perfect example would be online store that selling flowers, food, beverages. It’s not limited to just those, but anything that use local delivery or self delivery bussiness.
 
@@ -21,6 +21,10 @@ This plugin perfect for the store owner who wants to charge customers for delive
 * Set unlimited table rates rows.
 * Set flat or flexible distance cost type: Fixed, Per KM/MI.
 * Set rule for each rates rows: Maximum Distances.
+* Set rule for each rates rows: Minimum Order Quantity.
+* Set rule for each rates rows: Maximum Order Quantity.
+* Set rule for each rates rows: Minimum Order Amount.
+* Set rule for each rates rows: Maximum Order Amount.
 * Set flat or pregressive total shipping cost for each rates rows: Max, Average, Min, Per Class, Per Product, Per Piece.
 * Set surcharge for each rates rows.
 * Set custom shipping label for each rates rows.
@@ -32,17 +36,6 @@ This plugin perfect for the store owner who wants to charge customers for delive
 * Set prefered route: Shortest Distance, Longest Distance, Shortest Duration, Longest Duration.
 * Round the distance up to the nearest absolute number.
 * Show distance info to customer during checkout.
-
-= Pro Version Features =
-* Set rule for each rates rows: Minimum Order Quantity.
-* Set rule for each rates rows: Maximum Order Quantity.
-* Set rule for each rates rows: Minimum Order Amount.
-* Set rule for each rates rows: Maximum Order Amount.
-* Set Advanced Math Formula to calculate total shipping cost for each rates rows.
-* Use map address picker for customer during checkout.
-* Multiple instances within the same shipping zone.
-
-<a href="https://wooreer.com/?utm_source=wordpress.org&amp;utm_medium=link&amp;utm_campaign=plugin-details-from-wordpress.org" target="_blank">Upgrade to the Pro Version Now!</a>
 
 = Dependencies =
 
@@ -101,10 +94,19 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 == Changelog ==
 
 > **WARNING:**
-> 
-> Upgrading from version 1.x to version 2.x is a major update and has breaking changes. Some **settings data will be lost** and **re-setup the plugin** is required after the upgrade.
-> 
+>
+> Upgrading to version 2.1.0 has some breaking changes. Some **settings data will be lost** and **re-setup the plugin** after the upgrade is required.
+>
+> Upgrading from version 1.x to version 2.x is a major update and has breaking changes. Some **settings data will be lost** and **re-setup the plugin** after the upgrade is required.
+>
 > **Please upgrade wisely and carefully.**
+
+= 2.1.0 =
+* Enhancement - Added new shipping rule: Minimum Order Quantity
+* Enhancement - Added new shipping rule: Maximum Order Quantity
+* Enhancement - Added new shipping rule: Minimum Order Amount
+* Enhancement - Added new shipping rule: Maximum Order Amount
+* Fix - Fixed issue fail to calculate distance when there is pound character in the address data
 
 = 2.0.8 =
 * Enhancement - Fixed Unable to Calculate distnance in some cases
@@ -304,6 +306,8 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 * Feature - Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
 
 == Upgrade Notice ==
-= 2.0.7 =
+= 2.1.0 =
+WARNING: Upgrading to version 2.1.0 has some breaking changes. Some settings data will be lost and re-setup the plugin after the upgrade is required. Please upgrade wisely and carefully.
 
-WARNING: Upgrading from version 1.x to version 2.x is a major update and has breaking changes. Some settings data will be lost and re-setup the plugin is required after the upgrade. Please upgrade wisely and carefully.
+= 2.0.0 =
+WARNING: Upgrading from version 1.x to version 2.x is a major update and has breaking changes. Some settings data will be lost and re-setup the plugin after the upgrade is required. Please upgrade wisely and carefully.
