@@ -1,4 +1,4 @@
-=== WooReer (formerly WooCommerce Shipping Distance Matrix) ===
+=== WooReer ===
 Contributors: sofyansitorus
 Tags: woocommerce,woocommerce-shipping,local-shipping,private-shipping
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=DGSVXLV7R8BTY
