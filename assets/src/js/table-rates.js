@@ -102,7 +102,7 @@ var wcsdmTableRates = {
       $('.wcsdm-field--context--advanced[data-id=' + $(this).data('id') + ']').val($(this).val());
     });
 
-    toggleBottons({
+    toggleButtons({
       left: {
         id: 'cancel-advanced',
         label: 'Cancel',
@@ -139,7 +139,7 @@ var wcsdmTableRates = {
   closeAdvancedRateForm: function (e) {
     e.preventDefault();
 
-    toggleBottons();
+    toggleButtons();
 
     $('#wcsdm-field-group-wrap--advanced_rate').hide().siblings('.wcsdm-field-group-wrap').not('.wcsdm-hidden').fadeIn();
 
@@ -199,7 +199,7 @@ var wcsdmTableRates = {
 
     $('.wc-backbone-modal-header').find('h1').append('<span>' + $subTitle.text() + '</span>');
 
-    toggleBottons({
+    toggleButtons({
       left: {
         id: 'delete-rate-cancel',
         label: 'Cancel',
@@ -255,7 +255,7 @@ var wcsdmTableRates = {
     });
 
     if (isChecked) {
-      toggleBottons({
+      toggleButtons({
         left: {
           id: 'delete-rate-select',
           label: 'Delete Selected Rates',
@@ -263,7 +263,7 @@ var wcsdmTableRates = {
         }
       });
     } else {
-      toggleBottons();
+      toggleButtons();
     }
   },
   toggleRow: function (e) {
@@ -275,7 +275,7 @@ var wcsdmTableRates = {
     wcsdmTableRates.toggleRowSelected($row, $field.is(':checked'));
 
     if ($('#wcsdm-table--table_rates--dummy tbody .select-item:checked').length) {
-      toggleBottons({
+      toggleButtons({
         left: {
           id: 'delete-rate-select',
           label: 'Delete Selected Rates',
@@ -283,7 +283,7 @@ var wcsdmTableRates = {
         }
       });
     } else {
-      toggleBottons();
+      toggleButtons();
     }
 
     var isBulkChecked = $('#wcsdm-table--table_rates--dummy tbody .select-item').length === $('#wcsdm-table--table_rates--dummy tbody .select-item:checked').length;

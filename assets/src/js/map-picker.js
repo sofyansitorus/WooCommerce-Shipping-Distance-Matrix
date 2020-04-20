@@ -77,7 +77,7 @@ var wcsdmMapPicker = {
           $link.removeClass('loading').attr('disabled', false);
 
           if (wcsdmMapPicker.apiKeyError) {
-            alert(wcsdmMapPicker.apiKeyError);
+            window.alert(wcsdmMapPicker.apiKeyError);
           }
         }
       }, 300);
@@ -104,11 +104,11 @@ var wcsdmMapPicker = {
       }
     }).fail(function (error) {
       if (error.responseJSON && error.responseJSON.data) {
-        alert(error.responseJSON.data);
+        window.alert(error.responseJSON.data);
       } else if (error.statusText) {
-        alert(error.statusText);
+        window.alert(error.statusText);
       } else {
-        alert('Google API Response Error: Uknown');
+        window.alert('Google API Response Error: Uknown');
       }
     }).always(function () {
       $link.removeClass('loading').attr('disabled', false);
@@ -157,7 +157,7 @@ var wcsdmMapPicker = {
 
     $('.modal-close-link').hide();
 
-    toggleBottons({
+    toggleButtons({
       left: {
         id: 'map-cancel',
         label: 'Cancel',
@@ -185,7 +185,7 @@ var wcsdmMapPicker = {
 
     $('.modal-close-link').show();
 
-    toggleBottons();
+    toggleButtons();
 
     $('#wcsdm-field-group-wrap--location_picker').find('.wc-settings-sub-title').first().removeClass('wcsdm-hidden');
 

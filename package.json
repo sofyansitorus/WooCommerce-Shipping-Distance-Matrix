@@ -20,6 +20,7 @@
 		"gulp-concat": "^2.6.1",
 		"gulp-if": "^2.0.2",
 		"gulp-iife": "^0.3.0",
+		"gulp-jshint": "^2.1.0",
 		"gulp-notify": "^3.2.0",
 		"gulp-phpcs": "^2.1.0",
 		"gulp-plumber": "^1.2.0",
@@ -29,11 +30,14 @@
 		"gulp-uglify": "3.0.0",
 		"gulp-wp-pot": "^2.2.0",
 		"gulp-zip": "^4.1.0",
+		"jshint": "^2.11.0",
+		"jshint-stylish": "^2.2.1",
 		"yargs": "^11.0.0"
 	},
 	"scripts": {
 		"dev": "./node_modules/.bin/gulp",
 		"build": "./node_modules/.bin/gulp build",
+		"lintScripts": "./node_modules/.bin/gulp lintScripts",
 		"bump": "./node_modules/.bin/gulp bump",
 		"dist": "./node_modules/.bin/gulp dist",
 		"phpcs": "./node_modules/.bin/gulp phpcs",

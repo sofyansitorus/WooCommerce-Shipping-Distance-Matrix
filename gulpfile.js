@@ -19,6 +19,8 @@ const sourcemaps = require('gulp-sourcemaps');
 const wpPot = require('gulp-wp-pot');
 const phpcs = require('gulp-phpcs');
 const bump = require('gulp-bump');
+const jshint = require('gulp-jshint');
+const jshintStylish = require('jshint-stylish');
 
 /**
  * Local variables
@@ -357,6 +359,12 @@ gulp.task('default', tasksListDefault, function () {
     }
   });
 });
+
+gulp.task('lintScripts', function () {
+  return gulp.src('./assets/src/js/*.js')
+    .pipe(jshint())
+    .pipe(jshint.reporter(jshintStylish));
+})
 
 gulp.task('bump', function () {
   var sources = [

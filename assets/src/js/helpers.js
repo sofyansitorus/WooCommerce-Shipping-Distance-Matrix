@@ -15,7 +15,7 @@ function debounce(func, wait) {
   };
 }
 
-function toggleBottons(args) {
+function toggleButtons(args) {
   var data = getButton(args);
   $('#wcsdm-buttons').remove();
   $('#btn-ok').hide().after(wp.template('wcsdm-buttons')(data));

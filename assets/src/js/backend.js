@@ -80,7 +80,7 @@ var wcsdmBackend = {
     wcsdmTableRates.init(params);
     wcsdmMapPicker.init(params);
 
-    toggleBottons();
+    toggleButtons();
   },
   maybeOpenModal: function () {
     // Try show settings modal on settings page.
@@ -109,7 +109,7 @@ var wcsdmBackend = {
     e.preventDefault();
 
     if (wcsdmMapPicker.editingAPIKey || wcsdmMapPicker.editingAPIKeyPicker) {
-      alert(wcsdm_backend.i18n.errors.finish_editing_api);
+      window.alert(wcsdm_backend.i18n.errors.finish_editing_api);
     } else {
       $('#btn-ok').trigger('click');
     }

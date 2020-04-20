@@ -1,5 +1,5 @@
 (function (w) {
-  "use strict";
+  'use strict';
 
   var A, F, O, consoleMethods, fixConsoleMethod, consoleOn,
     allHandlers, methodObj;
@@ -10,12 +10,12 @@
 
   // All possible standard methods to provide an interface for
   consoleMethods = [
-    "assert", "clear", "count", "debug",
-    "dir", "dirxml", "error", "exception",
-    "group", "groupCollapsed", "groupEnd",
-    "info", "log", "profile", "profileEnd",
-    "table", "time", "timeEnd", "timeStamp",
-    "trace", "warn"
+    'assert', 'clear', 'count', 'debug',
+    'dir', 'dirxml', 'error', 'exception',
+    'group', 'groupCollapsed', 'groupEnd',
+    'info', 'log', 'profile', 'profileEnd',
+    'table', 'time', 'timeEnd', 'timeStamp',
+    'trace', 'warn'
   ];
 
   // Holds handlers to be executed for every method
@@ -84,12 +84,12 @@
   // Main handler exposed
   consoleOn = function (methodName, callback) {
     var key, cur;
-    if (O.toString.call(methodName) === "[object Object]") {
+    if (O.toString.call(methodName) === '[object Object]') {
       // Object literal provided as first argument
       for (key in methodName) {
         // Loop through all keys in object literal
         cur = methodName[key];
-        if (key === "all") {
+        if (key === 'all') {
           // If targeting all events
           allHandlers.push(cur);
         } else if (key in methodObj) {
@@ -97,7 +97,7 @@
           methodObj[key].handlers.push(cur);
         }
       }
-    } else if (typeof methodName === "function") {
+    } else if (typeof methodName === 'function') {
       // Function provided as first argument
       allHandlers.push(methodName);
     } else if (methodName in methodObj) {
