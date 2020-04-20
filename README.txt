@@ -9,37 +9,37 @@ Stable tag: 2.1.2
 License: GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
-WooReer (formerly WooCommerce Shipping Distance Matrix) is a WooCommerce shipping rates calculator that allows you to easily offer shipping rates based on the distance that calculated using Google Maps Distance Matrix Service API.
+WooReer (formerly WooCommerce Shipping Distance Matrix) is a WooCommerce shipping rates calculator that allows you to easily offer shipping rates based on the distance calculated using Google Maps Distance Matrix Service API.
 
 == Description ==
-WooReer (formerly WooCommerce Shipping Distance Matrix) is a WooCommerce shipping rates calculator that allows you to easily offer shipping rates based on the distance that calculated using Google Maps Distance Matrix Service API.
+WooReer (formerly WooCommerce Shipping Distance Matrix) is a WooCommerce shipping rates calculator that allows you to easily offer shipping rates based on the distance calculated using Google Maps Distance Matrix Service API.
 
-This plugin perfect for the store owner who wants to charge customers for delivery of items based on how far away they are from the store. A perfect example would be online store that selling flowers, food, beverages. It’s not limited to just those, but anything that use local delivery or self delivery bussiness.
+This plugin perfect for the store owner who wants to charge customers for the delivery of items based on how far away they are from the store. A perfect example would be an online store that sells flowers, food, beverages. It’s not limited to just those, but anything that uses local delivery or self-delivery business.
 
 = Key Features =
 
 * Set unlimited table rates rows.
 * Set flat or flexible distance cost type: Fixed, Per KM/MI.
-* Set rule for each rates rows: Maximum Distances.
-* Set rule for each rates rows: Minimum Order Quantity.
-* Set rule for each rates rows: Maximum Order Quantity.
-* Set rule for each rates rows: Minimum Order Amount.
-* Set rule for each rates rows: Maximum Order Amount.
-* Set flat or pregressive total shipping cost for each rates rows: Max, Average, Min, Per Class, Per Product, Per Piece.
-* Set surcharge for each rates rows.
-* Set custom shipping label for each rates rows.
+* Set rule for each rate rows: Maximum Distances.
+* Set rule for each rate rows: Minimum Order Quantity.
+* Set rule for each rate rows: Maximum Order Quantity.
+* Set rule for each rate rows: Minimum Order Amount.
+* Set rule for each rate rows: Maximum Order Amount.
+* Set flat or progressive total shipping cost for each rate rows: Max, Average, Min, Per Class, Per Product, Per Piece.
+* Set surcharge for each rate rows.
+* Set custom shipping labels for each rate row.
 * Set different shipping rate for each product shipping class.
 * Set shipping origin location using Maps Picker.
 * Set distances unit: Mile, Kilometer.
 * Set travel mode: Driving, Walking, Bicycling.
 * Set route restrictions: Avoid Tolls, Avoid Highways, Avoid Ferries, Avoid Indoor.
-* Set prefered route: Shortest Distance, Longest Distance, Shortest Duration, Longest Duration.
+* Set preferred route: Shortest Distance, Longest Distance, Shortest Duration, Longest Duration.
 * Round the distance up to the nearest absolute number.
-* Show distance info to customer during checkout.
+* Show distance info to the customer during checkout.
 
 = Dependencies =
 
-This plugin require Google Maps Distance Matrix API Key and service is enabled. [Click here](https://developers.google.com/maps/documentation/distance-matrix/get-api-key) to go to Google API Console to get API Key and to enable the service.
+This plugin requires Google Maps Distance Matrix API Key and service is enabled. [Click here](https://developers.google.com/maps/documentation/distance-matrix/get-api-key) to go to Google API Console to get API Key and to enable the service.
 
 == Installation ==
 = Minimum Requirements =
@@ -51,7 +51,7 @@ This plugin require Google Maps Distance Matrix API Key and service is enabled. 
 
 Automatic installation is the easiest option as WordPress handles the file transfers itself and you don’t even need to leave your web browser. To do an automatic install of WooReer, log in to your WordPress admin panel, navigate to the Plugins menu and click Add New.
 
-In the search field type “WooReer” and click Search Plugins. You can install it by simply clicking Install Now. After clicking that link you will be asked if you’re sure you want to install the plugin. Click yes and WordPress will automatically complete the installation. After installation has finished, click the ‘activate plugin’ link.
+In the search field type “WooReer” and click Search Plugins. You can install it by simply clicking Install Now. After clicking that link you will be asked if you’re sure you want to install the plugin. Click yes and WordPress will automatically complete the installation. After the installation has finished, click the ‘activate plugin’ link.
 
 = MANUAL INSTALLATION =
 
@@ -59,27 +59,27 @@ In the search field type “WooReer” and click Search Plugins. You can install
 1. Go to the WordPress admin panel menu Plugins > Add New
 1. Choose upload
 1. Upload the plugin zip file, the plugin will now be installed
-1. After installation has finished, click the ‘activate plugin’ link
+1. After the installation has finished, click the ‘activate plugin’ link
 
 == Frequently Asked Questions ==
 
 = How to set the plugin settings? =
-You can setup the plugin setting from the WooCommerce Shipping Zones settings panel. Please [click here](https://fast.wistia.net/embed/iframe/95yiocro6p) for the video tutorial how to setup the WooCommerce Shipping Zones.
+You can set up the plugin setting from the WooCommerce Shipping Zones settings panel. Please [click here](https://fast.wistia.net/embed/iframe/95yiocro6p) for the video tutorial on how to set up the WooCommerce Shipping Zones.
 
-= I got error in the "Store Location" setting field", what should I do? =
-The error printed in there is came from the Google API. Click any link printed within the error message to find out the causes and solutions.
+= I got an error in the "Store Location" setting field", what should I do? =
+The error printed in there is coming from the Google API. Click any link printed within the error message to find out the causes and solutions.
 
-= I see message "There are no shipping methods available" in the cart/checkout page, what should I do? =
+= I see the message "There are no shipping methods available" in the cart/checkout page, what should I do? =
 Please try to switch the WooCommerce Shipping Debug Mode setting to "On". Then open your cart/checkout page. You will see the error printed if there was.
 
 [Click here](https://fast.wistia.net/embed/iframe/9c9008dxnr) for how to switch WooCommerce Shipping Debug Mode.
 
-= Where can I get support or report bug? =
-You can create support ticket at plugin support forum:
+= Where can I get support or report a bug? =
+You can create a support ticket at plugin support forum:
 
 * [Plugin Support Forum](https://wordpress.org/support/plugin/wcsdm)
 
-= Can I contribute to develop this plugin? =
+= Can I contribute to developing this plugin? =
 I always welcome and encourage contributions to this plugin. Please visit the plugin GitHub repository:
 
 * [Plugin GitHub Repository](https://github.com/sofyansitorus/WooCommerce-Shipping-Distance-Matrix)
@@ -106,7 +106,7 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 * Fix - Added missing minified JS & CSS files
 
 = 2.1.1 =
-* Fix - Fixed bulk delete table rates checkbox still checked after delete done
+* Fix - Fixed bulk delete table rates checkbox still checked after delete did
 * Fix - Fixed settings fields added by third-party not visible
 * Fix - Added missing title attribute fro edit API Key button
 
@@ -134,34 +134,34 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 
 = 2.0.4 =
 * Fix - Fixed the frontend script not loaded.
-* Fix - Fixed the annoying scroll to current editing rate row in the admin panel.
+* Fix - Fixed the annoying scroll to the current editing rate row in the admin panel.
 * Enhancement - Added Options to Select Origin Type.
-* Enhancement - Added filters to enable / disable address 1 and address 2 fields in shipping calculator form.
+* Enhancement - Added filters to enable/disable address 1 and address 2 fields in the shipping calculator form.
 
 = 2.0.3 =
 * Fix - Fixed Wrong Addres 1 & 2 Field Value in the Shipping Calculator Form.
 
 = 2.0.2 =
-* Fix - Fixed JS Error in console that causing shipping calculator form crash when there is no state selected on page load.
+* Fix - Fixed JS Error in the console that causing shipping calculator form crash when there is no state selected on page load.
 
 = 2.0.1 =
-* Fix - Fixed JS Error in console that causing shipping calculator form crash.
+* Fix - Fixed JS Error in the console that causing shipping calculator form crash.
 * Fix - Fixed typo for "Total Cost Type" settings field description
 * Fix - Disabled enqueue frontend scripts when the instance is disabled
 
 = 2.0 =
 * Improvements - Renamed the plugin name from WooCommerce Shipping Distance Matrix to WooReer.
-* Improvements - Added server side API Key setting field in the setting form.
-* Improvements - Added server side API Key setting field in the setting form.
-* Improvements - Added browser side API Key setting field in the setting form.
+* Improvements - Added server-side API Key setting field in the settings form.
+* Improvements - Added server-side API Key setting field in the settings form.
+* Improvements - Added browser-side API Key setting field in the settings form.
 * Improvements - Added address 1 field into the shipping calculator form.
-* Improvements - Added address 2 field into the shipping calculator form.
-* Improvements - Improved the admin setting form UI/UX. Specially the address picker.
-* Fix - Postcode validation not for several country such as Lutvia.
+* Improvements - Added address 2 fields into the shipping calculator form.
+* Improvements - Improved the admin setting form UI/UX. Especially the address picker.
+* Fix - Postcode validation not for several countries such as Latvia.
 * Fix - Postcode validation only works in uppercase.
-* Fix - Failed populating shipping destination info for address field.
-* Fix - Failed to calculating for short distance such as 100m.
-* Fix - Data cache issue for multiple instance within the same shipping zone.
+* Fix - Failed populating shipping destination info for the address field.
+* Fix - Failed to calculate for a short distance such as 100m.
+* Fix - Data cache issue for multiple instances within the same shipping zone.
 
 = 1.4.7 =
 * Feature - Added new field to set the shipping title dynamically for each distance ranges.
@@ -169,11 +169,11 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 * Improvements - Improved table rates setting sorted automatically by distance.
 
 = 1.4.6 =
-* Fix - Rate row not visible when switch free shipping option.
+* Fix - Rate row not visible when switching free shipping option.
 * Fix - Flickering Map address picker when changing API Key.
 
 = 1.4.5 =
-* Fix - In rare case, settings panel broken for site using UTF-8 characters language.
+* Fix - In rare cases, settings panel broke for the site using UTF-8 characters language.
 
 = 1.4.4 =
 * Improvements - Added new option: Prefered Route
@@ -203,12 +203,12 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 
 * Improvements - Added free shipping option.
 * Improvements - Added option dynamic cost calculation type for each distance range.
-* Fix - Plugin is undetected in WordPress multisite installtion when WooCommerce plugin is network activated.
+* Fix - Plugin is undetected in WordPress multisite installation when the WooCommerce plugin is network activated.
 
 = 1.3.8 =
 
-* Improvements - Add new option for base fee.
-* Improvements - Add new option for round up distance.
+* Improvements - Add new option for the base fee.
+* Improvements - Add new option for round-up distance.
 
 = 1.3.7 =
 
@@ -237,13 +237,13 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 
 = 1.3.2 =
 
-* Fix - Fix issue with localization decimal delimeter.
+* Fix - Fix issue with localization decimal delimiter.
 * Improvements - Added language parameter for Maps API request.
 
 = 1.3.1 =
 
 * Fix - Fix API request URL.
-* Improvements - Switched from WP Cache Object to Transient.
+* Improvements - Switched from WP-Cache Object to Transient.
 
 = 1.3.0 =
 
@@ -288,13 +288,13 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 
 = 1.2.1 =
 
-* Improvements - Add filter to enable city field in shipping calculator form.
+* Improvements - Add filter to enable the city field in the shipping calculator form.
 * Fix - Filter destination address, address_2, city, postcode fields for shipping calculator request.
 * Fix - Change wrong API request param from mode to avoid.
 
 = 1.2.0 =
 
-* Feature - Set visibility distance info to customer.
+* Feature - Set visibility distance info to the customer.
 
 = 1.1.1 =
 
@@ -308,7 +308,7 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 
 = 1.0.0 =
 
-* Feature - Set shipping cost by product shipping class.
+* Feature - Set shipping cost by-product shipping class.
 * Feature - Set unlimited distances ranges.
 * Feature - Set origin info by coordinates.
 * Feature - Set distances unit: Mile, Kilometer.
