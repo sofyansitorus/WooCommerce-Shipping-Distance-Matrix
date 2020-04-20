@@ -186,7 +186,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'description' => __( 'API Key used to calculate the shipping address distance. Required Google API Service: Distance Matrix API.', 'wcsdm' ),
 				'desc_tip'    => true,
 				'default'     => '',
-				'placeholder' => __( 'Click the icon on the right to edit', 'wcsdm' ),
+				'placeholder' => __( 'Click the pencil icon on the right to edit', 'wcsdm' ),
 				'is_required' => true,
 			),
 			'api_key_picker'              => array(
@@ -196,7 +196,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'description' => __( 'API Key used to render the location picker map. Required Google API Services: Maps JavaScript API, Geocoding API, Places API.', 'wcsdm' ),
 				'desc_tip'    => true,
 				'default'     => '',
-				'placeholder' => __( 'Click the icon on the right to edit', 'wcsdm' ),
+				'placeholder' => __( 'Click the pencil icon on the right to edit', 'wcsdm' ),
 				'is_required' => true,
 			),
 			'origin_type'                 => array(
@@ -226,7 +226,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'description'       => __( 'Store location latitude coordinates', 'wcsdm' ),
 				'desc_tip'          => true,
 				'default'           => '',
-				'placeholder'       => __( 'Click the icon on the right to edit', 'wcsdm' ),
+				'placeholder'       => __( 'Click the map icon on the right Store Origin Data Type to edit', 'wcsdm' ),
 				'is_required'       => true,
 				'custom_attributes' => array(
 					'readonly' => true,
@@ -239,7 +239,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'description'       => __( 'Store location longitude coordinates', 'wcsdm' ),
 				'desc_tip'          => true,
 				'default'           => '',
-				'placeholder'       => __( 'Click the icon on the right to edit', 'wcsdm' ),
+				'placeholder'       => __( 'Click the map icon on the right Store Origin Data Type to edit', 'wcsdm' ),
 				'is_required'       => true,
 				'custom_attributes' => array(
 					'readonly' => true,
@@ -252,7 +252,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'description'       => __( 'Store location full address', 'wcsdm' ),
 				'desc_tip'          => true,
 				'default'           => '',
-				'placeholder'       => __( 'Click the icon on the right to edit', 'wcsdm' ),
+				'placeholder'       => __( 'Click the map icon on the right Store Origin Data Type to edit', 'wcsdm' ),
 				'is_required'       => true,
 				'custom_attributes' => array(
 					'readonly' => true,
