@@ -241,6 +241,8 @@ var wcsdmTableRates = {
       }
 
       wcsdmTableRates.addRateRow();
+    } else {
+      toggleButtons();
     }
 
     wcsdmTableRates.closeDeleteRateRowsForm(e);
