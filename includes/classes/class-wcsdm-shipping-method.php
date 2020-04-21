@@ -1138,21 +1138,25 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				$value = $this->validate_text_field( $key, $value );
 			}
 
-			// Validate required field value.
-			if ( $field['is_required'] && ( ! strlen( trim( $value ) ) || is_null( $value ) ) ) {
-				throw new Exception( wp_sprintf( wcsdm_i18n( 'errors.field_required' ), $field['title'] ) );
-			}
-
-			if ( strlen( $value ) ) {
-				// Validate min field value.
-				if ( isset( $field['custom_attributes']['min'] ) && $value < $field['custom_attributes']['min'] ) {
-					throw new Exception( wp_sprintf( wcsdm_i18n( 'errors.field_min_value' ), $field['title'], $field['custom_attributes']['min'] ) );
+			try {
+				// Validate required field value.
+				if ( $field['is_required'] && ( ! strlen( trim( $value ) ) || is_null( $value ) ) ) {
+					throw new Exception( wp_sprintf( wcsdm_i18n( 'errors.field_required' ), $field['title'] ) );
 				}
 
-				// Validate max field value.
-				if ( isset( $field['custom_attributes']['max'] ) && $value > $field['custom_attributes']['max'] ) {
-					throw new Exception( wp_sprintf( wcsdm_i18n( 'errors.field_max_value' ), $field['title'], $field['custom_attributes']['max'] ) );
+				if ( strlen( $value ) ) {
+					// Validate min field value.
+					if ( isset( $field['custom_attributes']['min'] ) && $value < $field['custom_attributes']['min'] ) {
+						throw new Exception( wp_sprintf( wcsdm_i18n( 'errors.field_min_value' ), $field['title'], $field['custom_attributes']['min'] ) );
+					}
+
+					// Validate max field value.
+					if ( isset( $field['custom_attributes']['max'] ) && $value > $field['custom_attributes']['max'] ) {
+						throw new Exception( wp_sprintf( wcsdm_i18n( 'errors.field_max_value' ), $field['title'], $field['custom_attributes']['max'] ) );
+					}
 				}
+			} catch ( Exception $e ) {
+				throw new Exception( sprintf( __( 'Error: %s', 'wcsdm' ), $e->getMessage() ) );
 			}
 
 			return $value;
