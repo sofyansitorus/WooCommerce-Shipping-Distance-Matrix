@@ -1156,6 +1156,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					}
 				}
 			} catch ( Exception $e ) {
+				// translators: %s is the error message.
 				throw new Exception( sprintf( __( 'Error: %s', 'wcsdm' ), $e->getMessage() ) );
 			}
 
