@@ -57,7 +57,7 @@ class Wcsdm {
 	/**
 	 * Class Constructor
 	 *
-	 * @since ??
+	 * @since 1.0.0
 	 */
 	private function __construct() {
 		// Hook to load plugin textdomain.
@@ -291,18 +291,34 @@ class Wcsdm {
 			return;
 		}
 
+		$enable_address_1 = apply_filters( 'woocommerce_shipping_calculator_enable_address_1', true ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+		$enable_address_2 = apply_filters( 'woocommerce_shipping_calculator_enable_address_2', true ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+
 		// Address 1 hidden field.
-		if ( apply_filters( 'woocommerce_shipping_calculator_enable_address_1', true ) ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+		if ( $enable_address_1 ) {
 			$address_1 = WC()->cart->get_customer()->get_shipping_address();
-			?><input type="hidden" id="wcsdm-calc-shipping-field-value-address_1" value="<?php echo esc_attr( $address_1 ); ?>" />
+			?>
+			<input type="hidden" id="wcsdm-calc-shipping-field-value-address_1" value="<?php echo esc_attr( $address_1 ); ?>" />
 			<?php
 		}
 
 		// Address 2 hidden field.
-		if ( apply_filters( 'woocommerce_shipping_calculator_enable_address_2', true ) ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+		if ( $enable_address_2 ) {
 			$address_2 = WC()->cart->get_customer()->get_shipping_address_2();
+
 			?>
 			<input type="hidden" id="wcsdm-calc-shipping-field-value-address_2" value="<?php echo esc_attr( $address_2 ); ?>" />
+			<?php
+		}
+
+		// Field template.
+		if ( $enable_address_1 || $enable_address_2 ) {
+			?>
+			<script type="text/template" id="tmpl-wcsdm-calc-shipping-custom-field">
+				<p class="form-row form-row-wide" id="calc_shipping_{{ data.field }}_field">
+					<input type="text" class="input-text" value="{{ data.value }}" placeholder="{{ data.placeholder }}" data-placeholder="{{ data.placeholder }}" name="calc_shipping_{{ data.field }}" id="calc_shipping_{{ data.field }}" />
+				</p>
+			</script>
 			<?php
 		}
 	}
@@ -352,18 +368,13 @@ class Wcsdm {
 			return $packages;
 		}
 
-		$nonce_field  = 'woocommerce-shipping-calculator-nonce';
-		$nonce_action = 'woocommerce-shipping-calculator';
-
 		$address_fields = array(
 			'address_1' => false,
 			'address_2' => false,
 		);
 
 		foreach ( array_keys( $address_fields ) as $field_key ) {
-			if ( isset( $_POST[ 'calc_shipping_' . $field_key ], $_POST[ $nonce_field ] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST[ $nonce_field ] ) ), $nonce_action ) ) {
-				$address_fields[ $field_key ] = sanitize_text_field( wp_unslash( $_POST[ 'calc_shipping_' . $field_key ] ) );
-			}
+			$address_fields[ $field_key ] = wcsdm_calc_shipping_field_value( 'calc_shipping_' . $field_key );
 		}
 
 		foreach ( array_keys( $packages ) as $package_key ) {

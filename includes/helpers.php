@@ -205,7 +205,7 @@ function wcsdm_array_insert_after( $after_key, $array, $new_key, $new_value ) {
 /**
  * Check is in development environment.
  *
- * @since ??
+ * @since 1.0.0
  *
  * @return bool
  */
@@ -225,7 +225,7 @@ if ( ! function_exists( 'wcsdm_autoload' ) ) :
 	/**
 	 * Class autoload
 	 *
-	 * @since ??
+	 * @since 1.0.0
 	 *
 	 * @param string $class Class name.
 	 *
@@ -246,7 +246,7 @@ if ( ! function_exists( 'wcsdm_is_calc_shipping' ) ) :
 	/**
 	 * Check if current request is shipping calculator form.
 	 *
-	 * @since ??
+	 * @since 1.0.0
 	 *
 	 * @return bool
 	 */
@@ -256,6 +256,28 @@ if ( ! function_exists( 'wcsdm_is_calc_shipping' ) ) :
 
 		if ( isset( $_POST['calc_shipping'], $_POST[ $field ] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST[ $field ] ) ), $action ) ) {
 			return true;
+		}
+
+		return false;
+	}
+endif;
+
+if ( ! function_exists( 'wcsdm_calc_shipping_field_value' ) ) :
+	/**
+	 * Get calculated shipping for fields value.
+	 *
+	 * @since 2.1.3
+	 *
+	 * @param string $input_name Input name.
+	 *
+	 * @return mixed|bool False on failure
+	 */
+	function wcsdm_calc_shipping_field_value( $input_name ) {
+		$nonce_field  = 'woocommerce-shipping-calculator-nonce';
+		$nonce_action = 'woocommerce-shipping-calculator';
+
+		if ( isset( $_POST['calc_shipping'], $_POST[ $input_name ], $_POST[ $nonce_field ] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST[ $nonce_field ] ) ), $nonce_action ) ) {
+			return sanitize_text_field( wp_unslash( $_POST[ $input_name ] ) );
 		}
 
 		return false;

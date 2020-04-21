@@ -1,6 +1,7 @@
 
 var wcsdmFrontendForm = {
   bindEvents: function () {
+    $(document.body).off('updated_wc_div updated_shipping_method', wcsdmFrontendForm.loadForm);
     $(document.body).on('updated_wc_div updated_shipping_method', wcsdmFrontendForm.loadForm);
   },
   loadForm: function () {
@@ -16,41 +17,26 @@ var wcsdmFrontendForm = {
 
       // Add address_1 & address_2 fields to calc_shipping form
       if (form.prefix === 'calc_shipping') {
-        var $fieldToClone = $wrapper.find('#calc_shipping_city_field, #calc_shipping_postcode_field').first();
+        var $fieldToCloneBefore = $wrapper.find('#calc_shipping_city_field, #calc_shipping_postcode_field').first();
 
-        if ($fieldToClone && $fieldToClone.length) {
+        if ($fieldToCloneBefore.length) {
+          var template = wp.template('wcsdm-calc-shipping-custom-field');
+
           _.each(defaultFields, function (fieldData, fieldKey) {
-            if (!wcsdm_frontend['shipping_calculator_' + fieldKey]) {
-              return;
-            }
-
             if (!_.contains(['address_1', 'address_2'], fieldKey)) {
               return;
             }
 
-            if ($wrapper.find('#calc_shipping_' + fieldKey + '_field').length) {
+            if ($wrapper.find('#calc_shipping_' + fieldKey + '_field').first().length) {
               return;
             }
 
-            var $fieldCloned = $fieldToClone.clone().attr({
-              id: 'calc_shipping_' + fieldKey + '_field',
-            });
+            var customFieldOutput = template(_.extend({}, fieldData, {
+              field: fieldKey,
+              value: $('#wcsdm-calc-shipping-field-value-' + fieldKey).val(),
+            }));
 
-            var placeholder = fieldData.placeholder || '';
-
-            $fieldCloned.find('input').attr({
-              'id': 'calc_shipping_' + fieldKey,
-              'name': 'calc_shipping_' + fieldKey,
-              'value': $('#wcsdm-calc-shipping-field-value-' + fieldKey).val(),
-              'placeholder': placeholder,
-              'data-placeholder': placeholder,
-            }).data({
-              'placeholder': placeholder,
-            }).trigger('change');
-
-            $fieldToClone.before($fieldCloned);
-
-            $('#wcsdm-calc-shipping-field-value-' + fieldKey).remove();
+            $fieldToCloneBefore.before(customFieldOutput);
           });
         }
       }

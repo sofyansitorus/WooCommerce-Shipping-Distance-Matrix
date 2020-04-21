@@ -58,7 +58,9 @@ class Wcsdm_API {
 
 			foreach ( $args as $key => $value ) {
 				if ( is_array( $value ) ) {
-					$args[ $key ] = implode( ',', $value );
+					$args[ $key ] = implode( ',', array_map( 'rawurlencode', $value ) );
+				} else {
+					$args[ $key ] = rawurlencode( $value );
 				}
 			}
 

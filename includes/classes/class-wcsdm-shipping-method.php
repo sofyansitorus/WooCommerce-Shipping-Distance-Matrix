@@ -1448,7 +1448,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				set_transient( $cache_key, $result, HOUR_IN_SECONDS ); // Store the data to transient with expiration in 1 hour for later use.
 			}
 
-			$this->show_debug( __( 'API Response', 'wcsdm' ) . ': ' . is_string( $result ) ? $result : wp_json_encode( $result ) );
+			$this->show_debug( __( 'API Response', 'wcsdm' ) . ': ' . wp_json_encode( $result ) );
 
 			/**
 			 * Developers can modify the api request $result via filter hooks.
@@ -2111,19 +2111,19 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				continue;
 			}
 
-			if ( ! apply_filters( 'woocommerce_shipping_calculator_enable_' . $rule_key, true ) ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+			if ( wcsdm_is_calc_shipping() && ! apply_filters( 'woocommerce_shipping_calculator_enable_' . $rule_key, true ) ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 				continue;
 			}
 
 			$field_value = isset( $destination_info[ $rule_key ] ) ? $destination_info[ $rule_key ] : '';
 			$is_required = isset( $rule['required'] ) ? $rule['required'] : false;
 
-			if ( $is_required && ! strlen( strval( $field_value ) ) ) {
+			if ( $is_required && ! strlen( strval( trim( $field_value ) ) ) ) {
 				// translators: %s = Field label.
 				$errors[ $rule_key ] = sprintf( __( 'Shipping destination field is empty: %s', 'wcsdm' ), $rule['label'] );
 			}
 
-			if ( $country_code && $field_value && 'postcode' === $rule_key && ! WC_Validation::is_postcode( $field_value, $country_code ) ) {
+			if ( ! isset( $errors[ $rule_key ] ) && $country_code && $field_value && 'postcode' === $rule_key && ! WC_Validation::is_postcode( $field_value, $country_code ) ) {
 				// translators: %s = Field label.
 				$errors[ $rule_key ] = sprintf( __( 'Shipping destination field is invalid: %s', 'wcsdm' ), $rule['label'] );
 			}
@@ -2148,7 +2148,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					continue;
 				}
 
-				if ( ! apply_filters( 'woocommerce_shipping_calculator_enable_' . $key, true ) ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+				if ( wcsdm_is_calc_shipping() && ! apply_filters( 'woocommerce_shipping_calculator_enable_' . $key, true ) ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 					continue;
 				}
 
@@ -2175,8 +2175,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				}
 			}
 
-			$destination_array = is_array( $destination_array ) ? array_map( 'rawurlencode', $destination_array ) : rawurlencode( $destination_array );
-			$destination_info  = WC()->countries->get_formatted_address( $destination_array, ', ' );
+			$destination_info = WC()->countries->get_formatted_address( $destination_array, ', ' );
 		}
 
 		/**
