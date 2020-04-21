@@ -5,7 +5,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Requires at least: 4.8
 Tested up to: 5.4
 Requires PHP: 5.6
-Stable tag: 2.1.2
+Stable tag: 2.1.3
 License: GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -100,6 +100,9 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 > Upgrading from version 1.x to version 2.x is a major update and has breaking changes. Some **settings data will be lost** and **re-setup the plugin** after the upgrade is required.
 >
 > **Please upgrade wisely and carefully.**
+
+= 2.1.3 =
+* Fix - Fixed conflict with other shipping plugins in the cart calculate shipping form.
 
 = 2.1.2 =
 * Fix - Fixed incorrect settings fields placeholder
