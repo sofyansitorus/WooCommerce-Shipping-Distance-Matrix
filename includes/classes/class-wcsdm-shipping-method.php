@@ -1407,7 +1407,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			$results = $api->calculate_distance( $api_request_data );
 
 			if ( is_wp_error( $results ) ) {
-				throw new Exception( __( 'Google API Response Error', 'wcsdm' ) . ': ' . $results->get_error_message() );
+				throw new Exception( $results->get_error_message() );
 			}
 
 			if ( count( $results ) > 1 ) {

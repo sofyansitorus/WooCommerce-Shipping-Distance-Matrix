@@ -94,7 +94,7 @@ class Wcsdm_API {
 			// Check API response is OK.
 			$status = isset( $response_data['status'] ) ? $response_data['status'] : '';
 			if ( 'OK' !== $status ) {
-				$error_message = __( 'Google API Response Error', 'wcsdm' ) . ': ' . $status;
+				$error_message = $status;
 
 				if ( isset( $response_data['error_message'] ) ) {
 					$error_message .= ' - ' . $response_data['error_message'];
@@ -137,14 +137,14 @@ class Wcsdm_API {
 
 				foreach ( $errors as $error_key ) {
 					if ( isset( $error_template[ $error_key ] ) ) {
-						throw new Exception( __( 'Google API Response Error', 'wcsdm' ) . ': ' . $error_template[ $error_key ] );
+						throw new Exception( $error_key . ' - ' . $error_template[ $error_key ] );
 					}
 				}
 			}
 
-			throw new Exception( __( 'Google API Response Error', 'wcsdm' ) . ': ' . __( 'No results found', 'wcsdm' ) );
+			throw new Exception( __( 'No results found', 'wcsdm' ) );
 		} catch ( Exception $e ) {
-			return new WP_Error( 'api_request', $e->getMessage() );
+			return new WP_Error( 'api_request', __( 'Google Distance Matrix API error', 'wcsdm' ) . ': ' . $e->getMessage() );
 		}
 	}
 }
