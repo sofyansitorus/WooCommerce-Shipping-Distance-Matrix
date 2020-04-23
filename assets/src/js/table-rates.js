@@ -58,6 +58,8 @@ var wcsdmTableRates = {
     if (!$('#wcsdm-table--table_rates--dummy tbody tr').length) {
       wcsdmTableRates.addRateRow();
     }
+
+    wcsdmTableRates.sortRateRows();
   },
   initForm: function () {
     var distanceUnitSelected = $('#woocommerce_wcsdm_distance_unit').val();
@@ -304,9 +306,14 @@ var wcsdmTableRates = {
     }
   },
   sortRateRows: function () {
+
     var rows = $('#wcsdm-table--table_rates--dummy > tbody > tr').get().sort(function (a, b) {
+
       var valueADistance = $(a).find('.wcsdm-field--context--dummy--max_distance').val();
       var valueBDistance = $(b).find('.wcsdm-field--context--dummy--max_distance').val();
+
+      var valueAIndex = $(a).find('.wcsdm-field--context--dummy--max_distance').index();
+      var valueBIndex = $(b).find('.wcsdm-field--context--dummy--max_distance').index();
 
       if (isNaN(valueADistance) || !valueADistance.length) {
         return 2;
@@ -323,15 +330,82 @@ var wcsdmTableRates = {
         return 1;
       }
 
+      if (valueAIndex < valueBIndex) {
+        return -1;
+      }
+
+      if (valueAIndex > valueBIndex) {
+        return 1;
+      }
+
       return 0;
     });
 
+    var maxDistances = {};
+
     $.each(rows, function (index, row) {
-      $(row).hide().data('index', index).appendTo($('#wcsdm-table--table_rates--dummy').children('tbody')).fadeIn('slow');
+      var maxDistance = $(row).find('.wcsdm-field--context--dummy--max_distance').val();
+
+      if (!maxDistances[maxDistance]) {
+        maxDistances[maxDistance] = [];
+      }
+
+      maxDistances[maxDistance].push($(row));
+
+      $(row).addClass('wcsdm-rate-row-index--' + index).appendTo($('#wcsdm-table--table_rates--dummy').children('tbody')).fadeIn('slow');
+    });
+
+    _.each(maxDistances, function (rows, maxDistance) {
+      _.each(rows, function (row, index) {
+        if (rows.length > 1) {
+          $(row).addClass('wcsdm-sort-enabled').find('a.wcsdm-col--link_sort').prop('enable', true);
+        } else {
+          $(row).removeClass('wcsdm-sort-enabled').find('a.wcsdm-col--link_sort').prop('enable', false);
+        }
+      });
     });
 
     setTimeout(function () {
       wcsdmTableRates.highlightRow();
+
+      if (!$('#wcsdm-table--table_rates--dummy > tbody').sortable('instance')) {
+        $(function () {
+          var oldIndex = null;
+          var maxDistance = null;
+
+          $('#wcsdm-table--table_rates--dummy tbody').sortable({
+            items: 'tr.wcsdm-sort-enabled',
+            cursor: 'move',
+            classes: {
+              "ui-sortable": "highlight"
+            },
+            placeholder: "ui-state-highlight",
+            axis: "y",
+            start: function (event, ui) {
+              oldIndex = ui.item.index();
+
+              maxDistance = $('#wcsdm-table--table_rates--dummy tbody tr')
+                .eq(oldIndex)
+                .find('[data-id="woocommerce_wcsdm_max_distance"]')
+                .val();
+            },
+            change: function (event, ui) {
+              var newIndex = ui.placeholder.index();
+              var rowIndex = newIndex > oldIndex ? (newIndex - 1) : (newIndex + 1);
+
+              var newMaxDistance = $('#wcsdm-table--table_rates--dummy tbody tr')
+                .eq(rowIndex)
+                .find('[data-id="woocommerce_wcsdm_max_distance"]')
+                .val();
+
+              if (maxDistance !== newMaxDistance) {
+                $(event.target).sortable('cancel');
+              }
+            },
+          });
+          $('#wcsdm-table--table_rates--dummy tbody').disableSelection();
+        });
+      }
     }, 100);
   },
   scrollToTableRate: function () {

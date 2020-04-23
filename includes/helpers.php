@@ -295,10 +295,15 @@ if ( ! function_exists( 'wcsdm_shipping_fields' ) ) :
 	function wcsdm_shipping_fields() {
 		$different_address = ! empty( $_POST['ship_to_different_address'] ) && ! wc_ship_to_billing_address_only(); // phpcs:ignore WordPress
 		$address_type      = $different_address ? 'shipping' : 'billing';
+		$checkout_fields   = WC()->checkout->get_checkout_fields( $address_type );
+
+		if ( ! $checkout_fields ) {
+			return false;
+		}
 
 		return array(
 			'type' => $address_type,
-			'data' => WC()->checkout->get_checkout_fields( $address_type ),
+			'data' => $checkout_fields,
 		);
 	}
 endif;

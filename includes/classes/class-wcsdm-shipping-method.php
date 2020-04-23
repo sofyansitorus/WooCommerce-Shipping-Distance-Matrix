@@ -413,7 +413,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'orig_type'   => 'title',
 				'class'       => 'wcsdm-field-group',
 				'title'       => __( 'Table Rates Settings', 'wcsdm' ),
-				'description' => __( 'Determine the shipping cost based on the distance and rules.', 'wcsdm' ),
+				'description' => __( 'Determine the shipping cost based on the shipping address distance and extra advanced rules. The rate row that will be chosen during checkout is the rate row with the maximum distance value closest with the shipping address calculated distance and the order info must matched with the extra advanced rules if defined. You can sort the rate row priority manually when it has the same maximum distance values by dragging vertically the "move" icon on the right. First come first served.', 'wcsdm' ),
 			),
 			'table_rates'                 => array(
 				'type'  => 'table_rates',
@@ -576,6 +576,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'is_hidden'         => true,
 				'is_required'       => true,
 				'is_rate'           => true,
+				'is_rule'           => true,
 				'default'           => '0',
 				'custom_attributes' => array(
 					'min' => '0',
@@ -648,6 +649,14 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'type'        => 'link_advanced',
 				'title'       => __( 'Advanced', 'wcsdm' ),
 				'class'       => 'wcsdm-link wcsdm-link--advanced-rate',
+				'is_advanced' => false,
+				'is_dummy'    => true,
+				'is_hidden'   => false,
+			),
+			'link_sort'              => array(
+				'type'        => 'link_sort',
+				'title'       => __( 'Sort', 'wcsdm' ),
+				'class'       => 'wcsdm-link wcsdm-link--sort',
 				'is_advanced' => false,
 				'is_dummy'    => true,
 				'is_hidden'   => false,
@@ -1032,6 +1041,11 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				$field_value = $this->get_rate_field_value( $key, $rate, $data['default'] );
 
 				switch ( $data['type'] ) {
+					case 'link_sort':
+						?>
+						<a href="#" class="<?php echo esc_attr( $data['class'] ); ?>" title="<?php echo esc_attr( $data['title'] ); ?>"><span class="dashicons dashicons-move"></span></a>
+						<?php
+						break;
 					case 'link_advanced':
 						?>
 						<a href="#" class="<?php echo esc_attr( $data['class'] ); ?>" title="<?php echo esc_attr( $data['title'] ); ?>"><span class="dashicons dashicons-admin-generic"></span></a>
@@ -1254,29 +1268,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		}
 
 		$filtered = array_values( $filtered );
-
-		// get a list of sort columns and their data to pass to array_multisort.
-		$sorted = array();
-		foreach ( $filtered as $k => $v ) {
-			foreach ( $rule_fields as $rule_field ) {
-				$sorted[ $rule_field ][ $k ] = $v[ $rule_field ];
-			}
-		}
-
-		// sort by event_type desc and then title asc.
-		array_multisort(
-			$sorted['max_distance'],
-			SORT_ASC,
-			$sorted['min_order_quantity'],
-			SORT_ASC,
-			$sorted['max_order_quantity'],
-			SORT_ASC,
-			$sorted['min_order_amount'],
-			SORT_ASC,
-			$sorted['max_order_amount'],
-			SORT_ASC,
-			$filtered
-		);
 
 		/**
 		 * Developers can modify the $filtered var via filter hooks.
@@ -2097,6 +2088,10 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		);
 
 		$shipping_fields = wcsdm_shipping_fields();
+
+		if ( ! $shipping_fields ) {
+			return '';
+		}
 
 		foreach ( $shipping_fields['data'] as $key => $field ) {
 			$field_key = str_replace( $shipping_fields['type'] . '_', '', $key );

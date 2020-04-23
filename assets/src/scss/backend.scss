@@ -26,7 +26,20 @@
   &-link {
     text-align: center;
     text-decoration: none;
-    width: 60px;
+    width: 70px;
+
+    &--sort {
+      cursor: move;
+      cursor: not-allowed;
+      opacity: 0.3;
+      pointer-events: none;
+
+      .wcsdm-sort-enabled & {
+        opacity: 1;
+        cursor: move;
+        pointer-events: inherit;
+      }
+    }
 
     &:active,
     &:focus {
@@ -144,6 +157,11 @@
           &--link_advanced {
             text-align: center;
             width: 96px;
+          }
+
+          &--link_sort {
+            text-align: center;
+            width: 60px;
           }
 
           &+.wcsdm-col {
