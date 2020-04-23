@@ -2085,103 +2085,96 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			return $pre;
 		}
 
-		$destination_info = array();
-
-		// Set initial destination info.
-		if ( isset( $package['destination'] ) ) {
-			foreach ( $package['destination'] as $key => $value ) {
-				if ( 'address' === $key ) {
-					continue;
-				}
-
-				$destination_info[ $key ] = $value;
-			}
-		}
-
 		$errors = array();
 
-		$country_code = ! empty( $destination_info['country'] ) ? $destination_info['country'] : false;
+		$destination_info = array(
+			'address_1' => false,
+			'address_2' => false,
+			'city'      => false,
+			'state'     => false,
+			'postcode'  => false,
+			'country'   => false,
+		);
 
-		$country_locale = WC()->countries->get_country_locale();
+		$shipping_fields = wcsdm_shipping_fields();
 
-		$rules = $country_locale['default'];
+		foreach ( $shipping_fields['data'] as $key => $field ) {
+			$field_key = str_replace( $shipping_fields['type'] . '_', '', $key );
 
-		if ( $country_code && isset( $country_locale[ $country_code ] ) ) {
-			$rules = array_merge( $rules, $country_locale[ $country_code ] );
-		}
-
-		// Validate shipping fields.
-		foreach ( $rules as $rule_key => $rule ) {
-			if ( in_array( $rule_key, array( 'first_name', 'last_name', 'company' ), true ) ) {
+			if ( ! isset( $destination_info[ $field_key ] ) ) {
 				continue;
 			}
 
-			if ( wcsdm_is_calc_shipping() && ! apply_filters( 'woocommerce_shipping_calculator_enable_' . $rule_key, true ) ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+			if ( wcsdm_is_calc_shipping() && ! apply_filters( 'woocommerce_shipping_calculator_enable_' . $field_key, true ) ) { // phpcs:ignore WordPress.NamingConventions
 				continue;
 			}
 
-			$field_value = isset( $destination_info[ $rule_key ] ) ? $destination_info[ $rule_key ] : '';
-			$is_required = isset( $rule['required'] ) ? $rule['required'] : false;
+			try {
+				$required = isset( $field['required'] ) ? $field['required'] : false;
+				$value    = isset( $package['destination'][ $field_key ] ) ? $package['destination'][ $field_key ] : '';
 
-			if ( $is_required && ! strlen( strval( trim( $field_value ) ) ) ) {
-				// translators: %s = Field label.
-				$errors[ $rule_key ] = sprintf( __( 'Shipping destination field is empty: %s', 'wcsdm' ), $rule['label'] );
-			}
+				if ( $required && ! $value ) {
+					// translators: %s is field key.
+					throw new Exception( sprintf( __( 'Shipping destination field is empty: %s', 'wcsdm' ), $field_key ) );
+				}
 
-			if ( ! isset( $errors[ $rule_key ] ) && $country_code && $field_value && 'postcode' === $rule_key && ! WC_Validation::is_postcode( $field_value, $country_code ) ) {
-				// translators: %s = Field label.
-				$errors[ $rule_key ] = sprintf( __( 'Shipping destination field is invalid: %s', 'wcsdm' ), $rule['label'] );
+				if ( $value && 'postcode' === $field_key && ! empty( $package['destination']['country'] ) ) {
+					$country_code = $package['destination']['country'];
+
+					if ( ! WC_Validation::is_postcode( $value, $country_code ) ) {
+						// translators: %s is field key.
+						throw new Exception( sprintf( __( 'Shipping destination field is invalid: %s', 'wcsdm' ), $field_key ) );
+					}
+				}
+
+				if ( $value ) {
+					$destination_info[ $field_key ] = $value;
+				}
+			} catch ( Exception $e ) {
+				$errors[ $field_key ] = $e->getMessage();
 			}
 		}
 
+		// Print debug.
 		if ( $errors ) {
-			// Set debug if error.
-			foreach ( $errors as $error ) {
+			foreach ( $errors as $key => $error ) {
 				$this->show_debug( $error, 'error' );
 			}
 
-			// Reset destination info if error.
 			$destination_info = array();
-		} else {
-			$destination_array = array();
-			$states            = WC()->countries->states;
-			$countries         = WC()->countries->countries;
+		}
 
-			foreach ( $destination_info as $key => $value ) {
-				// Skip for empty field.
-				if ( ! strlen( strval( $field_value ) ) ) {
-					continue;
-				}
+		// Try to get full info for country and state.
+		foreach ( $destination_info as $field_key => $value ) {
+			if ( ! $value ) {
+				continue;
+			}
 
-				if ( wcsdm_is_calc_shipping() && ! apply_filters( 'woocommerce_shipping_calculator_enable_' . $key, true ) ) { // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
-					continue;
-				}
+			if ( ! in_array( $field_key, array( 'country', 'state' ), true ) ) {
+				continue;
+			}
 
-				switch ( $key ) {
-					case 'country':
-						if ( ! $country_code ) {
-							$country_code = $value;
-						}
+			if ( 'country' === $field_key ) {
+				$countries = WC()->countries->countries;
 
-						$destination_array[ $key ] = isset( $countries[ $value ] ) ? $countries[ $value ] : $value; // Set country full name.
-						break;
-
-					case 'state':
-						if ( ! $country_code ) {
-							$country_code = isset( $destination_info['country'] ) ? $destination_info['country'] : 'undefined';
-						}
-
-						$destination_array[ $key ] = isset( $states[ $country_code ][ $value ] ) ? $states[ $country_code ][ $value ] : $value; // Set state full name.
-						break;
-
-					default:
-						$destination_array[ $key ] = $value;
-						break;
+				if ( $countries && is_array( $countries ) && isset( $countries[ $value ] ) ) {
+					$value = $countries[ $value ];
 				}
 			}
 
-			$destination_info = WC()->countries->get_formatted_address( $destination_array, ', ' );
+			if ( 'state' === $field_key && ! empty( $package['destination']['country'] ) ) {
+				$states = WC()->countries->states;
+
+				if ( $states && is_array( $states ) && isset( $states[ $package['destination']['country'] ][ $value ] ) ) {
+					$value = $states[ $package['destination']['country'] ][ $value ];
+				}
+			}
+
+			$destination_info[ $field_key ] = $value;
 		}
+
+		// Format address.
+		$destination_info = WC()->countries->get_formatted_address( $destination_info, ', ' );
 
 		/**
 		 * Developers can modify the $destination_info var via filter hooks.

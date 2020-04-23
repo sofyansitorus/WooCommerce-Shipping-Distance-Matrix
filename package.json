@@ -35,7 +35,7 @@
 		"yargs": "^11.0.0"
 	},
 	"scripts": {
-		"dev": "./node_modules/.bin/gulp",
+		"start": "./node_modules/.bin/gulp",
 		"build": "./node_modules/.bin/gulp build",
 		"lintScripts": "./node_modules/.bin/gulp lintScripts",
 		"bump": "./node_modules/.bin/gulp bump",

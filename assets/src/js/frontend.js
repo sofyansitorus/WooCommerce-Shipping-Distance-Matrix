@@ -20,24 +20,30 @@ var wcsdmFrontendForm = {
         var $fieldToCloneBefore = $wrapper.find('#calc_shipping_city_field, #calc_shipping_postcode_field').first();
 
         if ($fieldToCloneBefore.length) {
-          var template = wp.template('wcsdm-calc-shipping-custom-field');
+          try {
+            var template = wp.template('wcsdm-calc-shipping-custom-field');
 
-          _.each(defaultFields, function (fieldData, fieldKey) {
-            if (!_.contains(['address_1', 'address_2'], fieldKey)) {
-              return;
-            }
+            _.each(['address_1', 'address_2'], function (fieldKey) {
+              if ($wrapper.find('#calc_shipping_' + fieldKey + '_field').first().length) {
+                return;
+              }
 
-            if ($wrapper.find('#calc_shipping_' + fieldKey + '_field').first().length) {
-              return;
-            }
+              var $extraField = $('#wcsdm-calc-shipping-field-value-' + fieldKey);
 
-            var customFieldOutput = template(_.extend({}, fieldData, {
-              field: fieldKey,
-              value: $('#wcsdm-calc-shipping-field-value-' + fieldKey).val(),
-            }));
+              if (!$extraField || !$extraField.length) {
+                return;
+              }
 
-            $fieldToCloneBefore.before(customFieldOutput);
-          });
+              var fieldData = _.extend({}, $extraField.data('field'), {
+                field: fieldKey,
+                value: $extraField.val(),
+              });
+
+              $fieldToCloneBefore.before(template(fieldData));
+            });
+          } catch (error) {
+            console.log('wcsdmError', error);
+          }
         }
       }
 

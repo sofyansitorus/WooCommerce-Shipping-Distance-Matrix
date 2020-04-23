@@ -283,3 +283,22 @@ if ( ! function_exists( 'wcsdm_calc_shipping_field_value' ) ) :
 		return false;
 	}
 endif;
+
+if ( ! function_exists( 'wcsdm_shipping_fields' ) ) :
+	/**
+	 * Get shipping fields.
+	 *
+	 * @since 2.1.5
+	 *
+	 * @return array
+	 */
+	function wcsdm_shipping_fields() {
+		$different_address = ! empty( $_POST['ship_to_different_address'] ) && ! wc_ship_to_billing_address_only(); // phpcs:ignore WordPress
+		$address_type      = $different_address ? 'shipping' : 'billing';
+
+		return array(
+			'type' => $address_type,
+			'data' => WC()->checkout->get_checkout_fields( $address_type ),
+		);
+	}
+endif;
