@@ -366,6 +366,17 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'default'     => $this->method_title,
 				'desc_tip'    => true,
 				'is_required' => true,
+				'table_rate'  => array(
+					'insert_after' => 'section_general',
+					'attrs'        => array(
+						'default'     => '',
+						'desc_tip'    => true,
+						'is_advanced' => true,
+						'is_dummy'    => true,
+						'is_hidden'   => true,
+						'is_required' => false,
+					),
+				),
 			),
 			'min_cost'                    => array(
 				'type'              => 'wcsdm',
@@ -379,18 +390,106 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'custom_attributes' => array(
 					'min' => '0',
 				),
+				'table_rate'        => array(
+					'insert_after' => 'section_total_cost',
+					'attrs'        => array(
+						'default'     => '',
+						'is_required' => false,
+						'is_advanced' => true,
+						'is_dummy'    => true,
+						'is_hidden'   => true,
+						'validate'    => 'number',
+					),
+				),
+			),
+			'surcharge_type'              => array(
+				'type'        => 'wcsdm',
+				'orig_type'   => 'select',
+				'title'       => __( 'Surcharge Type', 'wcsdm' ),
+				'default'     => 'fixed',
+				'description' => __( 'Surcharge that will be added to the total shipping cost.', 'wcsdm' ),
+				'desc_tip'    => true,
+				'is_required' => true,
+				'options'     => array(
+					'none'       => __( 'None', 'wcsdm' ),
+					'fixed'      => __( 'Fixed', 'wcsdm' ),
+					'percentage' => __( 'Percentage', 'wcsdm' ),
+				),
+				'table_rate'  => array(
+					'insert_after' => 'min_cost',
+					'attrs'        => array(
+						'is_advanced' => true,
+						'is_hidden'   => true,
+					),
+				),
 			),
 			'surcharge'                   => array(
 				'type'              => 'wcsdm',
 				'orig_type'         => 'text',
-				'title'             => __( 'Surcharge', 'wcsdm' ),
+				'title'             => __( 'Surcharge Amount', 'wcsdm' ),
 				'default'           => '0',
-				'description'       => __( 'Surcharge that will be added to the total shipping cost.', 'wcsdm' ),
+				'description'       => __( 'Surcharge amount that will be added to the total shipping cost.', 'wcsdm' ),
 				'desc_tip'          => true,
 				'is_required'       => true,
 				'validate'          => 'number',
 				'custom_attributes' => array(
 					'min' => '0',
+				),
+				'table_rate'        => array(
+					'insert_after' => 'surcharge_type',
+					'attrs'        => array(
+						'default'     => '',
+						'is_required' => false,
+						'is_advanced' => true,
+						'is_dummy'    => true,
+						'is_hidden'   => true,
+						'validate'    => 'number',
+					),
+				),
+			),
+			'discount_type'               => array(
+				'type'        => 'wcsdm',
+				'orig_type'   => 'select',
+				'title'       => __( 'Discount Type', 'wcsdm' ),
+				'default'     => 'fixed',
+				'description' => __( 'Discount that will be added to the total shipping cost.', 'wcsdm' ),
+				'desc_tip'    => true,
+				'is_required' => true,
+				'options'     => array(
+					'none'       => __( 'None', 'wcsdm' ),
+					'fixed'      => __( 'Fixed', 'wcsdm' ),
+					'percentage' => __( 'Percentage', 'wcsdm' ),
+				),
+				'table_rate'  => array(
+					'insert_after' => 'surcharge',
+					'attrs'        => array(
+						'is_advanced' => true,
+						'is_hidden'   => true,
+					),
+				),
+			),
+			'discount'                    => array(
+				'type'              => 'wcsdm',
+				'orig_type'         => 'text',
+				'title'             => __( 'Discount Amount', 'wcsdm' ),
+				'default'           => '0',
+				'description'       => __( 'Discount amount that will be added to the total shipping cost.', 'wcsdm' ),
+				'desc_tip'          => true,
+				'is_required'       => true,
+				'validate'          => 'number',
+				'custom_attributes' => array(
+					'min' => '0',
+				),
+				'table_rate'        => array(
+					'insert_after' => 'discount_type',
+					'attrs'        => array(
+						'default'     => '',
+						'is_required' => false,
+						'is_advanced' => true,
+						'is_dummy'    => true,
+						'is_hidden'   => true,
+						'validate'    => 'number',
+					),
 				),
 			),
 			'total_cost_type'             => array(
@@ -408,6 +507,14 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					'progressive__per_shipping_class' => __( 'Per Class - Accumulate total by grouping the product shipping class (Progressive)', 'wcsdm' ),
 					'progressive__per_product'        => __( 'Per Product - Accumulate total by grouping the product ID (Progressive)', 'wcsdm' ),
 					'progressive__per_item'           => __( 'Per Piece - Accumulate total by multiplying the quantity (Progressive)', 'wcsdm' ),
+				),
+				'table_rate'  => array(
+					'insert_after' => 'discount',
+					'attrs'        => array(
+						'is_advanced' => true,
+						'is_dummy'    => false,
+						'is_hidden'   => true,
+					),
 				),
 			),
 			'field_group_table_rates'     => array(
@@ -476,7 +583,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	 * @since    2.0
 	 */
 	public function init_rate_fields() {
-		$form_fields = $this->instance_form_fields;
 		$rate_fields = array(
 			'section_shipping_rules' => array(
 				'type'        => 'title',
@@ -596,63 +702,12 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'is_dummy'    => false,
 				'is_hidden'   => false,
 			),
-			'min_cost'               => array_merge(
-				$form_fields['min_cost'],
-				array(
-					'description' => $form_fields['min_cost']['description'] . ' ' . __( 'Leave blank to inherit from the global setting.', 'wcsdm' ),
-					'default'     => '',
-					'is_required' => false,
-					'is_advanced' => true,
-					'is_dummy'    => true,
-					'is_hidden'   => true,
-					'validate'    => 'number',
-				)
-			),
-			'surcharge'              => array_merge(
-				$form_fields['surcharge'],
-				array(
-					'description' => $form_fields['surcharge']['description'] . ' ' . __( 'Leave blank to inherit from the global setting.', 'wcsdm' ),
-					'default'     => '',
-					'is_required' => false,
-					'is_advanced' => true,
-					'is_dummy'    => true,
-					'is_hidden'   => true,
-					'validate'    => 'number',
-				)
-			),
-			'total_cost_type'        => array_merge(
-				$form_fields['total_cost_type'],
-				array(
-					'default'     => 'inherit',
-					'options'     => wcsdm_array_insert_before(
-						'flat__highest',
-						$form_fields['total_cost_type']['options'],
-						'inherit',
-						__( 'Inherit - Use global setting', 'wcsdm' )
-					),
-					'is_advanced' => true,
-					'is_dummy'    => false,
-					'is_hidden'   => true,
-				)
-			),
 			'section_general'        => array(
 				'type'        => 'title',
 				'title'       => __( 'General', 'wcsdm' ),
 				'is_advanced' => true,
 				'is_dummy'    => false,
 				'is_hidden'   => false,
-			),
-			'title'                  => array_merge(
-				$form_fields['title'],
-				array(
-					'description' => $form_fields['title']['description'] . ' ' . __( 'Leave blank to inherit from the global setting.', 'wcsdm' ),
-					'default'     => '',
-					'desc_tip'    => true,
-					'is_advanced' => true,
-					'is_dummy'    => true,
-					'is_hidden'   => true,
-					'is_required' => false,
-				)
 			),
 			'link_advanced'          => array(
 				'type'        => 'link_advanced',
@@ -696,6 +751,49 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				);
 
 				$rate_fields = wcsdm_array_insert_after( 'rate_class_0', $rate_fields, 'rate_class_' . $class_id, $rate_class_data );
+			}
+		}
+
+		foreach ( $this->instance_form_fields as $key => $field ) {
+			if ( ! isset( $field['table_rate'] ) || ! $field['table_rate'] ) {
+				continue;
+			}
+
+			if ( is_bool( $field['table_rate'] ) ) {
+				$rate_fields[ $key ] = $field;
+			} elseif ( is_array( $field['table_rate'] ) ) {
+				if ( isset( $field['table_rate']['attrs'] ) && is_array( $field['table_rate']['attrs'] ) ) {
+					$field = array_merge( $field, $field['table_rate']['attrs'] );
+				}
+
+				if ( isset( $field['description'] ) && ! isset( $field['table_rate']['attrs']['description'] ) ) {
+					$field['description'] = sprintf( '%1$s %2$s', $field['description'], __( 'Leave blank to inherit from the global setting.', 'wcsdm' ) );
+				}
+
+				$field_type = isset( $field['orig_type'] ) ? $field['orig_type'] : $field['type'];
+
+				if ( 'select' === $field_type ) {
+					if ( isset( $field['options'] ) && ! isset( $field['table_rate']['attrs']['options'] ) ) {
+						$field['options'] = array_merge(
+							array(
+								'inherit' => __( 'Inherit - Use global setting', 'wcsdm' ),
+							),
+							$field['options']
+						);
+					}
+
+					if ( isset( $field['default'] ) && ! isset( $field['table_rate']['attrs']['default'] ) ) {
+						$field['default'] = 'inherit';
+					}
+				}
+
+				if ( isset( $field['table_rate']['insert_after'] ) ) {
+					$rate_fields = wcsdm_array_insert_after( $field['table_rate']['insert_after'], $rate_fields, $key, $field );
+				} elseif ( isset( $field['table_rate']['insert_before'] ) ) {
+					$rate_fields = wcsdm_array_insert_before( $field['table_rate']['insert_before'], $rate_fields, $key, $field );
+				} else {
+					$rate_fields[ $key ] = $field;
+				}
 			}
 		}
 
