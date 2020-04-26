@@ -45,7 +45,7 @@ var wcsdmTableRates = {
 
     // Handle change event dummy rate field
     $(document).off('input', '.wcsdm-field--context--dummy:not(a)');
-    $(document).on('input', '.wcsdm-field--context--dummy:not(a)', debounce(function (e) {
+    $(document).on('input', '.wcsdm-field--context--dummy:not(a)', wcsdmDebounce(function (e) {
       wcsdmTableRates.handleRateFieldDummy(e);
     }, 500));
 
@@ -58,6 +58,8 @@ var wcsdmTableRates = {
     if (!$('#wcsdm-table--table_rates--dummy tbody tr').length) {
       wcsdmTableRates.addRateRow();
     }
+
+    wcsdmTableRates.sortRateRows();
   },
   initForm: function () {
     var distanceUnitSelected = $('#woocommerce_wcsdm_distance_unit').val();
@@ -102,7 +104,7 @@ var wcsdmTableRates = {
       $('.wcsdm-field--context--advanced[data-id=' + $(this).data('id') + ']').val($(this).val());
     });
 
-    toggleButtons({
+    wcsdmToggleButtons({
       left: {
         id: 'cancel-advanced',
         label: 'Cancel',
@@ -139,7 +141,7 @@ var wcsdmTableRates = {
   closeAdvancedRateForm: function (e) {
     e.preventDefault();
 
-    toggleButtons();
+    wcsdmToggleButtons();
 
     $('#wcsdm-field-group-wrap--advanced_rate').hide().siblings('.wcsdm-field-group-wrap').not('.wcsdm-hidden').fadeIn();
 
@@ -199,7 +201,7 @@ var wcsdmTableRates = {
 
     $('.wc-backbone-modal-header').find('h1').append('<span>' + $subTitle.text() + '</span>');
 
-    toggleButtons({
+    wcsdmToggleButtons({
       left: {
         id: 'delete-rate-cancel',
         label: 'Cancel',
@@ -242,7 +244,7 @@ var wcsdmTableRates = {
 
       wcsdmTableRates.addRateRow();
     } else {
-      toggleButtons();
+      wcsdmToggleButtons();
     }
 
     wcsdmTableRates.closeDeleteRateRowsForm(e);
@@ -257,7 +259,7 @@ var wcsdmTableRates = {
     });
 
     if (isChecked) {
-      toggleButtons({
+      wcsdmToggleButtons({
         left: {
           id: 'delete-rate-select',
           label: 'Delete Selected Rates',
@@ -265,7 +267,7 @@ var wcsdmTableRates = {
         }
       });
     } else {
-      toggleButtons();
+      wcsdmToggleButtons();
     }
   },
   toggleRow: function (e) {
@@ -277,7 +279,7 @@ var wcsdmTableRates = {
     wcsdmTableRates.toggleRowSelected($row, $field.is(':checked'));
 
     if ($('#wcsdm-table--table_rates--dummy tbody .select-item:checked').length) {
-      toggleButtons({
+      wcsdmToggleButtons({
         left: {
           id: 'delete-rate-select',
           label: 'Delete Selected Rates',
@@ -285,7 +287,7 @@ var wcsdmTableRates = {
         }
       });
     } else {
-      toggleButtons();
+      wcsdmToggleButtons();
     }
 
     var isBulkChecked = $('#wcsdm-table--table_rates--dummy tbody .select-item').length === $('#wcsdm-table--table_rates--dummy tbody .select-item:checked').length;
@@ -304,9 +306,14 @@ var wcsdmTableRates = {
     }
   },
   sortRateRows: function () {
+
     var rows = $('#wcsdm-table--table_rates--dummy > tbody > tr').get().sort(function (a, b) {
+
       var valueADistance = $(a).find('.wcsdm-field--context--dummy--max_distance').val();
       var valueBDistance = $(b).find('.wcsdm-field--context--dummy--max_distance').val();
+
+      var valueAIndex = $(a).find('.wcsdm-field--context--dummy--max_distance').index();
+      var valueBIndex = $(b).find('.wcsdm-field--context--dummy--max_distance').index();
 
       if (isNaN(valueADistance) || !valueADistance.length) {
         return 2;
@@ -323,18 +330,193 @@ var wcsdmTableRates = {
         return 1;
       }
 
+      if (valueAIndex < valueBIndex) {
+        return -1;
+      }
+
+      if (valueAIndex > valueBIndex) {
+        return 1;
+      }
+
       return 0;
     });
 
+    var maxDistances = {};
+
     $.each(rows, function (index, row) {
-      $(row).hide().data('index', index).appendTo($('#wcsdm-table--table_rates--dummy').children('tbody')).fadeIn('slow');
+      var maxDistance = $(row).find('.wcsdm-field--context--dummy--max_distance').val();
+
+      if (!maxDistances[maxDistance]) {
+        maxDistances[maxDistance] = [];
+      }
+
+      maxDistances[maxDistance].push($(row));
+
+      $(row).addClass('wcsdm-rate-row-index--' + index).appendTo($('#wcsdm-table--table_rates--dummy').children('tbody')).fadeIn('slow');
+    });
+
+    _.each(maxDistances, function (rows) {
+      _.each(rows, function (row) {
+        if (rows.length > 1) {
+          $(row).addClass('wcsdm-sort-enabled').find('a.wcsdm-col--link_sort').prop('enable', true);
+        } else {
+          $(row).removeClass('wcsdm-sort-enabled').find('a.wcsdm-col--link_sort').prop('enable', false);
+        }
+      });
     });
 
     setTimeout(function () {
       wcsdmTableRates.highlightRow();
+
+      if (!$('#wcsdm-table--table_rates--dummy > tbody').sortable('instance')) {
+        $(function () {
+          var oldIndex = null;
+          var maxDistance = null;
+
+          $('#wcsdm-table--table_rates--dummy tbody').sortable({
+            items: 'tr.wcsdm-sort-enabled',
+            cursor: 'move',
+            classes: {
+              "ui-sortable": "highlight"
+            },
+            placeholder: "ui-state-highlight",
+            axis: "y",
+            start: function (event, ui) {
+              oldIndex = ui.item.index();
+
+              maxDistance = $('#wcsdm-table--table_rates--dummy tbody tr')
+                .eq(oldIndex)
+                .find('[data-id="woocommerce_wcsdm_max_distance"]')
+                .val();
+            },
+            change: function (event, ui) {
+              var newIndex = ui.placeholder.index();
+              var rowIndex = newIndex > oldIndex ? (newIndex - 1) : (newIndex + 1);
+
+              var newMaxDistance = $('#wcsdm-table--table_rates--dummy tbody tr')
+                .eq(rowIndex)
+                .find('[data-id="woocommerce_wcsdm_max_distance"]')
+                .val();
+
+              if (maxDistance !== newMaxDistance) {
+                $(event.target).sortable('cancel');
+              }
+            },
+          });
+          $('#wcsdm-table--table_rates--dummy tbody').disableSelection();
+        });
+      }
     }, 100);
   },
   scrollToTableRate: function () {
     $('.wc-modal-shipping-method-settings').scrollTop($('.wc-modal-shipping-method-settings').find('form').outerHeight());
-  }
+  },
+  hasError: function () {
+    $('#woocommerce_wcsdm_field_group_table_rates').next('p').next('.wcsdm-error-box').remove();
+
+    var uniqueKeys = {};
+    var ratesData = [];
+
+    $('#wcsdm-table--table_rates--dummy > tbody > tr').each(function () {
+      var $row = $(this);
+      var rowIndex = $row.index();
+      var rowData = {
+        index: rowIndex,
+        error: false,
+        fields: {},
+      };
+
+      var uniqueKey = [];
+
+      $row.find('input.wcsdm-field--context--hidden').each(function () {
+        var $field = $(this);
+        var fieldTitle = $field.data('title');
+        var fieldKey = $field.data('key');
+        var fieldId = $field.data('id');
+        var fieldValue = $field.val().trim();
+
+        var fieldData = {
+          title: fieldTitle,
+          value: fieldValue,
+          key: fieldKey,
+          id: fieldId,
+        };
+
+        if ($field.hasClass('wcsdm-field--is-required') && fieldValue.length < 1) {
+          fieldData.error = wcsdmTableRates.rateRowError(rowIndex, wcsdmSprintf(wcsdmError('field_required'), fieldTitle));
+        }
+
+        if (!fieldData.error && fieldValue.length) {
+          if ($field.data('validate') === 'number' && isNaN(fieldValue)) {
+            fieldData.error = wcsdmTableRates.rateRowError(rowIndex, wcsdmSprintf(wcsdmError('field_numeric'), fieldTitle));
+          }
+
+          var fieldValueInt = parseInt(fieldValue, 10);
+
+          if (typeof $field.attr('min') !== 'undefined' && fieldValueInt < parseInt($field.attr('min'), 10)) {
+            fieldData.error = wcsdmTableRates.rateRowError(rowIndex, wcsdmSprintf(wcsdmError('field_min_value'), fieldTitle, $field.attr('min')));
+          }
+
+          if (typeof $field.attr('max') !== 'undefined' && fieldValueInt > parseInt($field.attr('max'), 10)) {
+            fieldData.error = wcsdmTableRates.rateRowError(rowIndex, wcsdmSprintf(wcsdmError('field_max_value'), fieldTitle, $field.attr('max')));
+          }
+        }
+
+        if ($field.data('is_rule') && fieldValue.length) {
+          uniqueKey.push(sprintf('%s__%s', fieldKey, fieldValue));
+        }
+
+        rowData.fields[fieldKey] = fieldData;
+      });
+
+      if (uniqueKey.length) {
+        var uniqueKeyString = uniqueKey.join('___');
+
+        if (_.has(uniqueKeys, uniqueKeyString)) {
+          var duplicateKeys = [];
+
+          for (var i = 0; i < uniqueKey.length; i++) {
+            if (uniqueKey[i].indexOf('max_distance') === -1) {
+              var keySplit = uniqueKey[i].split('__');
+              var title = $row.find('input.wcsdm-field--context--hidden[data-key="' + keySplit[0] + '"]').data('title');
+
+              duplicateKeys.push(wcsdmSprintf('%s: %s', title, keySplit[1]));
+            }
+          }
+
+          rowData.error = wcsdmTableRates.rateRowError(rowIndex, wcsdmSprintf(wcsdmError('duplicate_rate_row'), wcsdmTableRates.indexToNumber(uniqueKeys[uniqueKeyString]), duplicateKeys.join(', ')));
+        } else {
+          uniqueKeys[uniqueKeyString] = rowIndex;
+        }
+      }
+
+      ratesData.push(rowData);
+    });
+
+    var errorText = '';
+
+    _.each(ratesData, function (rowData) {
+      if (rowData.error) {
+        errorText += wcsdmSprintf('<p>%s</p>', rowData.error.toString());
+      }
+
+      _.each(rowData.fields, function (field) {
+        if (field.error) {
+          errorText += wcsdmSprintf('<p>%s</p>', field.error.toString());
+        }
+      });
+    });
+
+    if (errorText) {
+      return $('#woocommerce_wcsdm_field_group_table_rates').next('p').after('<div class="error notice wcsdm-error-box has-margin">' + errorText + '</div>');
+    }
+
+    return false;
+  },
+  rateRowError: function (rowIndex, errorMessage) {
+    return new Error(wcsdmSprintf(wcsdmError('table_rate_row'), wcsdmTableRates.indexToNumber(rowIndex), errorMessage));
+  },
+  indexToNumber: function (rowIndex) {
+    return (rowIndex + 1);
+  },
 };

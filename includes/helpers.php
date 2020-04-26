@@ -68,8 +68,11 @@ function wcsdm_i18n( $key = '', $default = '' ) {
 			// translators: %s = Field name.
 			'field_select'          => __( '%s field value selected is not exists', 'wcsdm' ),
 			// translators: %1$d = row number, %2$s = error message.
-			'duplicate_rate'        => __( 'Each shipping rules combination for each row must be unique. Please fix duplicate shipping rules for rate row %1$d: %2$s', 'wcsdm' ),
+			'table_rate_row'        => __( 'Table rate row #%1$d: %2$s', 'wcsdm' ),
+			// translators: %1$d = row number, %2$s = error message.
+			'duplicate_rate_row'    => __( 'Shipping rules combination duplicate with rate row #%1$d: %2$s', 'wcsdm' ),
 			'finish_editing_api'    => __( 'Please finish the API Key Editing first!', 'wcsdm' ),
+			'table_rates_invalid'   => __( 'Table rates data is incomplete or invalid!', 'wcsdm' ),
 		),
 		'Save Changes' => __( 'Save Changes', 'wcsdm' ),
 		'Add New Rate' => __( 'Add New Rate', 'wcsdm' ),
@@ -281,5 +284,29 @@ if ( ! function_exists( 'wcsdm_calc_shipping_field_value' ) ) :
 		}
 
 		return false;
+	}
+endif;
+
+if ( ! function_exists( 'wcsdm_shipping_fields' ) ) :
+	/**
+	 * Get shipping fields.
+	 *
+	 * @since 2.1.5
+	 *
+	 * @return array
+	 */
+	function wcsdm_shipping_fields() {
+		$different_address = ! empty( $_POST['ship_to_different_address'] ) && ! wc_ship_to_billing_address_only(); // phpcs:ignore WordPress
+		$address_type      = $different_address ? 'shipping' : 'billing';
+		$checkout_fields   = WC()->checkout->get_checkout_fields( $address_type );
+
+		if ( ! $checkout_fields ) {
+			return false;
+		}
+
+		return array(
+			'type' => $address_type,
+			'data' => $checkout_fields,
+		);
 	}
 endif;

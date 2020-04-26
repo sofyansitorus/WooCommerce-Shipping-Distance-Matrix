@@ -21,6 +21,10 @@ var wcsdmMapPicker = {
       if (errorMessage.toLowerCase().indexOf('google') !== -1) {
         wcsdmMapPicker.apiKeyError = errorMessage;
       }
+
+      if ($('.gm-err-message').length) {
+        $('.gm-err-message').replaceWith('<p style="text-align:center">' + wcsdmMapPicker.convertError(errorMessage) + '</p>');
+      }
     });
 
     // Edit Api Key
@@ -77,7 +81,7 @@ var wcsdmMapPicker = {
           $link.removeClass('loading').attr('disabled', false);
 
           if (wcsdmMapPicker.apiKeyError) {
-            window.alert(wcsdmMapPicker.apiKeyError);
+            wcsdmMapPicker.showError($input, wcsdmMapPicker.apiKeyError);
           }
         }
       }, 300);
@@ -104,15 +108,30 @@ var wcsdmMapPicker = {
       }
     }).fail(function (error) {
       if (error.responseJSON && error.responseJSON.data) {
-        window.alert(error.responseJSON.data);
+        wcsdmMapPicker.showError($input, error.responseJSON.data);
       } else if (error.statusText) {
-        window.alert(error.statusText);
+        wcsdmMapPicker.showError($input, error.statusText);
       } else {
-        window.alert('Google API Response Error: Uknown');
+        wcsdmMapPicker.showError($input, 'Google Distance Matrix API error: Uknown');
       }
     }).always(function () {
       $link.removeClass('loading').attr('disabled', false);
     });
+  },
+  showError: function ($input, errorMessage) {
+    $('<div class="error notice wcsdm-error-box"><p>' + wcsdmMapPicker.convertError(errorMessage) + '</p></div>')
+      .hide()
+      .appendTo($input.closest('td'))
+      .slideDown();
+  },
+  removeError: function ($input) {
+    $input.closest('td')
+      .find('.wcsdm-error-box')
+      .remove();
+  },
+  convertError: function (text) {
+    var exp = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+    return text.replace(exp, "<a href='$1' target='_blank'>$1</a>");
   },
   editApiKey: function (e) {
     e.preventDefault();
@@ -121,7 +140,10 @@ var wcsdmMapPicker = {
     var $input = $link.closest('tr').find('input[type=text]');
     var apiKey = $input.val();
 
+    wcsdmMapPicker.removeError($input);
+
     if ($link.hasClass('editing')) {
+
       if (apiKey && apiKey !== $link.data('value')) {
         $link.addClass('loading').attr('disabled', true);
 
@@ -146,9 +168,9 @@ var wcsdmMapPicker = {
       $input.prop('readonly', false);
 
       if ($link.attr('id') === 'api_key') {
-        wcsdmMapPicker.editingAPIKey = true;
+        wcsdmMapPicker.editingAPIKey = $input;
       } else {
-        wcsdmMapPicker.editingAPIKeyPicker = true;
+        wcsdmMapPicker.editingAPIKeyPicker = $input;
       }
     }
   },
@@ -157,7 +179,7 @@ var wcsdmMapPicker = {
 
     $('.modal-close-link').hide();
 
-    toggleButtons({
+    wcsdmToggleButtons({
       left: {
         id: 'map-cancel',
         label: 'Cancel',
@@ -185,7 +207,7 @@ var wcsdmMapPicker = {
 
     $('.modal-close-link').show();
 
-    toggleButtons();
+    wcsdmToggleButtons();
 
     $('#wcsdm-field-group-wrap--location_picker').find('.wc-settings-sub-title').first().removeClass('wcsdm-hidden');
 

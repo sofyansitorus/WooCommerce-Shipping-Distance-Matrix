@@ -81,13 +81,6 @@ class Wcsdm {
 		// Hook to enqueue scripts & styles assets.
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_backend_assets' ), 999 );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ), 999 );
-
-		// Show fields in the shipping calculator form.
-		add_filter( 'woocommerce_shipping_calculator_enable_address_1', '__return_true', 999 );
-		add_filter( 'woocommerce_shipping_calculator_enable_address_2', '__return_true', 999 );
-		add_filter( 'woocommerce_shipping_calculator_enable_city', '__return_true', 999 );
-		add_filter( 'woocommerce_shipping_calculator_enable_state', '__return_true', 999 );
-		add_filter( 'woocommerce_shipping_calculator_enable_postcode', '__return_true', 999 );
 	}
 
 	/**
@@ -245,23 +238,6 @@ class Wcsdm {
 			WCSDM_VERSION, // Define a version (optional).
 			true // Specify whether to put in footer (leave this true).
 		);
-
-		$fields = array(
-			'postcode',
-			'state',
-			'city',
-			'address_1',
-			'address_2',
-		);
-
-		// Localize the script data.
-		$wcsdm_frontend = array();
-
-		foreach ( $fields as $field ) {
-			$wcsdm_frontend[ 'shipping_calculator_' . $field ] = apply_filters( 'woocommerce_shipping_calculator_enable_' . $field, true ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
-		}
-
-		wp_localize_script( 'wcsdm-frontend', 'wcsdm_frontend', $wcsdm_frontend );
 	}
 
 	/**
@@ -291,36 +267,68 @@ class Wcsdm {
 			return;
 		}
 
-		$enable_address_1 = apply_filters( 'woocommerce_shipping_calculator_enable_address_1', true ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
-		$enable_address_2 = apply_filters( 'woocommerce_shipping_calculator_enable_address_2', true ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+		$shipping_fields = wcsdm_shipping_fields();
+		if ( ! $shipping_fields ) {
+			return;
+		}
 
-		// Address 1 hidden field.
-		if ( $enable_address_1 ) {
-			$address_1 = WC()->cart->get_customer()->get_shipping_address();
+		$type = isset( $shipping_fields['type'] ) ? $shipping_fields['type'] : false;
+		if ( ! $type ) {
+			return;
+		}
+
+		$data = isset( $shipping_fields['data'] ) ? $shipping_fields['data'] : false;
+		if ( ! $data ) {
+			return;
+		}
+
+		$fields = array(
+			'address_1' => 'get_shipping_address',
+			'address_2' => 'get_shipping_address_2',
+		);
+
+		foreach ( $fields as $key => $callback ) {
+			$is_enabled = apply_filters( 'woocommerce_shipping_calculator_enable_' . $key, true ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+
+			if ( ! $is_enabled ) {
+				continue;
+			}
+
+			$field_key = $type . '_' . $key;
+
+			$field = isset( $data[ $field_key ] ) ? $data[ $field_key ] : false;
+
+			if ( $field ) {
+				$fields[ $key ] = array(
+					'value' => call_user_func( array( WC()->cart->get_customer(), $callback ) ),
+					'data'  => $field,
+				);
+			} else {
+				$fields[ $key ] = false;
+			}
+		}
+
+		if ( ! array_filter( $fields ) ) {
+			return;
+		}
+
+		foreach ( $fields as $key => $field ) {
+			if ( ! $field ) {
+				continue;
+			}
+
 			?>
-			<input type="hidden" id="wcsdm-calc-shipping-field-value-address_1" value="<?php echo esc_attr( $address_1 ); ?>" />
+			<input type="hidden" id="wcsdm-calc-shipping-field-value-<?php echo esc_attr( $key ); ?>" value="<?php echo esc_attr( $field['value'] ); ?>" data-field="<?php echo esc_attr( wp_json_encode( $field['data'] ) ); ?>" />
 			<?php
 		}
 
-		// Address 2 hidden field.
-		if ( $enable_address_2 ) {
-			$address_2 = WC()->cart->get_customer()->get_shipping_address_2();
-
-			?>
-			<input type="hidden" id="wcsdm-calc-shipping-field-value-address_2" value="<?php echo esc_attr( $address_2 ); ?>" />
-			<?php
-		}
-
-		// Field template.
-		if ( $enable_address_1 || $enable_address_2 ) {
-			?>
-			<script type="text/template" id="tmpl-wcsdm-calc-shipping-custom-field">
-				<p class="form-row form-row-wide" id="calc_shipping_{{ data.field }}_field">
-					<input type="text" class="input-text" value="{{ data.value }}" placeholder="{{ data.placeholder }}" data-placeholder="{{ data.placeholder }}" name="calc_shipping_{{ data.field }}" id="calc_shipping_{{ data.field }}" />
-				</p>
-			</script>
-			<?php
-		}
+		?>
+		<script type="text/template" id="tmpl-wcsdm-calc-shipping-custom-field">
+			<p class="form-row form-row-wide" id="calc_shipping_{{ data.field }}_field">
+				<input type="text" class="input-text" value="{{ data.value }}" placeholder="{{ data.placeholder }}" data-placeholder="{{ data.placeholder }}" name="calc_shipping_{{ data.field }}" id="calc_shipping_{{ data.field }}" />
+			</p>
+		</script>
+		<?php
 	}
 
 	/**

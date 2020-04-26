@@ -26,7 +26,19 @@
   &-link {
     text-align: center;
     text-decoration: none;
-    width: 60px;
+    width: 70px;
+
+    &--sort {
+      cursor: not-allowed;
+      opacity: 0.3;
+      pointer-events: none;
+
+      .wcsdm-sort-enabled & {
+        opacity: 1;
+        cursor: move;
+        pointer-events: inherit;
+      }
+    }
 
     &:active,
     &:focus {
@@ -144,6 +156,11 @@
           &--link_advanced {
             text-align: center;
             width: 96px;
+          }
+
+          &--link_sort {
+            text-align: center;
+            width: 60px;
           }
 
           &+.wcsdm-col {
@@ -294,6 +311,21 @@
     display: block;
     height: 36px;
     margin: 10px 0 0;
+  }
+
+  &-error-box {
+    margin: 0 !important;
+    padding-top: 1em;
+    padding-bottom: 1em;
+
+    &.has-margin {
+      margin: 15px !important;
+    }
+
+    p {
+      margin: .1em 0 !important;
+      padding: 2px !important;
+    }
   }
 }
 
