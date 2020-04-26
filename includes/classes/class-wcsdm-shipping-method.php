@@ -407,7 +407,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'orig_type'   => 'select',
 				'title'       => __( 'Surcharge Type', 'wcsdm' ),
 				'default'     => 'fixed',
-				'description' => __( 'Surcharge that will be added to the total shipping cost.', 'wcsdm' ),
+				'description' => __( 'Surcharge type that will be added to the total shipping cost.', 'wcsdm' ),
 				'desc_tip'    => true,
 				'is_required' => true,
 				'options'     => array(
@@ -444,6 +444,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 						'is_dummy'    => true,
 						'is_hidden'   => true,
 						'validate'    => 'number',
+						'title'       => __( 'Surcharge', 'wcsdm' ),
 					),
 				),
 			),
@@ -452,7 +453,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'orig_type'   => 'select',
 				'title'       => __( 'Discount Type', 'wcsdm' ),
 				'default'     => 'fixed',
-				'description' => __( 'Discount that will be added to the total shipping cost.', 'wcsdm' ),
+				'description' => __( 'Discount type that will be deducted to the total shipping cost.', 'wcsdm' ),
 				'desc_tip'    => true,
 				'is_required' => true,
 				'options'     => array(
@@ -473,7 +474,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'orig_type'         => 'text',
 				'title'             => __( 'Discount Amount', 'wcsdm' ),
 				'default'           => '0',
-				'description'       => __( 'Discount amount that will be added to the total shipping cost.', 'wcsdm' ),
+				'description'       => __( 'Discount amount that will be deducted to the total shipping cost.', 'wcsdm' ),
 				'desc_tip'          => true,
 				'is_required'       => true,
 				'validate'          => 'number',
@@ -489,6 +490,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 						'is_dummy'    => true,
 						'is_hidden'   => true,
 						'validate'    => 'number',
+						'title'       => __( 'Discount', 'wcsdm' ),
 					),
 				),
 			),
@@ -2003,12 +2005,51 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				}
 
 				$surcharge = $this->get_rate_field_value( 'surcharge', $rate, '' );
+
 				if ( ! strlen( $surcharge ) ) {
 					$surcharge = $this->surcharge;
 				}
 
 				if ( $surcharge ) {
-					$cost += $surcharge;
+					$surcharge_type = $this->get_rate_field_value( 'surcharge_type', $rate );
+
+					if ( ! $surcharge_type || 'inherit' === $surcharge_type ) {
+						$surcharge_type = $this->surcharge_type;
+					}
+
+					if ( ! $surcharge_type ) {
+						$surcharge_type = 'fixed';
+					}
+
+					if ( 'fixed' === $surcharge_type ) {
+						$cost += $surcharge;
+					} else {
+						$cost += ( ( $cost * $surcharge ) / 100 );
+					}
+				}
+
+				$discount = $this->get_rate_field_value( 'discount', $rate, '' );
+
+				if ( ! strlen( $discount ) ) {
+					$discount = $this->discount;
+				}
+
+				if ( $discount ) {
+					$discount_type = $this->get_rate_field_value( 'discount_type', $rate );
+
+					if ( ! $discount_type || 'inherit' === $discount_type ) {
+						$discount_type = $this->discount_type;
+					}
+
+					if ( ! $discount_type ) {
+						$discount_type = 'fixed';
+					}
+
+					if ( 'fixed' === $discount_type ) {
+						$cost -= $discount;
+					} else {
+						$cost -= ( ( $cost * $discount ) / 100 );
+					}
 				}
 
 				$result = array(
