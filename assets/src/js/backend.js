@@ -80,7 +80,7 @@ var wcsdmBackend = {
     wcsdmTableRates.init(params);
     wcsdmMapPicker.init(params);
 
-    toggleButtons();
+    wcsdmToggleButtons();
   },
   maybeOpenModal: function () {
     // Try show settings modal on settings page.
@@ -109,9 +109,13 @@ var wcsdmBackend = {
     e.preventDefault();
 
     if (wcsdmMapPicker.editingAPIKey || wcsdmMapPicker.editingAPIKeyPicker) {
-      window.alert(wcsdm_backend.i18n.errors.finish_editing_api);
+      window.alert(wcsdmError('finish_editing_api'));
     } else {
-      $('#btn-ok').trigger('click');
+      if (!wcsdmTableRates.hasError()) {
+        $('#btn-ok').trigger('click');
+      } else {
+        window.alert(wcsdmError('table_rates_invalid'));
+      }
     }
   },
   toggleStoreOriginFields: function (e) {

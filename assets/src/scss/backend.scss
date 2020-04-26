@@ -29,7 +29,6 @@
     width: 70px;
 
     &--sort {
-      cursor: move;
       cursor: not-allowed;
       opacity: 0.3;
       pointer-events: none;
@@ -315,7 +314,18 @@
   }
 
   &-error-box {
-    margin-left: 0 !important;
+    margin: 0 !important;
+    padding-top: 1em;
+    padding-bottom: 1em;
+
+    &.has-margin {
+      margin: 15px !important;
+    }
+
+    p {
+      margin: .1em 0 !important;
+      padding: 2px !important;
+    }
   }
 }
 

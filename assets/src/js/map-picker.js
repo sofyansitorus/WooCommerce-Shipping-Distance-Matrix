@@ -179,7 +179,7 @@ var wcsdmMapPicker = {
 
     $('.modal-close-link').hide();
 
-    toggleButtons({
+    wcsdmToggleButtons({
       left: {
         id: 'map-cancel',
         label: 'Cancel',
@@ -207,7 +207,7 @@ var wcsdmMapPicker = {
 
     $('.modal-close-link').show();
 
-    toggleButtons();
+    wcsdmToggleButtons();
 
     $('#wcsdm-field-group-wrap--location_picker').find('.wc-settings-sub-title').first().removeClass('wcsdm-hidden');
 

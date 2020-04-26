@@ -68,8 +68,11 @@ function wcsdm_i18n( $key = '', $default = '' ) {
 			// translators: %s = Field name.
 			'field_select'          => __( '%s field value selected is not exists', 'wcsdm' ),
 			// translators: %1$d = row number, %2$s = error message.
-			'duplicate_rate'        => __( 'Each shipping rules combination for each row must be unique. Please fix duplicate shipping rules for rate row %1$d: %2$s', 'wcsdm' ),
+			'table_rate_row'        => __( 'Table rate row #%1$d: %2$s', 'wcsdm' ),
+			// translators: %1$d = row number, %2$s = error message.
+			'duplicate_rate_row'    => __( 'Shipping rules combination duplicate with rate row #%1$d: %2$s', 'wcsdm' ),
 			'finish_editing_api'    => __( 'Please finish the API Key Editing first!', 'wcsdm' ),
+			'table_rates_invalid'   => __( 'Table rates data is incomplete or invalid!', 'wcsdm' ),
 		),
 		'Save Changes' => __( 'Save Changes', 'wcsdm' ),
 		'Add New Rate' => __( 'Add New Rate', 'wcsdm' ),

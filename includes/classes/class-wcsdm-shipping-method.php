@@ -375,6 +375,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'description'       => __( 'Minimum cost that will be applied.', 'wcsdm' ),
 				'desc_tip'          => true,
 				'is_required'       => true,
+				'validate'          => 'number',
 				'custom_attributes' => array(
 					'min' => '0',
 				),
@@ -387,6 +388,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'description'       => __( 'Surcharge that will be added to the total shipping cost.', 'wcsdm' ),
 				'desc_tip'          => true,
 				'is_required'       => true,
+				'validate'          => 'number',
 				'custom_attributes' => array(
 					'min' => '0',
 				),
@@ -510,6 +512,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'is_required'       => true,
 				'is_rule'           => true,
 				'default'           => '0',
+				'validate'          => 'number',
 				'custom_attributes' => array(
 					'min' => '0',
 				),
@@ -525,6 +528,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'is_required'       => true,
 				'is_rule'           => true,
 				'default'           => '0',
+				'validate'          => 'number',
 				'custom_attributes' => array(
 					'min' => '0',
 				),
@@ -540,6 +544,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'is_required'       => true,
 				'is_rule'           => true,
 				'default'           => '0',
+				'validate'          => 'number',
 				'custom_attributes' => array(
 					'min' => '0',
 				),
@@ -555,6 +560,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'is_required'       => true,
 				'is_rule'           => true,
 				'default'           => '0',
+				'validate'          => 'number',
 				'custom_attributes' => array(
 					'min' => '0',
 				),
@@ -578,6 +584,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'is_rate'           => true,
 				'is_rule'           => true,
 				'default'           => '0',
+				'validate'          => 'number',
 				'custom_attributes' => array(
 					'min' => '0',
 				),
@@ -598,6 +605,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					'is_advanced' => true,
 					'is_dummy'    => true,
 					'is_hidden'   => true,
+					'validate'    => 'number',
 				)
 			),
 			'surcharge'              => array_merge(
@@ -609,6 +617,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					'is_advanced' => true,
 					'is_dummy'    => true,
 					'is_hidden'   => true,
+					'validate'    => 'number',
 				)
 			),
 			'total_cost_type'        => array_merge(
@@ -1230,20 +1239,22 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		$filtered = array();
 
 		$errors = array();
+
 		foreach ( $rates as $index => $rate ) {
+			$rules = array();
+
+			foreach ( $rule_fields as $rule_field ) {
+				$rules[ $rule_field ] = isset( $rate[ $rule_field ] ) && strlen( $rate[ $rule_field ] ) ? $rate[ $rule_field ] : false;
+			}
+
+			$rate_key = implode( '___', array_values( $rules ) );
+
 			try {
-				$rules = array();
-
-				foreach ( $rule_fields as $rule_field ) {
-					$rules[ $rule_field ] = isset( $rate[ $rule_field ] ) ? $rate[ $rule_field ] : false;
-				}
-
-				$rate_key = implode( '___', array_values( $rules ) );
-
 				if ( isset( $filtered[ $rate_key ] ) ) {
 					$error_msg = array();
+
 					foreach ( $rules as $rule_key => $rule_value ) {
-						if ( false === $rule_value ) {
+						if ( false === $rule_value || 'max_distance' === $rule_key ) {
 							continue;
 						}
 
@@ -1253,9 +1264,16 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					throw new Exception( implode( ', ', $error_msg ) );
 				}
 
-				$filtered[ $rate_key ] = $rate;
+				$filtered[ $rate_key ] = array(
+					'index' => $index,
+					'rate'  => $rate,
+				);
 			} catch ( Exception $e ) {
-				$errors[] = wp_sprintf( wcsdm_i18n( 'errors.duplicate_rate' ), ( $index + 1 ), $e->getMessage() );
+				$errors[] = wp_sprintf(
+					wcsdm_i18n( 'errors.table_rate_row' ),
+					( $index + 1 ),
+					wp_sprintf( wcsdm_i18n( 'errors.duplicate_rate_row' ), $filtered[ $rate_key ]['index'], $e->getMessage() )
+				);
 			}
 		}
 
@@ -1267,10 +1285,14 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			throw new Exception( __( 'Shipping rates table is empty', 'wcsdm' ) );
 		}
 
-		$filtered = array_values( $filtered );
+		$filtered_values = array();
+
+		foreach ( $filtered as $row ) {
+			$filtered_values[] = $row['rate'];
+		}
 
 		/**
-		 * Developers can modify the $filtered var via filter hooks.
+		 * Developers can modify the $filtered_values var via filter hooks.
 		 *
 		 * @since 1.0.1
 		 *
@@ -1278,11 +1300,11 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		 *
 		 *      add_filter( 'wcsdm_validate_table_rates', 'my_wcsdm_validate_table_rates', 10, 2 );
 		 *
-		 *      function my_wcsdm_validate_table_rates( $filtered, $instance_id ) {
+		 *      function my_wcsdm_validate_table_rates( $filtered_values, $instance_id ) {
 		 *          return array();
 		 *      }
 		 */
-		return apply_filters( 'wcsdm_validate_table_rates', $filtered, $this->get_instance_id() );
+		return apply_filters( 'wcsdm_validate_table_rates', $filtered_values, $this->get_instance_id() );
 	}
 
 	/**
@@ -1525,6 +1547,8 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 
 		$custom_attributes = array(
 			'data-type'        => $data['type'],
+			'data-key'         => $key,
+			'data-title'       => isset( $data['title'] ) ? $data['title'] : $key,
 			'data-id'          => $this->get_field_key( $key ),
 			'data-context'     => isset( $data['context'] ) ? $data['context'] : '',
 			'data-title'       => isset( $data['title'] ) ? $data['title'] : $key,
@@ -1532,6 +1556,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			'data-validate'    => isset( $data['validate'] ) ? $data['validate'] : 'text',
 			'data-is_rate'     => empty( $data['is_rate'] ) ? '0' : '1',
 			'data-is_required' => empty( $data['is_required'] ) ? '0' : '1',
+			'data-is_rule'     => empty( $data['is_rule'] ) ? '0' : '1',
 		);
 
 		$data['custom_attributes'] = array_merge( $data['custom_attributes'], $custom_attributes );
