@@ -415,7 +415,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'orig_type'   => 'title',
 				'class'       => 'wcsdm-field-group',
 				'title'       => __( 'Table Rates Settings', 'wcsdm' ),
-				'description' => __( 'Determine the shipping cost based on the shipping address distance and extra advanced rules. The rate row that will be chosen during checkout is the rate row with the maximum distance value closest with the shipping address calculated distance and the order info must matched with the extra advanced rules if defined. You can sort the rate row priority manually when it has the same maximum distance values by dragging vertically the "move" icon on the right. First come first served.', 'wcsdm' ),
+				'description' => __( 'Determine the shipping cost based on the shipping address distance and extra advanced rules. The rate row that will be chosen during checkout is the rate row with the maximum distance value closest with the calculated shipping address distance and the order info must matched with the extra advanced rules if defined. You can sort the rate row priority manually when it has the same maximum distance values by dragging vertically the "move" icon on the right. First come first served.', 'wcsdm' ),
 			),
 			'table_rates'                 => array(
 				'type'  => 'table_rates',
@@ -1751,7 +1751,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		$table_rates = apply_filters( 'wcsdm_table_rates', $this->table_rates, $api_response, $package, $this );
 
 		if ( $table_rates ) {
-			$distance_offset = 0;
+			$table_rates_match = array();
 
 			foreach ( $table_rates as $index => $rate ) {
 				/**
@@ -1787,145 +1787,159 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					continue;
 				}
 
-				if ( $this->table_rate_row_rules_match( $rate, $distance_offset, $api_response, $package ) ) {
-					$this->show_debug( __( 'Table Rate Row match', 'wcsdm' ) . ': ' . wp_json_encode( $rate ) );
-
-					// Hold costs data for flat total_cost_type.
-					$flat = array();
-
-					// Hold costs data for progressive total_cost_type.
-					$progressive = array();
-
-					foreach ( $package['contents'] as $hash => $item ) {
-						if ( ! $item['data']->needs_shipping() ) {
-							continue;
-						}
-
-						$class_id   = $item['data']->get_shipping_class_id();
-						$product_id = $item['data']->get_id();
-
-						$item_cost = $this->get_rate_field_value( 'rate_class_0', $rate, 0 );
-
-						if ( $class_id ) {
-							$class_cost = $this->get_rate_field_value( 'rate_class_' . $class_id, $rate );
-							if ( strlen( $class_cost ) ) {
-								$item_cost = $class_cost;
-							}
-						}
-
-						// Multiply shipping cost with distance unit.
-						$item_cost *= $api_response['distance'];
-
-						// Add cost data for flat total_cost_type.
-						$flat[] = $item_cost;
-
-						// Add cost data for progressive total_cost_type.
-						$progressive[] = array(
-							'item_cost'  => $item_cost,
-							'class_id'   => $class_id,
-							'product_id' => $product_id,
-							'quantity'   => $item['quantity'],
-						);
+				if ( $this->table_rate_row_rules_match( $rate, 0, $api_response, $package ) ) {
+					if ( ! isset( $table_rates_match[ $rate['max_distance'] ] ) ) {
+						$table_rates_match[ $rate['max_distance'] ] = array();
 					}
 
-					$cost = 0;
+					$table_rates_match[ $rate['max_distance'] ][] = $rate;
+				}
+			}
 
-					$total_cost_type = $this->get_rate_field_value( 'total_cost_type', $rate, 'inherit' );
-					if ( 'inherit' === $total_cost_type ) {
-						$total_cost_type = $this->total_cost_type;
+			if ( $table_rates_match ) {
+				ksort( $table_rates_match, SORT_NUMERIC );
+
+				// Pick the lowest max distance rate row rules.
+				$table_rates_match = reset( $table_rates_match );
+
+				// Pick first rate row data.
+				$rate = reset( $table_rates_match );
+
+				$this->show_debug( __( 'Table Rate Row match', 'wcsdm' ) . ': ' . wp_json_encode( $rate ) );
+
+				// Hold costs data for flat total_cost_type.
+				$flat = array();
+
+				// Hold costs data for progressive total_cost_type.
+				$progressive = array();
+
+				foreach ( $package['contents'] as $hash => $item ) {
+					if ( ! $item['data']->needs_shipping() ) {
+						continue;
 					}
 
-					if ( strpos( $total_cost_type, 'flat__' ) === 0 ) {
-						switch ( str_replace( 'flat__', '', $total_cost_type ) ) {
-							case 'lowest':
-								$cost = min( $flat );
-								break;
+					$class_id   = $item['data']->get_shipping_class_id();
+					$product_id = $item['data']->get_id();
 
-							case 'average':
-								$cost = array_sum( $flat ) / count( $flat );
-								break;
+					$item_cost = $this->get_rate_field_value( 'rate_class_0', $rate, 0 );
 
-							default:
-								$cost = max( $flat );
-								break;
-						}
-					} elseif ( strpos( $total_cost_type, 'progressive__' ) === 0 ) {
-						switch ( str_replace( 'progressive__', '', $total_cost_type ) ) {
-							case 'per_shipping_class':
-								$costs = array();
-								foreach ( $progressive as $value ) {
-									$costs[ $value['class_id'] ] = $value['item_cost'];
-								}
-								$cost = array_sum( $costs );
-								break;
-
-							case 'per_product':
-								$costs = array();
-								foreach ( $progressive as $value ) {
-									$costs[ $value['product_id'] ] = $value['item_cost'];
-								}
-								$cost = array_sum( $costs );
-								break;
-
-							default:
-								$costs = array();
-								foreach ( $progressive as $value ) {
-									$costs[ $value['product_id'] ] = $value['item_cost'] * $value['quantity'];
-								}
-								$cost = array_sum( $costs );
-								break;
+					if ( $class_id ) {
+						$class_cost = $this->get_rate_field_value( 'rate_class_' . $class_id, $rate );
+						if ( strlen( $class_cost ) ) {
+							$item_cost = $class_cost;
 						}
 					}
 
-					$min_cost = $this->get_rate_field_value( 'min_cost', $rate, '' );
+					// Multiply shipping cost with distance unit.
+					$item_cost *= $api_response['distance'];
 
-					if ( ! strlen( $min_cost ) ) {
-						$min_cost = $this->min_cost;
-					}
+					// Add cost data for flat total_cost_type.
+					$flat[] = $item_cost;
 
-					if ( $min_cost && $min_cost > $cost ) {
-						$cost = $min_cost;
-					}
-
-					$surcharge = $this->get_rate_field_value( 'surcharge', $rate, '' );
-					if ( ! strlen( $surcharge ) ) {
-						$surcharge = $this->surcharge;
-					}
-
-					if ( $surcharge ) {
-						$cost += $surcharge;
-					}
-
-					$result = array(
-						'cost'      => $cost,
-						'label'     => empty( $rate['title'] ) ? $this->title : $rate['title'],
-						'meta_data' => array(
-							'api_response' => $api_response,
-						),
+					// Add cost data for progressive total_cost_type.
+					$progressive[] = array(
+						'item_cost'  => $item_cost,
+						'class_id'   => $class_id,
+						'product_id' => $product_id,
+						'quantity'   => $item['quantity'],
 					);
-
-					/**
-					 * Developers can modify the $rate via filter hooks.
-					 *
-					 * @since 2.0
-					 *
-					 * This example shows how you can modify the $result var via custom function:
-					 *
-					 *      add_filter( 'wcsdm_calculate_shipping_cost', 'my_wcsdm_calculate_shipping_cost', 10, 4 );
-					 *
-					 *      function my_wcsdm_calculate_shipping_cost( $result, $api_response, $package, $obj ) {
-					 *          // Return the cost data array
-					 *          return array(
-					 *              'cost'      => 0,
-					 *              'label'     => 'Free Shipping',
-					 *              'meta_data' => array(),
-					 *          );
-					 *      }
-					 */
-					return apply_filters( 'wcsdm_calculate_shipping_cost', $result, $api_response, $package, $this );
 				}
 
-				$distance_offset = $rate['max_distance'];
+				$cost = 0;
+
+				$total_cost_type = $this->get_rate_field_value( 'total_cost_type', $rate, 'inherit' );
+				if ( 'inherit' === $total_cost_type ) {
+					$total_cost_type = $this->total_cost_type;
+				}
+
+				if ( strpos( $total_cost_type, 'flat__' ) === 0 ) {
+					switch ( str_replace( 'flat__', '', $total_cost_type ) ) {
+						case 'lowest':
+							$cost = min( $flat );
+							break;
+
+						case 'average':
+							$cost = array_sum( $flat ) / count( $flat );
+							break;
+
+						default:
+							$cost = max( $flat );
+							break;
+					}
+				} elseif ( strpos( $total_cost_type, 'progressive__' ) === 0 ) {
+					switch ( str_replace( 'progressive__', '', $total_cost_type ) ) {
+						case 'per_shipping_class':
+							$costs = array();
+							foreach ( $progressive as $value ) {
+								$costs[ $value['class_id'] ] = $value['item_cost'];
+							}
+							$cost = array_sum( $costs );
+							break;
+
+						case 'per_product':
+							$costs = array();
+							foreach ( $progressive as $value ) {
+								$costs[ $value['product_id'] ] = $value['item_cost'];
+							}
+							$cost = array_sum( $costs );
+							break;
+
+						default:
+							$costs = array();
+							foreach ( $progressive as $value ) {
+								$costs[ $value['product_id'] ] = $value['item_cost'] * $value['quantity'];
+							}
+							$cost = array_sum( $costs );
+							break;
+					}
+				}
+
+				$min_cost = $this->get_rate_field_value( 'min_cost', $rate, '' );
+
+				if ( ! strlen( $min_cost ) ) {
+					$min_cost = $this->min_cost;
+				}
+
+				if ( $min_cost && $min_cost > $cost ) {
+					$cost = $min_cost;
+				}
+
+				$surcharge = $this->get_rate_field_value( 'surcharge', $rate, '' );
+				if ( ! strlen( $surcharge ) ) {
+					$surcharge = $this->surcharge;
+				}
+
+				if ( $surcharge ) {
+					$cost += $surcharge;
+				}
+
+				$result = array(
+					'cost'      => $cost,
+					'label'     => empty( $rate['title'] ) ? $this->title : $rate['title'],
+					'meta_data' => array(
+						'api_response' => $api_response,
+					),
+				);
+
+				/**
+				 * Developers can modify the $rate via filter hooks.
+				 *
+				 * @since 2.0
+				 *
+				 * This example shows how you can modify the $result var via custom function:
+				 *
+				 *      add_filter( 'wcsdm_calculate_shipping_cost', 'my_wcsdm_calculate_shipping_cost', 10, 4 );
+				 *
+				 *      function my_wcsdm_calculate_shipping_cost( $result, $api_response, $package, $obj ) {
+				 *          // Return the cost data array
+				 *          return array(
+				 *              'cost'      => 0,
+				 *              'label'     => 'Free Shipping',
+				 *              'meta_data' => array(),
+				 *          );
+				 *      }
+				 */
+				return apply_filters( 'wcsdm_calculate_shipping_cost', $result, $api_response, $package, $this );
 			}
 		}
 
@@ -1973,10 +1987,12 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	 * @param array $api_response API response data.
 	 * @param array $package Cart data.
 	 *
+	 * @deprecated $distance_offset since 2.1.6
+	 *
 	 * @return bool
 	 */
 	private function table_rate_row_rules_match( $rate, $distance_offset, $api_response, $package ) {
-		$is_match = $api_response['distance'] > $distance_offset && $api_response['distance'] <= $rate['max_distance'];
+		$is_match = $api_response['distance'] <= $rate['max_distance'];
 
 		$min_order_amount = $this->get_rate_field_value( 'min_order_amount', $rate );
 
