@@ -193,6 +193,7 @@ var wcsdmTableRates = {
 
     $('#wcsdm-table--table_rates--dummy tbody .select-item:not(:checked)').closest('tr').hide();
     $('#wcsdm-table--table_rates--dummy').find('.wcsdm-col--select-item, .wcsdm-col--link_advanced').hide();
+    $('#wcsdm-table--table_rates--dummy').find('.wcsdm-col--select-item, .wcsdm-col--link_sort').hide();
     $('#wcsdm-field-group-wrap--table_rates').siblings().hide();
 
     $('#wcsdm-field-group-wrap--table_rates').find('p').first().addClass('wcsdm-hidden');
@@ -219,6 +220,7 @@ var wcsdmTableRates = {
 
     $('#wcsdm-table--table_rates--dummy tbody tr').show();
     $('#wcsdm-table--table_rates--dummy').find('.wcsdm-col--select-item, .wcsdm-col--link_advanced').show();
+    $('#wcsdm-table--table_rates--dummy').find('.wcsdm-col--select-item, .wcsdm-col--link_sort').show();
     $('#wcsdm-field-group-wrap--table_rates').siblings().not('.wcsdm-hidden').fadeIn();
 
     $('#wcsdm-field-group-wrap--table_rates').find('p').first().removeClass('wcsdm-hidden');
@@ -299,10 +301,8 @@ var wcsdmTableRates = {
 
     if (isChecked) {
       $row.addClass('selected').find('.select-item').prop('checked', isChecked);
-      $row.find('a').css('opacity', '0.4');
     } else {
       $row.removeClass('selected').find('.select-item').prop('checked', isChecked);
-      $row.find('a').css('opacity', '1');
     }
   },
   sortRateRows: function () {
@@ -374,7 +374,7 @@ var wcsdmTableRates = {
           var maxDistance = null;
 
           $('#wcsdm-table--table_rates--dummy tbody').sortable({
-            items: 'tr.wcsdm-sort-enabled',
+            items: 'tr.wcsdm-sort-enabled:not(.selected)',
             cursor: 'move',
             classes: {
               "ui-sortable": "highlight"
@@ -382,24 +382,32 @@ var wcsdmTableRates = {
             placeholder: "ui-state-highlight",
             axis: "y",
             start: function (event, ui) {
-              oldIndex = ui.item.index();
+              if ($(event.target).closest('tr').hasClass('selected')) {
+                $(event.target).sortable('cancel');
+              } else {
+                oldIndex = ui.item.index();
 
-              maxDistance = $('#wcsdm-table--table_rates--dummy tbody tr')
-                .eq(oldIndex)
-                .find('[data-id="woocommerce_wcsdm_max_distance"]')
-                .val();
+                maxDistance = $('#wcsdm-table--table_rates--dummy tbody tr')
+                  .eq(oldIndex)
+                  .find('[data-id="woocommerce_wcsdm_max_distance"]')
+                  .val();
+              }
             },
             change: function (event, ui) {
-              var newIndex = ui.placeholder.index();
-              var rowIndex = newIndex > oldIndex ? (newIndex - 1) : (newIndex + 1);
-
-              var newMaxDistance = $('#wcsdm-table--table_rates--dummy tbody tr')
-                .eq(rowIndex)
-                .find('[data-id="woocommerce_wcsdm_max_distance"]')
-                .val();
-
-              if (maxDistance !== newMaxDistance) {
+              if (!maxDistance) {
                 $(event.target).sortable('cancel');
+              } else {
+                var newIndex = ui.placeholder.index();
+                var rowIndex = newIndex > oldIndex ? (newIndex - 1) : (newIndex + 1);
+
+                var newMaxDistance = $('#wcsdm-table--table_rates--dummy tbody tr')
+                  .eq(rowIndex)
+                  .find('[data-id="woocommerce_wcsdm_max_distance"]')
+                  .val();
+
+                if (maxDistance !== newMaxDistance) {
+                  $(event.target).sortable('cancel');
+                }
               }
             },
           });

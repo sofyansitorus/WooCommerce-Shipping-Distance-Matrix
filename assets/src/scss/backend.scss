@@ -184,6 +184,13 @@
             padding-top: 9px !important;
           }
 
+          &.selected {
+            .wcsdm-link {
+              opacity: 0.4;
+              pointer-events: none;
+            }
+          }
+
           &.highlighted {
             .wcsdm-col {
               animation: highlighted 0.5s infinite;
