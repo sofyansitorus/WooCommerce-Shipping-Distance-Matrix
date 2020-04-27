@@ -768,10 +768,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					$field = array_merge( $field, $field['table_rate']['attrs'] );
 				}
 
-				if ( isset( $field['description'] ) && ! isset( $field['table_rate']['attrs']['description'] ) ) {
-					$field['description'] = sprintf( '%1$s %2$s', $field['description'], __( 'Leave blank to inherit from the global setting.', 'wcsdm' ) );
-				}
-
 				$field_type = isset( $field['orig_type'] ) ? $field['orig_type'] : $field['type'];
 
 				if ( 'select' === $field_type ) {
@@ -787,6 +783,10 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					if ( isset( $field['default'] ) && ! isset( $field['table_rate']['attrs']['default'] ) ) {
 						$field['default'] = 'inherit';
 					}
+				}
+
+				if ( 'select' !== $field_type && isset( $field['description'] ) && ! isset( $field['table_rate']['attrs']['description'] ) ) {
+					$field['description'] = sprintf( '%1$s %2$s', $field['description'], __( 'Leave blank to inherit from the global setting.', 'wcsdm' ) );
 				}
 
 				if ( isset( $field['table_rate']['insert_after'] ) ) {
