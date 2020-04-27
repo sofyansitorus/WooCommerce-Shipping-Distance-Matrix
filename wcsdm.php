@@ -32,19 +32,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 	die;
 }
 
-// Define plugin constants.
-define( 'WCSDM_VERSION', '2.0.8' );
+// Define plugin main constants.
 define( 'WCSDM_FILE', __FILE__ );
 define( 'WCSDM_PATH', plugin_dir_path( WCSDM_FILE ) );
 define( 'WCSDM_URL', plugin_dir_url( WCSDM_FILE ) );
-define( 'WCSDM_METHOD_ID', 'wcsdm' );
-define( 'WCSDM_METHOD_TITLE', 'WooReer' );
-define( 'WCSDM_DEFAULT_LAT', '-6.178784361374902' );
-define( 'WCSDM_DEFAULT_LNG', '106.82303292695315' );
-define( 'WCSDM_TEST_LAT', '-6.181472315327319' );
-define( 'WCSDM_TEST_LNG', '106.8170462364319' );
 
 // Load the helpers.
+require_once WCSDM_PATH . '/includes/constants.php';
 require_once WCSDM_PATH . '/includes/helpers.php';
 
 // Register the class autoload.
