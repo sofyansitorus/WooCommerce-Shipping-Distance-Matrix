@@ -119,14 +119,14 @@ var wcsdmMapPicker = {
     });
   },
   showError: function ($input, errorMessage) {
-    $('<div class="error notice wcsdm-error-box"><p>' + wcsdmMapPicker.convertError(errorMessage) + '</p></div>')
+    $('<div class="error notice wcsdm-notice"><p>' + wcsdmMapPicker.convertError(errorMessage) + '</p></div>')
       .hide()
-      .appendTo($input.closest('td'))
+      .prependTo($input.closest('td'))
       .slideDown();
   },
   removeError: function ($input) {
     $input.closest('td')
-      .find('.wcsdm-error-box')
+      .find('.wcsdm-notice')
       .remove();
   },
   convertError: function (text) {
