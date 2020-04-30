@@ -180,24 +180,26 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'title'     => __( 'Store Location Settings', 'wcsdm' ),
 			),
 			'api_key'                     => array(
-				'title'       => __( 'Distance Calculator API Key', 'wcsdm' ),
-				'type'        => 'wcsdm',
-				'orig_type'   => 'api_key',
-				'description' => __( 'API Key used to calculate the shipping address distance. Required Google API Service: Distance Matrix API.', 'wcsdm' ),
-				'desc_tip'    => true,
-				'default'     => '',
-				'placeholder' => __( 'Click the pencil icon on the right to edit', 'wcsdm' ),
-				'is_required' => true,
+				'title'        => __( 'Distance Calculator API Key', 'wcsdm' ),
+				'type'         => 'wcsdm',
+				'orig_type'    => 'api_key',
+				'description'  => __( 'API Key used to calculate the shipping address distance.', 'wcsdm' ),
+				'api_services' => __( 'Required Google API Services: Distance Matrix API.', 'wcsdm' ),
+				'desc_tip'     => true,
+				'default'      => '',
+				'placeholder'  => __( 'Click the pencil icon on the right to edit', 'wcsdm' ),
+				'is_required'  => true,
 			),
 			'api_key_picker'              => array(
-				'title'       => __( 'Location Picker API Key', 'wcsdm' ),
-				'type'        => 'wcsdm',
-				'orig_type'   => 'api_key',
-				'description' => __( 'API Key used to render the location picker map. Required Google API Services: Maps JavaScript API, Geocoding API, Places API.', 'wcsdm' ),
-				'desc_tip'    => true,
-				'default'     => '',
-				'placeholder' => __( 'Click the pencil icon on the right to edit', 'wcsdm' ),
-				'is_required' => true,
+				'title'        => __( 'Location Picker API Key', 'wcsdm' ),
+				'type'         => 'wcsdm',
+				'orig_type'    => 'api_key',
+				'description'  => __( 'API Key used to render the location picker map.', 'wcsdm' ),
+				'api_services' => __( 'Required Google API Services: Maps JavaScript API, Geocoding API, Places API.', 'wcsdm' ),
+				'desc_tip'     => true,
+				'default'      => '',
+				'placeholder'  => __( 'Click the pencil icon on the right to edit', 'wcsdm' ),
+				'is_required'  => true,
 			),
 			'origin_type'                 => array(
 				'title'             => __( 'Store Origin Data Type', 'wcsdm' ),
@@ -372,33 +374,9 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 						'default'     => '',
 						'desc_tip'    => true,
 						'is_advanced' => true,
-						'is_dummy'    => true,
+						'is_dummy'    => false,
 						'is_hidden'   => true,
 						'is_required' => false,
-					),
-				),
-			),
-			'min_cost'                    => array(
-				'type'              => 'wcsdm',
-				'orig_type'         => 'text',
-				'title'             => __( 'Minimum Cost', 'wcsdm' ),
-				'default'           => '0',
-				'description'       => __( 'Minimum cost that will be applied.', 'wcsdm' ),
-				'desc_tip'          => true,
-				'is_required'       => true,
-				'validate'          => 'number',
-				'custom_attributes' => array(
-					'min' => '0',
-				),
-				'table_rate'        => array(
-					'insert_after' => 'section_total_cost',
-					'attrs'        => array(
-						'default'     => '',
-						'is_required' => false,
-						'is_advanced' => true,
-						'is_dummy'    => true,
-						'is_hidden'   => true,
-						'validate'    => 'number',
 					),
 				),
 			),
@@ -416,7 +394,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					'percentage' => __( 'Percentage', 'wcsdm' ),
 				),
 				'table_rate'  => array(
-					'insert_after' => 'min_cost',
+					'insert_after' => 'section_total_cost',
 					'attrs'        => array(
 						'is_advanced' => true,
 						'is_hidden'   => true,
@@ -425,7 +403,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			),
 			'surcharge'                   => array(
 				'type'              => 'wcsdm',
-				'orig_type'         => 'text',
+				'orig_type'         => 'price',
 				'title'             => __( 'Surcharge Amount', 'wcsdm' ),
 				'default'           => '0',
 				'description'       => __( 'Surcharge amount that will be added to the total shipping cost.', 'wcsdm' ),
@@ -441,7 +419,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 						'default'     => '',
 						'is_required' => false,
 						'is_advanced' => true,
-						'is_dummy'    => true,
+						'is_dummy'    => false,
 						'is_hidden'   => true,
 						'validate'    => 'number',
 						'title'       => __( 'Surcharge', 'wcsdm' ),
@@ -471,7 +449,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			),
 			'discount'                    => array(
 				'type'              => 'wcsdm',
-				'orig_type'         => 'text',
+				'orig_type'         => 'price',
 				'title'             => __( 'Discount Amount', 'wcsdm' ),
 				'default'           => '0',
 				'description'       => __( 'Discount amount that will be deducted to the total shipping cost.', 'wcsdm' ),
@@ -487,7 +465,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 						'default'     => '',
 						'is_required' => false,
 						'is_advanced' => true,
-						'is_dummy'    => true,
+						'is_dummy'    => false,
 						'is_hidden'   => true,
 						'validate'    => 'number',
 						'title'       => __( 'Discount', 'wcsdm' ),
@@ -519,12 +497,60 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					),
 				),
 			),
+			'min_cost'                    => array(
+				'type'              => 'wcsdm',
+				'orig_type'         => 'price',
+				'title'             => __( 'Minimum Cost', 'wcsdm' ),
+				'default'           => '0',
+				'description'       => __( 'Minimum cost that will be applied. The calculated shipping cost will never be lower than whatever amount set into this field. Set as zero value to disable.', 'wcsdm' ),
+				'desc_tip'          => true,
+				'is_required'       => true,
+				'validate'          => 'number',
+				'custom_attributes' => array(
+					'min' => '0',
+				),
+				'table_rate'        => array(
+					'insert_after' => 'total_cost_type',
+					'attrs'        => array(
+						'default'     => '',
+						'is_required' => false,
+						'is_advanced' => true,
+						'is_dummy'    => false,
+						'is_hidden'   => true,
+						'validate'    => 'number',
+					),
+				),
+			),
+			'max_cost'                    => array(
+				'type'              => 'wcsdm',
+				'orig_type'         => 'price',
+				'title'             => __( 'Maximum Cost', 'wcsdm' ),
+				'default'           => '0',
+				'description'       => __( 'Maximum cost that will be applied. The calculated shipping cost will never be greater than whatever amount set into this field. Set as zero value to disable.', 'wcsdm' ),
+				'desc_tip'          => true,
+				'is_required'       => true,
+				'validate'          => 'number',
+				'custom_attributes' => array(
+					'min' => '0',
+				),
+				'table_rate'        => array(
+					'insert_after' => 'min_cost',
+					'attrs'        => array(
+						'default'     => '',
+						'is_required' => false,
+						'is_advanced' => true,
+						'is_dummy'    => false,
+						'is_hidden'   => true,
+						'validate'    => 'number',
+					),
+				),
+			),
 			'field_group_table_rates'     => array(
 				'type'        => 'wcsdm',
 				'orig_type'   => 'title',
 				'class'       => 'wcsdm-field-group',
 				'title'       => __( 'Table Rates Settings', 'wcsdm' ),
-				'description' => __( 'Determine the shipping cost based on the shipping address distance and extra advanced rules. The rate row that will be chosen during checkout is the rate row with the maximum distance value closest with the calculated shipping address distance and the order info must matched with the extra advanced rules if defined. You can sort the rate row priority manually when it has the same maximum distance values by dragging vertically the "move" icon on the right. First come first served.', 'wcsdm' ),
+				'description' => __( 'Determine the shipping cost based on the shipping address distance and extra advanced rules. The rate row that will be chosen during checkout is the first row that matched with the maximum distance rule and the extra advanced rules if defined. You can sort the rate row priority manually when it has the same maximum distance values by dragging vertically the "move" icon on the right.', 'wcsdm' ),
 			),
 			'table_rates'                 => array(
 				'type'  => 'table_rates',
@@ -586,6 +612,13 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	 */
 	public function init_rate_fields() {
 		$rate_fields = array(
+			'section_general'        => array(
+				'type'        => 'title',
+				'title'       => __( 'General', 'wcsdm' ),
+				'is_advanced' => true,
+				'is_dummy'    => false,
+				'is_hidden'   => false,
+			),
 			'section_shipping_rules' => array(
 				'type'        => 'title',
 				'title'       => __( 'Shipping Rules', 'wcsdm' ),
@@ -594,8 +627,8 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'is_hidden'   => false,
 			),
 			'max_distance'           => array(
-				'type'              => 'text',
-				'title'             => __( 'Maximum Distances', 'wcsdm' ),
+				'type'              => 'number',
+				'title'             => __( 'Max Distance', 'wcsdm' ),
 				'description'       => __( 'The maximum distances rule for the shipping rate. This input is required.', 'wcsdm' ),
 				'desc_tip'          => true,
 				'default'           => '1',
@@ -606,48 +639,52 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'is_rule'           => true,
 				'validate'          => 'number',
 				'custom_attributes' => array(
-					'min' => '1',
+					'min'       => '1',
+					'step'      => '1',
+					'data-unit' => 'km',
 				),
 			),
 			'min_order_quantity'     => array(
-				'type'              => 'text',
-				'title'             => __( 'Minimum Order Quantity', 'wcsdm' ),
+				'type'              => 'number',
+				'title'             => __( 'Min Order Quantity', 'wcsdm' ),
 				'description'       => __( 'The shipping rule for minimum order quantity. Leave blank or fill with zero value to disable this rule.', 'wcsdm' ),
 				'desc_tip'          => true,
 				'is_advanced'       => true,
-				'is_dummy'          => false,
+				'is_dummy'          => true,
 				'is_hidden'         => true,
 				'is_required'       => true,
 				'is_rule'           => true,
 				'default'           => '0',
 				'validate'          => 'number',
 				'custom_attributes' => array(
-					'min' => '0',
+					'min'  => '0',
+					'step' => '1',
 				),
 			),
 			'max_order_quantity'     => array(
-				'type'              => 'text',
-				'title'             => __( 'Maximum Order Quantity', 'wcsdm' ),
+				'type'              => 'number',
+				'title'             => __( 'Max Order Quantity', 'wcsdm' ),
 				'description'       => __( 'The shipping rule for maximum order quantity. Leave blank or fill with zero value to disable this rule.', 'wcsdm' ),
 				'desc_tip'          => true,
 				'is_advanced'       => true,
-				'is_dummy'          => false,
+				'is_dummy'          => true,
 				'is_hidden'         => true,
 				'is_required'       => true,
 				'is_rule'           => true,
 				'default'           => '0',
 				'validate'          => 'number',
 				'custom_attributes' => array(
-					'min' => '0',
+					'min'  => '0',
+					'step' => '1',
 				),
 			),
 			'min_order_amount'       => array(
-				'type'              => 'text',
-				'title'             => __( 'Minimum Order Amount', 'wcsdm' ),
+				'type'              => 'price',
+				'title'             => __( 'Min Order Amount', 'wcsdm' ),
 				'description'       => __( 'The shipping rule for minimum order amount. Leave blank or fill with zero value to disable this rule.', 'wcsdm' ),
 				'desc_tip'          => true,
 				'is_advanced'       => true,
-				'is_dummy'          => false,
+				'is_dummy'          => true,
 				'is_hidden'         => true,
 				'is_required'       => true,
 				'is_rule'           => true,
@@ -658,12 +695,12 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				),
 			),
 			'max_order_amount'       => array(
-				'type'              => 'text',
-				'title'             => __( 'Maximum Order Amount', 'wcsdm' ),
+				'type'              => 'price',
+				'title'             => __( 'Max Order Amount', 'wcsdm' ),
 				'description'       => __( 'The shipping rule for maximum order amount. Leave blank or fill with zero value to disable this rule.', 'wcsdm' ),
 				'desc_tip'          => true,
 				'is_advanced'       => true,
-				'is_dummy'          => false,
+				'is_dummy'          => true,
 				'is_hidden'         => true,
 				'is_required'       => true,
 				'is_rule'           => true,
@@ -681,7 +718,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'is_hidden'   => false,
 			),
 			'rate_class_0'           => array(
-				'type'              => 'text',
+				'type'              => 'price',
 				'title'             => __( 'Distance Unit Rate', 'wcsdm' ),
 				'description'       => __( 'The shipping rate within the distances range. Zero value will be assumed as free shipping.', 'wcsdm' ),
 				'desc_tip'          => true,
@@ -700,13 +737,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			'section_total_cost'     => array(
 				'type'        => 'title',
 				'title'       => __( 'Total Cost', 'wcsdm' ),
-				'is_advanced' => true,
-				'is_dummy'    => false,
-				'is_hidden'   => false,
-			),
-			'section_general'        => array(
-				'type'        => 'title',
-				'title'       => __( 'General', 'wcsdm' ),
 				'is_advanced' => true,
 				'is_dummy'    => false,
 				'is_hidden'   => false,
@@ -951,6 +981,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			'type'              => 'text',
 			'desc_tip'          => false,
 			'description'       => '',
+			'api_services'      => '',
 			'custom_attributes' => array(),
 		);
 
@@ -958,7 +989,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 
 		ob_start();
 		?>
-		<tr valign="top">
+		<tr valign="top" class="wcsdm-row-api-key">
 			<th scope="row" class="titledesc">
 				<label for="<?php echo esc_attr( $field_key ); ?>"><?php echo wp_kses_post( $data['title'] ); ?> <?php echo $this->get_tooltip_html( $data ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
 			</th>
@@ -968,6 +999,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					<input type="text" class="input-text regular-input <?php echo esc_attr( $data['class'] ); ?>" name="<?php echo esc_attr( $field_key ); ?>" id="<?php echo esc_attr( $field_key ); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" value="<?php echo esc_attr( $this->get_option( $key ) ); ?>" placeholder="<?php echo esc_attr( $data['placeholder'] ); ?>" readonly="readonly" />
 					<a href="#" class="button button-secondary wcsdm-buttons--has-icon wcsdm-edit-api-key wcsdm-link" id="<?php echo esc_attr( $key ); ?>" title="<?php esc_attr_e( 'Edit API Key', 'wcsdm' ); ?>"><span class="dashicons"></span></a>
 					<a href="https://cloud.google.com/maps-platform/#get-started" target="_blank" class="button button-secondary wcsdm-buttons--has-icon wcsdm-link" id="<?php echo esc_attr( $key ); ?>" title="<?php esc_attr_e( 'Get API Key', 'wcsdm' ); ?>"><span class="dashicons dashicons-admin-network"></span></a>
+					<p class="wcsdm-api-services"><?php echo wp_kses_post( $data['api_services'] ); ?></p>
 					<?php echo $this->get_description_html( $data ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				</fieldset>
 			</td>
@@ -1515,6 +1547,14 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				$api_request_data[ $field['api_request'] ] = isset( $settings[ $key ] ) ? $settings[ $key ] : '';
 			}
 
+			$api_request_data_debug = $api_request_data;
+
+			if ( isset( $api_request_data_debug['key'] ) ) {
+				$api_request_data_debug['key'] = str_repeat( '*', 20 );
+			}
+
+			$this->show_debug( wp_json_encode( array( 'API_REQUEST_DATA' => $api_request_data_debug ) ) );
+
 			$api = new Wcsdm_API();
 
 			$results = $api->calculate_distance( $api_request_data );
@@ -1566,7 +1606,13 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				set_transient( $cache_key, $result, HOUR_IN_SECONDS ); // Store the data to transient with expiration in 1 hour for later use.
 			}
 
-			$this->show_debug( __( 'API Response', 'wcsdm' ) . ': ' . wp_json_encode( $result ) );
+			$result_debug = $result;
+
+			if ( isset( $result_debug['api_request_data'] ) ) {
+				unset( $result_debug['api_request_data'] );
+			}
+
+			$this->show_debug( wp_json_encode( array( 'API_RESPONSE_DATA' => $result_debug ) ) );
 
 			/**
 			 * Developers can modify the api request $result via filter hooks.
@@ -1829,7 +1875,9 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		 *                  'max_order_amount' => '0',
 		 *                  'rate_class_0' => '10',
 		 *                  'min_cost' => '',
+		 *                  'max_cost' => '',
 		 *                  'surcharge' => '',
+		 *                  'discount' => '',
 		 *                  'total_cost_type' => 'inherit',
 		 *                  'title' => '',
 		 *              ),
@@ -1841,7 +1889,9 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		 *                  'max_order_amount' => '0',
 		 *                  'rate_class_0' => '5',
 		 *                  'min_cost' => '',
+		 *                  'max_cost' => '',
 		 *                  'surcharge' => '',
+		 *                  'discount' => '',
 		 *                  'total_cost_type' => 'inherit',
 		 *                  'title' => '',
 		 *              )
@@ -1849,6 +1899,8 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		 *      }
 		 */
 		$table_rates = apply_filters( 'wcsdm_table_rates', $this->table_rates, $api_response, $package, $this );
+
+		$this->show_debug( wp_json_encode( array( 'TABLE_RATES_DATA' => $table_rates ) ) );
 
 		if ( $table_rates ) {
 			$table_rates_match = array();
@@ -1873,7 +1925,9 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				 *              'max_order_amount' => '0',
 				 *              'rate_class_0' => '1000',
 				 *              'min_cost' => '',
+				 *              'max_cost' => '',
 				 *              'surcharge' => '',
+				 *              'discount' => '',
 				 *              'total_cost_type' => 'inherit',
 				 *              'title' => '',
 				 *          );
@@ -1896,8 +1950,12 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				}
 			}
 
+			$this->show_debug( wp_json_encode( array( 'TABLE_RATES_MATCH' => $table_rates_match ) ) );
+
 			if ( $table_rates_match ) {
-				ksort( $table_rates_match, SORT_NUMERIC );
+				if ( count( $table_rates_match ) > 1 ) {
+					ksort( $table_rates_match, SORT_NUMERIC );
+				}
 
 				// Pick the lowest max distance rate row rules.
 				$table_rates_match = reset( $table_rates_match );
@@ -1905,7 +1963,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				// Pick first rate row data.
 				$rate = reset( $table_rates_match );
 
-				$this->show_debug( __( 'Table Rate Row match', 'wcsdm' ) . ': ' . wp_json_encode( $rate ) );
+				$this->show_debug( wp_json_encode( array( 'TABLE_RATES_SELECTED' => $rate ) ) );
 
 				// Hold costs data for flat total_cost_type.
 				$flat = array();
@@ -1994,16 +2052,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					}
 				}
 
-				$min_cost = $this->get_rate_field_value( 'min_cost', $rate, '' );
-
-				if ( ! strlen( $min_cost ) ) {
-					$min_cost = $this->min_cost;
-				}
-
-				if ( $min_cost && $min_cost > $cost ) {
-					$cost = $min_cost;
-				}
-
 				$surcharge = $this->get_rate_field_value( 'surcharge', $rate, '' );
 
 				if ( ! strlen( $surcharge ) ) {
@@ -2052,6 +2100,26 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					}
 				}
 
+				$min_cost = $this->get_rate_field_value( 'min_cost', $rate, '' );
+
+				if ( ! strlen( $min_cost ) ) {
+					$min_cost = $this->min_cost;
+				}
+
+				if ( $min_cost && $min_cost > $cost ) {
+					$cost = $min_cost;
+				}
+
+				$max_cost = $this->get_rate_field_value( 'max_cost', $rate, '' );
+
+				if ( ! strlen( $max_cost ) ) {
+					$max_cost = $this->max_cost;
+				}
+
+				if ( $max_cost && $max_cost < $cost ) {
+					$cost = $max_cost;
+				}
+
 				$result = array(
 					'cost'      => $cost,
 					'label'     => empty( $rate['title'] ) ? $this->title : $rate['title'],
@@ -2061,28 +2129,35 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				);
 
 				/**
-				 * Developers can modify the $rate via filter hooks.
-				 *
-				 * @since 2.0
-				 *
-				 * This example shows how you can modify the $result var via custom function:
-				 *
-				 *      add_filter( 'wcsdm_calculate_shipping_cost', 'my_wcsdm_calculate_shipping_cost', 10, 4 );
-				 *
-				 *      function my_wcsdm_calculate_shipping_cost( $result, $api_response, $package, $obj ) {
-				 *          // Return the cost data array
-				 *          return array(
-				 *              'cost'      => 0,
-				 *              'label'     => 'Free Shipping',
-				 *              'meta_data' => array(),
-				 *          );
-				 *      }
-				 */
+				* Developers can modify the $rate via filter hooks.
+				*
+				* @since 2.0
+				*
+				* This example shows how you can modify the $result var via custom function:
+				*
+				*      add_filter( 'wcsdm_calculate_shipping_cost', 'my_wcsdm_calculate_shipping_cost', 10, 4 );
+				*
+				*      function my_wcsdm_calculate_shipping_cost( $result, $api_response, $package, $obj ) {
+				*          // Return the cost data array
+				*          return array(
+				*              'cost'      => 0,
+				*              'label'     => 'Free Shipping',
+				*              'meta_data' => array(),
+				*          );
+				*      }
+				*/
 				return apply_filters( 'wcsdm_calculate_shipping_cost', $result, $api_response, $package, $this );
 			}
 		}
 
-		return new WP_Error( 'no_table_rates_rules_match', __( 'No shipping table rates rules match.', 'wcsdm' ) );
+		$error_data = array(
+			'message'               => __( 'No shipping table rates rules match.', 'wcsdm' ),
+			'table_rates_count'     => count( $table_rates ),
+			'table_rates_first_row' => reset( $table_rates ),
+			'table_rates_last_row'  => end( $table_rates ),
+		);
+
+		return new WP_Error( 'no_table_rates_rules_match', wp_json_encode( $error_data ) );
 	}
 
 	/**
@@ -2109,7 +2184,11 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'max_order_amount'   => '0',
 				'rate_class_0'       => '',
 				'min_cost'           => '',
+				'max_cost'           => '',
+				'surcharge_type'     => 'fixed',
 				'surcharge'          => '',
+				'discount_type'      => 'fixed',
+				'discount'           => '',
 				'total_cost_type'    => 'inherit',
 				'title'              => '',
 			)
