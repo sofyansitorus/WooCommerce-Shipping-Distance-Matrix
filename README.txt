@@ -109,11 +109,13 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 
 == Screenshots ==
 
-1. Settings Panel: General
-2. Settings Panel: Table Rates
-3. Settings Panel: Advanced Rate Settings
-4. Cart Page
-5. Cart Page - Free Shipping
+1. Store Location Settings
+2. Route Settings
+3. Global Rates Settings
+4. Table Rates Settings
+5. Advanced Rate Settings
+6. Store Location Picker
+6. Shopping Cart
 
 == Changelog ==
 
