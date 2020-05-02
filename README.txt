@@ -1,9 +1,9 @@
 === WooReer ===
 Contributors: sofyansitorus
 Tags: woocommerce,woocommerce-shipping,local-shipping,private-shipping
-Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=DGSVXLV7R8BTY
+Donate link: https://www.buymeacoffee.com/sofyansitorus
 Requires at least: 4.8
-Tested up to: 5.4
+Tested up to: 5.4.1
 Requires PHP: 5.6
 Stable tag: 2.1.8
 License: GPL-2.0+
@@ -19,16 +19,21 @@ This plugin perfect for the store owner who wants to charge customers for the de
 = Key Features =
 
 * Set unlimited table rates rows.
-* Set flat or flexible distance cost type: Fixed, Per KM/MI.
-* Set rule for each rate rows: Maximum Distances.
-* Set rule for each rate rows: Minimum Order Quantity.
-* Set rule for each rate rows: Maximum Order Quantity.
-* Set rule for each rate rows: Minimum Order Amount.
-* Set rule for each rate rows: Maximum Order Amount.
+* Set different table rates rows for each WooCommerce shipping zone.
+* Set different per kilometer/mile shipping rates for each rate row.
+* Set different shipping rate for each product shipping class for each rate row.
+* Set fixed or flexible surcharge for each rate row.
+* Set fixed or flexible discounts for each rate row.
+* Set minimum shipping cost for each rate row.
+* Set maximum shipping cost for each rate row.
 * Set flat or progressive total shipping cost for each rate rows: Max, Average, Min, Per Class, Per Product, Per Piece.
-* Set surcharge for each rate rows.
 * Set custom shipping labels for each rate row.
-* Set different shipping rate for each product shipping class.
+* Set rule for each rate row: Maximum Distances.
+* Set rule for each rate row: Minimum Order Quantity.
+* Set rule for each rate row: Maximum Order Quantity.
+* Set rule for each rate row: Minimum Order Amount.
+* Set rule for each rate row: Maximum Order Amount.
+* Set shipping rate row priority.
 * Set shipping origin location using Maps Picker.
 * Set distances unit: Mile, Kilometer.
 * Set travel mode: Driving, Walking, Bicycling.
@@ -39,9 +44,22 @@ This plugin perfect for the store owner who wants to charge customers for the de
 
 = Dependencies =
 
-This plugin requires Google Maps Distance Matrix API Key and service is enabled. [Click here](https://developers.google.com/maps/documentation/distance-matrix/get-api-key) to go to Google API Console to get API Key and to enable the service.
+This plugin requires Google API Key and also need to have the following APIs services enabled: Distance Matrix API, Maps JavaScript API, Geocoding API, Places API.
+
+Please visit the link below to go to the Google API Console to create API Key and to enable the API services:
+
+[https://console.developers.google.com/apis](https://console.developers.google.com/apis)
+
+= Donation =
+
+If you enjoy using this plugin and find it useful, please consider donating. Your donation will help encourage and support the plugin’s continued development and better user support.
+
+Please use the link below to if you would like to buy me some coffee:
+
+[https://www.buymeacoffee.com/sofyansitorus](https://www.buymeacoffee.com/sofyansitorus)
 
 == Installation ==
+
 = Minimum Requirements =
 
 * WordPress 4.8 or later
@@ -63,28 +81,34 @@ In the search field type “WooReer” and click Search Plugins. You can install
 
 == Frequently Asked Questions ==
 
-= How to set the plugin settings? =
-You can set up the plugin setting from the WooCommerce Shipping Zones settings panel. Please [click here](https://fast.wistia.net/embed/iframe/95yiocro6p) for the video tutorial on how to set up the WooCommerce Shipping Zones.
-
-= I got an error in the "Store Location" setting field", what should I do? =
-The error printed in there is coming from the Google API. Click any link printed within the error message to find out the causes and solutions.
-
 = I see the message "There are no shipping methods available" in the cart/checkout page, what should I do? =
-Please try to switch the WooCommerce Shipping Debug Mode setting to "On". Then open your cart/checkout page. You will see the error printed if there was.
+
+I have no clue what is happening on your server during the WooCommerce doing the shipping calculation, and there are too many possibilities to guess that can cause the shipping method not available. To find out the causes and the solutions, please switch to “ON” for the WooCommerce Shipping Debug Mode setting. Then open your cart/checkout page. You will see a very informative and self-explanatory debug info printed on the cart/checkout page. Please note that this debug info only visible for users that already logged-in/authenticated as an administrator. You must include this debug info in case you are going to create a support ticket related to this issue.
 
 [Click here](https://fast.wistia.net/embed/iframe/9c9008dxnr) for how to switch WooCommerce Shipping Debug Mode.
 
+= How to set the plugin settings? =
+
+You can set up the plugin setting from the WooCommerce Shipping Zones settings panel. Please [click here](https://fast.wistia.net/embed/iframe/95yiocro6p) for the video tutorial on how to set up the WooCommerce Shipping Zones.
+
+= I got an error related with the API Key setting, what should I do? =
+
+The error printed in there is coming from the Google API. Click any link printed within the error message to find out the causes and solutions. You may also need to check out the Browser's developer tools console to check if there is a JavaScript error/conflict.
+
 = Where can I get support or report a bug? =
+
 You can create a support ticket at plugin support forum:
 
 * [Plugin Support Forum](https://wordpress.org/support/plugin/wcsdm)
 
 = Can I contribute to developing this plugin? =
+
 I always welcome and encourage contributions to this plugin. Please visit the plugin GitHub repository:
 
 * [Plugin GitHub Repository](https://github.com/sofyansitorus/WooCommerce-Shipping-Distance-Matrix)
 
 == Screenshots ==
+
 1. Settings Panel: General
 2. Settings Panel: Table Rates
 3. Settings Panel: Advanced Rate Settings
@@ -102,10 +126,12 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 > **Please upgrade wisely and carefully.**
 
 = 2.1.8 =
+
 * Enhancement - Added maximum cost settings.
 * Enhancement - Improved admin settings form UI/UX.
 
 = 2.1.7 =
+
 * Enhancement - Added shipping discount options.
 * Enhancement - Added shipping discount type options.
 * Enhancement - Added shipping surcharge type options.
@@ -113,14 +139,17 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 * Fix - Fixed incorrect table rate row fields description for the select field type.
 
 = 2.1.6 =
+
 * Fix - Fixed table rates row not filtered properly when having same max distance value.
 
 = 2.1.5 =
+
 * Fix - Fixed compatibility issue with Checkout Fields Editor plugin.
 * Enhancement - Enabled manual sorting for table rates data.
 * Enhancement - Enabled client site table rates data validation.
 
 = 2.1.4 =
+
 * Fix - Fixed action buttons not displayed propely after deleting rate items.
 
 = 2.1.3 =

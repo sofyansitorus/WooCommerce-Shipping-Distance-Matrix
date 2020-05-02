@@ -174,17 +174,19 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				),
 			),
 			'field_group_store_location'  => array(
-				'type'      => 'wcsdm',
-				'orig_type' => 'title',
-				'class'     => 'wcsdm-field-group',
-				'title'     => __( 'Store Location Settings', 'wcsdm' ),
+				'type'        => 'wcsdm',
+				'orig_type'   => 'title',
+				'class'       => 'wcsdm-field-group',
+				'title'       => __( 'Store Location Settings', 'wcsdm' ),
+				// translators: %s is URL to the external link.
+				'description' => sprintf( __( 'This plugin requires Google API Key and also need to have the following APIs services enabled: Distance Matrix API, Maps JavaScript API, Geocoding API, Places API. Please <a href="%s" target="_blank">click here</a> to go to the Google API Console to create API Key and to enable the API services.', 'wcsdm' ), 'https://cloud.google.com/maps-platform/#get-started' ),
 			),
 			'api_key'                     => array(
 				'title'        => __( 'Distance Calculator API Key', 'wcsdm' ),
 				'type'         => 'wcsdm',
 				'orig_type'    => 'api_key',
 				'description'  => __( 'API Key used to calculate the shipping address distance.', 'wcsdm' ),
-				'api_services' => __( 'Required Google API Services: Distance Matrix API.', 'wcsdm' ),
+				'api_services' => __( 'Required API Services: Distance Matrix API', 'wcsdm' ),
 				'desc_tip'     => true,
 				'default'      => '',
 				'placeholder'  => __( 'Click the pencil icon on the right to edit', 'wcsdm' ),
@@ -195,7 +197,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'type'         => 'wcsdm',
 				'orig_type'    => 'api_key',
 				'description'  => __( 'API Key used to render the location picker map.', 'wcsdm' ),
-				'api_services' => __( 'Required Google API Services: Maps JavaScript API, Geocoding API, Places API.', 'wcsdm' ),
+				'api_services' => __( 'Required API Services: Maps JavaScript API, Geocoding API, Places API', 'wcsdm' ),
 				'desc_tip'     => true,
 				'default'      => '',
 				'placeholder'  => __( 'Click the pencil icon on the right to edit', 'wcsdm' ),
@@ -550,7 +552,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'orig_type'   => 'title',
 				'class'       => 'wcsdm-field-group',
 				'title'       => __( 'Table Rates Settings', 'wcsdm' ),
-				'description' => __( 'Determine the shipping cost based on the shipping address distance and extra advanced rules. The rate row that will be chosen during checkout is the first row that matched with the maximum distance rule and the extra advanced rules if defined. You can sort the rate row priority manually when it has the same maximum distance values by dragging vertically the "move" icon on the right.', 'wcsdm' ),
+				'description' => __( 'Determine the shipping cost based on the shipping address distance and advanced rules. The rate row that will be chosen during checkout is the first row that matched with the maximum distance rule and the advanced rules if defined. You can sort the rate row priority manually by dragging vertically the "move" icon on the right that will be enabled when there are rows has the same maximum distance values.', 'wcsdm' ),
 			),
 			'table_rates'                 => array(
 				'type'  => 'table_rates',
@@ -644,6 +646,38 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					'data-unit' => 'km',
 				),
 			),
+			'min_order_amount'       => array(
+				'type'              => 'price',
+				'title'             => __( 'Min Order Amount', 'wcsdm' ),
+				'description'       => __( 'The shipping rule for minimum order amount. Leave blank or fill with zero value to disable this rule.', 'wcsdm' ),
+				'desc_tip'          => true,
+				'is_advanced'       => true,
+				'is_dummy'          => true,
+				'is_hidden'         => true,
+				'is_required'       => true,
+				'is_rule'           => true,
+				'default'           => '0',
+				'validate'          => 'number',
+				'custom_attributes' => array(
+					'min' => '0',
+				),
+			),
+			'max_order_amount'       => array(
+				'type'              => 'price',
+				'title'             => __( 'Max Order Amount', 'wcsdm' ),
+				'description'       => __( 'The shipping rule for maximum order amount. Leave blank or fill with zero value to disable this rule.', 'wcsdm' ),
+				'desc_tip'          => true,
+				'is_advanced'       => true,
+				'is_dummy'          => true,
+				'is_hidden'         => true,
+				'is_required'       => true,
+				'is_rule'           => true,
+				'default'           => '0',
+				'validate'          => 'number',
+				'custom_attributes' => array(
+					'min' => '0',
+				),
+			),
 			'min_order_quantity'     => array(
 				'type'              => 'number',
 				'title'             => __( 'Min Order Quantity', 'wcsdm' ),
@@ -676,38 +710,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'custom_attributes' => array(
 					'min'  => '0',
 					'step' => '1',
-				),
-			),
-			'min_order_amount'       => array(
-				'type'              => 'price',
-				'title'             => __( 'Min Order Amount', 'wcsdm' ),
-				'description'       => __( 'The shipping rule for minimum order amount. Leave blank or fill with zero value to disable this rule.', 'wcsdm' ),
-				'desc_tip'          => true,
-				'is_advanced'       => true,
-				'is_dummy'          => true,
-				'is_hidden'         => true,
-				'is_required'       => true,
-				'is_rule'           => true,
-				'default'           => '0',
-				'validate'          => 'number',
-				'custom_attributes' => array(
-					'min' => '0',
-				),
-			),
-			'max_order_amount'       => array(
-				'type'              => 'price',
-				'title'             => __( 'Max Order Amount', 'wcsdm' ),
-				'description'       => __( 'The shipping rule for maximum order amount. Leave blank or fill with zero value to disable this rule.', 'wcsdm' ),
-				'desc_tip'          => true,
-				'is_advanced'       => true,
-				'is_dummy'          => true,
-				'is_hidden'         => true,
-				'is_required'       => true,
-				'is_rule'           => true,
-				'default'           => '0',
-				'validate'          => 'number',
-				'custom_attributes' => array(
-					'min' => '0',
 				),
 			),
 			'section_shipping_rates' => array(
@@ -998,8 +1000,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					<legend class="screen-reader-text"><span><?php echo wp_kses_post( $data['title'] ); ?></span></legend>
 					<input type="text" class="input-text regular-input <?php echo esc_attr( $data['class'] ); ?>" name="<?php echo esc_attr( $field_key ); ?>" id="<?php echo esc_attr( $field_key ); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" value="<?php echo esc_attr( $this->get_option( $key ) ); ?>" placeholder="<?php echo esc_attr( $data['placeholder'] ); ?>" readonly="readonly" />
 					<a href="#" class="button button-secondary wcsdm-buttons--has-icon wcsdm-edit-api-key wcsdm-link" id="<?php echo esc_attr( $key ); ?>" title="<?php esc_attr_e( 'Edit API Key', 'wcsdm' ); ?>"><span class="dashicons"></span></a>
-					<a href="https://cloud.google.com/maps-platform/#get-started" target="_blank" class="button button-secondary wcsdm-buttons--has-icon wcsdm-link" id="<?php echo esc_attr( $key ); ?>" title="<?php esc_attr_e( 'Get API Key', 'wcsdm' ); ?>"><span class="dashicons dashicons-admin-network"></span></a>
-					<p class="wcsdm-api-services"><?php echo wp_kses_post( $data['api_services'] ); ?></p>
+					<div class="wcsdm-api-services"><?php echo wp_kses_post( $data['api_services'] ); ?></div>
 					<?php echo $this->get_description_html( $data ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				</fieldset>
 			</td>

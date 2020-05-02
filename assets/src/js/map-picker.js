@@ -121,7 +121,7 @@ var wcsdmMapPicker = {
   showError: function ($input, errorMessage) {
     $('<div class="error notice wcsdm-notice"><p>' + wcsdmMapPicker.convertError(errorMessage) + '</p></div>')
       .hide()
-      .prependTo($input.closest('td'))
+      .appendTo($input.closest('td'))
       .slideDown();
   },
   removeError: function ($input) {
