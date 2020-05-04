@@ -2096,7 +2096,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 
 					if ( 'fixed' === $discount_type ) {
 						$cost -= $discount;
-					} else {
+					} elseif ( 'percent' === $discount_type ) {
 						$cost -= ( ( $cost * $discount ) / 100 );
 					}
 				}
