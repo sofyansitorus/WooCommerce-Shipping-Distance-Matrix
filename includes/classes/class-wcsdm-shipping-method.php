@@ -2072,7 +2072,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 
 					if ( 'fixed' === $surcharge_type ) {
 						$cost += $surcharge;
-					} else {
+					} elseif ( 'percent' === $surcharge_type ) {
 						$cost += ( ( $cost * $surcharge ) / 100 );
 					}
 				}
