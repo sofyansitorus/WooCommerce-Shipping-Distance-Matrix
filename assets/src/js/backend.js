@@ -111,10 +111,10 @@ var wcsdmBackend = {
     if (wcsdmMapPicker.editingAPIKey || wcsdmMapPicker.editingAPIKeyPicker) {
       window.alert(wcsdmError('finish_editing_api'));
     } else {
-      if (!wcsdmTableRates.hasError()) {
-        $('#btn-ok').trigger('click');
-      } else {
+      if (!wcsdmTableRates.validateRows()) {
         window.alert(wcsdmError('table_rates_invalid'));
+      } else {
+        $('#btn-ok').trigger('click');
       }
     }
   },
