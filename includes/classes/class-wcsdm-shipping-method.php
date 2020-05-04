@@ -614,6 +614,10 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	 */
 	public function init_rate_fields() {
 		$rate_fields = array(
+			'select_item'            => array(
+				'type'     => 'select_item',
+				'is_dummy' => true,
+			),
 			'section_general'        => array(
 				'type'        => 'title',
 				'title'       => __( 'General', 'wcsdm' ),
@@ -638,7 +642,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'title'             => __( 'Max Distance', 'wcsdm' ),
 				'description'       => __( 'The maximum distances rule for the shipping rate. This input is required.', 'wcsdm' ),
 				'desc_tip'          => true,
-				'default'           => '1',
+				'default'           => '10',
 				'is_advanced'       => true,
 				'is_dummy'          => true,
 				'is_hidden'         => true,
@@ -734,7 +738,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'is_hidden'         => true,
 				'is_required'       => true,
 				'is_rate'           => true,
-				'is_rule'           => true,
+				'is_rule'           => false,
 				'default'           => '0',
 				'validate'          => 'number',
 				'custom_attributes' => array(
@@ -748,17 +752,19 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'is_dummy'    => false,
 				'is_hidden'   => false,
 			),
-			'link_advanced'          => array(
-				'type'        => 'link_advanced',
+			'show_advanced_rate'     => array(
+				'type'        => 'action_link',
 				'title'       => __( 'Advanced', 'wcsdm' ),
+				'icon'        => 'dashicons dashicons-admin-generic',
 				'class'       => 'wcsdm-link wcsdm-link--advanced-rate',
 				'is_advanced' => false,
 				'is_dummy'    => true,
 				'is_hidden'   => false,
 			),
-			'link_sort'              => array(
-				'type'        => 'link_sort',
+			'sort_rate'              => array(
+				'type'        => 'action_link',
 				'title'       => __( 'Sort', 'wcsdm' ),
+				'icon'        => 'dashicons dashicons-move',
 				'class'       => 'wcsdm-link wcsdm-link--sort',
 				'is_advanced' => false,
 				'is_dummy'    => true,
@@ -938,17 +944,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	public function generate_js_template_html() {
 		ob_start();
 		?>
-		<script type="text/template" id="tmpl-wcsdm-errors">
-			<div id="{{ data.id }}" class="wcsdm-errors">
-				<ul class="notice notice-error">
-					<li class="wcsdm-errors--heading"><?php esc_html_e( 'Errors', 'wcsdm' ); ?>:</li>
-					<# _.each(data.errors, function(error, key) { #>
-					<li id="wcsdm-errors--{{ key }}">{{ error }}</li>
-					<# }); #>
-				</ul>
-			</div>
-		</script>
-
 		<script type="text/template" id="tmpl-wcsdm-buttons">
 			<div id="wcsdm-buttons" class="wcsdm-buttons">
 				<# if(data.btn_left) { #>
@@ -959,6 +954,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				<# } #>
 			</div>
 		</script>
+
 		<script type="text/template" id="tmpl-wcsdm-map-search-panel">
 			<div id="wcsdm-map-search-panel" class="wcsdm-map-search-panel wcsdm-hidden expanded">
 				<button type="button" id="wcsdm-map-search-panel-toggle" class="wcsdm-map-search-panel-toggle wcsdm-map-search-element"><span class="dashicons"></button>
@@ -1136,16 +1132,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			<td colspan="2" class="wcsdm-no-padding">
 				<table id="wcsdm-table--table_rates--dummy" class="form-table wcsdm-table wcsdm-table--table_rates--dummy">
 					<thead>
-						<tr>
-							<td class="wcsdm-col wcsdm-col--select-item">
-								<input class="select-item" type="checkbox">
-							</td>
-							<?php foreach ( $this->get_rates_fields( 'dummy' ) as $key => $field ) : ?>
-								<td class="wcsdm-col wcsdm-col--<?php echo esc_html( $key ); ?>">
-									<label><span class="label-text"><?php echo esc_html( $field['title'] ); ?></span><?php echo $this->get_tooltip_html( $field ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
-								</td>
-							<?php endforeach; ?>
-						</tr>
+						<?php $this->generate_rate_row_head(); ?>
 					</thead>
 					<tbody>
 						<?php
@@ -1167,6 +1154,48 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	}
 
 	/**
+	 * Generate rate row column class
+	 *
+	 * @param string $key Table rate column key.
+	 * @param array  $data Settings field data.
+	 * @return string
+	 */
+	private function generate_rate_row_col_class( $key, $data ) {
+		$class = 'wcsdm-col wcsdm-col--' . $key;
+		$type  = isset( $data['type'] ) ? $data['type'] : '';
+
+		if ( $type ) {
+			$class .= ' wcsdm-col--type--' . $type;
+		}
+
+		return $class;
+	}
+
+	/**
+	 * Generate rate row table head
+	 *
+	 * @return void
+	 */
+	private function generate_rate_row_head() {
+		?>
+			<tr>
+				<?php
+				foreach ( $this->get_rates_fields( 'dummy' ) as $key => $field ) :
+					$type = isset( $field['type'] ) ? $field['type'] : 'text';
+					?>
+					<td class="<?php echo esc_attr( $this->generate_rate_row_col_class( $key, $field ) ); ?>">
+						<?php if ( 'select_item' === $type ) : ?>
+							<?php $this->generate_rate_row_field_select_item(); ?>
+						<?php else : ?>
+						<label><span class="label-text"><?php echo esc_html( $field['title'] ); ?></span><?php echo $this->get_tooltip_html( $field ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
+						<?php endif; ?>
+					</td>
+				<?php endforeach; ?>
+			</tr>
+		<?php
+	}
+
+	/**
 	 * Generate table rate_row_body
 	 *
 	 * @param string $field_key Table rate column key.
@@ -1176,57 +1205,188 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	private function generate_rate_row_body( $field_key, $rate = array() ) {
 		?>
 		<tr>
-			<td class="wcsdm-col wcsdm-col--select-item">
-				<input class="select-item" type="checkbox">
-			</td>
 			<?php
 			foreach ( $this->get_rates_fields( 'dummy' ) as $key => $data ) :
-				$data = $this->populate_field( $key, $data );
 				?>
-			<td class="wcsdm-col wcsdm-col--<?php echo esc_html( $key ); ?>">
+				<td class="<?php echo esc_attr( $this->generate_rate_row_col_class( $key, $data ) ); ?>">
+					<?php
+					$field_type = isset( $data['type'] ) ? $data['type'] : 'text';
+
+					if ( is_callable( array( $this, 'generate_rate_row_field_' . $field_type ) ) ) {
+						$this->{'generate_rate_row_field_' . $field_type}( $key, $data, $rate );
+					} else {
+						$this->generate_rate_row_field_text( $key, $data, $rate );
+					}
+					?>
+				</td>
 				<?php
-				$field_value = $this->get_rate_field_value( $key, $rate, $data['default'] );
+			endforeach;
 
-				switch ( $data['type'] ) {
-					case 'link_sort':
-						?>
-						<a href="#" class="<?php echo esc_attr( $data['class'] ); ?>" title="<?php echo esc_attr( $data['title'] ); ?>"><span class="dashicons dashicons-move"></span></a>
-						<?php
-						break;
-					case 'link_advanced':
-						?>
-						<a href="#" class="<?php echo esc_attr( $data['class'] ); ?>" title="<?php echo esc_attr( $data['title'] ); ?>"><span class="dashicons dashicons-admin-generic"></span></a>
-						<?php
-						foreach ( $this->get_rates_fields( 'hidden' ) as $hidden_key => $hidden_field ) :
-							$hidden_field = $this->populate_field( $hidden_key, $hidden_field );
-							$hidden_value = $this->get_rate_field_value( $hidden_key, $rate, $hidden_field['default'] );
-							?>
-						<input class="<?php echo esc_attr( $hidden_field['class'] ); ?>" type="hidden" name="<?php echo esc_attr( $field_key ); ?>__<?php echo esc_attr( $hidden_key ); ?>[]" value="<?php echo esc_attr( $hidden_value ); ?>" <?php echo $this->get_custom_attribute_html( $hidden_field ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> />
-							<?php
-						endforeach;
-						break;
-
-					default:
-						$html = $this->generate_settings_html( array( 'fake--field--' . $key => $data ), false );
-
-						preg_match( '/<fieldset>(.*?)<\/fieldset>/s', $html, $matches );
-
-						if ( ! empty( $matches[0] ) ) {
-							$output = preg_replace( '#\s(name|id)="[^"]+"#', '', $matches[0] );
-
-							$find    = 'select' === $data['type'] ? 'value="' . $field_value . '"' : 'value=""';
-							$replace = 'select' === $data['type'] ? 'value="' . $field_value . '" ' . selected( true, true, false ) : 'value="' . $field_value . '"';
-
-							$output = str_replace( $find, $replace, $output );
-
-							echo $output; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-						}
-						break;
-				}
+			// Print actual rate fields as hidden fields.
+			foreach ( $this->get_rates_fields( 'hidden' ) as $hidden_key => $hidden_field ) :
+				$hidden_field = $this->populate_field( $hidden_key, $hidden_field );
+				$hidden_value = $this->get_rate_field_value( $hidden_key, $rate, $hidden_field['default'] );
 				?>
-			</td>
-			<?php endforeach; ?>
+				<input type="hidden" name="<?php echo esc_attr( $field_key ); ?>__<?php echo esc_attr( $hidden_key ); ?>[]" value="<?php echo esc_attr( $hidden_value ); ?>" class="<?php echo esc_attr( $hidden_field['class'] ); ?>"  <?php echo $this->get_custom_attribute_html( $hidden_field ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> />
+				<?php
+			endforeach;
+			?>
 		</tr>
+		<?php
+	}
+
+	/**
+	 * Generate rate row field: Select Item
+	 *
+	 * @return void
+	 */
+	private function generate_rate_row_field_select_item() {
+		?>
+		<input class="select-item" type="checkbox">
+		<?php
+	}
+
+	/**
+	 * Generate rate row field: Row Number
+	 *
+	 * @return void
+	 */
+	private function generate_rate_row_field_row_number() {
+		?>
+		#
+		<?php
+	}
+
+	/**
+	 * Generate rate row field: Action Link
+	 *
+	 * @param string $key Input field key.
+	 * @param array  $data Settings field data.
+	 * @return void
+	 */
+	private function generate_rate_row_field_action_link( $key, $data ) {
+		$data = wp_parse_args(
+			$data,
+			array(
+				'title' => '',
+				'icon'  => '',
+				'href'  => '#',
+			)
+		);
+
+		if ( $data['icon'] ) {
+			?>
+			<a href="<?php echo esc_attr( $data['href'] ); ?>" class="wcsdm-link wcsdm-action-link wcsdm-action-link--<?php echo esc_attr( $key ); ?>" title="<?php echo esc_attr( $data['title'] ); ?>"><span class="<?php echo esc_attr( $data['icon'] ); ?>"></span></a>
+			<?php
+		} else {
+			?>
+			<a href="<?php echo esc_attr( $data['href'] ); ?>" class="wcsdm-link wcsdm-action-link wcsdm-action-link--<?php echo esc_attr( $key ); ?>" title="<?php echo esc_attr( $data['title'] ); ?>"><?php echo esc_html( $data['title'] ); ?></a>
+			<?php
+		}
+	}
+
+	/**
+	 * Generate rate row field: Select
+	 *
+	 * @param string $key Input field key.
+	 * @param array  $data Settings field data.
+	 * @param array  $rate Table rate data.
+	 * @return void
+	 */
+	private function generate_rate_row_field_select( $key, $data, $rate = array() ) {
+		$data = wp_parse_args(
+			$this->populate_field( $key, $data ),
+			array(
+				'title'             => '',
+				'disabled'          => false,
+				'class'             => '',
+				'css'               => '',
+				'placeholder'       => '',
+				'type'              => 'text',
+				'desc_tip'          => false,
+				'description'       => '',
+				'custom_attributes' => array(),
+				'options'           => array(),
+			)
+		);
+
+		$value = $this->get_rate_field_value( $key, $rate, $data['default'] );
+
+		if ( ! is_string( $value ) ) {
+			$value = strval( $value );
+		}
+		?>
+		<fieldset>
+			<select class="select <?php echo esc_attr( $data['class'] ); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" <?php disabled( $data['disabled'], true ); ?> <?php echo $this->get_custom_attribute_html( $data ); //phpcs:ignore WordPress.Security.EscapeOutput ?>>
+				<?php foreach ( (array) $data['options'] as $option_key => $option_value ) : ?>
+					<option value="<?php echo esc_attr( $option_key ); ?>" <?php selected( (string) $option_key, esc_attr( $value ) ); ?>><?php echo esc_attr( $option_value ); ?></option>
+				<?php endforeach; ?>
+			</select>
+		</fieldset>
+		<?php
+	}
+
+	/**
+	 * Generate rate row field: Text
+	 *
+	 * @param string $key Input field key.
+	 * @param array  $data Settings field data.
+	 * @param array  $rate Table rate data.
+	 * @return void
+	 */
+	private function generate_rate_row_field_text( $key, $data, $rate = array() ) {
+		$data = wp_parse_args(
+			$this->populate_field( $key, $data ),
+			array(
+				'title'             => '',
+				'disabled'          => false,
+				'class'             => '',
+				'css'               => '',
+				'default'           => '',
+				'placeholder'       => '',
+				'type'              => 'text',
+				'desc_tip'          => false,
+				'description'       => '',
+				'custom_attributes' => array(),
+			)
+		);
+
+		$value = $this->get_rate_field_value( $key, $rate, $data['default'] );
+
+		if ( ! is_string( $value ) ) {
+			$value = strval( $value );
+		}
+
+		if ( 'price' === $data['type'] ) {
+			$data['class'] .= ' wc_input_price';
+		}
+
+		if ( 'decimal' === $data['type'] ) {
+			$data['class'] .= ' wc_input_decimal';
+		}
+
+		$allowed_input_types = array(
+			'date',
+			'datetime-local',
+			'datetime',
+			'email',
+			'month',
+			'number',
+			'password',
+			'search',
+			'tel',
+			'time',
+			'url',
+			'week',
+		);
+
+		if ( ! in_array( $data['type'], $allowed_input_types, true ) ) {
+			$data['type'] = 'text';
+		}
+		?>
+		<fieldset>
+			<input class="input-text regular-input <?php echo esc_attr( $data['class'] ); ?>" type="<?php echo esc_attr( $data['type'] ); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" value="<?php echo esc_attr( $value ); ?>" placeholder="<?php echo esc_attr( $data['placeholder'] ); ?>" <?php disabled( $data['disabled'], true ); ?> <?php echo $this->get_custom_attribute_html( $data ); //phpcs:ignore WordPress.Security.EscapeOutput ?> />
+		</fieldset>
 		<?php
 	}
 

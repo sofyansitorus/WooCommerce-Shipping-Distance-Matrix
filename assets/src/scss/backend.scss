@@ -40,7 +40,15 @@
     text-decoration: none;
     width: 70px;
 
-    &--sort {
+    &:active,
+    &:focus {
+      box-shadow: none;
+      text-decoration: none;
+    }
+  }
+
+  &-action-link {
+    &--sort_rate {
       cursor: not-allowed;
       opacity: 0.3;
       pointer-events: none;
@@ -51,12 +59,10 @@
         pointer-events: inherit;
       }
     }
+  }
 
-    &:active,
-    &:focus {
-      box-shadow: none;
-      text-decoration: none;
-    }
+  &-sort-enabled {
+    cursor: move;
   }
 
   &-edit-api-key {
@@ -156,8 +162,8 @@
         border-top-right-radius: 4px;
         border-bottom-right-radius: 4px;
         text-align: center;
-        border-left: 1px solid #7e8993;
-        color: #32373c;
+        border-left: 1px solid rgba(222, 222, 222, 0.75);
+        color: rgba(51, 51, 51, 0.5);
         background-color: $seashell;
       }
     }
@@ -170,30 +176,28 @@
 
     &--table_rates--dummy {
       max-width: 100%;
+      position: relative;
 
       tr {
         .wcsdm-col {
           background-color: $white;
           box-sizing: border-box;
+          position: relative;
 
-          &--select-item {
+          &--type--select_item,
+          &--type--row_number,
+          &--type--action_link {
             text-align: center;
             width: 50px;
+            padding-left: 8px !important;
+            padding-right: 8px !important;
+          }
 
+          &--type--select_item {
             input {
               margin: 0;
               padding: 0;
             }
-          }
-
-          &--link_advanced {
-            text-align: center;
-            width: 96px;
-          }
-
-          &--link_sort {
-            text-align: center;
-            width: 60px;
           }
 
           &+.wcsdm-col {
@@ -203,6 +207,8 @@
       }
 
       thead {
+        position: relative;
+
         tr {
           .wcsdm-col {
             font-weight: 600;
@@ -211,10 +217,26 @@
       }
 
       tbody {
+        position: relative;
+
         tr {
+
           .wcsdm-col {
             padding-bottom: 9px !important;
             padding-top: 9px !important;
+          }
+
+
+          &:nth-child(odd) {
+            .wcsdm-col {
+              background-color: rgba($anakiwa, 0.1);
+            }
+          }
+
+          &:nth-child(even) {
+            .wcsdm-col {
+              background-color: $white;
+            }
           }
 
           &.selected {
@@ -230,15 +252,9 @@
             }
           }
 
-          &:nth-child(odd) {
+          &.sorting {
             .wcsdm-col {
-              background-color: rgba($anakiwa, 0.1);
-            }
-          }
-
-          &:nth-child(even) {
-            .wcsdm-col {
-              background-color: $white;
+              background-color: rgba($anakiwa, 0.5);
             }
           }
 

@@ -4,12 +4,13 @@
 var wcsdmTableRates = {
   params: {},
   errorId: 'wcsdm-errors-rate-fields',
+  sortableTimer: null,
   init: function (params) {
     wcsdmTableRates.params = params;
 
     // Show advanced rate form
-    $(document).off('click', '.wcsdm-link--advanced-rate', wcsdmTableRates.showAdvancedRateForm);
-    $(document).on('click', '.wcsdm-link--advanced-rate', wcsdmTableRates.showAdvancedRateForm);
+    $(document).off('click', '.wcsdm-action-link--show_advanced_rate', wcsdmTableRates.showAdvancedRateForm);
+    $(document).on('click', '.wcsdm-action-link--show_advanced_rate', wcsdmTableRates.showAdvancedRateForm);
 
     // Close advanced rate form
     $(document).off('click', '#wcsdm-btn--cancel-advanced', wcsdmTableRates.closeAdvancedRateForm);
@@ -109,6 +110,8 @@ var wcsdmTableRates = {
         wcsdmTableRates.sortRateRows($field);
       }
     }
+
+    wcsdmTableRates.validateRows();
   },
   showAdvancedRateForm: function (e) {
     e.preventDefault();
@@ -172,6 +175,7 @@ var wcsdmTableRates = {
 
     wcsdmTableRates.scrollToTableRate();
     wcsdmTableRates.sortRateRows();
+    wcsdmTableRates.validateRows();
   },
   highlightRow: function () {
     var $row = $('#wcsdm-table--table_rates--dummy tbody tr.editing').removeClass('editing');
@@ -194,11 +198,11 @@ var wcsdmTableRates = {
         var $field = $(this);
         var fieldId = $field.data('id');
         var fieldValue = fieldId === 'woocommerce_wcsdm_max_distance' ? Math.ceil((parseInt($field.val(), 10) * 1.8)) : $field.val();
-
         $('#wcsdm-table--table_rates--dummy tbody tr:last-child .wcsdm-field[data-id=' + fieldId + ']').val(fieldValue);
       });
     }
 
+    wcsdmTableRates.setRowNumber();
     wcsdmTableRates.scrollToTableRate();
 
     wcsdmTableRates.initForm();
@@ -206,9 +210,8 @@ var wcsdmTableRates = {
   showDeleteRateRowsForm: function (e) {
     e.preventDefault();
 
-    $('#wcsdm-table--table_rates--dummy tbody .select-item:not(:checked)').closest('tr').hide();
-    $('#wcsdm-table--table_rates--dummy').find('.wcsdm-col--select-item, .wcsdm-col--link_advanced').hide();
-    $('#wcsdm-table--table_rates--dummy').find('.wcsdm-col--select-item, .wcsdm-col--link_sort').hide();
+    $('#wcsdm-table--table_rates--dummy tbody tr:not(.selected)').hide();
+    $('#wcsdm-table--table_rates--dummy').find('.wcsdm-col--type--select_item, .wcsdm-col--type--action_link').hide();
     $('#wcsdm-field-group-wrap--table_rates').siblings().hide();
 
     $('#wcsdm-field-group-wrap--table_rates').find('p').first().addClass('wcsdm-hidden');
@@ -229,13 +232,14 @@ var wcsdmTableRates = {
         icon: 'trash'
       }
     });
+
+    wcsdmTableRates.hideError();
   },
   closeDeleteRateRowsForm: function (e) {
     e.preventDefault();
 
     $('#wcsdm-table--table_rates--dummy tbody tr').show();
-    $('#wcsdm-table--table_rates--dummy').find('.wcsdm-col--select-item, .wcsdm-col--link_advanced').show();
-    $('#wcsdm-table--table_rates--dummy').find('.wcsdm-col--select-item, .wcsdm-col--link_sort').show();
+    $('#wcsdm-table--table_rates--dummy').find('.wcsdm-col--type--select_item, .wcsdm-col--type--action_link').show();
     $('#wcsdm-field-group-wrap--table_rates').siblings().not('.wcsdm-hidden').fadeIn();
 
     $('#wcsdm-field-group-wrap--table_rates').find('p').first().removeClass('wcsdm-hidden');
@@ -248,6 +252,7 @@ var wcsdmTableRates = {
     });
 
     wcsdmTableRates.scrollToTableRate();
+    wcsdmTableRates.validateRows();
   },
   deleteRateRows: function (e) {
     e.preventDefault();
@@ -263,6 +268,8 @@ var wcsdmTableRates = {
     } else {
       wcsdmToggleButtons();
     }
+
+    wcsdmTableRates.setRowNumber();
 
     wcsdmTableRates.closeDeleteRateRowsForm(e);
   },
@@ -367,68 +374,55 @@ var wcsdmTableRates = {
 
       maxDistances[maxDistance].push($(row));
 
-      $(row).addClass('wcsdm-rate-row-index--' + index).appendTo($('#wcsdm-table--table_rates--dummy').children('tbody')).fadeIn('slow');
+      $(row).addClass('wcsdm-rate-row-index--' + index).attr('data-max-distance', maxDistance).appendTo($('#wcsdm-table--table_rates--dummy').children('tbody')).fadeIn('slow');
     });
 
     _.each(maxDistances, function (rows) {
       _.each(rows, function (row) {
         if (rows.length > 1) {
-          $(row).addClass('wcsdm-sort-enabled').find('a.wcsdm-col--link_sort').prop('enable', true);
+          $(row).addClass('wcsdm-sort-enabled').find('.wcsdm-action-link--sort_rate').prop('enable', true);
         } else {
-          $(row).removeClass('wcsdm-sort-enabled').find('a.wcsdm-col--link_sort').prop('enable', false);
+          $(row).removeClass('wcsdm-sort-enabled').find('.wcsdm-action-link--sort_rate').prop('enable', false);
         }
       });
     });
 
-    setTimeout(function () {
+    clearTimeout(wcsdmTableRates.sortableTimer);
+
+    wcsdmTableRates.sortableTimer = setTimeout(function () {
+      wcsdmTableRates.setRowNumber();
       wcsdmTableRates.highlightRow();
 
-      if (!$('#wcsdm-table--table_rates--dummy > tbody').sortable('instance')) {
-        $(function () {
-          var oldIndex = null;
-          var maxDistance = null;
-
-          $('#wcsdm-table--table_rates--dummy tbody').sortable({
-            items: 'tr.wcsdm-sort-enabled:not(.selected)',
-            cursor: 'move',
-            classes: {
-              "ui-sortable": "highlight"
-            },
-            placeholder: "ui-state-highlight",
-            axis: "y",
-            start: function (event, ui) {
-              if ($(event.target).closest('tr').hasClass('selected')) {
-                $(event.target).sortable('cancel');
-              } else {
-                oldIndex = ui.item.index();
-
-                maxDistance = $('#wcsdm-table--table_rates--dummy tbody tr')
-                  .eq(oldIndex)
-                  .find('[data-id="woocommerce_wcsdm_max_distance"]')
-                  .val();
-              }
-            },
-            change: function (event, ui) {
-              if (!maxDistance) {
-                $(event.target).sortable('cancel');
-              } else {
-                var newIndex = ui.placeholder.index();
-                var rowIndex = newIndex > oldIndex ? (newIndex - 1) : (newIndex + 1);
-
-                var newMaxDistance = $('#wcsdm-table--table_rates--dummy tbody tr')
-                  .eq(rowIndex)
-                  .find('[data-id="woocommerce_wcsdm_max_distance"]')
-                  .val();
-
-                if (maxDistance !== newMaxDistance) {
-                  $(event.target).sortable('cancel');
-                }
-              }
-            },
-          });
-          $('#wcsdm-table--table_rates--dummy tbody').disableSelection();
-        });
+      if ($('#wcsdm-table--table_rates--dummy > tbody').sortable('instance')) {
+        $('#wcsdm-table--table_rates--dummy > tbody').sortable('destroy');
       }
+
+      $('#wcsdm-table--table_rates--dummy tbody').sortable({
+        scroll: false,
+        cursor: 'move',
+        axis: 'y',
+        placeholder: 'ui-state-highlight',
+        items: 'tr.wcsdm-sort-enabled',
+        start: function (event, ui) {
+          if (ui.item.hasClass('wcsdm-sort-enabled')) {
+            $(event.currentTarget).find('tr').each(function () {
+              if (ui.item.attr('data-max-distance') === $(this).attr('data-max-distance')) {
+                $(this).addClass('sorting');
+              } else {
+                $(this).removeClass('sorting');
+              }
+            });
+
+            $('#wcsdm-table--table_rates--dummy > tbody').sortable('option', 'items', 'tr.wcsdm-sort-enabled.sorting').sortable('refresh');
+          } else {
+            $('#wcsdm-table--table_rates--dummy > tbody').sortable('cancel');
+          }
+        },
+        stop: function () {
+          $('#wcsdm-table--table_rates--dummy > tbody').sortable('option', 'items', 'tr.wcsdm-sort-enabled').sortable('refresh').find('tr').removeClass('sorting');
+          wcsdmTableRates.setRowNumber();
+        },
+      }).disableSelection();
 
       if ($fieldFocus) {
         $fieldFocus.focus();
@@ -438,8 +432,8 @@ var wcsdmTableRates = {
   scrollToTableRate: function () {
     $('.wc-modal-shipping-method-settings').scrollTop($('.wc-modal-shipping-method-settings').find('form').outerHeight());
   },
-  hasError: function () {
-    $('#woocommerce_wcsdm_field_group_table_rates').next('p').next('.wcsdm-notice').remove();
+  validateRows: function () {
+    wcsdmTableRates.hideError();
 
     var uniqueKeys = {};
     var ratesData = [];
@@ -503,12 +497,10 @@ var wcsdmTableRates = {
           var duplicateKeys = [];
 
           for (var i = 0; i < uniqueKey.length; i++) {
-            if (uniqueKey[i].indexOf('max_distance') === -1) {
-              var keySplit = uniqueKey[i].split('__');
-              var title = $row.find('input.wcsdm-field--context--hidden[data-key="' + keySplit[0] + '"]').data('title');
+            var keySplit = uniqueKey[i].split('__');
+            var title = $row.find('input.wcsdm-field--context--hidden[data-key="' + keySplit[0] + '"]').data('title');
 
-              duplicateKeys.push(wcsdmSprintf('%s: %s', title, keySplit[1]));
-            }
+            duplicateKeys.push(wcsdmSprintf('%s: %s', title, keySplit[1]));
           }
 
           rowData.error = wcsdmTableRates.rateRowError(rowIndex, wcsdmSprintf(wcsdmError('duplicate_rate_row'), wcsdmTableRates.indexToNumber(uniqueKeys[uniqueKeyString]), duplicateKeys.join(', ')));
@@ -534,14 +526,22 @@ var wcsdmTableRates = {
       });
     });
 
-    if (errorText) {
-      return $('#woocommerce_wcsdm_field_group_table_rates').next('p').after('<div class="error notice wcsdm-notice has-margin">' + errorText + '</div>');
+    if (!errorText) {
+      return true;
     }
 
-    return false;
+    $('#woocommerce_wcsdm_field_group_table_rates').next('p').after('<div class="error notice wcsdm-notice has-margin">' + errorText + '</div>');
   },
   rateRowError: function (rowIndex, errorMessage) {
     return new Error(wcsdmSprintf(wcsdmError('table_rate_row'), wcsdmTableRates.indexToNumber(rowIndex), errorMessage));
+  },
+  hideError: function () {
+    $('#woocommerce_wcsdm_field_group_table_rates').next('p').next('.wcsdm-notice').remove();
+  },
+  setRowNumber: function () {
+    $('#wcsdm-table--table_rates--dummy > tbody > tr').each(function () {
+      $(this).find('.wcsdm-col--type--row_number').text(($(this).index() + 1));
+    });
   },
   indexToNumber: function (rowIndex) {
     return (rowIndex + 1);
