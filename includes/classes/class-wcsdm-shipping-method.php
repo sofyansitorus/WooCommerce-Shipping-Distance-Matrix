@@ -628,6 +628,11 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'is_dummy'    => false,
 				'is_hidden'   => false,
 			),
+			'row_number'             => array(
+				'type'     => 'row_number',
+				'title'    => '#',
+				'is_dummy' => true,
+			),
 			'max_distance'           => array(
 				'type'              => 'number',
 				'title'             => __( 'Max Distance', 'wcsdm' ),
