@@ -1,7 +1,7 @@
 === WooReer ===
 Contributors: sofyansitorus
 Tags: woocommerce,woocommerce-shipping,local-shipping,private-shipping
-Donate link: https://www.buymeacoffee.com/sofyansitorus
+Donate link: https://www.buymeacoffee.com/sofyansitorus?utm_source=wooreer_plugin_page&utm_medium=referral
 Requires at least: 4.8
 Tested up to: 5.4.1
 Requires PHP: 5.6
@@ -56,7 +56,7 @@ If you enjoy using this plugin and find it useful, please consider donating. You
 
 Please use the link below to if you would like to buy me some coffee:
 
-[https://www.buymeacoffee.com/sofyansitorus](https://www.buymeacoffee.com/sofyansitorus)
+[https://www.buymeacoffee.com/sofyansitorus](https://www.buymeacoffee.com/sofyansitorus?utm_source=wooreer_plugin_page&utm_medium=referral)
 
 == Installation ==
 
