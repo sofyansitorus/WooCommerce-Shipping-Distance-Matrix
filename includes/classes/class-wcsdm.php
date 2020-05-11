@@ -222,6 +222,15 @@ class Wcsdm {
 			return;
 		}
 
+		$is_cart_page     = function_exists( 'is_cart' ) && is_cart();
+		$is_checkout_page = function_exists( 'is_checkout' ) && is_checkout();
+
+		$enqueue_frontend_assets = apply_filters( 'wcsdm_enqueue_frontend_assets', ( $is_cart_page | $is_checkout_page ) );
+
+		if ( ! $enqueue_frontend_assets ) {
+			return;
+		}
+
 		$is_dev_env = wcsdm_is_dev_env();
 
 		// Define scripts URL.
