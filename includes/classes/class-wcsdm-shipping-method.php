@@ -2503,29 +2503,26 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 
 		$errors = array();
 
-		$destination_info = array(
-			'address_1' => false,
-			'address_2' => false,
-			'city'      => false,
-			'state'     => false,
-			'postcode'  => false,
-			'country'   => false,
-		);
+		$destination_info = array();
 
-		$shipping_fields = wcsdm_shipping_fields();
+		foreach ( wcsdm_include_address_fields() as $key ) {
+			$destination_info[ $key ] = false;
+		}
+
+		if ( wcsdm_is_calc_shipping() ) {
+			$shipping_fields = wcsdm_calc_shipping_fields();
+		} elseif ( ! empty( $_POST['ship_to_different_address'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$shipping_fields = wcsdm_shipping_fields();
+		} else {
+			$shipping_fields = wcsdm_billing_fields();
+		}
 
 		if ( ! $shipping_fields ) {
 			return '';
 		}
 
-		foreach ( $shipping_fields['data'] as $key => $field ) {
-			$field_key = str_replace( $shipping_fields['type'] . '_', '', $key );
-
+		foreach ( $shipping_fields as $field_key => $field ) {
 			if ( ! isset( $destination_info[ $field_key ] ) ) {
-				continue;
-			}
-
-			if ( wcsdm_is_calc_shipping() && ! apply_filters( 'woocommerce_shipping_calculator_enable_' . $field_key, true ) ) { // phpcs:ignore WordPress.NamingConventions
 				continue;
 			}
 

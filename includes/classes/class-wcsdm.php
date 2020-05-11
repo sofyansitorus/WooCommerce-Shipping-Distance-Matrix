@@ -192,7 +192,7 @@ class Wcsdm {
 		// Localize the script data.
 		wp_localize_script(
 			'wcsdm-backend',
-			'wcsdm_backend',
+			'wcsdmBackendVars',
 			array(
 				'showSettings'           => isset( $_GET['wcsdm_settings'] ) && is_admin(), // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				'methodId'               => WCSDM_METHOD_ID,
@@ -235,6 +235,7 @@ class Wcsdm {
 
 		// Define scripts URL.
 		$js_url = WCSDM_URL . 'assets/js/wcsdm-frontend.min.js';
+
 		if ( $is_dev_env ) {
 			$js_url = add_query_arg( array( 't' => time() ), str_replace( '.min', '', $js_url ) );
 		}
@@ -247,6 +248,28 @@ class Wcsdm {
 			WCSDM_VERSION, // Define a version (optional).
 			true // Specify whether to put in footer (leave this true).
 		);
+
+		$wcsdm_frontend_vars = apply_filters(
+			'wcsdm_frontend_vars',
+			array(
+				'forms' => array(
+					'calc_shipping' => array(
+						'wrapper' => '.shipping-calculator-form',
+						'fields'  => wcsdm_calc_shipping_fields(),
+					),
+					'billing'       => array(
+						'wrapper' => '.woocommerce-billing-fields__field-wrapper',
+						'fields'  => wcsdm_billing_fields(),
+					),
+					'shipping'      => array(
+						'wrapper' => '.woocommerce-shipping-fields__field-wrapper',
+						'fields'  => wcsdm_shipping_fields(),
+					),
+				),
+			)
+		);
+
+		wp_localize_script( 'wcsdm-frontend', 'wcsdmFrontendVars', $wcsdm_frontend_vars );
 	}
 
 	/**
@@ -276,68 +299,32 @@ class Wcsdm {
 			return;
 		}
 
-		$shipping_fields = wcsdm_shipping_fields();
-		if ( ! $shipping_fields ) {
+		$calc_shipping_fields = wcsdm_calc_shipping_fields();
+
+		if ( ! $calc_shipping_fields ) {
 			return;
 		}
 
-		$type = isset( $shipping_fields['type'] ) ? $shipping_fields['type'] : false;
-		if ( ! $type ) {
-			return;
-		}
-
-		$data = isset( $shipping_fields['data'] ) ? $shipping_fields['data'] : false;
-		if ( ! $data ) {
-			return;
-		}
-
-		$fields = array(
-			'address_1' => 'get_shipping_address',
-			'address_2' => 'get_shipping_address_2',
+		$custom_fields = array(
+			'address_1',
+			'address_2',
 		);
 
-		foreach ( $fields as $key => $callback ) {
-			$is_enabled = apply_filters( 'woocommerce_shipping_calculator_enable_' . $key, true ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
-
-			if ( ! $is_enabled ) {
+		foreach ( $calc_shipping_fields as $key => $field ) {
+			if ( ! in_array( $key, $custom_fields, true ) ) {
 				continue;
 			}
 
-			$field_key = $type . '_' . $key;
-
-			$field = isset( $data[ $field_key ] ) ? $data[ $field_key ] : false;
-
-			if ( $field ) {
-				$fields[ $key ] = array(
-					'value' => call_user_func( array( WC()->cart->get_customer(), $callback ) ),
-					'data'  => $field,
-				);
-			} else {
-				$fields[ $key ] = false;
-			}
-		}
-
-		if ( ! array_filter( $fields ) ) {
-			return;
-		}
-
-		foreach ( $fields as $key => $field ) {
-			if ( ! $field ) {
-				continue;
-			}
-
+			$value = call_user_func( array( WC()->cart->get_customer(), 'get_shipping_' . $key ) );
 			?>
-			<input type="hidden" id="wcsdm-calc-shipping-field-value-<?php echo esc_attr( $key ); ?>" value="<?php echo esc_attr( $field['value'] ); ?>" data-field="<?php echo esc_attr( wp_json_encode( $field['data'] ) ); ?>" />
+			<input type="hidden" id="wcsdm-calc-shipping-value-field--<?php echo esc_attr( $key ); ?>" value="<?php echo esc_attr( $value ); ?>" />
+			<script type="text/template" id="tmpl-wcsdm-calc-shipping-custom-field--<?php echo esc_attr( $key ); ?>">
+				<p class="form-row form-row-wide" id="calc_shipping_{{ data.fieldKey }}_field">
+					<input type="text" class="input-text" value="{{ data.value }}" placeholder="{{ data.placeholder }}" name="calc_shipping_{{ data.fieldKey }}" id="calc_shipping_{{ data.fieldKey }}" />
+				</p>
+			</script>
 			<?php
 		}
-
-		?>
-		<script type="text/template" id="tmpl-wcsdm-calc-shipping-custom-field">
-			<p class="form-row form-row-wide" id="calc_shipping_{{ data.field }}_field">
-				<input type="text" class="input-text" value="{{ data.value }}" placeholder="{{ data.placeholder }}" data-placeholder="{{ data.placeholder }}" name="calc_shipping_{{ data.field }}" id="calc_shipping_{{ data.field }}" />
-			</p>
-		</script>
-		<?php
 	}
 
 	/**
