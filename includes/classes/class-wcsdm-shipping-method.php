@@ -157,6 +157,10 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			return;
 		}
 
+		if ( empty( $this->instance_settings ) ) {
+			$this->init_instance_settings();
+		}
+
 		$data_version = get_option( 'wcsdm_data_version' );
 
 		if ( $data_version && version_compare( WCSDM_DATA_VERSION, $data_version, '<=' ) ) {
@@ -1957,41 +1961,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		$data['custom_attributes'] = array_merge( $data['custom_attributes'], $custom_attributes );
 
 		return $data;
-	}
-
-	/**
-	 * Processes and saves global shipping method options in the admin area.
-	 *
-	 * @since 2.0
-	 * @return bool was anything saved?
-	 */
-	public function process_admin_options() {
-		if ( ! $this->instance_id ) {
-			return parent::process_admin_options();
-		}
-
-		// Check we are processing the correct form for this instance.
-		if ( ! isset( $_REQUEST['instance_id'] ) || absint( $_REQUEST['instance_id'] ) !== $this->instance_id ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			return false;
-		}
-
-		$this->init_instance_settings();
-
-		$post_data = $this->get_post_data();
-
-		foreach ( $this->get_instance_form_fields() as $key => $field ) {
-			if ( 'title' === $this->get_field_type( $field ) ) {
-				continue;
-			}
-
-			try {
-				$this->instance_settings[ $key ] = $this->get_field_value( $key, $field, $post_data );
-			} catch ( Exception $e ) {
-				$this->add_error( $e->getMessage() );
-			}
-		}
-
-		return update_option( $this->get_instance_option_key(), apply_filters( 'woocommerce_shipping_' . $this->id . '_instance_settings_values', $this->instance_settings, $this ), 'yes' ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
 	}
 
 	/**
