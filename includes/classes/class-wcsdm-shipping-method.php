@@ -189,7 +189,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'api_services' => __( 'Required API Services: Distance Matrix API', 'wcsdm' ),
 				'desc_tip'     => true,
 				'default'      => '',
-				'placeholder'  => __( 'Click the pencil icon on the right to edit', 'wcsdm' ),
 				'is_required'  => true,
 			),
 			'api_key_picker'              => array(
@@ -200,13 +199,12 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'api_services' => __( 'Required API Services: Maps JavaScript API, Geocoding API, Places API', 'wcsdm' ),
 				'desc_tip'     => true,
 				'default'      => '',
-				'placeholder'  => __( 'Click the pencil icon on the right to edit', 'wcsdm' ),
 				'is_required'  => true,
 			),
 			'origin_type'                 => array(
 				'title'             => __( 'Store Origin Data Type', 'wcsdm' ),
 				'type'              => 'wcsdm',
-				'orig_type'         => 'origin_type',
+				'orig_type'         => 'select',
 				'description'       => __( 'Preferred data that will be used as the origin info when calculating the distance.', 'wcsdm' ),
 				'desc_tip'          => true,
 				'default'           => 'coordinate',
@@ -230,10 +228,10 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'description'       => __( 'Store location latitude coordinates', 'wcsdm' ),
 				'desc_tip'          => true,
 				'default'           => '',
-				'placeholder'       => __( 'Click the map icon on the right Store Origin Data Type to edit', 'wcsdm' ),
 				'is_required'       => true,
 				'custom_attributes' => array(
-					'readonly' => true,
+					'readonly'  => true,
+					'data-link' => 'location_picker',
 				),
 			),
 			'origin_lng'                  => array(
@@ -243,10 +241,10 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'description'       => __( 'Store location longitude coordinates', 'wcsdm' ),
 				'desc_tip'          => true,
 				'default'           => '',
-				'placeholder'       => __( 'Click the map icon on the right Store Origin Data Type to edit', 'wcsdm' ),
 				'is_required'       => true,
 				'custom_attributes' => array(
-					'readonly' => true,
+					'readonly'  => true,
+					'data-link' => 'location_picker',
 				),
 			),
 			'origin_address'              => array(
@@ -256,10 +254,10 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'description'       => __( 'Store location full address', 'wcsdm' ),
 				'desc_tip'          => true,
 				'default'           => '',
-				'placeholder'       => __( 'Click the map icon on the right Store Origin Data Type to edit', 'wcsdm' ),
 				'is_required'       => true,
 				'custom_attributes' => array(
-					'readonly' => true,
+					'readonly'  => true,
+					'data-link' => 'location_picker',
 				),
 			),
 			'field_group_route'           => array(
@@ -999,7 +997,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			<td class="forminp">
 				<fieldset>
 					<legend class="screen-reader-text"><span><?php echo wp_kses_post( $data['title'] ); ?></span></legend>
-					<input type="text" class="input-text regular-input <?php echo esc_attr( $data['class'] ); ?>" name="<?php echo esc_attr( $field_key ); ?>" id="<?php echo esc_attr( $field_key ); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" value="<?php echo esc_attr( $this->get_option( $key ) ); ?>" placeholder="<?php echo esc_attr( $data['placeholder'] ); ?>" readonly="readonly" />
+					<input type="text" class="input-text regular-input <?php echo esc_attr( $data['class'] ); ?>" name="<?php echo esc_attr( $field_key ); ?>" id="<?php echo esc_attr( $field_key ); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" value="<?php echo esc_attr( $this->get_option( $key ) ); ?>" placeholder="<?php echo esc_attr( $data['placeholder'] ); ?>" data-key="<?php echo esc_attr( $key ); ?>" readonly="readonly" />
 					<a href="#" class="button button-secondary wcsdm-buttons--has-icon wcsdm-edit-api-key wcsdm-link" id="<?php echo esc_attr( $key ); ?>" title="<?php esc_attr_e( 'Edit API Key', 'wcsdm' ); ?>"><span class="dashicons"></span></a>
 					<div class="wcsdm-api-services"><?php echo wp_kses_post( $data['api_services'] ); ?></div>
 					<?php echo $this->get_description_html( $data ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
@@ -1049,7 +1047,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 							<option value="<?php echo esc_attr( $option_key ); ?>" <?php selected( (string) $option_key, esc_attr( $this->get_option( $key ) ) ); ?>><?php echo esc_attr( $option_value ); ?></option>
 						<?php endforeach; ?>
 					</select>
-					<a href="#" class="button button-secondary wcsdm-buttons--has-icon wcsdm-link wcsdm-edit-location-picker" title="<?php esc_attr_e( 'Pick Location', 'wcsdm' ); ?>"><span class="dashicons dashicons-location"></span></a>
 					<?php echo $this->get_description_html( $data ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				</fieldset>
 			</td>

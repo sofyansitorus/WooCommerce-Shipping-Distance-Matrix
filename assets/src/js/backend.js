@@ -108,14 +108,12 @@ var wcsdmBackend = {
   submitForm: function (e) {
     e.preventDefault();
 
-    if (wcsdmMapPicker.editingAPIKey || wcsdmMapPicker.editingAPIKeyPicker) {
+    if (wcsdmMapPicker.isEditingAPIKey()) {
       window.alert(wcsdmError('finish_editing_api'));
+    } else if (!wcsdmTableRates.validateRows()) {
+      window.alert(wcsdmError('table_rates_invalid'));
     } else {
-      if (!wcsdmTableRates.validateRows()) {
-        window.alert(wcsdmError('table_rates_invalid'));
-      } else {
-        $('#btn-ok').trigger('click');
-      }
+      $('#btn-ok').trigger('click');
     }
   },
   toggleStoreOriginFields: function (e) {
