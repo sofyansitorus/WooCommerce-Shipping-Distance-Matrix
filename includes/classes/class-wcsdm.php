@@ -60,6 +60,9 @@ class Wcsdm {
 	 * @since 1.0.0
 	 */
 	private function __construct() {
+		// Set the activation hook.
+		register_activation_hook( WCSDM_FILE, array( $this, 'install' ) );
+
 		// Hook to load plugin textdomain.
 		add_action( 'plugins_loaded', array( $this, 'load_textdomain' ) );
 
@@ -81,6 +84,15 @@ class Wcsdm {
 		// Hook to enqueue scripts & styles assets.
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_backend_assets' ), 999 );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ), 999 );
+	}
+
+	/**
+	 * Set plugin data version
+	 *
+	 * @return void
+	 */
+	public function install() {
+		update_option( 'wcsdm_data_version', WCSDM_DATA_VERSION, 'yes' );
 	}
 
 	/**

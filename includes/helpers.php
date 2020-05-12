@@ -241,7 +241,11 @@ if ( ! function_exists( 'wcsdm_autoload' ) ) :
 			return;
 		}
 
-		require_once WCSDM_PATH . 'includes/classes/class-' . str_replace( '_', '-', $class ) . '.php';
+		if ( strpos( $class, 'wcsdm_migration_' ) === 0 ) {
+			require_once WCSDM_PATH . 'includes/migrations/class-' . str_replace( '_', '-', $class ) . '.php';
+		} else {
+			require_once WCSDM_PATH . 'includes/classes/class-' . str_replace( '_', '-', $class ) . '.php';
+		}
 	}
 endif;
 

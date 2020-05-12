@@ -107,6 +107,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		);
 
 		$this->init();
+		$this->migrate_data();
 	}
 
 	/**
@@ -122,9 +123,18 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		// Load the settings API.
 		$this->init_form_fields(); // This is part of the settings API. Override the method to add your own settings.
 		$this->init_settings(); // This is part of the settings API. Loads settings you previously init.
-
 		$this->init_rate_fields(); // Init rate fields.
+		$this->init_current_options(); // Init current options data.
+	}
 
+	/**
+	 * Init current options data.
+	 *
+	 * @since 2.1.10
+	 *
+	 * @return void
+	 */
+	private function init_current_options() {
 		// Define user set variables.
 		foreach ( $this->instance_form_fields as $key => $field ) {
 			$default = isset( $field['default'] ) ? $field['default'] : null;
@@ -132,6 +142,82 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			$this->options[ $key ] = $this->get_option( $key, $default );
 
 			$this->{$key} = $this->options[ $key ];
+		}
+	}
+
+	/**
+	 * Data migration handler
+	 *
+	 * @since 2.1.10
+	 *
+	 * @return void
+	 */
+	private function migrate_data() {
+		if ( ! $this->get_instance_id() ) {
+			return;
+		}
+
+		$data_version = get_option( 'wcsdm_data_version' );
+
+		if ( $data_version && version_compare( WCSDM_DATA_VERSION, $data_version, '<=' ) ) {
+			return;
+		}
+
+		$migrations = array();
+
+		foreach ( glob( WCSDM_PATH . 'includes/migrations/*.php' ) as $migration_file ) {
+			$migration_file_name  = basename( $migration_file, '.php' );
+			$migration_class_name = 'Wcsdm_Migration_' . str_replace( '-', '_', str_replace( 'class-wcsdm-migration-', '', $migration_file_name ) );
+
+			if ( isset( $migrations[ $migration_class_name ] ) ) {
+				continue;
+			}
+
+			$migrations[ $migration_class_name ] = new $migration_class_name();
+		}
+
+		if ( $migrations ) {
+			usort( $migrations, array( $this, 'sort_version' ) );
+		}
+
+		foreach ( $migrations as $migration ) {
+			if ( $data_version && version_compare( $migration::get_version(), $data_version, '<=' ) ) {
+				continue;
+			}
+
+			$migration->set_instance( $this );
+
+			$migration_update_options = $migration->get_update_options();
+			$migration_delete_options = $migration->get_delete_options();
+
+			if ( $migration_update_options ) {
+				foreach ( $migration_update_options as $key => $value ) {
+					$this->instance_settings[ $key ] = $value;
+				}
+			}
+
+			if ( $migration_delete_options ) {
+				foreach ( $migration_delete_options as $key ) {
+					unset( $this->instance_settings[ $key ] );
+				}
+			}
+
+			// Update the settings data.
+			if ( $migration_update_options || $migration_update_options ) {
+				$instance_settings = apply_filters( 'woocommerce_shipping_' . $this->id . '_instance_settings_values', $this->instance_settings, $this ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+
+				if ( update_option( $this->get_instance_option_key(), $instance_settings, 'yes' ) ) {
+					$this->init_current_options();
+				}
+			}
+
+			$data_version = $migration->get_version();
+
+			// Update the latest version migrated option.
+			update_option( 'wcsdm_data_version', $data_version, 'yes' );
+
+			// translators: %s is data migration version.
+			$this->show_debug( sprintf( __( 'Data migrated to version %s', 'wcsdm' ), $data_version ) );
 		}
 	}
 
@@ -2682,6 +2768,19 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			return 0;
 		}
 		return ( $a['max_distance'] < $b['max_distance'] ) ? -1 : 1;
+	}
+
+	/**
+	 * Sort migration by version.
+	 *
+	 * @since 2.1.10
+	 *
+	 * @param Wcsdm_Migration $a Object 1 migration handler.
+	 * @param Wcsdm_Migration $b Object 2 migration handler.
+	 * @return int
+	 */
+	public function sort_version( $a, $b ) {
+		return version_compare( $a::get_version(), $b::get_version(), '<=' ) ? -1 : 1;
 	}
 
 	/**
