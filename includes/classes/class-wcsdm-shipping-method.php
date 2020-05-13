@@ -499,7 +499,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'description'       => __( 'Surcharge amount that will be added to the total shipping cost.', 'wcsdm' ),
 				'desc_tip'          => true,
 				'is_required'       => true,
-				'validate'          => 'number',
 				'custom_attributes' => array(
 					'min' => '0',
 				),
@@ -511,7 +510,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 						'is_advanced' => true,
 						'is_dummy'    => false,
 						'is_hidden'   => true,
-						'validate'    => 'number',
 						'title'       => __( 'Surcharge', 'wcsdm' ),
 					),
 				),
@@ -545,7 +543,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'description'       => __( 'Discount amount that will be deducted to the total shipping cost.', 'wcsdm' ),
 				'desc_tip'          => true,
 				'is_required'       => true,
-				'validate'          => 'number',
 				'custom_attributes' => array(
 					'min' => '0',
 				),
@@ -557,7 +554,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 						'is_advanced' => true,
 						'is_dummy'    => false,
 						'is_hidden'   => true,
-						'validate'    => 'number',
 						'title'       => __( 'Discount', 'wcsdm' ),
 					),
 				),
@@ -595,7 +591,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'description'       => __( 'Minimum cost that will be applied. The calculated shipping cost will never be lower than whatever amount set into this field. Set as zero value to disable.', 'wcsdm' ),
 				'desc_tip'          => true,
 				'is_required'       => true,
-				'validate'          => 'number',
 				'custom_attributes' => array(
 					'min' => '0',
 				),
@@ -607,7 +602,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 						'is_advanced' => true,
 						'is_dummy'    => false,
 						'is_hidden'   => true,
-						'validate'    => 'number',
 					),
 				),
 			),
@@ -619,7 +613,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'description'       => __( 'Maximum cost that will be applied. The calculated shipping cost will never be greater than whatever amount set into this field. Set as zero value to disable.', 'wcsdm' ),
 				'desc_tip'          => true,
 				'is_required'       => true,
-				'validate'          => 'number',
 				'custom_attributes' => array(
 					'min' => '0',
 				),
@@ -631,7 +624,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 						'is_advanced' => true,
 						'is_dummy'    => false,
 						'is_hidden'   => true,
-						'validate'    => 'number',
 					),
 				),
 			),
@@ -720,13 +712,22 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'is_dummy'    => false,
 				'is_hidden'   => false,
 			),
+			'sort_rate'              => array(
+				'type'        => 'action_link',
+				'title'       => __( 'Sort', 'wcsdm' ),
+				'icon'        => 'dashicons dashicons-move',
+				'class'       => 'wcsdm-link wcsdm-link--sort',
+				'is_advanced' => false,
+				'is_dummy'    => true,
+				'is_hidden'   => false,
+			),
 			'row_number'             => array(
 				'type'     => 'row_number',
 				'title'    => '#',
 				'is_dummy' => true,
 			),
 			'max_distance'           => array(
-				'type'              => 'number',
+				'type'              => 'decimal',
 				'title'             => __( 'Max Distance', 'wcsdm' ),
 				'description'       => __( 'The maximum distances rule for the shipping rate. This input is required.', 'wcsdm' ),
 				'desc_tip'          => true,
@@ -736,7 +737,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'is_hidden'         => true,
 				'is_required'       => true,
 				'is_rule'           => true,
-				'validate'          => 'number',
 				'custom_attributes' => array(
 					'min'       => '1',
 					'step'      => '1',
@@ -754,7 +754,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'is_required'       => true,
 				'is_rule'           => true,
 				'default'           => '0',
-				'validate'          => 'number',
 				'custom_attributes' => array(
 					'min' => '0',
 				),
@@ -770,13 +769,12 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'is_required'       => true,
 				'is_rule'           => true,
 				'default'           => '0',
-				'validate'          => 'number',
 				'custom_attributes' => array(
 					'min' => '0',
 				),
 			),
 			'min_order_quantity'     => array(
-				'type'              => 'number',
+				'type'              => 'decimal',
 				'title'             => __( 'Min Order Quantity', 'wcsdm' ),
 				'description'       => __( 'The shipping rule for minimum order quantity. Leave blank or fill with zero value to disable this rule.', 'wcsdm' ),
 				'desc_tip'          => true,
@@ -786,14 +784,13 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'is_required'       => true,
 				'is_rule'           => true,
 				'default'           => '0',
-				'validate'          => 'number',
 				'custom_attributes' => array(
 					'min'  => '0',
 					'step' => '1',
 				),
 			),
 			'max_order_quantity'     => array(
-				'type'              => 'number',
+				'type'              => 'decimal',
 				'title'             => __( 'Max Order Quantity', 'wcsdm' ),
 				'description'       => __( 'The shipping rule for maximum order quantity. Leave blank or fill with zero value to disable this rule.', 'wcsdm' ),
 				'desc_tip'          => true,
@@ -803,7 +800,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'is_required'       => true,
 				'is_rule'           => true,
 				'default'           => '0',
-				'validate'          => 'number',
 				'custom_attributes' => array(
 					'min'  => '0',
 					'step' => '1',
@@ -828,7 +824,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'is_rate'           => true,
 				'is_rule'           => false,
 				'default'           => '0',
-				'validate'          => 'number',
 				'custom_attributes' => array(
 					'min' => '0',
 				),
@@ -845,15 +840,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'title'       => __( 'Advanced', 'wcsdm' ),
 				'icon'        => 'dashicons dashicons-admin-generic',
 				'class'       => 'wcsdm-link wcsdm-link--advanced-rate',
-				'is_advanced' => false,
-				'is_dummy'    => true,
-				'is_hidden'   => false,
-			),
-			'sort_rate'              => array(
-				'type'        => 'action_link',
-				'title'       => __( 'Sort', 'wcsdm' ),
-				'icon'        => 'dashicons dashicons-move',
-				'class'       => 'wcsdm-link wcsdm-link--sort',
 				'is_advanced' => false,
 				'is_dummy'    => true,
 				'is_hidden'   => false,
@@ -1446,10 +1432,12 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 
 		if ( 'price' === $data['type'] ) {
 			$data['class'] .= ' wc_input_price';
+			$value          = wc_format_localized_price( $value );
 		}
 
 		if ( 'decimal' === $data['type'] ) {
 			$data['class'] .= ' wc_input_decimal';
+			$value          = wc_format_localized_decimal( $value );
 		}
 
 		$allowed_input_types = array(
@@ -1543,6 +1531,10 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			if ( is_callable( array( $this, 'validate_' . $type . '_field' ) ) ) {
 				$value = $this->{'validate_' . $type . '_field'}( $key, $value );
 			} else {
+				if ( 'number' === $type ) {
+					$value = wc_format_decimal( $value );
+				}
+
 				$value = $this->validate_text_field( $key, $value );
 			}
 
@@ -1952,7 +1944,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			'data-context'     => isset( $data['context'] ) ? $data['context'] : '',
 			'data-title'       => isset( $data['title'] ) ? $data['title'] : $key,
 			'data-options'     => isset( $data['options'] ) ? wp_json_encode( $data['options'] ) : wp_json_encode( array() ),
-			'data-validate'    => isset( $data['validate'] ) ? $data['validate'] : 'text',
 			'data-is_rate'     => empty( $data['is_rate'] ) ? '0' : '1',
 			'data-is_required' => empty( $data['is_required'] ) ? '0' : '1',
 			'data-is_rule'     => empty( $data['is_rule'] ) ? '0' : '1',
