@@ -10,12 +10,10 @@ var wcsdmMapPicker = {
   apiKeyErrorCheckInterval: null,
   apiKeyError: '',
   editingAPIKey: false,
-  editingAPIKeyPicker: false,
   init: function (params) {
     wcsdmMapPicker.params = params;
     wcsdmMapPicker.apiKeyError = '';
     wcsdmMapPicker.editingAPIKey = false;
-    wcsdmMapPicker.editingAPIKeyPicker = false;
 
     ConsoleListener.on('error', function (errorMessage) {
       if (errorMessage.toLowerCase().indexOf('google') !== -1) {
@@ -28,12 +26,38 @@ var wcsdmMapPicker = {
     });
 
     // Edit Api Key
+    $(document).off('focus', '.wcsdm-field-type--api_key');
+    $(document).on('focus', '.wcsdm-field-type--api_key', function () {
+      if ($(this).prop('readonly') && !$(this).hasClass('loading')) {
+        $(this).data('value', $(this).val()).prop('readonly', false);
+      }
+    });
+
+    $(document).off('blur', '.wcsdm-field-type--api_key');
+    $(document).on('blur', '.wcsdm-field-type--api_key', function () {
+      if (!$(this).prop('readonly') && !$(this).hasClass('editing')) {
+        $(this).data('value', undefined).prop('readonly', true);
+      }
+    });
+
+    $(document).off('input', '.wcsdm-field-type--api_key', wcsdmMapPicker.handleApiKeyInput);
+    $(document).on('input', '.wcsdm-field-type--api_key', wcsdmMapPicker.handleApiKeyInput);
+
+    // Edit Api Key
     $(document).off('click', '.wcsdm-edit-api-key', wcsdmMapPicker.editApiKey);
     $(document).on('click', '.wcsdm-edit-api-key', wcsdmMapPicker.editApiKey);
 
     // Show Store Location Picker
-    $(document).off('click', '.wcsdm-edit-location-picker', wcsdmMapPicker.showLocationPicker);
-    $(document).on('click', '.wcsdm-edit-location-picker', wcsdmMapPicker.showLocationPicker);
+    $(document).off('click', '.wcsdm-field--origin');
+    $(document).on('click', '.wcsdm-field--origin', function () {
+      if ($(this).prop('readonly')) {
+        $('.wcsdm-edit-location-picker').trigger('click');
+      }
+    });
+
+    // Show Store Location Picker
+    $(document).off('focus', '[data-link="location_picker"]', wcsdmMapPicker.showLocationPicker);
+    $(document).on('focus', '[data-link="location_picker"]', wcsdmMapPicker.showLocationPicker);
 
     // Hide Store Location Picker
     $(document).off('click', '#wcsdm-btn--map-cancel', wcsdmMapPicker.hideLocationPicker);
@@ -47,13 +71,13 @@ var wcsdmMapPicker = {
     $(document).off('click', '#wcsdm-map-search-panel-toggle', wcsdmMapPicker.toggleMapSearch);
     $(document).on('click', '#wcsdm-map-search-panel-toggle', wcsdmMapPicker.toggleMapSearch);
   },
-  validateAPIKeyBothSide: function (apiKey, $input, $link) {
-    wcsdmMapPicker.validateAPIKeyServerSide(apiKey, $input, $link, wcsdmMapPicker.validateAPIKeyBrowserSide);
+  validateAPIKeyBothSide: function ($input) {
+    wcsdmMapPicker.validateAPIKeyServerSide($input, wcsdmMapPicker.validateAPIKeyBrowserSide);
   },
-  validateAPIKeyBrowserSide: function (apiKey, $input, $link) {
+  validateAPIKeyBrowserSide: function ($input) {
     wcsdmMapPicker.apiKeyError = '';
 
-    wcsdmMapPicker.initMap(apiKey, function () {
+    wcsdmMapPicker.initMap($input.val(), function () {
       var geocoderArgs = {
         latLng: new google.maps.LatLng(parseFloat(wcsdmMapPicker.params.defaultLat), parseFloat(wcsdmMapPicker.params.defaultLng)),
       };
@@ -64,47 +88,48 @@ var wcsdmMapPicker = {
         if (status.toLowerCase() === 'ok') {
           console.log('validateAPIKeyBrowserSide', results);
 
-          $link.removeClass('editing').data('value', '');
-          $input.prop('readonly', true);
+          $input.addClass('valid');
 
-          wcsdmMapPicker.apiKeyError = '';
-          wcsdmMapPicker.editingAPIKeyPicker = false;
+          setTimeout(function () {
+            $input.removeClass('editing loading valid').data('value', undefined);
+          }, 1000);
         }
       });
 
       clearInterval(wcsdmMapPicker.apiKeyErrorCheckInterval);
 
       wcsdmMapPicker.apiKeyErrorCheckInterval = setInterval(function () {
-        if (!$link.hasClass('editing') || wcsdmMapPicker.apiKeyError) {
+        if ($input.hasClass('valid') || wcsdmMapPicker.apiKeyError) {
           clearInterval(wcsdmMapPicker.apiKeyErrorCheckInterval);
+        }
 
-          $link.removeClass('loading').attr('disabled', false);
-
-          if (wcsdmMapPicker.apiKeyError) {
-            wcsdmMapPicker.showError($input, wcsdmMapPicker.apiKeyError);
-          }
+        if (wcsdmMapPicker.apiKeyError) {
+          wcsdmMapPicker.showError($input, wcsdmMapPicker.apiKeyError);
+          $input.prop('readonly', false).removeClass('loading');
         }
       }, 300);
     });
   },
-  validateAPIKeyServerSide: function (apiKey, $input, $link, onSuccess) {
+  validateAPIKeyServerSide: function ($input, onSuccess) {
     $.ajax({
       method: 'POST',
       url: wcsdmMapPicker.params.ajax_url,
       data: {
         action: 'wcsdm_validate_api_key_server',
         nonce: wcsdmMapPicker.params.validate_api_key_nonce,
-        key: apiKey
+        key: $input.val(),
       }
     }).done(function (response) {
       console.log('validateAPIKeyServerSide', response);
-      wcsdmMapPicker.editingAPIKey = false;
 
       if (typeof onSuccess === 'function') {
-        onSuccess(apiKey, $input, $link);
+        onSuccess($input);
       } else {
-        $link.removeClass('editing').data('value', '');
-        $input.prop('readonly', true);
+        $input.addClass('valid');
+
+        setTimeout(function () {
+          $input.removeClass('editing loading valid').data('value', undefined);
+        }, 1000);
       }
     }).fail(function (error) {
       if (error.responseJSON && error.responseJSON.data) {
@@ -114,68 +139,69 @@ var wcsdmMapPicker = {
       } else {
         wcsdmMapPicker.showError($input, 'Google Distance Matrix API error: Uknown');
       }
-    }).always(function () {
-      $link.removeClass('loading').attr('disabled', false);
+
+      $input.prop('readonly', false).removeClass('loading');
     });
   },
   showError: function ($input, errorMessage) {
-    $('<div class="error notice wcsdm-notice"><p>' + wcsdmMapPicker.convertError(errorMessage) + '</p></div>')
+    $('<div class="error notice wcsdm-error-box"><p>' + wcsdmMapPicker.convertError(errorMessage) + '</p></div>')
       .hide()
       .appendTo($input.closest('td'))
       .slideDown();
   },
   removeError: function ($input) {
     $input.closest('td')
-      .find('.wcsdm-notice')
+      .find('.wcsdm-error-box')
       .remove();
   },
   convertError: function (text) {
     var exp = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
     return text.replace(exp, "<a href='$1' target='_blank'>$1</a>");
   },
+  handleApiKeyInput: function (e) {
+    var $input = $(e.currentTarget);
+
+    if ($input.val() === $input.data('value')) {
+      $input.removeClass('editing');
+    } else {
+      $input.addClass('editing');
+    }
+
+    wcsdmMapPicker.removeError($input);
+  },
   editApiKey: function (e) {
     e.preventDefault();
 
-    var $link = $(e.currentTarget);
-    var $input = $link.closest('tr').find('input[type=text]');
-    var apiKey = $input.val();
+    var $input = $(this).blur().prev('input');
+
+    if (!$input.hasClass('editing') || $input.hasClass('loading')) {
+      return;
+    }
+
+    $input.prop('readonly', true).addClass('loading');
+
+    if ($input.attr('data-key') === 'api_key') {
+      wcsdmMapPicker.validateAPIKeyServerSide($input);
+    } else {
+      wcsdmMapPicker.validateAPIKeyBrowserSide($input);
+    }
 
     wcsdmMapPicker.removeError($input);
-
-    if ($link.hasClass('editing')) {
-
-      if (apiKey && apiKey !== $link.data('value')) {
-        $link.addClass('loading').attr('disabled', true);
-
-        if ($link.attr('id') === 'api_key') {
-          wcsdmMapPicker.validateAPIKeyServerSide(apiKey, $input, $link);
-        } else {
-          wcsdmMapPicker.validateAPIKeyBrowserSide(apiKey, $input, $link);
-        }
-      } else {
-        $link.removeClass('editing').data('value', '');
-        $input.prop('readonly', true);
-
-        if ($link.attr('id') === 'api_key') {
-          wcsdmMapPicker.editingAPIKey = false;
-        } else {
-          wcsdmMapPicker.listenConsole = false;
-          wcsdmMapPicker.editingAPIKeyPicker = false;
-        }
-      }
-    } else {
-      $link.addClass('editing').data('value', apiKey);
-      $input.prop('readonly', false);
-
-      if ($link.attr('id') === 'api_key') {
-        wcsdmMapPicker.editingAPIKey = $input;
-      } else {
-        wcsdmMapPicker.editingAPIKeyPicker = $input;
-      }
-    }
   },
-  showLocationPicker: function (e) {
-    e.preventDefault();
+  showLocationPicker: function (event) {
+    event.preventDefault();
+
+    $(this).blur();
+
+    wcsdmMapPicker.apiKeyError = '';
+
+    var api_key_picker = $('#woocommerce_wcsdm_api_key_picker').val();
+
+    if (wcsdmMapPicker.isEditingAPIKey()) {
+      return window.alert(wcsdmError('finish_editing_api'));
+    } else if (!api_key_picker.length) {
+      return window.alert(wcsdmError('api_key_picker_empty'));
+    }
 
     $('.modal-close-link').hide();
 
@@ -198,7 +224,7 @@ var wcsdmMapPicker = {
 
     $('.wc-backbone-modal-header').find('h1').append('<span>' + $subTitle.text() + '</span>');
 
-    wcsdmMapPicker.initMap($('#woocommerce_wcsdm_api_key_picker').val(), wcsdmMapPicker.renderMap);
+    wcsdmMapPicker.initMap(api_key_picker, wcsdmMapPicker.renderMap);
   },
   hideLocationPicker: function (e) {
     e.preventDefault();
@@ -394,5 +420,8 @@ var wcsdmMapPicker = {
     );
 
     map.setCenter(location);
-  }
+  },
+  isEditingAPIKey: function () {
+    return $('.wcsdm-field-type--api_key.editing').length > 0;
+  },
 };

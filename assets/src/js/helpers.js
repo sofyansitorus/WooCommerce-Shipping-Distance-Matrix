@@ -22,7 +22,7 @@ function wcsdmToggleButtons(args) {
 }
 
 function wcsdmGetButtons(args) {
-  var buttonLabels = wcsdm_backend.i18n.buttons;
+  var buttonLabels = wcsdmBackendVars.i18n.buttons;
 
   var leftButtonDefaultId = 'add-rate';
   var leftButtonDefaultIcon = 'plus';
@@ -94,7 +94,7 @@ function wcsdmI18n(path) {
     path = path.split('.');
   }
 
-  return _.property(path)(wcsdm_backend.i18n);
+  return _.property(path)(wcsdmBackendVars.i18n);
 }
 
 function wcsdmError(path) {
@@ -102,7 +102,7 @@ function wcsdmError(path) {
     path = path.split('.');
   }
 
-  return _.property(path)(wcsdm_backend.i18n.errors);
+  return _.property(path)(wcsdmBackendVars.i18n.errors);
 }
 
 function wcsdmSprintf() {

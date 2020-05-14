@@ -60,6 +60,24 @@ var wcsdmTableRates = {
       wcsdmTableRates.handleRateFieldDummy(e);
     }, 800));
 
+    var validateDummyFieldsTimer;
+
+    $(document.body).on('wc_add_error_tip', function (event, $input) {
+      if (event.type !== 'wc_add_error_tip' || !$input.is('.wcsdm-field--context--dummy')) {
+        return;
+      }
+
+      clearTimeout(validateDummyFieldsTimer);
+
+      validateDummyFieldsTimer = setTimeout(function () {
+        $input.trigger('input');
+
+        if ($input.val().length) {
+          wcsdmTableRates.sortRateRows();
+        }
+      }, 800);
+    });
+
     // Toggle selected row
     $(document).off('change', '#woocommerce_wcsdm_distance_unit', wcsdmTableRates.initForm);
     $(document).on('change', '#woocommerce_wcsdm_distance_unit', wcsdmTableRates.initForm);
@@ -468,7 +486,7 @@ var wcsdmTableRates = {
         }
 
         if (!fieldData.error && fieldValue.length) {
-          if ($field.data('validate') === 'number' && isNaN(fieldValue)) {
+          if ($field.data('type') === 'number' && isNaN(fieldValue)) {
             fieldData.error = wcsdmTableRates.rateRowError(rowIndex, wcsdmSprintf(wcsdmError('field_numeric'), fieldTitle));
           }
 
@@ -484,7 +502,7 @@ var wcsdmTableRates = {
         }
 
         if ($field.data('is_rule') && fieldValue.length) {
-          uniqueKey.push(sprintf('%s__%s', fieldKey, fieldValue));
+          uniqueKey.push(wcsdmSprintf('%s__%s', fieldKey, fieldValue));
         }
 
         rowData.fields[fieldKey] = fieldData;

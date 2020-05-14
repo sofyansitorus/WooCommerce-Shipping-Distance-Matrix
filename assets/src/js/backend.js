@@ -64,7 +64,7 @@ var wcsdmBackend = {
       }
     });
 
-    var params = _.mapObject(wcsdm_backend, function (val, key) {
+    var params = _.mapObject(wcsdmBackendVars, function (val, key) {
       switch (key) {
         case 'default_lat':
         case 'default_lng':
@@ -84,13 +84,13 @@ var wcsdmBackend = {
   },
   maybeOpenModal: function () {
     // Try show settings modal on settings page.
-    if (wcsdm_backend.showSettings) {
+    if (wcsdmBackendVars.showSettings) {
       setTimeout(function () {
         var isMethodAdded = false;
         var methods = $(document).find('.wc-shipping-zone-method-type');
         for (var i = 0; i < methods.length; i++) {
           var method = methods[i];
-          if ($(method).text() === wcsdm_backend.methodTitle) {
+          if ($(method).text() === wcsdmBackendVars.methodTitle) {
             $(method).closest('tr').find('.row-actions .wc-shipping-zone-method-settings').trigger('click');
             isMethodAdded = true;
             return;
@@ -100,7 +100,7 @@ var wcsdmBackend = {
         // Show Add shipping method modal if the shipping is not added.
         if (!isMethodAdded) {
           $('.wc-shipping-zone-add-method').trigger('click');
-          $('select[name="add_method_id"]').val(wcsdm_backend.methodId).trigger('change');
+          $('select[name="add_method_id"]').val(wcsdmBackendVars.methodId).trigger('change');
         }
       }, 500);
     }
@@ -108,14 +108,12 @@ var wcsdmBackend = {
   submitForm: function (e) {
     e.preventDefault();
 
-    if (wcsdmMapPicker.editingAPIKey || wcsdmMapPicker.editingAPIKeyPicker) {
+    if (wcsdmMapPicker.isEditingAPIKey()) {
       window.alert(wcsdmError('finish_editing_api'));
+    } else if (!wcsdmTableRates.validateRows()) {
+      window.alert(wcsdmError('table_rates_invalid'));
     } else {
-      if (!wcsdmTableRates.validateRows()) {
-        window.alert(wcsdmError('table_rates_invalid'));
-      } else {
-        $('#btn-ok').trigger('click');
-      }
+      $('#btn-ok').trigger('click');
     }
   },
   toggleStoreOriginFields: function (e) {

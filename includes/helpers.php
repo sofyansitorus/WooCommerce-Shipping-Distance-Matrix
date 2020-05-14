@@ -241,7 +241,11 @@ if ( ! function_exists( 'wcsdm_autoload' ) ) :
 			return;
 		}
 
-		require_once WCSDM_PATH . 'includes/classes/class-' . str_replace( '_', '-', $class ) . '.php';
+		if ( strpos( $class, 'wcsdm_migration_' ) === 0 ) {
+			require_once WCSDM_PATH . 'includes/migrations/class-' . str_replace( '_', '-', $class ) . '.php';
+		} else {
+			require_once WCSDM_PATH . 'includes/classes/class-' . str_replace( '_', '-', $class ) . '.php';
+		}
 	}
 endif;
 
@@ -287,6 +291,87 @@ if ( ! function_exists( 'wcsdm_calc_shipping_field_value' ) ) :
 	}
 endif;
 
+if ( ! function_exists( 'wcsdm_sort_address_fields' ) ) :
+	/**
+	 * Get address fields.
+	 *
+	 * @since 2.1.6
+	 *
+	 * @param array $a Array 1 that will be sorted.
+	 * @param array $b Array 2 that will be compared.
+	 * @return int
+	 */
+	function wcsdm_sort_address_fields( $a, $b ) {
+		if ( $a['priority'] === $b['priority'] ) {
+			return 0;
+		}
+
+		return ( $a['priority'] > $b['priority'] ) ? -1 : 1;
+	}
+endif;
+
+if ( ! function_exists( 'wcsdm_include_address_fields' ) ) :
+	/**
+	 * Get included address fields keys.
+	 *
+	 * @since 2.1.6
+	 *
+	 * @return array
+	 */
+	function wcsdm_include_address_fields() {
+		return array(
+			'address_1',
+			'address_2',
+			'city',
+			'state',
+			'country',
+			'postcode',
+		);
+	}
+endif;
+
+if ( ! function_exists( 'wcsdm_address_fields' ) ) :
+	/**
+	 * Get address fields.
+	 *
+	 * @since 2.1.6
+	 *
+	 * @param string $address_type Address type: billing or shipping.
+	 * @return array|bool Will return false on failure.
+	 */
+	function wcsdm_address_fields( $address_type ) {
+		if ( 'shipping' === $address_type && wc_ship_to_billing_address_only() ) {
+			$address_type = 'billing';
+		}
+
+		$includes = wcsdm_include_address_fields();
+
+		$fields = array();
+
+		foreach ( WC()->checkout->get_checkout_fields( $address_type ) as $key => $field ) {
+			$keys = explode( '_', $key );
+
+			if ( isset( $keys[0] ) && $address_type === $keys[0] ) {
+				unset( $keys[0] );
+			}
+
+			$key = implode( '_', $keys );
+
+			if ( ! in_array( $key, $includes, true ) ) {
+				continue;
+			}
+
+			$fields[ $key ] = $field;
+		}
+
+		if ( $fields ) {
+			uasort( $fields, 'wcsdm_sort_address_fields' );
+		}
+
+		return $fields;
+	}
+endif;
+
 if ( ! function_exists( 'wcsdm_shipping_fields' ) ) :
 	/**
 	 * Get shipping fields.
@@ -296,17 +381,42 @@ if ( ! function_exists( 'wcsdm_shipping_fields' ) ) :
 	 * @return array
 	 */
 	function wcsdm_shipping_fields() {
-		$different_address = ! empty( $_POST['ship_to_different_address'] ) && ! wc_ship_to_billing_address_only(); // phpcs:ignore WordPress
-		$address_type      = $different_address ? 'shipping' : 'billing';
-		$checkout_fields   = WC()->checkout->get_checkout_fields( $address_type );
+		return wcsdm_address_fields( 'shipping' );
+	}
+endif;
 
-		if ( ! $checkout_fields ) {
-			return false;
+if ( ! function_exists( 'wcsdm_billing_fields' ) ) :
+	/**
+	 * Get billing fields.
+	 *
+	 * @since 2.1.6
+	 *
+	 * @return array
+	 */
+	function wcsdm_billing_fields() {
+		return wcsdm_address_fields( 'billing' );
+	}
+endif;
+
+if ( ! function_exists( 'wcsdm_calc_shipping_fields' ) ) :
+	/**
+	 * Get shipping calculator fields.
+	 *
+	 * @since 2.1.6
+	 *
+	 * @return array
+	 */
+	function wcsdm_calc_shipping_fields() {
+		$fields = array();
+
+		foreach ( wcsdm_address_fields( 'shipping' ) as $key => $field ) {
+			if ( ! apply_filters( 'woocommerce_shipping_calculator_enable_' . $key, true ) ) { // phpcs:ignore WordPress.NamingConventions
+				continue;
+			}
+
+			$fields[ $key ] = $field;
 		}
 
-		return array(
-			'type' => $address_type,
-			'data' => $checkout_fields,
-		);
+		return $fields;
 	}
 endif;

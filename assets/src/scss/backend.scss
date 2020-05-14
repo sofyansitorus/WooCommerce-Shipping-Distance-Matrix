@@ -28,6 +28,10 @@
     margin: 0 !important;
   }
 
+  &-error-box {
+    margin: 0 !important
+  }
+
   &-api-services {
     font-size: 12px !important;
     font-weight: 300 !important;
@@ -63,24 +67,6 @@
 
   &-sort-enabled {
     cursor: move;
-  }
-
-  &-edit-api-key {
-    .dashicons:before {
-      content: "\f464";
-    }
-  }
-
-  &-edit-api-key.editing {
-    .dashicons:before {
-      content: "\f113";
-    }
-  }
-
-  &-edit-api-key.loading {
-    .dashicons {
-      animation: rotation 1s infinite linear;
-    }
   }
 
   &-fullwidth:not(a) {
@@ -125,6 +111,10 @@
       background: $alabaster;
     }
 
+    &:read-only {
+      background: $white;
+    }
+
     &-type--title {
       padding-left: 14px !important;
 
@@ -132,6 +122,56 @@
         padding-top: 8px !important;
         margin: 14px !important;
         border-top: 1px solid $iron;
+      }
+    }
+
+    &-type--api_key {
+      ~.button {
+        width: 40px;
+        position: relative;
+        transform: scale(1);
+        transition: all .2s ease-in-out;
+
+        span {
+          &:before {
+            font-size: 20px;
+            top: 4px;
+            line-height: 1;
+            left: 8px;
+            content: "\f113";
+          }
+        }
+      }
+
+      &:not(.editing) {
+        ~.button {
+          height: 0;
+          width: 0;
+          transform: scale(0);
+        }
+      }
+
+      &.loading {
+        ~.button {
+          pointer-events: none;
+
+          span {
+            animation: rotation 1s infinite linear;
+          }
+        }
+      }
+
+      &.valid {
+        ~.button {
+
+          span {
+            animation: none;
+
+            &:before {
+              content: "\f147";
+            }
+          }
+        }
       }
     }
 
