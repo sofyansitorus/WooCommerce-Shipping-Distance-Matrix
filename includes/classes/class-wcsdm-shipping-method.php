@@ -161,7 +161,9 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			$this->init_instance_settings();
 		}
 
-		$data_version = get_option( 'wcsdm_data_version' );
+		$data_version_option_key = 'wcsdm_data_version_' . $this->get_instance_id();
+
+		$data_version = get_option( $data_version_option_key );
 
 		if ( $data_version && version_compare( WCSDM_DATA_VERSION, $data_version, '<=' ) ) {
 			return;
@@ -218,7 +220,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			$data_version = $migration->get_version();
 
 			// Update the latest version migrated option.
-			update_option( 'wcsdm_data_version', $data_version, 'yes' );
+			update_option( $data_version_option_key, $data_version, 'yes' );
 
 			// translators: %s is data migration version.
 			$this->show_debug( sprintf( __( 'Data migrated to version %s', 'wcsdm' ), $data_version ) );
