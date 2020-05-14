@@ -502,7 +502,7 @@ var wcsdmTableRates = {
         }
 
         if ($field.data('is_rule') && fieldValue.length) {
-          uniqueKey.push(sprintf('%s__%s', fieldKey, fieldValue));
+          uniqueKey.push(wcsdmSprintf('%s__%s', fieldKey, fieldValue));
         }
 
         rowData.fields[fieldKey] = fieldData;
