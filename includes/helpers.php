@@ -72,6 +72,7 @@ function wcsdm_i18n( $key = '', $default = '' ) {
 			// translators: %1$d = row number, %2$s = error message.
 			'duplicate_rate_row'    => __( 'Shipping rules combination duplicate with rate row #%1$d: %2$s', 'wcsdm' ),
 			'finish_editing_api'    => __( 'Please finish the API Key Editing first!', 'wcsdm' ),
+			'api_key_picker_empty'  => __( 'Location Picker API Key cannot be empty!', 'wcsdm' ),
 			'table_rates_invalid'   => __( 'Table rates data is incomplete or invalid!', 'wcsdm' ),
 		),
 		'Save Changes' => __( 'Save Changes', 'wcsdm' ),
