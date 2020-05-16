@@ -74,19 +74,17 @@ abstract class Wcsdm_Migration {
 		$update_options = array();
 
 		foreach ( $options_pair as $option_new => $option_old ) {
-			$option_old_value = $this->get_old_option( $option_old );
+			if ( $option_old ) {
+				$option_old_value = $this->get_old_option( $option_old, $option_new );
 
-			if ( is_null( $option_old_value ) ) {
-				continue;
+				if ( is_wp_error( $option_old_value ) ) {
+					continue;
+				}
 			}
 
-			$option_new_value = $this->get_new_option( $option_new );
+			$option_new_value = $this->get_new_option( $option_new, $option_old );
 
-			if ( ! is_null( $option_new_value ) ) {
-				continue;
-			}
-
-			if ( $option_old_value === $option_new_value ) {
+			if ( is_wp_error( $option_new_value ) ) {
 				continue;
 			}
 
@@ -119,44 +117,44 @@ abstract class Wcsdm_Migration {
 	 * Get old option value.
 	 *
 	 * @param string $key Old option key.
+	 * @param string $new_key New option key pair.
 	 *
 	 * @return mixed
 	 */
-	protected function get_old_option( $key ) {
+	protected function get_old_option( $key, $new_key ) {
 		if ( is_callable( array( $this, 'get_old_option__' . $key ) ) ) {
-			return call_user_func( array( $this, 'get_old_option__' . $key ) );
+			return call_user_func( array( $this, 'get_old_option__' . $key ), $new_key );
 		}
 
 		if ( isset( $this->wc_shipping->instance_settings[ $key ] ) ) {
 			return $this->wc_shipping->instance_settings[ $key ];
 		}
 
-		return null;
+		return new WP_Error();
 	}
 
 	/**
 	 * Get new option value.
 	 *
 	 * @param string $key New option key.
+	 * @param string $old_key Old option key.
 	 *
 	 * @return mixed
 	 */
-	protected function get_new_option( $key ) {
+	protected function get_new_option( $key, $old_key ) {
 		if ( is_callable( array( $this, 'get_new_option__' . $key ) ) ) {
-			return call_user_func( array( $this, 'get_new_option__' . $key ) );
+			return call_user_func( array( $this, 'get_new_option__' . $key ), $old_key );
 		}
 
 		if ( isset( $this->wc_shipping->instance_settings[ $key ] ) ) {
 			return $this->wc_shipping->instance_settings[ $key ];
 		}
 
-		return null;
+		return new WP_Error();
 	}
 
 	/**
 	 * Get options pair data
-	 *
-	 * @since 2.1.10
 	 *
 	 * @return array
 	 */
