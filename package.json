@@ -3,13 +3,13 @@
 	"title": "WooCommerce shipping rates calculator based on products shipping class and distances",
 	"author": "Sofyan Sitorus",
 	"homepage": "https://github.com/sofyansitorus/",
-	"version": "2.1.10",
+	"version": "2.1.11",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/sofyansitorus/WooCommerce-Shipping-Distance-Matrix.git"
 	},
 	"engines": {
-		"node": ">=8.0.0 <10"
+		"node": ">=8.0.0 =<10"
 	},
 	"devDependencies": {
 		"browser-sync": "^2.24.4",
@@ -39,8 +39,6 @@
 		"build": "./node_modules/.bin/gulp build",
 		"lintScripts": "./node_modules/.bin/gulp lintScripts",
 		"bump": "./node_modules/.bin/gulp bump",
-		"dist": "./node_modules/.bin/gulp dist",
-		"phpcs": "./node_modules/.bin/gulp phpcs",
-		"phpcbf": "./node_modules/.bin/gulp phpcbf"
+		"dist": "./node_modules/.bin/gulp dist"
 	}
 }

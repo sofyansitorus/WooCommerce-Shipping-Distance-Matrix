@@ -274,24 +274,39 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'description' => sprintf( __( 'This plugin requires Google API Key and also need to have the following APIs services enabled: Distance Matrix API, Maps JavaScript API, Geocoding API, Places API. Please <a href="%s" target="_blank">click here</a> to go to the Google API Console to create API Key and to enable the API services.', 'wcsdm' ), 'https://cloud.google.com/maps-platform/#get-started' ),
 			),
 			'api_key'                     => array(
-				'title'        => __( 'Distance Calculator API Key', 'wcsdm' ),
-				'type'         => 'wcsdm',
-				'orig_type'    => 'api_key',
-				'description'  => __( 'API Key used to calculate the shipping address distance.', 'wcsdm' ),
-				'api_services' => __( 'Required API Services: <strong>Distance Matrix API</strong>. Please disable the API Key restriction unless you know what you are doing, then set it to <strong>IP addresses</strong>.', 'wcsdm' ),
-				'desc_tip'     => true,
-				'default'      => '',
-				'is_required'  => true,
+				'title'           => __( 'Distance Calculator API Key', 'wcsdm' ),
+				'type'            => 'wcsdm',
+				'orig_type'       => 'api_key',
+				'description'     => __( 'API Key used to calculate the shipping address distance.', 'wcsdm' ),
+				'desc_tip'        => true,
+				'default'         => '',
+				'is_required'     => true,
+				'api_services'    => array(
+					'Distance Matrix API' => 'https://developers.google.com/maps/documentation/distance-matrix/overview',
+				),
+				'api_restriction' => array(
+					'label' => 'IP addresses',
+					'link'  => 'https://developers.google.com/maps/api-key-best-practices#restrict_apikey',
+				),
 			),
 			'api_key_picker'              => array(
-				'title'        => __( 'Location Picker API Key', 'wcsdm' ),
-				'type'         => 'wcsdm',
-				'orig_type'    => 'api_key',
-				'description'  => __( 'API Key used to render the location picker map.', 'wcsdm' ),
-				'api_services' => __( 'Required API Services: <strong>Maps JavaScript API, Geocoding API, Places API</strong>. Please disable the API Key restriction unless you know what you are doing, then set it to <strong>HTTP referrers.</strong>', 'wcsdm' ),
-				'desc_tip'     => true,
-				'default'      => '',
-				'is_required'  => true,
+				'title'           => __( 'Location Picker API Key', 'wcsdm' ),
+				'type'            => 'wcsdm',
+				'orig_type'       => 'api_key',
+				'description'     => __( 'API Key used to render the location picker map.', 'wcsdm' ),
+				'api_services'    => __( 'Required API Services: <strong>Maps JavaScript API, Geocoding API, Places API</strong>. Please disable the API Key restriction unless you know what you are doing, then set it to <strong>HTTP referrers.</strong>', 'wcsdm' ),
+				'desc_tip'        => true,
+				'default'         => '',
+				'is_required'     => true,
+				'api_services'    => array(
+					'Maps JavaScript API' => 'https://developers.google.com/maps/documentation/javascript/overview',
+					'Geocoding API'       => 'https://developers.google.com/maps/documentation/geocoding/overview',
+					'Places API'          => 'https://developers.google.com/maps/documentation/places/web-service/overview',
+				),
+				'api_restriction' => array(
+					'label' => 'HTTP referrers',
+					'link'  => 'https://developers.google.com/maps/api-key-best-practices#restrict_apikey',
+				),
 			),
 			'origin_type'                 => array(
 				'title'             => __( 'Store Origin Data Type', 'wcsdm' ),
@@ -325,6 +340,9 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					'readonly'  => true,
 					'data-link' => 'location_picker',
 				),
+				'show_if'           => array(
+					'origin_type' => 'coordinate',
+				),
 			),
 			'origin_lng'                  => array(
 				'title'             => __( 'Store Location Longitude', 'wcsdm' ),
@@ -338,6 +356,9 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					'readonly'  => true,
 					'data-link' => 'location_picker',
 				),
+				'show_if'           => array(
+					'origin_type' => 'coordinate',
+				),
 			),
 			'origin_address'              => array(
 				'title'             => __( 'Store Location Address', 'wcsdm' ),
@@ -350,6 +371,9 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'custom_attributes' => array(
 					'readonly'  => true,
 					'data-link' => 'location_picker',
+				),
+				'show_if'           => array(
+					'origin_type' => 'address',
 				),
 			),
 			'field_group_route'           => array(
@@ -449,8 +473,8 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'type'        => 'wcsdm',
 				'orig_type'   => 'title',
 				'class'       => 'wcsdm-field-group',
-				'title'       => __( 'Global Rates Settings', 'wcsdm' ),
-				'description' => __( 'Default settings that will be inherited by certain settings in table rates when it is empty.', 'wcsdm' ),
+				'title'       => __( 'Default Rates Settings', 'wcsdm' ),
+				'description' => __( 'Default settings that will be inherited by certain settings in table rates when the value is empty.', 'wcsdm' ),
 			),
 			'title'                       => array(
 				'title'       => __( 'Label', 'wcsdm' ),
@@ -515,6 +539,9 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 						'title'       => __( 'Surcharge', 'wcsdm' ),
 					),
 				),
+				'hide_if'           => array(
+					'surcharge_type' => 'none',
+				),
 			),
 			'discount_type'               => array(
 				'type'        => 'wcsdm',
@@ -558,6 +585,9 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 						'is_hidden'   => true,
 						'title'       => __( 'Discount', 'wcsdm' ),
 					),
+				),
+				'hide_if'           => array(
+					'discount_type' => 'none',
 				),
 			),
 			'total_cost_type'             => array(
@@ -634,7 +664,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'orig_type'   => 'title',
 				'class'       => 'wcsdm-field-group',
 				'title'       => __( 'Table Rates Settings', 'wcsdm' ),
-				'description' => __( 'Determine the shipping cost based on the shipping address distance and advanced rules. The rate row that will be chosen during checkout is the first row that matched with the maximum distance rule and the advanced rules if defined. You can sort the rate row priority manually by dragging vertically the "move" icon on the right that will be enabled when there are rows has the same maximum distance values.', 'wcsdm' ),
+				'description' => __( 'Determine the shipping cost based on the shipping address distance and advanced rules. The rate row that will be chosen during checkout is the first row that matched with the maximum distance rule and the advanced rules if defined. You can sort the rate row priority manually by dragging vertically the <span class="dashicons dashicons-move"></span> icon that will be enabled when there are rows has the same maximum distance values.', 'wcsdm' ),
 			),
 			'table_rates'                 => array(
 				'type'  => 'table_rates',
@@ -849,7 +879,8 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		);
 
 		$shipping_classes = array();
-		foreach ( WC()->shipping->get_shipping_classes() as $shipping_classes_key => $shipping_classes_value ) {
+
+		foreach ( WC()->shipping->get_shipping_classes() as $shipping_classes_value ) {
 			$shipping_classes[ $shipping_classes_value->term_id ] = $shipping_classes_value;
 		}
 
@@ -893,7 +924,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					if ( isset( $field['options'] ) && ! isset( $field['table_rate']['attrs']['options'] ) ) {
 						$field['options'] = array_merge(
 							array(
-								'inherit' => __( 'Inherit - Use global setting', 'wcsdm' ),
+								'inherit' => __( 'Inherit - Use default rate settings', 'wcsdm' ),
 							),
 							$field['options']
 						);
@@ -1060,24 +1091,72 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			'type'              => 'text',
 			'desc_tip'          => false,
 			'description'       => '',
-			'api_services'      => '',
+			'api_services'      => array(),
+			'api_restriction'   => array(),
 			'custom_attributes' => array(),
 		);
 
 		$data = wp_parse_args( $data, $defaults );
 
+		$api_restriction = '';
+
+		if ( $data['api_restriction'] ) {
+			$api_restriction = wp_sprintf(
+				'<a href="%1$s" target="_blank">%2$s</a>',
+				$data['api_restriction']['link'],
+				$data['api_restriction']['label']
+			);
+		}
+
+		$api_services = '';
+
+		if ( $data['api_services'] ) {
+			$api_services_links = array();
+
+			foreach ( $data['api_services'] as $label => $link ) {
+				$api_services_links[] = sprintf( '<a href="%1$s" target="_blank">%2$s</a>', $link, $label );
+			}
+
+			$api_services = implode( ', ', $api_services_links );
+		}
+
 		ob_start();
 		?>
 		<tr valign="top" class="wcsdm-row-api-key">
 			<th scope="row" class="titledesc">
-				<label for="<?php echo esc_attr( $field_key ); ?>"><?php echo wp_kses_post( $data['title'] ); ?> <?php echo $this->get_tooltip_html( $data ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
+				<label for="<?php echo esc_attr( $field_key ); ?>">
+					<?php echo wp_kses_post( $data['title'] ); ?> <?php echo $this->get_tooltip_html( $data ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				</label>
 			</th>
 			<td class="forminp">
 				<fieldset>
-					<legend class="screen-reader-text"><span><?php echo wp_kses_post( $data['title'] ); ?></span></legend>
-					<input type="text" class="input-text regular-input <?php echo esc_attr( $data['class'] ); ?>" name="<?php echo esc_attr( $field_key ); ?>" id="<?php echo esc_attr( $field_key ); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" value="<?php echo esc_attr( $this->get_option( $key ) ); ?>" placeholder="<?php echo esc_attr( $data['placeholder'] ); ?>" data-key="<?php echo esc_attr( $key ); ?>" readonly="readonly" />
-					<a href="#" class="button button-secondary wcsdm-buttons--has-icon wcsdm-edit-api-key wcsdm-link" id="<?php echo esc_attr( $key ); ?>" title="<?php esc_attr_e( 'Edit API Key', 'wcsdm' ); ?>"><span class="dashicons"></span></a>
-					<div class="wcsdm-api-services"><?php echo wp_kses_post( $data['api_services'] ); ?></div>
+					<div class="wcsdm-api-notice notice">
+						<legend class="screen-reader-text">
+							<span><?php echo wp_kses_post( $data['title'] ); ?></span>
+						</legend>
+
+						<input type="text" class="input-text regular-input <?php echo esc_attr( $data['class'] ); ?>" name="<?php echo esc_attr( $field_key ); ?>" id="<?php echo esc_attr( $field_key ); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" value="<?php echo esc_attr( $this->get_option( $key ) ); ?>" placeholder="<?php echo esc_attr( $data['placeholder'] ); ?>" data-key="<?php echo esc_attr( $key ); ?>" readonly="readonly" />
+
+						<a href="#" class="button button-secondary wcsdm-buttons--has-icon wcsdm-edit-api-key wcsdm-link" id="<?php echo esc_attr( $key ); ?>" title="<?php esc_attr_e( 'Edit API Key', 'wcsdm' ); ?>">
+							<span class="dashicons dashicons-update"></span>
+						</a>
+
+						<?php if ( $api_services || $api_restriction ) : ?>
+
+						<ul>
+							<?php if ( $api_services ) : ?>
+							<li>
+								<strong><?php esc_html_e( 'Required API Services', 'wcsdm' ); ?></strong>: <?php echo wp_kses_post( $api_services ); ?>
+							</li>
+							<?php endif; ?>
+							<?php if ( $api_restriction ) : ?>
+							<li>
+								<strong><?php esc_html_e( 'Application Restriction', 'wcsdm' ); ?></strong>: <?php echo wp_kses_post( $api_restriction ); ?>
+							</li>
+							<?php endif; ?>
+						</ul>
+						<?php endif; ?>
+					</div>
 					<?php echo $this->get_description_html( $data ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				</fieldset>
 			</td>
@@ -1939,17 +2018,35 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		$data['class'] = implode( ' ', array_map( 'trim', array_unique( array_filter( $data_classes ) ) ) );
 
 		$custom_attributes = array(
-			'data-type'        => $data['type'],
-			'data-key'         => $key,
-			'data-title'       => isset( $data['title'] ) ? $data['title'] : $key,
-			'data-id'          => $this->get_field_key( $key ),
-			'data-context'     => isset( $data['context'] ) ? $data['context'] : '',
-			'data-title'       => isset( $data['title'] ) ? $data['title'] : $key,
-			'data-options'     => isset( $data['options'] ) ? wp_json_encode( $data['options'] ) : wp_json_encode( array() ),
-			'data-is_rate'     => empty( $data['is_rate'] ) ? '0' : '1',
-			'data-is_required' => empty( $data['is_required'] ) ? '0' : '1',
-			'data-is_rule'     => empty( $data['is_rule'] ) ? '0' : '1',
+			'data-key'   => $key,
+			'data-id'    => $this->get_field_key( $key ),
+			'data-title' => isset( $data['title'] ) ? $data['title'] : $key,
 		);
+
+		$data_keys = array(
+			'type',
+			'is_rate',
+			'is_required',
+			'is_rule',
+			'context',
+			'options',
+			'hide_if',
+			'show_if',
+		);
+
+		foreach ( $data_keys as $data_key ) {
+			if ( ! isset( $data[ $data_key ] ) ) {
+				continue;
+			}
+
+			if ( is_array( $data[ $data_key ] ) ) {
+				$custom_attributes[ 'data-' . $data_key ] = wp_json_encode( $data[ $data_key ] );
+			} elseif ( is_bool( $data[ $data_key ] ) ) {
+				$custom_attributes[ 'data-' . $data_key ] = $data[ $data_key ] ? 1 : 0;
+			} else {
+				$custom_attributes[ 'data-' . $data_key ] = $data[ $data_key ];
+			}
+		}
 
 		$data['custom_attributes'] = array_merge( $data['custom_attributes'], $custom_attributes );
 
@@ -2182,7 +2279,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				// Hold costs data for progressive total_cost_type.
 				$progressive = array();
 
-				foreach ( $package['contents'] as $hash => $item ) {
+				foreach ( $package['contents'] as $item ) {
 					if ( ! $item['data']->needs_shipping() ) {
 						continue;
 					}

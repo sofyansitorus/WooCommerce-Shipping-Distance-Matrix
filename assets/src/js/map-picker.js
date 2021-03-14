@@ -137,7 +137,7 @@ var wcsdmMapPicker = {
       } else if (error.statusText) {
         wcsdmMapPicker.showError($input, error.statusText);
       } else {
-        wcsdmMapPicker.showError($input, 'Google Distance Matrix API error: Uknown');
+        wcsdmMapPicker.showError($input, wcsdmMapPicker.params.i18n.errors.unknown);
       }
 
       $input.prop('readonly', false).removeClass('loading');
@@ -152,7 +152,7 @@ var wcsdmMapPicker = {
   removeError: function ($input) {
     $input.closest('td')
       .find('.wcsdm-error-box')
-      .remove();
+      .slideUp('fast');
   },
   convertError: function (text) {
     var exp = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
