@@ -144,7 +144,7 @@ class Wcsdm_API {
 
 			throw new Exception( __( 'No results found', 'wcsdm' ) );
 		} catch ( Exception $e ) {
-			return new WP_Error( 'api_request', __( 'Google Distance Matrix API error', 'wcsdm' ) . ': ' . $e->getMessage() );
+			return new WP_Error( 'api_request', $e->getMessage() );
 		}
 	}
 }

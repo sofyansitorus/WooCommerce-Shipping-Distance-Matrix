@@ -74,6 +74,7 @@ function wcsdm_i18n( $key = '', $default = '' ) {
 			'finish_editing_api'    => __( 'Please finish the API Key Editing first!', 'wcsdm' ),
 			'api_key_picker_empty'  => __( 'Location Picker API Key cannot be empty!', 'wcsdm' ),
 			'table_rates_invalid'   => __( 'Table rates data is incomplete or invalid!', 'wcsdm' ),
+			'unknown'               => __( 'Unknown error!', 'wcsdm' ),
 		),
 		'Save Changes' => __( 'Save Changes', 'wcsdm' ),
 		'Add New Rate' => __( 'Add New Rate', 'wcsdm' ),
@@ -83,8 +84,15 @@ function wcsdm_i18n( $key = '', $default = '' ) {
 		$keys = explode( '.', $key );
 
 		$temp = $i18n;
+
 		foreach ( $keys as $path ) {
-			$temp = &$temp[ $path ];
+			if ( ! isset( $temp[ $path ] ) ) {
+				$temp = null;
+
+				break;
+			}
+
+			$temp = $temp[ $path ];
 		}
 
 		return is_null( $temp ) ? $default : $temp;

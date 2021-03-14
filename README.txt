@@ -3,9 +3,9 @@ Contributors: sofyansitorus
 Tags: woocommerce,woocommerce-shipping,local-shipping,private-shipping
 Donate link: https://www.buymeacoffee.com/sofyansitorus?utm_source=wooreer_plugin_page&utm_medium=referral
 Requires at least: 4.8
-Tested up to: 5.4.1
+Tested up to: 5.7
 Requires PHP: 5.6
-Stable tag: 2.1.10
+Stable tag: 2.1.11
 License: GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
