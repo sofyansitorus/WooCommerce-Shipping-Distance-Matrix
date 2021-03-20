@@ -2243,7 +2243,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				 */
 				$rate = apply_filters( 'wcsdm_table_rates_row', $rate, $index, $api_response, $package, $this );
 
-				$rate = $this->norlmalize_table_rate_row( $rate );
+				$rate = $this->normalize_table_rate_row( $rate );
 
 				if ( ! $rate ) {
 					continue;
@@ -2477,7 +2477,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	 *
 	 * @return array
 	 */
-	private function norlmalize_table_rate_row( $rate ) {
+	private function normalize_table_rate_row( $rate ) {
 		if ( ! is_array( $rate ) ) {
 			return false;
 		}
