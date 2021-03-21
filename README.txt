@@ -5,7 +5,7 @@ Donate link: https://www.buymeacoffee.com/sofyansitorus?utm_source=wooreer_plugi
 Requires at least: 4.8
 Tested up to: 5.7
 Requires PHP: 5.6
-Stable tag: 2.1.11
+Stable tag: 2.1.12
 License: GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -127,13 +127,15 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 >
 > **Please upgrade wisely and carefully.**
 
-= 2.1.10 =
+= 2.1.12 =
 
-* Fix - Fixed table rate rows validation does not work properly when using a comma as a decimal separator.
-* Fix - Fixed JS error in admin script sprintf undefined.
-* Fix - Fixed JS conflict with certain plugins/themes on the frontend related to underscore.js.
-* Enhancement - Added data migration functionality.
-* Enhancement - Improved API Key setting interface.
+* Enhancement - Added log functionality.
+* Fix - Fixed table rates auto sort not works for max ditance with decimal value.
+
+= 2.1.11 =
+
+* Enhancement - Improved UI/UX admin settings panel.
+* Enhancement - Updated version compatibility.
 
 = 2.1.9 =
 
