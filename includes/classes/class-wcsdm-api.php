@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @subpackage Wcsdm/includes
  * @author     Sofyan Sitorus <sofyansitorus@gmail.com>
  */
-class Wcsdm_API {
+abstract class Wcsdm_API {
 
 	/**
 	 * URL of Google Maps Distance Matrix API
@@ -30,7 +30,7 @@ class Wcsdm_API {
 	 * @since    2.0.8
 	 * @var string
 	 */
-	private $api_url = 'https://maps.googleapis.com/maps/api/distancematrix/json';
+	private static $api_url = 'https://maps.googleapis.com/maps/api/distancematrix/json';
 
 	/**
 	 * Making HTTP request to Google Maps Distance Matrix API
@@ -38,113 +38,183 @@ class Wcsdm_API {
 	 * @param array $args          Custom arguments for $settings and $package data.
 	 * @param bool  $is_validation Is the request for validation purpose or not.
 	 *
-	 * @throws Exception If error happen.
-	 * @return array
+	 * @return (array[]|WP_Error) WP_Error on failure.
 	 */
-	public function calculate_distance( $args = array(), $is_validation = false ) {
-		try {
-			$args = wp_parse_args(
-				$args,
+	public static function calculate_distance( $args = array(), $is_validation = false ) {
+		$request_data = wp_parse_args(
+			$args,
+			array(
+				'origins'      => $is_validation ? array( WCSDM_DEFAULT_LAT, WCSDM_DEFAULT_LNG ) : '',
+				'destinations' => $is_validation ? array( WCSDM_TEST_LAT, WCSDM_TEST_LNG ) : '',
+				'key'          => '',
+				'avoid'        => '',
+				'language'     => get_locale(),
+				'units'        => 'metric',
+				'mode'         => 'driving',
+			)
+		);
+
+		foreach ( $request_data as $key => $value ) {
+			if ( is_array( $value ) ) {
+				$request_data[ $key ] = implode( ',', array_map( 'rawurlencode', $value ) );
+			} else {
+				$request_data[ $key ] = rawurlencode( $value );
+			}
+		}
+
+		$request_data_masked = array_merge(
+			$request_data,
+			array(
+				'key' => '***',
+			)
+		);
+
+		$api_response = wp_remote_get( add_query_arg( $request_data, self::$api_url ) );
+
+		// Check if HTTP request is error.
+		if ( is_wp_error( $api_response ) ) {
+			$api_response->add_data(
 				array(
-					'origins'      => $is_validation ? array( WCSDM_DEFAULT_LAT, WCSDM_DEFAULT_LNG ) : '',
-					'destinations' => $is_validation ? array( WCSDM_TEST_LAT, WCSDM_TEST_LNG ) : '',
-					'key'          => '',
-					'avoid'        => '',
-					'language'     => get_locale(),
-					'units'        => 'metric',
-					'mode'         => 'driving',
+					'request_data' => $request_data_masked,
 				)
 			);
 
-			foreach ( $args as $key => $value ) {
-				if ( is_array( $value ) ) {
-					$args[ $key ] = implode( ',', array_map( 'rawurlencode', $value ) );
-				} else {
-					$args[ $key ] = rawurlencode( $value );
-				}
-			}
-
-			$request_url = add_query_arg( $args, $this->api_url );
-
-			$raw_response = wp_remote_get( esc_url_raw( $request_url ) );
-
-			// Check if HTTP request is error.
-			if ( is_wp_error( $raw_response ) ) {
-				throw new Exception( $raw_response->get_error_message() );
-			}
-
-			$response_body = wp_remote_retrieve_body( $raw_response );
-
-			// Check if API response is empty.
-			if ( empty( $response_body ) ) {
-				throw new Exception( __( 'API response is empty', 'wcsdm' ) );
-			}
-
-			// Decode API response body.
-			$response_data = json_decode( $response_body, true );
-
-			// Check if JSON data is valid.
-			$json_last_error_msg = json_last_error_msg();
-
-			if ( $json_last_error_msg && 'No error' !== $json_last_error_msg ) {
-				// translators: %s is json decoding error message.
-				throw new Exception( sprintf( __( 'Error occurred while decoding API response: %s', 'wcsdm' ), $json_last_error_msg ) );
-			}
-
-			// Check API response is OK.
-			$status = isset( $response_data['status'] ) ? $response_data['status'] : '';
-			if ( 'OK' !== $status ) {
-				$error_message = $status;
-
-				if ( isset( $response_data['error_message'] ) ) {
-					$error_message .= ' - ' . $response_data['error_message'];
-				}
-
-				throw new Exception( $error_message );
-			}
-
-			$errors  = array();
-			$results = array();
-
-			// Get the shipping distance.
-			foreach ( $response_data['rows'] as $row ) {
-				foreach ( $row['elements'] as $element ) {
-					// Check element status code.
-					if ( 'OK' !== $element['status'] ) {
-						$errors[] = $element['status'];
-						continue;
-					}
-
-					$results[] = array(
-						'distance'      => $element['distance']['value'],
-						'distance_text' => $element['distance']['text'],
-						'duration'      => $element['duration']['value'],
-						'duration_text' => $element['duration']['text'],
-					);
-				}
-			}
-
-			if ( ! empty( $results ) ) {
-				return $results;
-			}
-
-			if ( ! empty( $errors ) ) {
-				$error_template = array(
-					'NOT_FOUND'                 => __( 'Origin and/or destination of this pairing could not be geocoded', 'wcsdm' ),
-					'ZERO_RESULTS'              => __( 'No route could be found between the origin and destination', 'wcsdm' ),
-					'MAX_ROUTE_LENGTH_EXCEEDED' => __( 'Requested route is too long and cannot be processed', 'wcsdm' ),
-				);
-
-				foreach ( $errors as $error_key ) {
-					if ( isset( $error_template[ $error_key ] ) ) {
-						throw new Exception( $error_key . ' - ' . $error_template[ $error_key ] );
-					}
-				}
-			}
-
-			throw new Exception( __( 'No results found', 'wcsdm' ) );
-		} catch ( Exception $e ) {
-			return new WP_Error( 'api_request', $e->getMessage() );
+			return $api_response;
 		}
+
+		if ( empty( $api_response['body'] ) ) {
+			return new WP_Error(
+				'api_response_body_empty',
+				__( 'API response is empty.', 'wcsdm' ),
+				array(
+					'request_data' => $request_data_masked,
+					'api_response' => $api_response,
+				)
+			);
+		}
+
+		// Decode API response body.
+		$response_data = json_decode( $api_response['body'], true );
+
+		if ( is_null( $response_data ) ) {
+			return new WP_Error(
+				'json_last_error',
+				json_last_error_msg(),
+				array(
+					'request_data' => $request_data_masked,
+					'api_response' => $api_response,
+				)
+			);
+		}
+
+		// Check API response is OK.
+		$status = isset( $response_data['status'] ) ? $response_data['status'] : 'UNKNOWN_ERROR';
+
+		if ( 'OK' !== $status ) {
+			if ( isset( $response_data['error_message'] ) ) {
+				return new WP_Error(
+					$status,
+					$response_data['error_message'],
+					array(
+						'request_data'  => $request_data_masked,
+						'response_data' => $response_data,
+					)
+				);
+			}
+
+			return new WP_Error(
+				$status,
+				$status,
+				array(
+					'request_data'  => $request_data_masked,
+					'response_data' => $response_data,
+				)
+			);
+		}
+
+		$element_errors = array(
+			'NOT_FOUND'                 => __( 'Origin and/or destination of this pairing could not be geocoded.', 'wcsdm' ),
+			'ZERO_RESULTS'              => __( 'No route could be found between the origin and destination.', 'wcsdm' ),
+			'MAX_ROUTE_LENGTH_EXCEEDED' => __( 'Requested route is too long and cannot be processed.', 'wcsdm' ),
+			'UNKNOWN'                   => __( 'Unknown error.', 'wcsdm' ),
+		);
+
+		$errors  = new WP_Error();
+		$results = array();
+
+		// Get the shipping distance.
+		foreach ( $response_data['rows'] as $row ) {
+			foreach ( $row['elements'] as $element ) {
+				$element_status = isset( $element['status'] ) ? $element['status'] : 'UNKNOWN';
+
+				if ( 'OK' === $element_status ) {
+					$results[] = array(
+						'distance' => $element['distance']['value'], // Distance in meters unit.
+						'duration' => $element['duration']['value'], // Duration in seconds unit.
+					);
+
+					continue;
+				}
+
+				if ( ! isset( $element_errors[ $element_status ] ) ) {
+					$element_status = 'UNKNOWN';
+				}
+
+				$errors->add(
+					$element_status,
+					$element_errors[ $element_status ],
+					array(
+						'request_data'  => $request_data_masked,
+						'response_data' => $response_data,
+					)
+				);
+			}
+		}
+
+		if ( ! empty( $results ) ) {
+			return $results;
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * Convert Meters to Distance Unit
+	 *
+	 * @since    1.3.2
+	 *
+	 * @param int    $meters Number of meters to convert.
+	 * @param string $unit Matrix unit to convert to.
+	 *
+	 * @return float
+	 */
+	protected static function convert_distance( $meters, $unit ) {
+		if ( 'imperial' === $unit ) {
+			return self::convert_distance_to_mi( $meters );
+		}
+
+		return self::convert_distance_to_km( $meters );
+	}
+
+	/**
+	 * Convert Meters to Miles
+	 *
+	 * @since    1.3.2
+	 * @param int $meters Number of meters to convert.
+	 * @return float
+	 */
+	protected static function convert_distance_to_mi( $meters ) {
+		return floatVal( ( $meters * 0.000621371 ) );
+	}
+
+	/**
+	 * Convert Meters to Kilometers
+	 *
+	 * @since    1.3.2
+	 * @param int $meters Number of meters to convert.
+	 * @return float
+	 */
+	protected static function convert_distance_to_km( $meters ) {
+		return floatVal( ( $meters * 0.001 ) );
 	}
 }

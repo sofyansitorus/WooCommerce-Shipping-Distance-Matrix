@@ -344,9 +344,7 @@ class Wcsdm {
 			$key = 'InvalidKey';
 		}
 
-		$api = new Wcsdm_API();
-
-		$distance = $api->calculate_distance(
+		$distance = Wcsdm_API::calculate_distance(
 			array(
 				'key' => $key,
 			),
