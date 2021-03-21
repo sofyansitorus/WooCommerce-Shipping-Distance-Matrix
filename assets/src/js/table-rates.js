@@ -124,7 +124,7 @@ var wcsdmTableRates = {
     if ($field.hasClass('wcsdm-field--context--dummy--max_distance')) {
       $row.addClass('editing');
 
-      if (parseInt($field.val()) !== parseInt($field.data('value'))) {
+      if ($field.val() !== $field.data('value')) {
         wcsdmTableRates.sortRateRows($field);
       }
     }
@@ -359,8 +359,8 @@ var wcsdmTableRates = {
         return 2;
       }
 
-      aMaxDistance = parseInt(aMaxDistance, 10);
-      bMaxDistance = parseInt(bMaxDistance, 10);
+      aMaxDistance = parseFloat(aMaxDistance);
+      bMaxDistance = parseFloat(bMaxDistance);
 
       if (aMaxDistance < bMaxDistance) {
         return -1;
