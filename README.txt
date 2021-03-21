@@ -130,7 +130,7 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 = 2.1.12 =
 
 * Enhancement - Added log functionality.
-* Fix - Fixed table rates auto sort not works for max ditance with decimal value.
+* Fix - Fixed table rates auto sort not works for max distance with decimal value.
 
 = 2.1.11 =
 
