@@ -265,6 +265,14 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					'none'    => __( 'None', 'wcsdm' ),
 				),
 			),
+			'enable_log'                  => array(
+				'title'       => __( 'Enable Log', 'wcsdm' ),
+				'label'       => __( 'Yes', 'wcsdm' ),
+				'type'        => 'wcsdm',
+				'orig_type'   => 'checkbox',
+				'description' => __( 'Write data to WooCommerce System Status Report Log for importance event such API response error and shipping calculation failures. <a href="admin.php?page=wc-status&tab=logs" target="_blank">Click here</a> to view the log data.', 'wcsdm' ),
+				'desc_tip'    => false,
+			),
 			'field_group_store_location'  => array(
 				'type'        => 'wcsdm',
 				'orig_type'   => 'title',
@@ -1782,7 +1790,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	 * @param array   $args Custom arguments for $settings and $package data.
 	 * @param boolean $cache Is use the cached data.
 	 * @throws Exception If error happen.
-	 * @return array
+	 * @return (array|WP_Error) WP_Error on failure.
 	 */
 	private function api_request( $args = array(), $cache = true ) {
 		/**
@@ -1801,7 +1809,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		 *              'distance_text' => '40 km',
 		 *              'duration'      => 3593,
 		 *              'duration_text' => '1 hour 5 mins',
-		 *              'response'      => array() // Raw response from API server
 		 *          );
 		 *      }
 		 */
@@ -1811,161 +1818,116 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			return $pre;
 		}
 
-		try {
-			$args = wp_parse_args(
-				$args,
-				array(
-					'origin'      => array(),
-					'destination' => array(),
-					'settings'    => array(),
-					'package'     => array(),
-				)
-			);
+		$args_default = array(
+			'origin'      => array(),
+			'destination' => array(),
+			'settings'    => $this->options,
+			'package'     => array(),
+		);
 
-			// Imports variables from args: origin, destination, settings, package.
-			$settings    = wp_parse_args( $args['settings'], $this->options );
-			$package     = $args['package'];
-			$origin      = $args['origin'];
-			$destination = $args['destination'];
+		$args = wp_parse_args( $args, $args_default );
 
-			// Check origin parameter.
-			if ( empty( $origin ) ) {
-				throw new Exception( __( 'Origin parameter is empty', 'wcsdm' ) );
-			}
+		$errors = new WP_Error();
 
-			// Check destination parameter.
-			if ( empty( $destination ) ) {
-				throw new Exception( __( 'Destination parameter is empty', 'wcsdm' ) );
-			}
-
-			if ( $cache && ! $this->is_debug_mode() ) {
-				$cache_key = $this->id . '_' . $this->get_instance_id() . '_api_request_' . md5(
-					wp_json_encode(
-						array(
-							'origin'      => $origin,
-							'destination' => $destination,
-							'package'     => $package,
-							'settings'    => $settings,
-						)
-					)
+		foreach ( array_keys( $args_default ) as $args_key ) {
+			if ( empty( $args[ $args_key ] ) ) {
+				$errors->add(
+					'wcsdm_api_request_empty_' . $args_key,
+					// translators: %s is api request parameter key.
+					wp_sprintf( __( 'API request parameter is empty: %s', 'wcsdm' ), $args_key )
 				);
-
-				// Check if the data already cached and return it.
-				$cached_data = get_transient( $cache_key );
-
-				if ( false !== $cached_data ) {
-					return $cached_data;
-				}
 			}
-
-			$api_request_data = array(
-				'origins'      => $origin,
-				'destinations' => $destination,
-				'language'     => get_locale(),
-				'key'          => $this->api_request_key(),
-			);
-
-			foreach ( $this->instance_form_fields as $key => $field ) {
-				if ( ! isset( $field['api_request'] ) ) {
-					continue;
-				}
-
-				$api_request_data[ $field['api_request'] ] = isset( $settings[ $key ] ) ? $settings[ $key ] : '';
-			}
-
-			$api_request_data_debug = $api_request_data;
-
-			if ( isset( $api_request_data_debug['key'] ) ) {
-				$api_request_data_debug['key'] = str_repeat( '*', 20 );
-			}
-
-			$this->show_debug( wp_json_encode( array( 'API_REQUEST_DATA' => $api_request_data_debug ) ) );
-
-			$api = new Wcsdm_API();
-
-			$results = $api->calculate_distance( $api_request_data );
-
-			if ( is_wp_error( $results ) ) {
-				throw new Exception( $results->get_error_message() );
-			}
-
-			if ( count( $results ) > 1 ) {
-				switch ( $settings['preferred_route'] ) {
-					case 'longest_duration':
-						usort( $results, array( $this, 'longest_duration_results' ) );
-						break;
-
-					case 'longest_distance':
-						usort( $results, array( $this, 'longest_distance_results' ) );
-						break;
-
-					case 'shortest_duration':
-						usort( $results, array( $this, 'shortest_duration_results' ) );
-						break;
-
-					default:
-						usort( $results, array( $this, 'shortest_distance_results' ) );
-						break;
-				}
-			}
-
-			$distance = floatVal( $this->convert_distance( $results[0]['distance'] ) );
-
-			if ( empty( $distance ) ) {
-				$distance = 0.1;
-			}
-
-			if ( 'yes' === $settings['round_up_distance'] ) {
-				$distance = ceil( $distance );
-			}
-
-			$result = array(
-				'distance'         => $distance,
-				'distance_text'    => sprintf( '%s %s', $distance, ( 'metric' === $this->distance_unit ? 'km' : 'mi' ) ),
-				'duration'         => $results[0]['duration'],
-				'duration_text'    => $results[0]['duration_text'],
-				'api_request_data' => $api_request_data,
-			);
-
-			if ( $cache && ! $this->is_debug_mode() ) {
-				delete_transient( $cache_key ); // To make sure the transient data re-created, delete it first.
-				set_transient( $cache_key, $result, HOUR_IN_SECONDS ); // Store the data to transient with expiration in 1 hour for later use.
-			}
-
-			$result_debug = $result;
-
-			if ( isset( $result_debug['api_request_data'] ) ) {
-				unset( $result_debug['api_request_data'] );
-			}
-
-			$this->show_debug( wp_json_encode( array( 'API_RESPONSE_DATA' => $result_debug ) ) );
-
-			/**
-			 * Developers can modify the api request $result via filter hooks.
-			 *
-			 * @since 2.0
-			 *
-			 * This example shows how you can modify the $pre var via custom function:
-			 *
-			 *      add_filter( 'wcsdm_api_request', 'my_wcsdm_api_request', 10, 2 );
-			 *
-			 *      function my_wcsdm_api_request( $result, $obj ) {
-			 *          // Return the response data array
-			 *          return array(
-			 *              'distance'          => 40,
-			 *              'distance_text'     => '40 km',
-			 *              'duration'          => 3593,
-			 *              'duration_text'     => '1 hour 5 mins',
-			 *              'api_request_data'  => array() // API request parameters
-			 *          );
-			 *      }
-			 */
-			return apply_filters( 'wcsdm_api_request', $result, $this );
-		} catch ( Exception $e ) {
-			$this->show_debug( $e->getMessage(), 'error' );
-
-			return new WP_Error( 'api_request', $e->getMessage() );
 		}
+
+		if ( $errors->has_errors() ) {
+			return $errors;
+		}
+
+		if ( $cache && ! $this->is_debug_mode() ) {
+			$cache_key = $this->autoprefixer( 'api_request_' . md5( wp_json_encode( $args ) ) );
+
+			// Check if the data already cached and return it.
+			$cached_data = get_transient( $cache_key );
+
+			if ( false !== $cached_data ) {
+				return $cached_data;
+			}
+		}
+
+		$api_request_data = array(
+			'origins'      => $args['origin'],
+			'destinations' => $args['destination'],
+			'language'     => get_locale(),
+			'key'          => $this->api_request_key(),
+		);
+
+		foreach ( $this->instance_form_fields as $key => $field ) {
+			if ( ! isset( $field['api_request'] ) ) {
+				continue;
+			}
+
+			$api_request_data[ $field['api_request'] ] = isset( $args['settings'][ $key ] ) ? $args['settings'][ $key ] : '';
+		}
+
+		$results = Wcsdm_API::calculate_distance( $api_request_data );
+
+		if ( is_wp_error( $results ) ) {
+			return $this->write_log_data( $results, 'api_response' );
+		}
+
+		// Sort the results.
+		if ( count( $results ) > 1 ) {
+			if ( is_callable( array( $this, $args['settings']['preferred_route'] . '_results' ) ) ) {
+				usort( $results, array( $this, $args['settings']['preferred_route'] . '_results' ) );
+			} else {
+				usort( $results, array( $this, 'shortest_distance_results' ) );
+			}
+		}
+
+		$result = array();
+
+		foreach ( $results[0] as $key => $value ) {
+			if ( 'distance' === $key ) {
+				$value = $this->convert_distance( $value );
+
+				if ( 'yes' === $args['settings']['round_up_distance'] ) {
+					$value = ceil( $value );
+				}
+			}
+
+			$result[ $key ] = $value;
+
+			if ( is_callable( array( $this, 'get_text_of_' . $key ) ) ) {
+				$result[ $key . '_text' ] = call_user_func( array( $this, 'get_text_of_' . $key ), $value );
+			}
+		}
+
+		/**
+		 * Developers can modify the api request $result via filter hooks.
+		 *
+		 * @since 2.0
+		 *
+		 * This example shows how you can modify the $pre var via custom function:
+		 *
+		 *      add_filter( 'wcsdm_api_request', 'my_wcsdm_api_request', 10, 2 );
+		 *
+		 *      function my_wcsdm_api_request( $result, $obj ) {
+		 *          // Return the response data array
+		 *          return array(
+		 *              'distance'      => 40,
+		 *              'distance_text' => '40 km',
+		 *              'duration'      => 3593,
+		 *              'duration_text' => '1 hour 5 mins',
+		 *          );
+		 *      }
+		 */
+		$result = apply_filters( 'wcsdm_api_request', $result, $this );
+
+		if ( $result && $cache && ! $this->is_debug_mode() ) {
+			set_transient( $cache_key, $result, HOUR_IN_SECONDS ); // Store the data to transient with expiration in 1 hour for later use.
+		}
+
+		return $result;
 	}
 
 	/**
@@ -2077,15 +2039,15 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	 * @return void
 	 */
 	public function calculate_shipping( $package = array() ) {
-		try {
-			$api_response = $this->api_request(
-				array(
-					'origin'      => $this->get_origin_info( $package ),
-					'destination' => $this->get_destination_info( $package ),
-					'package'     => $package,
-				)
-			);
+		$api_response = $this->api_request(
+			array(
+				'origin'      => $this->get_origin_info( $package ),
+				'destination' => $this->get_destination_info( $package ),
+				'package'     => $package,
+			)
+		);
 
+		try {
 			// Bail early if the API request error.
 			if ( is_wp_error( $api_response ) ) {
 				throw new Exception( $api_response->get_error_message() );
@@ -2208,7 +2170,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		 */
 		$table_rates = apply_filters( 'wcsdm_table_rates', $this->table_rates, $api_response, $package, $this );
 
-		$this->show_debug( wp_json_encode( array( 'TABLE_RATES_DATA' => $table_rates ) ) );
+		$this->show_debug( array( 'TABLE_RATES_DATA' => $table_rates ) );
 
 		if ( $table_rates ) {
 			$table_rates_match = array();
@@ -2243,7 +2205,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				 */
 				$rate = apply_filters( 'wcsdm_table_rates_row', $rate, $index, $api_response, $package, $this );
 
-				$rate = $this->norlmalize_table_rate_row( $rate );
+				$rate = $this->normalize_table_rate_row( $rate );
 
 				if ( ! $rate ) {
 					continue;
@@ -2258,7 +2220,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				}
 			}
 
-			$this->show_debug( wp_json_encode( array( 'TABLE_RATES_MATCH' => $table_rates_match ) ) );
+			$this->show_debug( array( 'TABLE_RATES_MATCH' => $table_rates_match ) );
 
 			if ( $table_rates_match ) {
 				if ( count( $table_rates_match ) > 1 ) {
@@ -2271,7 +2233,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				// Pick first rate row data.
 				$rate = reset( $table_rates_match );
 
-				$this->show_debug( wp_json_encode( array( 'TABLE_RATES_SELECTED' => $rate ) ) );
+				$this->show_debug( array( 'TABLE_RATES_SELECTED' => $rate ) );
 
 				// Hold costs data for flat total_cost_type.
 				$flat = array();
@@ -2291,6 +2253,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 
 					if ( $class_id ) {
 						$class_cost = $this->get_rate_field_value( 'rate_class_' . $class_id, $rate );
+
 						if ( strlen( $class_cost ) ) {
 							$item_cost = $class_cost;
 						}
@@ -2298,6 +2261,10 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 
 					// Multiply shipping cost with distance unit.
 					$item_cost *= $api_response['distance'];
+
+					if ( is_string( $item_cost ) ) {
+						$item_cost = floatVal( $item_cost );
+					}
 
 					// Add cost data for flat total_cost_type.
 					$flat[] = $item_cost;
@@ -2314,18 +2281,19 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				$cost = 0;
 
 				$total_cost_type = $this->get_rate_field_value( 'total_cost_type', $rate, 'inherit' );
+
 				if ( 'inherit' === $total_cost_type ) {
 					$total_cost_type = $this->total_cost_type;
 				}
 
 				if ( strpos( $total_cost_type, 'flat__' ) === 0 ) {
-					switch ( str_replace( 'flat__', '', $total_cost_type ) ) {
-						case 'lowest':
+					switch ( $total_cost_type ) {
+						case 'flat__lowest':
 							$cost = min( $flat );
 							break;
 
-						case 'average':
-							$cost = array_sum( $flat ) / count( $flat );
+						case 'flat__average':
+							$cost = ( array_sum( $flat ) / count( $flat ) );
 							break;
 
 						default:
@@ -2333,28 +2301,34 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 							break;
 					}
 				} elseif ( strpos( $total_cost_type, 'progressive__' ) === 0 ) {
-					switch ( str_replace( 'progressive__', '', $total_cost_type ) ) {
-						case 'per_shipping_class':
+					switch ( $total_cost_type ) {
+						case 'progressive__per_shipping_class':
 							$costs = array();
+
 							foreach ( $progressive as $value ) {
 								$costs[ $value['class_id'] ] = $value['item_cost'];
 							}
+
 							$cost = array_sum( $costs );
 							break;
 
-						case 'per_product':
+						case 'progressive__per_product':
 							$costs = array();
+
 							foreach ( $progressive as $value ) {
 								$costs[ $value['product_id'] ] = $value['item_cost'];
 							}
+
 							$cost = array_sum( $costs );
 							break;
 
 						default:
 							$costs = array();
+
 							foreach ( $progressive as $value ) {
 								$costs[ $value['product_id'] ] = $value['item_cost'] * $value['quantity'];
 							}
+
 							$cost = array_sum( $costs );
 							break;
 					}
@@ -2367,7 +2341,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				}
 
 				if ( $surcharge ) {
-					$surcharge_type = $this->get_rate_field_value( 'surcharge_type', $rate );
+					$surcharge_type = $this->get_rate_field_value( 'surcharge_type', $rate, 'inherit' );
 
 					if ( ! $surcharge_type || 'inherit' === $surcharge_type ) {
 						$surcharge_type = $this->surcharge_type;
@@ -2391,7 +2365,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				}
 
 				if ( $discount ) {
-					$discount_type = $this->get_rate_field_value( 'discount_type', $rate );
+					$discount_type = $this->get_rate_field_value( 'discount_type', $rate, 'inherit' );
 
 					if ( ! $discount_type || 'inherit' === $discount_type ) {
 						$discount_type = $this->discount_type;
@@ -2458,14 +2432,18 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			}
 		}
 
-		$error_data = array(
-			'message'               => __( 'No shipping table rates rules match.', 'wcsdm' ),
-			'table_rates_count'     => count( $table_rates ),
-			'table_rates_first_row' => reset( $table_rates ),
-			'table_rates_last_row'  => end( $table_rates ),
+		return $this->write_log_data(
+			new WP_Error(
+				'rates_rules_not_match',
+				__( 'No shipping table rates rules match.', 'wcsdm' ),
+				array(
+					'api_response' => $api_response,
+					'table_rates'  => $table_rates,
+					'package'      => $package,
+				)
+			),
+			'rates_rules_not_match'
 		);
-
-		return new WP_Error( 'no_table_rates_rules_match', wp_json_encode( $error_data ) );
 	}
 
 	/**
@@ -2477,12 +2455,12 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	 *
 	 * @return array
 	 */
-	private function norlmalize_table_rate_row( $rate ) {
+	private function normalize_table_rate_row( $rate ) {
 		if ( ! is_array( $rate ) ) {
 			return false;
 		}
 
-		return wp_parse_args(
+		$rate = wp_parse_args(
 			$rate,
 			array(
 				'max_distance'       => '0',
@@ -2501,6 +2479,8 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'title'              => '',
 			)
 		);
+
+		return $rate;
 	}
 
 	/**
@@ -2674,7 +2654,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 
 				if ( $required && ! $value ) {
 					// translators: %s is field key.
-					throw new Exception( sprintf( __( 'Shipping destination field is empty: %s', 'wcsdm' ), $field_key ) );
+					throw new Exception( sprintf( __( 'Shipping destination field is empty: %s.', 'wcsdm' ), $field_key ) );
 				}
 
 				if ( $value && 'postcode' === $field_key && ! empty( $package['destination']['country'] ) ) {
@@ -2682,7 +2662,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 
 					if ( ! WC_Validation::is_postcode( $value, $country_code ) ) {
 						// translators: %s is field key.
-						throw new Exception( sprintf( __( 'Shipping destination field is invalid: %s', 'wcsdm' ), $field_key ) );
+						throw new Exception( sprintf( __( 'Shipping destination field is invalid: %s.', 'wcsdm' ), $field_key ) );
 					}
 				}
 
@@ -2756,10 +2736,14 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	 *
 	 * @since    1.3.2
 	 * @param int $meters Number of meters to convert.
-	 * @return int
+	 * @return float
 	 */
 	public function convert_distance( $meters ) {
-		return ( 'metric' === $this->distance_unit ) ? $this->convert_distance_to_km( $meters ) : $this->convert_distance_to_mi( $meters );
+		if ( 'imperial' === $this->distance_unit ) {
+			return $this->convert_distance_to_mi( $meters );
+		}
+
+		return $this->convert_distance_to_km( $meters );
 	}
 
 	/**
@@ -2767,10 +2751,10 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	 *
 	 * @since    1.3.2
 	 * @param int $meters Number of meters to convert.
-	 * @return int
+	 * @return float
 	 */
 	public function convert_distance_to_mi( $meters ) {
-		return wc_format_decimal( ( $meters * 0.000621371 ), 1 );
+		return floatVal( ( $meters * 0.000621371 ) );
 	}
 
 	/**
@@ -2778,10 +2762,10 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	 *
 	 * @since    1.3.2
 	 * @param int $meters Number of meters to convert.
-	 * @return int
+	 * @return float
 	 */
 	public function convert_distance_to_km( $meters ) {
-		return wc_format_decimal( ( $meters * 0.001 ), 1 );
+		return floatVal( ( $meters * 0.000621371 ) );
 	}
 
 	/**
@@ -2796,6 +2780,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		if ( $a['duration'] === $b['duration'] ) {
 			return 0;
 		}
+
 		return ( $a['duration'] < $b['duration'] ) ? -1 : 1;
 	}
 
@@ -2811,6 +2796,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		if ( $a['duration'] === $b['duration'] ) {
 			return 0;
 		}
+
 		return ( $a['duration'] > $b['duration'] ) ? -1 : 1;
 	}
 
@@ -2823,10 +2809,27 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	 * @return int
 	 */
 	public function shortest_distance_results( $a, $b ) {
-		if ( $a['max_distance'] === $b['max_distance'] ) {
+		if ( $a['distance'] === $b['distance'] ) {
 			return 0;
 		}
-		return ( $a['max_distance'] < $b['max_distance'] ) ? -1 : 1;
+
+		return ( $a['distance'] < $b['distance'] ) ? -1 : 1;
+	}
+
+	/**
+	 * Sort descending API response array by distance.
+	 *
+	 * @since    1.4.4
+	 * @param array $a Array 1 that will be sorted.
+	 * @param array $b Array 2 that will be compared.
+	 * @return int
+	 */
+	public function longest_distance_results( $a, $b ) {
+		if ( $a['distance'] === $b['distance'] ) {
+			return 0;
+		}
+
+		return ( $a['distance'] > $b['distance'] ) ? -1 : 1;
 	}
 
 	/**
@@ -2843,21 +2846,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	}
 
 	/**
-	 * Sort descending API response array by distance.
-	 *
-	 * @since    1.4.4
-	 * @param array $a Array 1 that will be sorted.
-	 * @param array $b Array 2 that will be compared.
-	 * @return int
-	 */
-	public function longest_distance_results( $a, $b ) {
-		if ( $a['max_distance'] === $b['max_distance'] ) {
-			return 0;
-		}
-		return ( $a['max_distance'] > $b['max_distance'] ) ? -1 : 1;
-	}
-
-	/**
 	 * Check if run in debug mode
 	 *
 	 * @since    1.5.0
@@ -2865,6 +2853,57 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	 */
 	public function is_debug_mode() {
 		return get_option( 'woocommerce_shipping_debug_mode', 'no' ) === 'yes';
+	}
+
+	/**
+	 * Write data to log file.
+	 *
+	 * @param (WP_Error|array|object|int|float|string|bool) $data Data that will be stored to the log file.
+	 * @param string                                        $context Optional. Additional information for log handlers.
+	 *
+	 * @return mixed
+	 */
+	public function write_log_data( $data, $context = '' ) {
+		if ( 'yes' !== $this->get_option( 'enable_log' ) ) {
+			return $data;
+		}
+
+		$log_data = '';
+
+		if ( $data instanceof WP_Error ) {
+			$log_data_temp = array();
+
+			foreach ( $data->get_error_codes() as $error_code ) {
+				$log_data_temp[ $error_code ] = array(
+					'message' => $data->get_error_message( $error_code ),
+					'data'    => $data->get_error_data( $error_code ),
+				);
+			}
+
+			$log_data = wp_json_encode( $log_data_temp );
+		} elseif ( is_array( $data ) || is_object( $data ) ) {
+			$log_data = wp_json_encode( $data );
+		} elseif ( is_scalar( $data ) ) {
+			$log_data = strval( $data );
+		}
+
+		if ( strlen( $log_data ) ) {
+			$source = 'log';
+
+			if ( $context ) {
+				$source .= '_' . $context;
+			}
+
+			wc_get_logger()->log(
+				'error',
+				wp_strip_all_tags( $log_data, true ),
+				array(
+					'source' => $this->autoprefixer( $source ),
+				)
+			);
+		}
+
+		return $data;
 	}
 
 	/**
@@ -2900,9 +2939,8 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			return;
 		}
 
-		$message = is_array( $message ) ? wp_json_encode( $message ) : $message;
-
-		$debug_key = md5( $message );
+		$message   = is_array( $message ) ? wp_json_encode( $message ) : $message;
+		$debug_key = $this->autoprefixer( md5( $message ) );
 
 		if ( isset( $this->debugs[ $debug_key ] ) ) {
 			return;
@@ -2910,12 +2948,75 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 
 		$this->debugs[ $debug_key ] = $message;
 
-		$debug_prefix = strtoupper( $this->id ) . '_' . $this->get_instance_id();
+		wc_add_notice( $this->autoprefixer( $type ) . ' => ' . $message, 'notice' );
+	}
 
-		if ( ! empty( $type ) ) {
-			$debug_prefix .= '_' . strtoupper( $type );
+	/**
+	 * Auto prefixer a suffix with method ID and instance ID.
+	 *
+	 * @param mixed $suffix Suffing that will prefixed.
+	 *
+	 * @return string
+	 */
+	protected function autoprefixer( $suffix ) {
+		return $this->id . '_' . $this->get_instance_id() . '_' . trim( $suffix, '_' );
+	}
+
+	/**
+	 * Get text of formated distance.
+	 *
+	 * @param float $distance Distance in km/mi unit.
+	 *
+	 * @return string
+	 */
+	protected function get_text_of_distance( $distance ) {
+		$distance_formatted = wc_format_decimal( $distance, 1, true );
+
+		if ( $distance_formatted ) {
+			$distance = $distance_formatted;
 		}
 
-		wc_add_notice( $debug_prefix . ' => ' . $message, 'notice' );
+		if ( 'imperial' === $this->get_option( 'distance_unit' ) ) {
+			return $distance . ' mi';
+		}
+
+		return $distance . ' km';
+	}
+
+	/**
+	 * Get text of formated duration.
+	 *
+	 * @param float $duration Duration in seconds unit.
+	 *
+	 * @return string
+	 */
+	protected function get_text_of_duration( $duration ) {
+		$texts = array();
+
+		/*** Days */
+		$days = intval( intval( $duration ) / ( 3600 * 24 ) );
+
+		if ( $days > 0 ) {
+			// translators: %s is number of days.
+			$texts[] = sprintf( _n( '%s day', '%s days', $days, 'wcsdm' ), number_format_i18n( $days ) );
+		}
+
+		/*** Hours */
+		$hours = ( intval( $duration ) / 3600 ) % 24;
+
+		if ( $hours > 0 ) {
+			// translators: %s is number of hours.
+			$texts[] = sprintf( _n( '%s hour', '%s hours', $hours, 'wcsdm' ), number_format_i18n( $hours ) );
+		}
+
+		/*** Minutes */
+		$minutes = ( intval( $duration ) / 60 ) % 60;
+
+		if ( $minutes > 0 ) {
+			// translators: %s is number of minutes.
+			$texts[] = sprintf( _n( '%s minute', '%s minutes', $minutes, 'wcsdm' ), number_format_i18n( $minutes ) );
+		}
+
+		return implode( ' ', $texts );
 	}
 }
