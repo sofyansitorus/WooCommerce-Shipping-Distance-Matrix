@@ -177,44 +177,4 @@ abstract class Wcsdm_API {
 
 		return $errors;
 	}
-
-	/**
-	 * Convert Meters to Distance Unit
-	 *
-	 * @since    1.3.2
-	 *
-	 * @param int    $meters Number of meters to convert.
-	 * @param string $unit Matrix unit to convert to.
-	 *
-	 * @return float
-	 */
-	protected static function convert_distance( $meters, $unit ) {
-		if ( 'imperial' === $unit ) {
-			return self::convert_distance_to_mi( $meters );
-		}
-
-		return self::convert_distance_to_km( $meters );
-	}
-
-	/**
-	 * Convert Meters to Miles
-	 *
-	 * @since    1.3.2
-	 * @param int $meters Number of meters to convert.
-	 * @return float
-	 */
-	protected static function convert_distance_to_mi( $meters ) {
-		return floatVal( ( $meters * 0.000621371 ) );
-	}
-
-	/**
-	 * Convert Meters to Kilometers
-	 *
-	 * @since    1.3.2
-	 * @param int $meters Number of meters to convert.
-	 * @return float
-	 */
-	protected static function convert_distance_to_km( $meters ) {
-		return floatVal( ( $meters * 0.001 ) );
-	}
 }

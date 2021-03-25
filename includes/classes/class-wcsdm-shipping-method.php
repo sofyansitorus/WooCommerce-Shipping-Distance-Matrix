@@ -2765,7 +2765,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	 * @return float
 	 */
 	public function convert_distance_to_km( $meters ) {
-		return floatVal( ( $meters * 0.000621371 ) );
+		return floatVal( ( $meters * 0.001 ) );
 	}
 
 	/**
