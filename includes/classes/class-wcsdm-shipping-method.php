@@ -2754,7 +2754,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	 * @return float
 	 */
 	public function convert_distance_to_mi( $meters ) {
-		return floatVal( ( $meters * 0.000621371 ) );
+		return floatVal( wc_format_decimal( ( $meters * 0.000621371 ), 2, true ) );
 	}
 
 	/**
@@ -2765,7 +2765,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	 * @return float
 	 */
 	public function convert_distance_to_km( $meters ) {
-		return floatVal( ( $meters * 0.001 ) );
+		return floatVal( wc_format_decimal( ( $meters * 0.001 ), 2, true ) );
 	}
 
 	/**
@@ -2970,7 +2970,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	 * @return string
 	 */
 	protected function get_text_of_distance( $distance ) {
-		$distance_formatted = wc_format_decimal( $distance, 1, true );
+		$distance_formatted = wc_format_localized_decimal( wc_format_decimal( $distance, 2, true ) );
 
 		if ( $distance_formatted ) {
 			$distance = $distance_formatted;
