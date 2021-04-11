@@ -293,36 +293,31 @@ var wcsdmMapPicker = {
       icon: wcsdmMapPicker.params.marker
     });
 
-    var infowindow = new google.maps.InfoWindow({ maxWidth: 350 });
+    var infoWindow = new google.maps.InfoWindow({
+      maxWidth: 350,
+      content: wcsdmMapPicker.params.i18n.drag_marker,
+    });
 
-    if (_.isEmpty(wcsdmMapPicker.origin_lat) || _.isEmpty(wcsdmMapPicker.origin_lng)) {
-      infowindow.setContent(wcsdmMapPicker.params.i18n.drag_marker);
-      infowindow.open(map, marker);
-    } else {
-      wcsdmMapPicker.setLatLng(marker.position, marker, map, infowindow);
-    }
+    infoWindow.open(map, marker);
 
     google.maps.event.addListener(marker, 'dragstart', function () {
-      infowindow.close();
+      infoWindow.close();
     });
 
     google.maps.event.addListener(marker, 'dragend', function (event) {
-      wcsdmMapPicker.setLatLng(event.latLng, marker, map, infowindow);
+      wcsdmMapPicker.setLatLng(map, marker, infoWindow, event.latLng.lat(), event.latLng.lng());
+    });
+
+    marker.addListener('click', function () {
+      infoWindow.open(map, marker);
     });
 
     $('#wcsdm-map-wrap').prepend(wp.template('wcsdm-map-search-panel')());
+
     map.controls[google.maps.ControlPosition.TOP_LEFT].push(document.getElementById('wcsdm-map-search-panel'));
 
     var mapSearchBox = new google.maps.places.SearchBox(document.getElementById('wcsdm-map-search-input'));
 
-    // Bias the SearchBox results towards current map's viewport.
-    map.addListener('bounds_changed', function () {
-      mapSearchBox.setBounds(map.getBounds());
-    });
-
-    var markers = [];
-
-    // Listen for the event fired when the user selects a prediction and retrieve more details for that place.
     mapSearchBox.addListener('places_changed', function () {
       var places = mapSearchBox.getPlaces();
 
@@ -330,56 +325,26 @@ var wcsdmMapPicker = {
         return;
       }
 
-      // Clear out the old markers.
-      markers.forEach(function (marker) {
-        marker.setMap(null);
-      });
-
-      markers = [];
-
-      // For each place, get the icon, name and location.
-      var bounds = new google.maps.LatLngBounds();
-
-      places.forEach(function (place) {
-        if (!place.geometry) {
-          console.log('Returned place contains no geometry');
-          return;
+      var place = _.find(places, function (found) {
+        if (!found.geometry) {
+          return false;
         }
 
-        marker = new google.maps.Marker({
-          map: map,
-          position: place.geometry.location,
-          draggable: true,
-          icon: wcsdmMapPicker.params.marker
-        });
-
-        wcsdmMapPicker.setLatLng(place.geometry.location, marker, map, infowindow);
-
-        google.maps.event.addListener(marker, 'dragstart', function () {
-          infowindow.close();
-        });
-
-        google.maps.event.addListener(marker, 'dragend', function (event) {
-          wcsdmMapPicker.setLatLng(event.latLng, marker, map, infowindow);
-        });
-
-        // Create a marker for each place.
-        markers.push(marker);
-
-        if (place.geometry.viewport) {
-          // Only geocodes have viewport.
-          bounds.union(place.geometry.viewport);
-        } else {
-          bounds.extend(place.geometry.location);
-        }
+        return true;
       });
 
-      map.fitBounds(bounds);
+      wcsdmMapPicker.setLatLng(map, marker, infoWindow, place.geometry.location.lat(), place.geometry.location.lng(), true);
     });
 
-    setTimeout(function () {
+    google.maps.event.addListenerOnce(map, 'idle', function () {
       $('#wcsdm-map-search-panel').removeClass('wcsdm-hidden');
-    }, 500);
+
+      if (!_.isEmpty(wcsdmMapPicker.origin_lat) && !_.isEmpty(wcsdmMapPicker.origin_lng)) {
+        wcsdmMapPicker.setLatLng(map, marker, infoWindow, currentLatLng.lat, currentLatLng.lng);
+      } else {
+        $('#wcsdm-map-search-panel').addClass('expanded');
+      }
+    });
   },
   destroyMap: function () {
     if (window.google) {
@@ -389,37 +354,45 @@ var wcsdmMapPicker = {
     $('#wcsdm-map-canvas').empty();
     $('#wcsdm-map-search-panel').remove();
   },
-  setLatLng: function (location, marker, map, infowindow) {
+  setLatLng: function (map, marker, infoWindow, lat, lng, setCenter) {
+    var latLng = new google.maps.LatLng(lat, lng);
+
     var geocoder = new google.maps.Geocoder();
 
-    geocoder.geocode(
-      {
-        latLng: location
-      },
-      function (results, status) {
-        if (status === google.maps.GeocoderStatus.OK && results[0]) {
-          var infowindowContents = [
-            wcsdmMapPicker.params.i18n.latitude + ': ' + location.lat().toString(),
-            wcsdmMapPicker.params.i18n.longitude + ': ' + location.lng().toString()
-          ];
-
-          infowindow.setContent(infowindowContents.join('<br />'));
-          infowindow.open(map, marker);
-
-          marker.addListener('click', function () {
-            infowindow.open(map, marker);
-          });
-
-          $('#wcsdm-map-search-input').val(results[0].formatted_address);
-
-          wcsdmMapPicker.origin_lat = location.lat();
-          wcsdmMapPicker.origin_lng = location.lng();
-          wcsdmMapPicker.origin_address = results[0].formatted_address;
-        }
+    geocoder.geocode({ location: latLng }, function (results, status) {
+      if ('OK' !== status) {
+        return;
       }
-    );
 
-    map.setCenter(location);
+      var result = _.find(results, function (found) {
+        return found.formatted_address && found.formatted_address.length > 0;
+      });
+
+      if (!result) {
+        return;
+      }
+
+      var contents = [
+        result.formatted_address,
+        '<span class="wcsdm-coordinate-label">' + wcsdmMapPicker.params.i18n.latitude + '</span>: ' + lat,
+        '<span class="wcsdm-coordinate-label">' + wcsdmMapPicker.params.i18n.longitude + '</span>: ' + lng,
+      ];
+
+      infoWindow.setContent(contents.join('<hr />'));
+
+      infoWindow.open(map, marker);
+
+      if (setCenter) {
+        marker.setPosition(latLng);
+        map.setCenter(latLng);
+      }
+
+      $('#wcsdm-map-search-input').val(result.formatted_address);
+
+      wcsdmMapPicker.origin_lat = lat;
+      wcsdmMapPicker.origin_lng = lng;
+      wcsdmMapPicker.origin_address = result.formatted_address;
+    });
   },
   isEditingAPIKey: function () {
     return $('.wcsdm-field-type--api_key.editing').length > 0;

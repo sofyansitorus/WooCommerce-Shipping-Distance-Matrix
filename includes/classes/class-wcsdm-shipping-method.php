@@ -1071,7 +1071,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		</script>
 
 		<script type="text/template" id="tmpl-wcsdm-map-search-panel">
-			<div id="wcsdm-map-search-panel" class="wcsdm-map-search-panel wcsdm-hidden expanded">
+			<div id="wcsdm-map-search-panel" class="wcsdm-map-search-panel wcsdm-hidden">
 				<button type="button" id="wcsdm-map-search-panel-toggle" class="wcsdm-map-search-panel-toggle wcsdm-map-search-element"><span class="dashicons"></button>
 				<input id="wcsdm-map-search-input" class="wcsdm-fullwidth wcsdm-map-search-input wcsdm-map-search-element" type="search" placeholder="<?php echo esc_html__( 'Type your store location address...', 'wcsdm' ); ?>" autocomplete="off">
 			</div>

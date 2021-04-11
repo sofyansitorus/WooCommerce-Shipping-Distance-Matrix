@@ -391,20 +391,41 @@
       max-width: calc(100% - 60px) !important;
       transition: all 2s ease;
       width: 540px !important;
+      box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px;
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+      border-top-right-radius: 2px;
+      border-bottom-right-radius: 2px;
+      border: none;
+
+      &:focus {
+        outline: none !important;
+        outline-width: 0 !important;
+      }
     }
 
     #wcsdm-map-search-panel-toggle {
-      background: none rgb(255, 255, 255);
-      box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px;
+      appearance: none;
+      background: none $white;
+      border-radius: 2px;
+      border: 0px;
+      box-shadow: rgba($black, 0.3) 0px 1px 4px -1px;
       cursor: pointer;
-      display: block;
-      height: 40px !important;
-      width: 40px !important;
+      overflow: hidden;
+      padding: 0px;
+      text-transform: none;
+      user-select: none;
+      height: 40px;
+      width: 40px;
 
       .dashicons {
         &:before {
           content: "\f179";
         }
+      }
+
+      &:focus {
+        outline: none !important;
       }
     }
 
@@ -414,6 +435,13 @@
       }
 
       #wcsdm-map-search-panel-toggle {
+        background: $lochmara;
+        border-top-left-radius: 2px;
+        border-bottom-left-radius: 2px;
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+        color: $white;
+
         .dashicons {
           &:before {
             content: "\f171";
@@ -448,10 +476,19 @@
       padding: 2px !important;
     }
   }
+
+  &-coordinate-label {
+    display: inline-block;
+    width: 55px;
+  }
 }
 
 .pac-container {
   z-index: 9999999;
+}
+
+.gm-style-iw-d {
+  font-size: 0.88em;
 }
 
 @keyframes highlighted {
