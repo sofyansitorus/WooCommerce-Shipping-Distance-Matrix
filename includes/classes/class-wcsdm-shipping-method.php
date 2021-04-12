@@ -1854,7 +1854,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			}
 		}
 
-		$api_request_data = array(
+		$api_request_params = array(
 			'origins'      => $args['origin'],
 			'destinations' => $args['destination'],
 			'language'     => get_locale(),
@@ -1862,18 +1862,36 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		);
 
 		foreach ( $this->instance_form_fields as $key => $field ) {
-			if ( ! isset( $field['api_request'] ) ) {
+			if ( ! isset( $field['api_request'] ) || ! $field['api_request'] ) {
 				continue;
 			}
 
-			$api_request_data[ $field['api_request'] ] = isset( $args['settings'][ $key ] ) ? $args['settings'][ $key ] : '';
+			$api_request_params[ $field['api_request'] ] = isset( $args['settings'][ $key ] ) ? $args['settings'][ $key ] : '';
 		}
 
-		$results = Wcsdm_API::calculate_distance( $api_request_data );
+		$this->show_debug(
+			array_merge(
+				$api_request_params,
+				array(
+					'key' => $api_request_params['key'] ? '***' : '',
+				)
+			),
+			'API_REQUEST'
+		);
 
-		if ( is_wp_error( $results ) ) {
-			return $this->write_log_data( $results, 'api_response' );
+		$api_response = Wcsdm_API::calculate_distance( $api_request_params );
+
+		if ( is_wp_error( $api_response ) ) {
+			return $this->write_log_data( $api_response, 'api_response', true );
 		}
+
+		if ( isset( $api_response['raw'] ) ) {
+			$this->show_debug( $api_response['raw'], 'API_RESPONSE_RAW' );
+		}
+
+		$results = isset( $api_response['parsed'] ) ? $api_response['parsed'] : array();
+
+		$this->show_debug( $results, 'API_RESPONSE_PARSED' );
 
 		// Sort the results.
 		if ( count( $results ) > 1 ) {
@@ -1887,18 +1905,26 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		$result = array();
 
 		foreach ( $results[0] as $key => $value ) {
+			if ( ! in_array( $key, array( 'distance', 'duration' ), true ) ) {
+				continue;
+			}
+
+			$raw_value = $value;
+
 			if ( 'distance' === $key ) {
 				$value = $this->convert_distance( $value );
 
 				if ( 'yes' === $args['settings']['round_up_distance'] ) {
 					$value = ceil( $value );
+				} else {
+					$value = wc_format_decimal( $value, 1, true );
 				}
 			}
 
 			$result[ $key ] = $value;
 
 			if ( is_callable( array( $this, 'get_text_of_' . $key ) ) ) {
-				$result[ $key . '_text' ] = call_user_func( array( $this, 'get_text_of_' . $key ), $value );
+				$result[ $key . '_text' ] = call_user_func( array( $this, 'get_text_of_' . $key ), $raw_value, $value );
 			}
 		}
 
@@ -2170,7 +2196,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		 */
 		$table_rates = apply_filters( 'wcsdm_table_rates', $this->table_rates, $api_response, $package, $this );
 
-		$this->show_debug( array( 'TABLE_RATES_DATA' => $table_rates ) );
+		$this->show_debug( $table_rates, 'TABLE_RATES_DATA' );
 
 		if ( $table_rates ) {
 			$table_rates_match = array();
@@ -2220,7 +2246,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				}
 			}
 
-			$this->show_debug( array( 'TABLE_RATES_MATCH' => $table_rates_match ) );
+			$this->show_debug( $table_rates_match, 'TABLE_RATES_MATCH' );
 
 			if ( $table_rates_match ) {
 				if ( count( $table_rates_match ) > 1 ) {
@@ -2233,7 +2259,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				// Pick first rate row data.
 				$rate = reset( $table_rates_match );
 
-				$this->show_debug( array( 'TABLE_RATES_SELECTED' => $rate ) );
+				$this->show_debug( $rate, 'TABLE_RATES_SELECTED' );
 
 				// Hold costs data for flat total_cost_type.
 				$flat = array();
@@ -2754,7 +2780,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	 * @return float
 	 */
 	public function convert_distance_to_mi( $meters ) {
-		return floatVal( wc_format_decimal( ( $meters * 0.000621371 ), 2, true ) );
+		return floatVal( ( $meters * 0.000621371 ) );
 	}
 
 	/**
@@ -2765,7 +2791,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	 * @return float
 	 */
 	public function convert_distance_to_km( $meters ) {
-		return floatVal( wc_format_decimal( ( $meters * 0.001 ), 2, true ) );
+		return floatVal( ( $meters * 0.001 ) );
 	}
 
 	/**
@@ -2860,10 +2886,11 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	 *
 	 * @param (WP_Error|array|object|int|float|string|bool) $data Data that will be stored to the log file.
 	 * @param string                                        $context Optional. Additional information for log handlers.
+	 * @param boolean                                       $show_debug Optional. Wether show the log in debug output or not.
 	 *
 	 * @return mixed
 	 */
-	public function write_log_data( $data, $context = '' ) {
+	public function write_log_data( $data, $context = '', $show_debug = false ) {
 		if ( 'yes' !== $this->get_option( 'enable_log' ) ) {
 			return $data;
 		}
@@ -2892,6 +2919,10 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 
 			if ( $context ) {
 				$source .= '_' . $context;
+			}
+
+			if ( $show_debug ) {
+				$this->show_debug( $log_data, $source );
 			}
 
 			wc_get_logger()->log(
@@ -2939,7 +2970,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			return;
 		}
 
-		$message   = is_array( $message ) ? wp_json_encode( $message ) : $message;
+		$message   = is_array( $message ) || is_object( $message ) ? wp_json_encode( $message ) : $message;
 		$debug_key = $this->autoprefixer( md5( $message ) );
 
 		if ( isset( $this->debugs[ $debug_key ] ) ) {
@@ -2948,7 +2979,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 
 		$this->debugs[ $debug_key ] = $message;
 
-		wc_add_notice( $this->autoprefixer( $type ) . ' => ' . $message, 'notice' );
+		wc_add_notice( strtoupper( $this->autoprefixer( $type ) ) . ' => ' . $message, 'notice' );
 	}
 
 	/**
@@ -2959,21 +2990,27 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	 * @return string
 	 */
 	protected function autoprefixer( $suffix ) {
+		if ( ! $suffix ) {
+			return $this->id . '_' . $this->get_instance_id();
+		}
+
 		return $this->id . '_' . $this->get_instance_id() . '_' . trim( $suffix, '_' );
 	}
 
 	/**
 	 * Get text of formated distance.
 	 *
-	 * @param float $distance Distance in km/mi unit.
+	 * @param integer|float $distance Distance in meter unit.
 	 *
 	 * @return string
 	 */
 	protected function get_text_of_distance( $distance ) {
-		$distance_formatted = wc_format_localized_decimal( wc_format_decimal( $distance, 2, true ) );
+		$distance = $this->convert_distance( $distance );
 
-		if ( $distance_formatted ) {
-			$distance = $distance_formatted;
+		if ( 'yes' === $this->get_option( 'round_up_distance' ) ) {
+			$distance = ceil( $distance );
+		} else {
+			$distance = wc_format_localized_decimal( wc_format_decimal( $distance, 1, true ) );
 		}
 
 		if ( 'imperial' === $this->get_option( 'distance_unit' ) ) {

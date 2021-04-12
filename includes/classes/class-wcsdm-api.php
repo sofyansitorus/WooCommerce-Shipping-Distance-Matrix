@@ -65,7 +65,7 @@ abstract class Wcsdm_API {
 		$request_data_masked = array_merge(
 			$request_data,
 			array(
-				'key' => '***',
+				'key' => $request_data['key'] ? '***' : '',
 			)
 		);
 
@@ -172,7 +172,10 @@ abstract class Wcsdm_API {
 		}
 
 		if ( ! empty( $results ) ) {
-			return $results;
+			return array(
+				'parsed' => $results,
+				'raw'    => $response_data,
+			);
 		}
 
 		return $errors;
