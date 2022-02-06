@@ -2631,17 +2631,18 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			$destination_info[ $key ] = false;
 		}
 
-		$post_data = [];
-		
-		if ( ! empty( $_POST['post_data'] ) ) {
-			parse_str( $_POST['post_data'], $post_data );
+		$post_data = array();
+
+		if ( ! empty( $_POST['post_data'] ) ) { // phpcs:ignore WordPress.Security
+			parse_str( $_POST['post_data'], $post_data ); // phpcs:ignore WordPress.Security
 		} else {
-			$post_data = $_POST; // Support Old Versions
+			// Support Old Versions.
+			$post_data = $_POST; // phpcs:ignore WordPress.Security
 		}
 
 		if ( wcsdm_is_calc_shipping() ) {
 			$shipping_fields = wcsdm_calc_shipping_fields();
-		} elseif ( ! empty( $post_data['ship_to_different_address'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		} elseif ( ! empty( $post_data['ship_to_different_address'] ) ) {
 			$shipping_fields = wcsdm_shipping_fields();
 		} else {
 			$shipping_fields = wcsdm_billing_fields();
