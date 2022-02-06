@@ -5,7 +5,7 @@ Donate link: https://www.buymeacoffee.com/sofyansitorus?utm_source=wooreer_plugi
 Requires at least: 4.8
 Tested up to: 5.7
 Requires PHP: 5.6
-Stable tag: 2.1.13
+Stable tag: 2.1.14
 License: GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -126,6 +126,11 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 > Upgrading from version 1.x to version 2.x is a major update and has breaking changes. Some **settings data will be lost** and **re-setup the plugin** after the upgrade is required.
 >
 > **Please upgrade wisely and carefully.**
+
+
+= 2.1.14 =
+
+* Fix - Fixd outdated usage of "ship_to_different_address" POST data.
 
 = 2.1.13 =
 
