@@ -19,5 +19,10 @@
 	"scripts": {
 		"run-phpcs": "vendor/bin/phpcs",
 		"run-phpcbf": "vendor/bin/phpcbf"
+	},
+	"config": {
+		"allow-plugins": {
+			"dealerdirect/phpcodesniffer-composer-installer": true
+		}
 	}
 }
