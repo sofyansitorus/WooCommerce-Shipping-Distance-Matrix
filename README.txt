@@ -3,7 +3,7 @@ Contributors: sofyansitorus
 Tags: woocommerce,woocommerce-shipping,local-shipping,private-shipping
 Donate link: https://www.buymeacoffee.com/sofyansitorus?utm_source=wooreer_plugin_page&utm_medium=referral
 Requires at least: 4.8
-Tested up to: 5.7
+Tested up to: 5.9
 Requires PHP: 5.6
 Stable tag: 2.1.14
 License: GPL-2.0+
