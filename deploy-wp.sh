@@ -7,9 +7,13 @@
 # set -eo
 
 help() {
-    echo "Usage: weather [ -c | --city1 ]
-               [ -d | --city2 ]
-               [ -h | --help  ]"
+    echo "Usage: ./deploy-wp.sh [ -s | --slug ] Plugin slug.
+                      [ -v | --version ] Plugin version.
+                      [ -d | --dir ] Source files directory.
+                      [ -u | --username ] WP.org username.
+                      [ -p | --password ] WP.org password.
+                      [ -m | --message ] Commit message.
+                      [ -h | --help  ]"
     exit 2
 }
 
@@ -76,8 +80,8 @@ done
 echo
 
 if [ ! -d "$SVN_SRC_DIR" ]; then
-   echo "Source directory '$SVN_SRC_DIR' DOES NOT exists."
-   exit 1
+    echo "✗ Source directory '$SVN_SRC_DIR' DOES NOT exists."
+    exit 1
 fi
 
 SVN_URL="https://plugins.svn.wordpress.org/${SLUG}/"
@@ -116,28 +120,30 @@ echo "➤ Copying files from source directory..."
 # The --delete flag will delete anything in destination that no longer exists in source
 rsync -rc "$SVN_SRC_DIR/" "$SVN_LOCAL_DIR/trunk/" --delete --delete-excluded
 
+# Copy tag locally to make this a single commit
+echo "➤ Copying tag..."
+rsync -rc "$SVN_LOCAL_DIR/trunk/" "$SVN_LOCAL_DIR/tags/$VERSION/" --delete --delete-excluded
+
 # Add everything and commit to SVN
 # The force flag ensures we recurse into subdirectories even if they are already added
 # Suppress stdout in favor of svn status later for readability
 echo "➤ Staging changes..."
 svn add . --force >/dev/null
 
-# Copy tag locally to make this a single commit
-echo "➤ Copying tag..."
-rsync -rc "$SVN_LOCAL_DIR/trunk/" "$SVN_LOCAL_DIR/tags/$VERSION/" --delete --delete-excluded
-
 # SVN delete all deleted files
 # Also suppress stdout here
-svn status | grep '^\!' | sed 's/! *//' | xargs -I% svn rm %@ > /dev/null
+svn status | grep '^\!' | sed 's/! *//' | xargs -I% svn rm %@ >/dev/null
 
-echo "➤ Changes status..."
-svn status
-
-echo "➤ Committing files..."
-if [[ -z "$COMMIT_MSG" ]]; then
-	COMMIT_MSG="Update to version $VERSION"
+if [ -z "$(svn status)" ]; then
+    echo "✗ Nothing to commit, working tree clean"
+    exit 1
 fi
 
-svn commit -m "$COMMIT_MSG" --no-auth-cache --non-interactive  --username "$SVN_USERNAME" --password "$SVN_PASSWORD"
+if [[ -z "$COMMIT_MSG" ]]; then
+    COMMIT_MSG="Update to version $VERSION"
+fi
+
+echo "➤ Committing changes..."
+svn commit -m "$COMMIT_MSG" --no-auth-cache --non-interactive --username "$SVN_USERNAME" --password "$SVN_PASSWORD"
 
 echo "✓ Plugin deployed!"
