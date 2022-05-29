@@ -42,6 +42,12 @@ This plugin perfect for the store owner who wants to charge customers for the de
 * Round the distance up to the nearest absolute number.
 * Show distance info to the customer during checkout.
 
+= Demo =
+
+Please visit the link below for the live demo:
+
+[http://demo.wooreer.com](http://demo.wooreer.com?utm_source=wooreer_plugin_page)
+
 = Dependencies =
 
 This plugin requires Google API Key and also need to have the following APIs services enabled: Distance Matrix API, Maps JavaScript API, Geocoding API, Places API.
