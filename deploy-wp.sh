@@ -65,8 +65,12 @@ while [[ -z "$VERSION" ]]; do
     read -p 'Plugin version: ' VERSION
 done
 
-while [[ -z "$SVN_SRC_DIR" ]]; do
+while [ -z "$SVN_SRC_DIR" ] || [ ! -d "$SVN_SRC_DIR" ]; do
     read -p 'Source directory: ' SVN_SRC_DIR
+
+    if [ -d "$SVN_SRC_DIR" ]; then
+        SVN_SRC_DIR=$(cd "$SVN_SRC_DIR"; pwd)
+    fi
 done
 
 while [[ -z "$SVN_USERNAME" ]]; do
@@ -75,25 +79,24 @@ done
 
 while [[ -z "$SVN_PASSWORD" ]]; do
     read -s -p 'SVN password: ' SVN_PASSWORD
+    echo
 done
 
-echo
-
-if [ ! -d "$SVN_SRC_DIR" ]; then
-    echo "✗ Source directory '$SVN_SRC_DIR' DOES NOT exists."
-    exit 1
-fi
+while [[ -z "$COMMIT_MSG" ]]; do
+    read -e -p "Commit message: " -i "Update to version $VERSION" COMMIT_MSG
+done
 
 SVN_URL="https://plugins.svn.wordpress.org/${SLUG}/"
-SVN_LOCAL_DIR="${HOME}/svn/${SLUG}"
+SVN_LOCAL_DIR="${HOME}/.deploy-wp/plugins/${SLUG}"
 
 echo "Plugin slug: $SLUG"
 echo "Plugin version: $VERSION"
 echo "SVN Source directory: $SVN_SRC_DIR"
 echo "SVN username: $SVN_USERNAME"
-echo "SVN password: $SVN_PASSWORD"
+echo "SVN password: *****"
 echo "SVN URL: $SVN_URL"
 echo "SVN local directory: $SVN_LOCAL_DIR"
+echo "Commit message: $COMMIT_MSG"
 
 # Checkout just trunk and assets for efficiency
 # Tagging will be handled on the SVN level
