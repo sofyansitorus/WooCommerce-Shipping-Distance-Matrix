@@ -1,8 +1,13 @@
 /**
  * Map Picker
  */
-window.initMapPickerCallback = function() {
-  console.log('Google Maps JavaScript API loaded...')
+
+if (!('wcsdmGoogleMapsCallback' in window)) {
+  Object.defineProperty(window, 'wcsdmGoogleMapsCallback', {
+    value: function () {
+      console.log('Google Maps JavaScript API loaded...')
+    }
+  })
 }
 
 var wcsdmMapPicker = {
@@ -268,7 +273,7 @@ var wcsdmMapPicker = {
       apiKey = 'InvalidKey';
     }
 
-    $.getScript('https://maps.googleapis.com/maps/api/js?callback=initMapPickerCallback&libraries=geometry,places&key=' + apiKey, callback);
+    $.getScript('https://maps.googleapis.com/maps/api/js?callback=wcsdmGoogleMapsCallback&libraries=geometry,places&key=' + apiKey, callback);
   },
   renderMap: function () {
     wcsdmMapPicker.origin_lat = $('#woocommerce_wcsdm_origin_lat').val();
