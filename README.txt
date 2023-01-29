@@ -3,9 +3,9 @@ Contributors: sofyansitorus
 Tags: woocommerce,woocommerce-shipping,local-shipping,private-shipping
 Donate link: https://www.buymeacoffee.com/sofyansitorus?utm_source=wooreer_plugin_page&utm_medium=referral
 Requires at least: 4.8
-Tested up to: 6.0
+Tested up to: 6.1.1
 Requires PHP: 5.6
-Stable tag: 2.1.14
+Stable tag: 2.1.15
 License: GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -134,13 +134,17 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 > **Please upgrade wisely and carefully.**
 
 
+= 2.1.15 =
+
+* Fix - Fixed error `Loading the Google Maps JavaScript API without a callback is not supported`.
+
 = 2.1.14 =
 
-* Fix - Fixd outdated usage of "ship_to_different_address" POST data.
+* Fix - Fixed outdated usage of "ship_to_different_address" POST data.
 
 = 2.1.13 =
 
-* Fix - Fixed incorrect distance convertion always to miles.
+* Fix - Fixed incorrect distance conversion always to miles.
 
 = 2.1.12 =
 
@@ -207,7 +211,7 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 * Fix - Fixed JS Error in cart page when certain fields is disabled
 
 = 2.0.8 =
-* Enhancement - Fixed Unable to Calculate distnance in some cases
+* Enhancement - Fixed Unable to Calculate distance in some cases
 * Enhancement - Improved UI/UX backend area
 
 = 2.0.7 =
@@ -227,7 +231,7 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 * Enhancement - Added filters to enable/disable address 1 and address 2 fields in the shipping calculator form.
 
 = 2.0.3 =
-* Fix - Fixed Wrong Addres 1 & 2 Field Value in the Shipping Calculator Form.
+* Fix - Fixed Wrong Adders 1 & 2 Field Value in the Shipping Calculator Form.
 
 = 2.0.2 =
 * Fix - Fixed JS Error in the console that causing shipping calculator form crash when there is no state selected on page load.
@@ -264,8 +268,8 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 * Fix - In rare cases, settings panel broke for the site using UTF-8 characters language.
 
 = 1.4.4 =
-* Improvements - Added new option: Prefered Route
-* Improvements - Improved accuration in cart shipping calculator form.
+* Improvements - Added new option: Preferred Route
+* Improvements - Improve inputs in cart shipping calculator form.
 
 = 1.4.3 =
 * Fix - Update minified styles and scripts.
