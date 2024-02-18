@@ -81,6 +81,16 @@ class Wcsdm {
 		// Hook to enqueue scripts & styles assets.
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_backend_assets' ), 999 );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ), 999 );
+
+		// Hook to declare compatibility with High-Performance Order Storage.
+		add_action(
+			'before_woocommerce_init',
+			function() {
+				if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+					\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', WCSDM_FILE, true );
+				}
+			}
+		);
 	}
 
 	/**
