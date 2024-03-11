@@ -38,46 +38,30 @@ function wcsdm_is_plugin_active( $plugin_file ) {
  */
 function wcsdm_i18n( $key = '', $default = '' ) {
 	$i18n = array(
-		'drag_marker'  => __( 'Drag this marker or search your address at the input above.', 'wcsdm' ),
-		// translators: %s = distance unit.
-		'per_unit'     => __( 'Per %s', 'wcsdm' ),
-		'map_is_error' => __( 'Map is error', 'wcsdm' ),
-		'latitude'     => __( 'Latitude', 'wcsdm' ),
-		'longitude'    => __( 'Longitude', 'wcsdm' ),
-		'buttons'      => array(
-			'Get API Key'           => __( 'Get API Key', 'wcsdm' ),
-			'Back'                  => __( 'Back', 'wcsdm' ),
-			'Cancel'                => __( 'Cancel', 'wcsdm' ),
-			'Apply Changes'         => __( 'Apply Changes', 'wcsdm' ),
-			'Confirm Delete'        => __( 'Confirm Delete', 'wcsdm' ),
-			'Delete Selected Rates' => __( 'Delete Selected Rates', 'wcsdm' ),
-			'Add New Rate'          => __( 'Add New Rate', 'wcsdm' ),
-			'Save Changes'          => __( 'Save Changes', 'wcsdm' ),
-		),
-		'errors'       => array(
-			// translators: %s = Field name.
-			'field_required'        => __( '%s field is required', 'wcsdm' ),
-			// translators: %1$s = Field name, %2$d = Minimum field value rule.
-			'field_min_value'       => __( '%1$s field value cannot be lower than %2$d', 'wcsdm' ),
-			// translators: %1$s = Field name, %2$d = Maximum field value rule.
-			'field_max_value'       => __( '%1$s field value cannot be greater than %2$d', 'wcsdm' ),
-			// translators: %s = Field name.
-			'field_numeric'         => __( '%s field value must be numeric', 'wcsdm' ),
-			// translators: %s = Field name.
-			'field_numeric_decimal' => __( '%s field value must be numeric and decimal', 'wcsdm' ),
-			// translators: %s = Field name.
-			'field_select'          => __( '%s field value selected is not exists', 'wcsdm' ),
-			// translators: %1$d = row number, %2$s = error message.
-			'table_rate_row'        => __( 'Table rate row #%1$d: %2$s', 'wcsdm' ),
-			// translators: %1$d = row number, %2$s = error message.
-			'duplicate_rate_row'    => __( 'Shipping rules combination duplicate with rate row #%1$d: %2$s', 'wcsdm' ),
-			'finish_editing_api'    => __( 'Please finish the API Key Editing first!', 'wcsdm' ),
-			'api_key_picker_empty'  => __( 'Location Picker API Key cannot be empty!', 'wcsdm' ),
-			'table_rates_invalid'   => __( 'Table rates data is incomplete or invalid!', 'wcsdm' ),
-			'unknown'               => __( 'Unknown error!', 'wcsdm' ),
-		),
-		'Save Changes' => __( 'Save Changes', 'wcsdm' ),
-		'Add New Rate' => __( 'Add New Rate', 'wcsdm' ),
+		'Add New Rate'                                 => __( 'Add New Rate', 'wcsdm' ),
+		'Address'                                      => __( 'Address', 'wcsdm' ),
+		'Apply Changes'                                => __( 'Apply Changes', 'wcsdm' ),
+		'Cancel'                                       => __( 'Cancel', 'wcsdm' ),
+		'Confirm Delete'                               => __( 'Confirm Delete', 'wcsdm' ),
+		'Delete Selected Rates'                        => __( 'Delete Selected Rates', 'wcsdm' ),
+		'Drag this marker or search your address at the input above.' => __( 'Drag this marker or search your address at the input above.', 'wcsdm' ),
+		'Latitude'                                     => __( 'Latitude', 'wcsdm' ),
+		'Longitude'                                    => __( 'Longitude', 'wcsdm' ),
+		'Save Changes'                                 => __( 'Save Changes', 'wcsdm' ),
+		'Store Location Picker'                        => __( 'Store Location Picker', 'wcsdm' ),
+		// translators: %s = Field name.
+		'%s field is required'                         => __( '%s field is required', 'wcsdm' ),
+		// translators: %s = Field name.
+		'%s field value must be numeric'               => __( '%s field value must be numeric', 'wcsdm' ),
+		// translators: %1$s = Field name, %2$d = Minimum field value rule.
+		'%1$s field value cannot be lower than %2$d'   => __( '%1$s field value cannot be lower than %2$d', 'wcsdm' ),
+		// translators: %1$s = Field name, %2$d = Maximum field value rule.
+		'%1$s field value cannot be greater than %2$d' => __( '%1$s field value cannot be greater than %2$d', 'wcsdm' ),
+		// translators: %1$d = row number, %2$s = error message.
+		'Shipping rules combination duplicate with rate row #%1$d: %2$s' => __( 'Shipping rules combination duplicate with rate row #%1$d: %2$s', 'wcsdm' ),
+		// translators: %1$d = row number, %2$s = error message.
+		'Table rate row #%1$d: %2$s'                   => __( 'Table rate row #%1$d: %2$s', 'wcsdm' ),
+		'Table rates data is incomplete or invalid!'   => __( 'Table rates data is incomplete or invalid!', 'wcsdm' ),
 	);
 
 	if ( ! empty( $key ) && is_string( $key ) ) {

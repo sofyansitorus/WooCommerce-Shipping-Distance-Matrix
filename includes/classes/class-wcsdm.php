@@ -170,19 +170,36 @@ class Wcsdm {
 		$is_dev_env = wcsdm_is_dev_env();
 
 		// Define the styles URL.
-		$css_url = WCSDM_URL . 'assets/css/wcsdm-backend.min.css';
+		$css_url = WCSDM_URL . 'assets/css/wcsdm-backend-legacy.min.css';
 		if ( $is_dev_env ) {
 			$css_url = add_query_arg( array( 't' => time() ), str_replace( '.min', '', $css_url ) );
 		}
 
 		// Enqueue admin styles.
 		wp_enqueue_style(
-			'wcsdm-backend', // Give the script a unique ID.
+			'wcsdm-backend-legacy', // Give the script a unique ID.
 			$css_url, // Define the path to the JS file.
 			array(), // Define dependencies.
 			WCSDM_VERSION, // Define a version (optional).
 			false // Specify whether to put in footer (leave this false).
 		);
+
+		if ( version_compare( WC()->version, '8.4.0', '>=' ) ) {
+			// Define the styles URL.
+			$css_url = WCSDM_URL . 'assets/css/wcsdm-backend.min.css';
+			if ( $is_dev_env ) {
+				$css_url = add_query_arg( array( 't' => time() ), str_replace( '.min', '', $css_url ) );
+			}
+
+			// Enqueue admin styles.
+			wp_enqueue_style(
+				'wcsdm-backend', // Give the script a unique ID.
+				$css_url, // Define the path to the JS file.
+				array(), // Define dependencies.
+				WCSDM_VERSION, // Define a version (optional).
+				false // Specify whether to put in footer (leave this false).
+			);
+		}
 
 		// Define the scripts URL.
 		$js_url = WCSDM_URL . 'assets/js/wcsdm-backend.min.js';
