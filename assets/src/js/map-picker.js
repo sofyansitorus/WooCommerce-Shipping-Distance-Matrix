@@ -55,11 +55,13 @@ var wcsdmMapPicker = {
 
     wcsdmMapPicker.destroyMap();
 
-    var modalHeaderHeight = $('.wc-backbone-modal-header').height();
-    var modalMaxHeight = parseFloat($('.wc-modal-shipping-method-settings').css('max-height'));
+    var modalContentMaxHeight = parseFloat($('.wc-modal-shipping-method-settings').css('max-height'));
+    var modalContentPaddingTop = parseFloat($('.wc-modal-shipping-method-settings').css('padding-top'));
+    var modalContentPaddingBottom = parseFloat($('.wc-modal-shipping-method-settings').css('padding-bottom'));
+    var modalContentHeight = parseFloat(modalContentMaxHeight) - parseFloat(modalContentPaddingTop) - parseFloat(modalContentPaddingBottom);
 
     $('.wc-modal-shipping-method-settings').find('form').hide().after(wp.template('wcsdm-map-wrap')({
-      height: (modalMaxHeight - modalHeaderHeight) + 'px'
+      height: modalContentHeight + 'px'
     }));
 
     wcsdmMapPicker.apiKeyError = '';
@@ -152,7 +154,7 @@ var wcsdmMapPicker = {
     var infoWindow = new window.google.maps.InfoWindow({ maxWidth: 350 });
 
     if (_.isEmpty(wcsdmMapPicker.origin_lat) || _.isEmpty(wcsdmMapPicker.origin_lng)) {
-      infoWindow.setContent(wcsdmI18n('Drag this marker or search your address at the input above.'));
+      infoWindow.setContent(wcsdmI18n('Please drag this marker or enter your address in the input field above.'));
       infoWindow.open(map, marker);
     } else {
       wcsdmMapPicker.setLatLng(marker.position, marker, map, infoWindow);
