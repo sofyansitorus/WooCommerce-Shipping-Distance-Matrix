@@ -485,18 +485,18 @@ var wcsdmTableRates = {
         };
 
         if ($field.hasClass('wcsdm-field--is-required') && fieldValue.length < 1) {
-          fieldData.error = wcsdmTableRates.rateRowError(rowIndex, wcsdmSprintf(wcsdmI18n('%s field is required'), fieldTitle));
+          fieldData.error = wcsdmTableRates.rateRowError(rowIndex, wcsdmSprintf(wcsdmI18n('%s field is required.'), fieldTitle));
         }
 
         if (!fieldData.error && fieldValue.length) {
           if ($field.data('type') === 'number' && isNaN(fieldValue)) {
-            fieldData.error = wcsdmTableRates.rateRowError(rowIndex, wcsdmSprintf(wcsdmI18n('%s field value must be numeric'), fieldTitle));
+            fieldData.error = wcsdmTableRates.rateRowError(rowIndex, wcsdmSprintf(wcsdmI18n('%s field value must be numeric.'), fieldTitle));
           }
 
           var fieldValueInt = parseInt(fieldValue, 10);
 
           if (typeof $field.attr('min') !== 'undefined' && fieldValueInt < parseInt($field.attr('min'), 10)) {
-            fieldData.error = wcsdmTableRates.rateRowError(rowIndex, wcsdmSprintf(wcsdmI18n('%1$s field value cannot be lower than %2$d'), fieldTitle, $field.attr('min')));
+            fieldData.error = wcsdmTableRates.rateRowError(rowIndex, wcsdmSprintf(wcsdmI18n('%1$s field value cannot be lower than %2$.d'), fieldTitle, $field.attr('min')));
           }
 
           if (typeof $field.attr('max') !== 'undefined' && fieldValueInt > parseInt($field.attr('max'), 10)) {
@@ -524,7 +524,7 @@ var wcsdmTableRates = {
             duplicateKeys.push(title);
           }
 
-          rowData.error = wcsdmTableRates.rateRowError(rowIndex, wcsdmSprintf(wcsdmI18n('Shipping rules combination duplicate with rate row #%1$d: %2$s'), wcsdmTableRates.indexToNumber(uniqueKeys[uniqueKeyString]), duplicateKeys.join(', ')));
+          rowData.error = wcsdmTableRates.rateRowError(rowIndex, wcsdmSprintf(wcsdmI18n('Shipping rules combination duplicate with rate row #%1$d: %2$s.'), wcsdmTableRates.indexToNumber(uniqueKeys[uniqueKeyString]), duplicateKeys.join(', ')));
         } else {
           uniqueKeys[uniqueKeyString] = rowIndex;
         }
@@ -554,7 +554,7 @@ var wcsdmTableRates = {
     $('#woocommerce_wcsdm_field_group_table_rates').next('p').after('<div class="error notice wcsdm-notice">' + errorText + '</div>');
   },
   rateRowError: function (rowIndex, errorMessage) {
-    return new Error(wcsdmSprintf(wcsdmI18n('Table rate row #%1$d: %2$s'), wcsdmTableRates.indexToNumber(rowIndex), errorMessage));
+    return new Error(wcsdmSprintf(wcsdmI18n('Table rate row #%1$d: %2$s.'), wcsdmTableRates.indexToNumber(rowIndex), errorMessage));
   },
   hideError: function () {
     $('#woocommerce_wcsdm_field_group_table_rates').next('p').next('.wcsdm-notice').remove();

@@ -1162,18 +1162,18 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		?>
 		<tr valign="top">
 			<th scope="row" class="titledesc">
-				<label for="<?php echo esc_attr( $field_key ); ?>"><?php echo wp_kses_post( $data['title'] ); ?> <?php echo $this->get_tooltip_html( $data ); // WPCS: XSS ok. ?></label>
+				<label for="<?php echo esc_attr( $field_key ); ?>"><?php echo wp_kses_post( $data['title'] ); ?> <?php echo $this->get_tooltip_html( $data ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
 			</th>
 			<td class="forminp">
 				<fieldset>
 					<legend class="screen-reader-text"><span><?php echo wp_kses_post( $data['title'] ); ?></span></legend>
 					<div class="wcsdm-input-action-wrapper">
-						<input type="text" class="input-text regular-input <?php echo esc_attr( $data['class'] ); ?>" name="<?php echo esc_attr( $field_key ); ?>" id="<?php echo esc_attr( $field_key ); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" value="<?php echo esc_attr( $this->get_option( $key ) ); ?>" placeholder="<?php echo esc_attr( $data['placeholder'] ); ?>" <?php echo $this->get_custom_attribute_html( $data ); // WPCS: XSS ok. ?> />
+						<input type="text" class="input-text regular-input <?php echo esc_attr( $data['class'] ); ?>" name="<?php echo esc_attr( $field_key ); ?>" id="<?php echo esc_attr( $field_key ); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" value="<?php echo esc_attr( $this->get_option( $key ) ); ?>" placeholder="<?php echo esc_attr( $data['placeholder'] ); ?>" <?php echo $this->get_custom_attribute_html( $data ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> />
 						<a href="#" class="button button-secondary wcsdm-buttons--has-icon wcsdm-btn--map-show wcsdm-input-action" id="<?php echo esc_attr( $key ); ?>" title="<?php esc_attr_e( 'Set Location', 'wcsdm' ); ?>">
 							<span class="dashicons dashicons-location-alt"></span>
 						</a>
 					</div>
-					<?php echo $this->get_description_html( $data ); // WPCS: XSS ok. ?>
+					<?php echo $this->get_description_html( $data ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				</fieldset>
 			</td>
 		</tr>
@@ -1601,18 +1601,18 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			try {
 				// Validate required field value.
 				if ( $field['is_required'] && ( ! strlen( trim( $value ) ) || is_null( $value ) ) ) {
-					throw new Exception( wp_sprintf( wcsdm_i18n( 'errors.field_required' ), $field['title'] ) );
+					throw new Exception( wp_sprintf( wcsdm_i18n( '%s field is required' ), $field['title'] ) );
 				}
 
 				if ( strlen( $value ) ) {
 					// Validate min field value.
 					if ( isset( $field['custom_attributes']['min'] ) && $value < $field['custom_attributes']['min'] ) {
-						throw new Exception( wp_sprintf( wcsdm_i18n( 'errors.field_min_value' ), $field['title'], $field['custom_attributes']['min'] ) );
+						throw new Exception( wp_sprintf( wcsdm_i18n( '%1$s field value cannot be lower than %2$d' ), $field['title'], $field['custom_attributes']['min'] ) );
 					}
 
 					// Validate max field value.
 					if ( isset( $field['custom_attributes']['max'] ) && $value > $field['custom_attributes']['max'] ) {
-						throw new Exception( wp_sprintf( wcsdm_i18n( 'errors.field_max_value' ), $field['title'], $field['custom_attributes']['max'] ) );
+						throw new Exception( wp_sprintf( wcsdm_i18n( '%1$s field value cannot be greater than %2$d' ), $field['title'], $field['custom_attributes']['max'] ) );
 					}
 				}
 			} catch ( Exception $e ) {
@@ -1707,9 +1707,9 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				);
 			} catch ( Exception $e ) {
 				$errors[] = wp_sprintf(
-					wcsdm_i18n( 'errors.table_rate_row' ),
+					wcsdm_i18n( 'Table rate row #%1$d: %2$s' ),
 					( $index + 1 ),
-					wp_sprintf( wcsdm_i18n( 'errors.duplicate_rate_row' ), $filtered[ $rate_key ]['index'], $e->getMessage() )
+					wp_sprintf( wcsdm_i18n( 'Table rates data is incomplete or invalid!' ), $filtered[ $rate_key ]['index'], $e->getMessage() )
 				);
 			}
 		}

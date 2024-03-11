@@ -44,42 +44,36 @@ function wcsdm_i18n( $key = '', $default = '' ) {
 		'Cancel'                                       => __( 'Cancel', 'wcsdm' ),
 		'Confirm Delete'                               => __( 'Confirm Delete', 'wcsdm' ),
 		'Delete Selected Rates'                        => __( 'Delete Selected Rates', 'wcsdm' ),
-		'Drag this marker or search your address at the input above.' => __( 'Drag this marker or search your address at the input above.', 'wcsdm' ),
+		'Please drag this marker or enter your address in the input field above.' => __( 'Please drag this marker or enter your address in the input field above.', 'wcsdm' ),
 		'Latitude'                                     => __( 'Latitude', 'wcsdm' ),
 		'Longitude'                                    => __( 'Longitude', 'wcsdm' ),
 		'Save Changes'                                 => __( 'Save Changes', 'wcsdm' ),
 		'Store Location Picker'                        => __( 'Store Location Picker', 'wcsdm' ),
 		// translators: %s = Field name.
-		'%s field is required'                         => __( '%s field is required', 'wcsdm' ),
+		'%s field is required.'                        => __( '%s field is required.', 'wcsdm' ),
 		// translators: %s = Field name.
-		'%s field value must be numeric'               => __( '%s field value must be numeric', 'wcsdm' ),
+		'%s field value must be numeric.'              => __( '%s field value must be numeric.', 'wcsdm' ),
 		// translators: %1$s = Field name, %2$d = Minimum field value rule.
-		'%1$s field value cannot be lower than %2$d'   => __( '%1$s field value cannot be lower than %2$d', 'wcsdm' ),
+		'%1$s field value cannot be lower than %2$.d'  => __( '%1$s field value cannot be lower than %2$.d', 'wcsdm' ),
 		// translators: %1$s = Field name, %2$d = Maximum field value rule.
 		'%1$s field value cannot be greater than %2$d' => __( '%1$s field value cannot be greater than %2$d', 'wcsdm' ),
 		// translators: %1$d = row number, %2$s = error message.
-		'Shipping rules combination duplicate with rate row #%1$d: %2$s' => __( 'Shipping rules combination duplicate with rate row #%1$d: %2$s', 'wcsdm' ),
+		'Shipping rules combination duplicate with rate row #%1$d: %2$s.' => __( 'Shipping rules combination duplicate with rate row #%1$d: %2$s.', 'wcsdm' ),
 		// translators: %1$d = row number, %2$s = error message.
-		'Table rate row #%1$d: %2$s'                   => __( 'Table rate row #%1$d: %2$s', 'wcsdm' ),
+		'Table rate row #%1$d: %2$s.'                  => __( 'Table rate row #%1$d: %2$s.', 'wcsdm' ),
 		'Table rates data is incomplete or invalid!'   => __( 'Table rates data is incomplete or invalid!', 'wcsdm' ),
 	);
 
 	if ( ! empty( $key ) && is_string( $key ) ) {
-		$keys = explode( '.', $key );
-
-		$temp = $i18n;
-
-		foreach ( $keys as $path ) {
-			if ( ! isset( $temp[ $path ] ) ) {
-				$temp = null;
-
-				break;
-			}
-
-			$temp = $temp[ $path ];
+		if ( isset( $i18n[ $key ] ) ) {
+			return $i18n[ $key ];
 		}
 
-		return is_null( $temp ) ? $default : $temp;
+		if ( '' !== $default ) {
+			return $default;
+		}
+
+		return $key;
 	}
 
 	return $i18n;
