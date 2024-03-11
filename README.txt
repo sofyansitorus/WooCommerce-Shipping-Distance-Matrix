@@ -5,11 +5,11 @@ Donate link: https://www.buymeacoffee.com/sofyansitorus?utm_source=wooreer_plugi
 Requires at least: 4.8
 Tested up to: 6.4.3
 Requires PHP: 7.4
-Stable tag: 2.1.16
+Stable tag: 2.2.0
 License: GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
-WooReer (formerly WooCommerce Shipping Distance Matrix) is a WooCommerce shipping rates calculator that allows you to easily offer shipping rates based on the distance calculated using Google Maps Distance Matrix Service API.
+WooReer (formerly WooCommerce Shipping Distance Matrix) calculates shipping rates based on distance via Google Maps Distance Matrix Service API.
 
 == Description ==
 WooReer (formerly WooCommerce Shipping Distance Matrix) is a WooCommerce shipping rates calculator that allows you to easily offer shipping rates based on the distance calculated using Google Maps Distance Matrix Service API.
@@ -41,6 +41,9 @@ This plugin perfect for the store owner who wants to charge customers for the de
 * Set preferred route: Shortest Distance, Longest Distance, Shortest Duration, Longest Duration.
 * Round the distance up to the nearest absolute number.
 * Show distance info to the customer during checkout.
+
+= Compatibility =
+This plugin is not compatible with WooCommerce blocks. You MUST use [WooCommerce shortcode](https://woo.com/document/woocommerce-shortcodes) to build your cart and checkout page.
 
 = Demo =
 
@@ -132,6 +135,11 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 > Upgrading from version 1.x to version 2.x is a major update and has breaking changes. Some **settings data will be lost** and **re-setup the plugin** after the upgrade is required.
 >
 > **Please upgrade wisely and carefully.**
+
+
+= 2.2.0 =
+
+* Fix - Fixed the broken settings panel in WooCommerce version 8.4.0 and newer.
 
 
 = 2.1.16 =

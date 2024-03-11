@@ -125,6 +125,8 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		$this->init_settings(); // This is part of the settings API. Loads settings you previously init.
 		$this->init_rate_fields(); // Init rate fields.
 		$this->init_current_options(); // Init current options data.
+
+		add_action( 'admin_footer', array( 'Wcsdm_Shipping_Method', 'enqueue_admin_js' ), 10 ); // Priority needs to be higher than wc_print_js (25).
 	}
 
 	/**
@@ -247,13 +249,13 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	 */
 	public function init_form_fields() {
 		$form_fields = array(
-			'field_group_general'         => array(
+			'field_group_general'        => array(
 				'type'      => 'wcsdm',
 				'orig_type' => 'title',
 				'class'     => 'wcsdm-field-group',
 				'title'     => __( 'General Settings', 'wcsdm' ),
 			),
-			'tax_status'                  => array(
+			'tax_status'                 => array(
 				'title'       => __( 'Tax Status', 'wcsdm' ),
 				'type'        => 'wcsdm',
 				'orig_type'   => 'select',
@@ -265,7 +267,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					'none'    => __( 'None', 'wcsdm' ),
 				),
 			),
-			'enable_log'                  => array(
+			'enable_log'                 => array(
 				'title'       => __( 'Enable Log', 'wcsdm' ),
 				'label'       => __( 'Yes', 'wcsdm' ),
 				'type'        => 'wcsdm',
@@ -273,7 +275,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'description' => __( 'Write data to WooCommerce System Status Report Log for importance event such API response error and shipping calculation failures. <a href="admin.php?page=wc-status&tab=logs" target="_blank">Click here</a> to view the log data.', 'wcsdm' ),
 				'desc_tip'    => false,
 			),
-			'field_group_store_location'  => array(
+			'field_group_store_location' => array(
 				'type'        => 'wcsdm',
 				'orig_type'   => 'title',
 				'class'       => 'wcsdm-field-group',
@@ -281,7 +283,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				// translators: %s is URL to the external link.
 				'description' => sprintf( __( 'This plugin requires Google API Key and also need to have the following APIs services enabled: Distance Matrix API, Maps JavaScript API, Geocoding API, Places API. Please <a href="%s" target="_blank">click here</a> to go to the Google API Console to create API Key and to enable the API services.', 'wcsdm' ), 'https://cloud.google.com/maps-platform/#get-started' ),
 			),
-			'api_key'                     => array(
+			'api_key'                    => array(
 				'title'           => __( 'Distance Calculator API Key', 'wcsdm' ),
 				'type'            => 'wcsdm',
 				'orig_type'       => 'api_key',
@@ -294,15 +296,14 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				),
 				'api_restriction' => array(
 					'label' => 'IP addresses',
-					'link'  => 'https://developers.google.com/maps/api-key-best-practices#restrict_apikey',
+					'link'  => 'https://developers.google.com/maps/api-security-best-practices#restricting-api-keys',
 				),
 			),
-			'api_key_picker'              => array(
+			'api_key_picker'             => array(
 				'title'           => __( 'Location Picker API Key', 'wcsdm' ),
 				'type'            => 'wcsdm',
 				'orig_type'       => 'api_key',
 				'description'     => __( 'API Key used to render the location picker map.', 'wcsdm' ),
-				'api_services'    => __( 'Required API Services: <strong>Maps JavaScript API, Geocoding API, Places API</strong>. Please disable the API Key restriction unless you know what you are doing, then set it to <strong>HTTP referrers.</strong>', 'wcsdm' ),
 				'desc_tip'        => true,
 				'default'         => '',
 				'is_required'     => true,
@@ -312,11 +313,11 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					'Places API'          => 'https://developers.google.com/maps/documentation/places/web-service/overview',
 				),
 				'api_restriction' => array(
-					'label' => 'HTTP referrers',
-					'link'  => 'https://developers.google.com/maps/api-key-best-practices#restrict_apikey',
+					'label' => 'Websites',
+					'link'  => 'https://developers.google.com/maps/api-security-best-practices#restricting-api-keys',
 				),
 			),
-			'origin_type'                 => array(
+			'origin_type'                => array(
 				'title'             => __( 'Store Origin Data Type', 'wcsdm' ),
 				'type'              => 'wcsdm',
 				'orig_type'         => 'select',
@@ -336,61 +337,61 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					),
 				),
 			),
-			'origin_lat'                  => array(
+			'origin_lat'                 => array(
 				'title'             => __( 'Store Location Latitude', 'wcsdm' ),
 				'type'              => 'wcsdm',
-				'orig_type'         => 'text',
+				'orig_type'         => 'origin_info',
 				'description'       => __( 'Store location latitude coordinates', 'wcsdm' ),
 				'desc_tip'          => true,
 				'default'           => '',
 				'is_required'       => true,
+				'class'             => 'wcsdm-input-has-action',
 				'custom_attributes' => array(
-					'readonly'  => true,
-					'data-link' => 'location_picker',
+					'readonly' => true,
 				),
 				'show_if'           => array(
 					'origin_type' => 'coordinate',
 				),
 			),
-			'origin_lng'                  => array(
+			'origin_lng'                 => array(
 				'title'             => __( 'Store Location Longitude', 'wcsdm' ),
 				'type'              => 'wcsdm',
-				'orig_type'         => 'text',
+				'orig_type'         => 'origin_info',
 				'description'       => __( 'Store location longitude coordinates', 'wcsdm' ),
 				'desc_tip'          => true,
 				'default'           => '',
 				'is_required'       => true,
+				'class'             => 'wcsdm-input-has-action',
 				'custom_attributes' => array(
-					'readonly'  => true,
-					'data-link' => 'location_picker',
+					'readonly' => true,
 				),
 				'show_if'           => array(
 					'origin_type' => 'coordinate',
 				),
 			),
-			'origin_address'              => array(
+			'origin_address'             => array(
 				'title'             => __( 'Store Location Address', 'wcsdm' ),
 				'type'              => 'wcsdm',
-				'orig_type'         => 'text',
+				'orig_type'         => 'origin_info',
 				'description'       => __( 'Store location full address', 'wcsdm' ),
 				'desc_tip'          => true,
 				'default'           => '',
 				'is_required'       => true,
+				'class'             => 'wcsdm-input-has-action',
 				'custom_attributes' => array(
-					'readonly'  => true,
-					'data-link' => 'location_picker',
+					'readonly' => true,
 				),
 				'show_if'           => array(
 					'origin_type' => 'address',
 				),
 			),
-			'field_group_route'           => array(
+			'field_group_route'          => array(
 				'type'      => 'wcsdm',
 				'orig_type' => 'title',
 				'class'     => 'wcsdm-field-group',
 				'title'     => __( 'Route Settings', 'wcsdm' ),
 			),
-			'travel_mode'                 => array(
+			'travel_mode'                => array(
 				'title'       => __( 'Travel Mode', 'wcsdm' ),
 				'type'        => 'wcsdm',
 				'orig_type'   => 'select',
@@ -404,7 +405,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				),
 				'api_request' => 'mode',
 			),
-			'route_restrictions'          => array(
+			'route_restrictions'         => array(
 				'title'       => __( 'Route Restrictions', 'wcsdm' ),
 				'type'        => 'wcsdm',
 				'orig_type'   => 'select',
@@ -420,7 +421,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				),
 				'api_request' => 'avoid',
 			),
-			'preferred_route'             => array(
+			'preferred_route'            => array(
 				'title'       => __( 'Preferred Route', 'wcsdm' ),
 				'type'        => 'wcsdm',
 				'orig_type'   => 'select',
@@ -434,7 +435,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					'longest_duration'  => __( 'Longest Duration', 'wcsdm' ),
 				),
 			),
-			'distance_unit'               => array(
+			'distance_unit'              => array(
 				'title'             => __( 'Distance Units', 'wcsdm' ),
 				'type'              => 'wcsdm',
 				'orig_type'         => 'select',
@@ -449,19 +450,31 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'custom_attributes' => array(
 					'data-fields' => wp_json_encode(
 						array(
-							'targets' => array(
-								'#wcsdm-table--table_rates--dummy .wcsdm-col--rate_class_0 .label-text',
-								'#wcsdm-table--advanced_rate .wcsdm-field--context--advanced--section_shipping_rates',
+							'label'     => array(
+								'targets' => array(
+									'#wcsdm-table--table_rates--dummy .wcsdm-col--rate_class_0 .label-text',
+									'label[for="woocommerce_wcsdm_fake--field--rate_class_0"]',
+									'#wcsdm-table--advanced_rate .wcsdm-field--context--advanced--section_shipping_rates',
+								),
+								'value'   => array(
+									'metric'   => __( 'Rate per Kilometer', 'wcsdm' ),
+									'imperial' => __( 'Rate per Mile', 'wcsdm' ),
+								),
 							),
-							'label'   => array(
-								'metric'   => __( 'Rate per Kilometer', 'wcsdm' ),
-								'imperial' => __( 'Rate per Mile', 'wcsdm' ),
+							'attribute' => array(
+								'targets' => array(
+									'.wcsdm-field-wrapper--max_distance',
+								),
+								'value'   => array(
+									'metric'   => 'km',
+									'imperial' => 'mi',
+								),
 							),
 						)
 					),
 				),
 			),
-			'round_up_distance'           => array(
+			'round_up_distance'          => array(
 				'title'       => __( 'Round Up Distance', 'wcsdm' ),
 				'label'       => __( 'Yes', 'wcsdm' ),
 				'type'        => 'wcsdm',
@@ -469,7 +482,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'description' => __( 'Round up the calculated shipping distance with decimal to the nearest absolute number.', 'wcsdm' ),
 				'desc_tip'    => true,
 			),
-			'show_distance'               => array(
+			'show_distance'              => array(
 				'title'       => __( 'Show Distance Info', 'wcsdm' ),
 				'label'       => __( 'Yes', 'wcsdm' ),
 				'type'        => 'wcsdm',
@@ -477,14 +490,14 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'description' => __( 'Show the distance info to customer during checkout.', 'wcsdm' ),
 				'desc_tip'    => true,
 			),
-			'field_group_total_cost'      => array(
+			'field_group_total_cost'     => array(
 				'type'        => 'wcsdm',
 				'orig_type'   => 'title',
 				'class'       => 'wcsdm-field-group',
 				'title'       => __( 'Default Rates Settings', 'wcsdm' ),
 				'description' => __( 'Default settings that will be inherited by certain settings in table rates when the value is empty.', 'wcsdm' ),
 			),
-			'title'                       => array(
+			'title'                      => array(
 				'title'       => __( 'Label', 'wcsdm' ),
 				'type'        => 'wcsdm',
 				'orig_type'   => 'text',
@@ -504,7 +517,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					),
 				),
 			),
-			'surcharge_type'              => array(
+			'surcharge_type'             => array(
 				'type'        => 'wcsdm',
 				'orig_type'   => 'select',
 				'title'       => __( 'Surcharge Type', 'wcsdm' ),
@@ -525,7 +538,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					),
 				),
 			),
-			'surcharge'                   => array(
+			'surcharge'                  => array(
 				'type'              => 'wcsdm',
 				'orig_type'         => 'price',
 				'title'             => __( 'Surcharge Amount', 'wcsdm' ),
@@ -551,7 +564,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					'surcharge_type' => 'none',
 				),
 			),
-			'discount_type'               => array(
+			'discount_type'              => array(
 				'type'        => 'wcsdm',
 				'orig_type'   => 'select',
 				'title'       => __( 'Discount Type', 'wcsdm' ),
@@ -572,7 +585,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					),
 				),
 			),
-			'discount'                    => array(
+			'discount'                   => array(
 				'type'              => 'wcsdm',
 				'orig_type'         => 'price',
 				'title'             => __( 'Discount Amount', 'wcsdm' ),
@@ -598,7 +611,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					'discount_type' => 'none',
 				),
 			),
-			'total_cost_type'             => array(
+			'total_cost_type'            => array(
 				'type'        => 'wcsdm',
 				'orig_type'   => 'select',
 				'title'       => __( 'Total Cost Type', 'wcsdm' ),
@@ -623,7 +636,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					),
 				),
 			),
-			'min_cost'                    => array(
+			'min_cost'                   => array(
 				'type'              => 'wcsdm',
 				'orig_type'         => 'price',
 				'title'             => __( 'Minimum Cost', 'wcsdm' ),
@@ -645,7 +658,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					),
 				),
 			),
-			'max_cost'                    => array(
+			'max_cost'                   => array(
 				'type'              => 'wcsdm',
 				'orig_type'         => 'price',
 				'title'             => __( 'Maximum Cost', 'wcsdm' ),
@@ -667,47 +680,26 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					),
 				),
 			),
-			'field_group_table_rates'     => array(
+			'field_group_table_rates'    => array(
 				'type'        => 'wcsdm',
 				'orig_type'   => 'title',
 				'class'       => 'wcsdm-field-group',
 				'title'       => __( 'Table Rates Settings', 'wcsdm' ),
-				'description' => __( 'Determine the shipping cost based on the shipping address distance and advanced rules. The rate row that will be chosen during checkout is the first row that matched with the maximum distance rule and the advanced rules if defined. You can sort the rate row priority manually by dragging vertically the <span class="dashicons dashicons-move"></span> icon that will be enabled when there are rows has the same maximum distance values.', 'wcsdm' ),
+				'description' => __( 'Calculate shipping costs based on the distance to the shipping address and advanced rules. During checkout, the applicable rate is determined by the first row that matches the maximum distance rule and any defined advanced rules. You can manually prioritize rate rows by dragging them vertically when there are rows with the same maximum distance values.', 'wcsdm' ),
 			),
-			'table_rates'                 => array(
+			'table_rates'                => array(
 				'type'  => 'table_rates',
 				'title' => __( 'Table Rates Settings', 'wcsdm' ),
 			),
-			'field_group_advanced_rate'   => array(
+			'field_group_advanced_rate'  => array(
 				'type'      => 'wcsdm',
 				'orig_type' => 'title',
 				'class'     => 'wcsdm-field-group wcsdm-field-group-hidden',
 				'title'     => __( 'Advanced Rate Settings', 'wcsdm' ),
 			),
-			'advanced_rate'               => array(
+			'advanced_rate'              => array(
 				'type'  => 'advanced_rate',
 				'title' => __( 'Advanced Table Rate Settings', 'wcsdm' ),
-			),
-			'field_group_location_picker' => array(
-				'type'      => 'wcsdm',
-				'orig_type' => 'title',
-				'class'     => 'wcsdm-field-group wcsdm-field-group-hidden',
-				'title'     => __( 'Store Location Picker', 'wcsdm' ),
-			),
-			'store_location_picker'       => array(
-				'title'       => __( 'Store Location Picker', 'wcsdm' ),
-				'type'        => 'store_location_picker',
-				'description' => __( 'Drag the store icon marker or search your address in the input box below.', 'wcsdm' ),
-			),
-			'js_template'                 => array(
-				'type' => 'js_template',
-			),
-			'field_group_third_party'     => array(
-				'type'        => 'wcsdm',
-				'orig_type'   => 'title',
-				'class'       => 'wcsdm-field-group',
-				'title'       => __( 'Third-Party Settings', 'wcsdm' ),
-				'description' => __( 'Settings added by third-party plugins.', 'wcsdm' ),
 			),
 		);
 
@@ -752,15 +744,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'is_dummy'    => false,
 				'is_hidden'   => false,
 			),
-			'sort_rate'              => array(
-				'type'        => 'action_link',
-				'title'       => __( 'Sort', 'wcsdm' ),
-				'icon'        => 'dashicons dashicons-move',
-				'class'       => 'wcsdm-link wcsdm-link--sort',
-				'is_advanced' => false,
-				'is_dummy'    => true,
-				'is_hidden'   => false,
-			),
 			'row_number'             => array(
 				'type'     => 'row_number',
 				'title'    => '#',
@@ -778,9 +761,8 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'is_required'       => true,
 				'is_rule'           => true,
 				'custom_attributes' => array(
-					'min'       => '1',
-					'step'      => '1',
-					'data-unit' => 'km',
+					'min'  => '1',
+					'step' => '1',
 				),
 			),
 			'min_order_amount'       => array(
@@ -789,7 +771,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'description'       => __( 'The shipping rule for minimum order amount. Leave blank or fill with zero value to disable this rule.', 'wcsdm' ),
 				'desc_tip'          => true,
 				'is_advanced'       => true,
-				'is_dummy'          => true,
+				'is_dummy'          => false,
 				'is_hidden'         => true,
 				'is_required'       => true,
 				'is_rule'           => true,
@@ -804,7 +786,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'description'       => __( 'The shipping rule for maximum order amount. Leave blank or fill with zero value to disable this rule.', 'wcsdm' ),
 				'desc_tip'          => true,
 				'is_advanced'       => true,
-				'is_dummy'          => true,
+				'is_dummy'          => false,
 				'is_hidden'         => true,
 				'is_required'       => true,
 				'is_rule'           => true,
@@ -819,7 +801,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'description'       => __( 'The shipping rule for minimum order quantity. Leave blank or fill with zero value to disable this rule.', 'wcsdm' ),
 				'desc_tip'          => true,
 				'is_advanced'       => true,
-				'is_dummy'          => true,
+				'is_dummy'          => false,
 				'is_hidden'         => true,
 				'is_required'       => true,
 				'is_rule'           => true,
@@ -835,7 +817,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'description'       => __( 'The shipping rule for maximum order quantity. Leave blank or fill with zero value to disable this rule.', 'wcsdm' ),
 				'desc_tip'          => true,
 				'is_advanced'       => true,
-				'is_dummy'          => true,
+				'is_dummy'          => false,
 				'is_hidden'         => true,
 				'is_required'       => true,
 				'is_rule'           => true,
@@ -876,10 +858,21 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'is_hidden'   => false,
 			),
 			'show_advanced_rate'     => array(
+				'type'              => 'action_link',
+				'icon'              => 'dashicons dashicons-admin-generic',
+				'class'             => 'wcsdm-link wcsdm-link--advanced-rate',
+				'custom_attributes' => array(
+					'title' => __( 'Advanced', 'wcsdm' ),
+				),
+				'is_advanced'       => false,
+				'is_dummy'          => true,
+				'is_hidden'         => false,
+			),
+			'sort_rate'              => array(
 				'type'        => 'action_link',
-				'title'       => __( 'Advanced', 'wcsdm' ),
-				'icon'        => 'dashicons dashicons-admin-generic',
-				'class'       => 'wcsdm-link wcsdm-link--advanced-rate',
+				'title'       => '',
+				'icon'        => 'dashicons dashicons-move',
+				'class'       => 'wcsdm-link wcsdm-link--sort',
 				'is_advanced' => false,
 				'is_dummy'    => true,
 				'is_hidden'   => false,
@@ -1052,36 +1045,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	}
 
 	/**
-	 * Generate js_template field.
-	 *
-	 * @since 1.2.4
-	 */
-	public function generate_js_template_html() {
-		ob_start();
-		?>
-		<script type="text/template" id="tmpl-wcsdm-buttons">
-			<div id="wcsdm-buttons" class="wcsdm-buttons">
-				<# if(data.btn_left) { #>
-				<button id="wcsdm-btn--{{data.btn_left.id}}" class="button button-primary button-large wcsdm-buttons-item wcsdm-buttons-item--left"><span class="dashicons dashicons-{{data.btn_left.icon}}"></span> {{data.btn_left.label}}</button>
-				<# } #>
-				<# if(data.btn_right) { #>
-				<button id="wcsdm-btn--{{data.btn_right.id}}" class="button button-primary button-large wcsdm-buttons-item wcsdm-buttons-item--right"><span class="dashicons dashicons-{{data.btn_right.icon}}"></span> {{data.btn_right.label}}</button>
-				<# } #>
-			</div>
-		</script>
-
-		<script type="text/template" id="tmpl-wcsdm-map-search-panel">
-			<div id="wcsdm-map-search-panel" class="wcsdm-map-search-panel wcsdm-hidden expanded">
-				<button type="button" id="wcsdm-map-search-panel-toggle" class="wcsdm-map-search-panel-toggle wcsdm-map-search-element"><span class="dashicons"></button>
-				<input id="wcsdm-map-search-input" class="wcsdm-fullwidth wcsdm-map-search-input wcsdm-map-search-element" type="search" placeholder="<?php echo esc_html__( 'Type your store location address...', 'wcsdm' ); ?>" autocomplete="off">
-			</div>
-		</script>
-		<?php
-
-		return ob_get_clean();
-	}
-
-	/**
 	 * Generate api_key field.
 	 *
 	 * @since    1.0.0
@@ -1138,16 +1101,14 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			</th>
 			<td class="forminp">
 				<fieldset>
-					<div class="wcsdm-api-notice notice">
+					<div class="wcsdm-notice notice">
 						<legend class="screen-reader-text">
 							<span><?php echo wp_kses_post( $data['title'] ); ?></span>
 						</legend>
 
-						<input type="text" class="input-text regular-input <?php echo esc_attr( $data['class'] ); ?>" name="<?php echo esc_attr( $field_key ); ?>" id="<?php echo esc_attr( $field_key ); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" value="<?php echo esc_attr( $this->get_option( $key ) ); ?>" placeholder="<?php echo esc_attr( $data['placeholder'] ); ?>" data-key="<?php echo esc_attr( $key ); ?>" readonly="readonly" />
-
-						<a href="#" class="button button-secondary wcsdm-buttons--has-icon wcsdm-edit-api-key wcsdm-link" id="<?php echo esc_attr( $key ); ?>" title="<?php esc_attr_e( 'Edit API Key', 'wcsdm' ); ?>">
-							<span class="dashicons dashicons-update"></span>
-						</a>
+						<div class="wcsdm-api-key-wrapper">
+							<input type="text" class="input-text regular-input <?php echo esc_attr( $data['class'] ); ?>" name="<?php echo esc_attr( $field_key ); ?>" id="<?php echo esc_attr( $field_key ); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" value="<?php echo esc_attr( $this->get_option( $key ) ); ?>" placeholder="<?php echo esc_attr( $data['placeholder'] ); ?>" data-key="<?php echo esc_attr( $key ); ?>" />
+						</div>
 
 						<?php if ( $api_services || $api_restriction ) : ?>
 
@@ -1166,6 +1127,53 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 						<?php endif; ?>
 					</div>
 					<?php echo $this->get_description_html( $data ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				</fieldset>
+			</td>
+		</tr>
+		<?php
+
+		return ob_get_clean();
+	}
+
+	/**
+	 * Generate origin_info field.
+	 *
+	 * @since    1.0.0
+	 * @param string $key Input field key.
+	 * @param array  $data Settings field data.
+	 */
+	public function generate_origin_info_html( $key, $data ) {
+		$field_key = $this->get_field_key( $key );
+		$defaults  = array(
+			'title'             => '',
+			'disabled'          => false,
+			'class'             => '',
+			'css'               => '',
+			'placeholder'       => '',
+			'type'              => 'text',
+			'desc_tip'          => false,
+			'description'       => '',
+			'custom_attributes' => array(),
+		);
+
+		$data = wp_parse_args( $data, $defaults );
+
+		ob_start();
+		?>
+		<tr valign="top">
+			<th scope="row" class="titledesc">
+				<label for="<?php echo esc_attr( $field_key ); ?>"><?php echo wp_kses_post( $data['title'] ); ?> <?php echo $this->get_tooltip_html( $data ); // WPCS: XSS ok. ?></label>
+			</th>
+			<td class="forminp">
+				<fieldset>
+					<legend class="screen-reader-text"><span><?php echo wp_kses_post( $data['title'] ); ?></span></legend>
+					<div class="wcsdm-input-action-wrapper">
+						<input type="text" class="input-text regular-input <?php echo esc_attr( $data['class'] ); ?>" name="<?php echo esc_attr( $field_key ); ?>" id="<?php echo esc_attr( $field_key ); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" value="<?php echo esc_attr( $this->get_option( $key ) ); ?>" placeholder="<?php echo esc_attr( $data['placeholder'] ); ?>" <?php echo $this->get_custom_attribute_html( $data ); // WPCS: XSS ok. ?> />
+						<a href="#" class="button button-secondary wcsdm-buttons--has-icon wcsdm-btn--map-show wcsdm-input-action" id="<?php echo esc_attr( $key ); ?>" title="<?php esc_attr_e( 'Set Location', 'wcsdm' ); ?>">
+							<span class="dashicons dashicons-location-alt"></span>
+						</a>
+					</div>
+					<?php echo $this->get_description_html( $data ); // WPCS: XSS ok. ?>
 				</fieldset>
 			</td>
 		</tr>
@@ -1222,49 +1230,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	}
 
 	/**
-	 * Generate store_location_picker field.
-	 *
-	 * @since    1.0.0
-	 * @param string $key Input field key.
-	 * @param array  $data Settings field data.
-	 */
-	public function generate_store_location_picker_html( $key, $data ) {
-		$defaults = array(
-			'title'             => '',
-			'disabled'          => false,
-			'class'             => '',
-			'css'               => '',
-			'placeholder'       => '',
-			'type'              => 'text',
-			'desc_tip'          => false,
-			'description'       => '',
-			'custom_attributes' => array(),
-			'options'           => array(),
-			'default'           => '',
-		);
-
-		$data = wp_parse_args( $data, $defaults );
-
-		ob_start();
-		?>
-		<tr valign="top" class="wcsdm-row">
-			<td colspan="2" class="wcsdm-no-padding">
-				<table id="wcsdm-table-map-picker" class="form-table wcsdm-table wcsdm-table-map-picker" cellspacing="0">
-					<tr valign="top">
-						<td colspan="2" class="wcsdm-no-padding">
-							<div id="wcsdm-map-wrap" class="wcsdm-map-wrap">
-								<div id="wcsdm-map-canvas" class="wcsdm-map-canvas"></div>
-							</div>
-						</td>
-					</tr>
-				</table>
-			</td>
-		</tr>
-		<?php
-		return ob_get_clean();
-	}
-
-	/**
 	 * Generate table_rates field.
 	 *
 	 * @since    1.0.0
@@ -1291,8 +1256,8 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		ob_start();
 		?>
 		<tr valign="top">
-			<td colspan="2" class="wcsdm-no-padding">
-				<table id="wcsdm-table--table_rates--dummy" class="form-table wcsdm-table wcsdm-table--table_rates--dummy">
+			<td colspan="2" class="wcsdm-no-padding wcsdm-no-border">
+				<table id="wcsdm-table--table_rates--dummy" class="wcsdm-table wcsdm-table--table_rates--dummy">
 					<thead>
 						<?php $this->generate_rate_row_head(); ?>
 					</thead>
@@ -1320,11 +1285,27 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	 *
 	 * @param string $key Table rate column key.
 	 * @param array  $data Settings field data.
+	 * @param array  $location The row location. Either head, body or foot.
 	 * @return string
 	 */
-	private function generate_rate_row_col_class( $key, $data ) {
+	private function generate_rate_row_col_class( $key, $data, $location = '' ) {
 		$class = 'wcsdm-col wcsdm-col--' . $key;
-		$type  = isset( $data['type'] ) ? $data['type'] : '';
+
+		switch ( $location ) {
+			case 'head':
+				$class .= ' wcsdm-col--location--head';
+				break;
+
+			case 'foot':
+				$class .= ' wcsdm-col--location--foot';
+				break;
+
+			default:
+				$class .= ' wcsdm-col--location--body';
+				break;
+		}
+
+		$type = isset( $data['type'] ) ? $data['type'] : '';
 
 		if ( $type ) {
 			$class .= ' wcsdm-col--type--' . $type;
@@ -1345,11 +1326,11 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				foreach ( $this->get_rates_fields( 'dummy' ) as $key => $field ) :
 					$type = isset( $field['type'] ) ? $field['type'] : 'text';
 					?>
-					<td class="<?php echo esc_attr( $this->generate_rate_row_col_class( $key, $field ) ); ?>">
+					<td class="<?php echo esc_attr( $this->generate_rate_row_col_class( $key, $field, 'head' ) ); ?>">
 						<?php if ( 'select_item' === $type ) : ?>
 							<?php $this->generate_rate_row_field_select_item(); ?>
 						<?php else : ?>
-						<label><span class="label-text"><?php echo esc_html( $field['title'] ); ?></span><?php echo $this->get_tooltip_html( $field ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
+						<div><span class="label-text"><?php echo esc_html( $field['title'] ); ?></span><?php echo $this->get_tooltip_html( $field ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
 						<?php endif; ?>
 					</td>
 				<?php endforeach; ?>
@@ -1404,7 +1385,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	 */
 	private function generate_rate_row_field_select_item() {
 		?>
-		<input class="select-item" type="checkbox">
+		<input class="select-item wcsdm-checkbox" type="checkbox">
 		<?php
 	}
 
@@ -1426,7 +1407,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	 * @param array  $data Settings field data.
 	 * @return void
 	 */
-	private function generate_rate_row_field_action_link( $key, $data ) {
+	public function generate_rate_row_field_action_link( $key, $data ) {
 		$data = wp_parse_args(
 			$data,
 			array(
@@ -1548,9 +1529,9 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			$data['type'] = 'text';
 		}
 		?>
-		<fieldset>
+		<div class="wcsdm-field-wrapper wcsdm-field-wrapper--<?php echo esc_attr( $key ); ?>">
 			<input class="input-text regular-input <?php echo esc_attr( $data['class'] ); ?>" type="<?php echo esc_attr( $data['type'] ); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" value="<?php echo esc_attr( $value ); ?>" placeholder="<?php echo esc_attr( $data['placeholder'] ); ?>" <?php disabled( $data['disabled'], true ); ?> <?php echo $this->get_custom_attribute_html( $data ); //phpcs:ignore WordPress.Security.EscapeOutput ?> />
-		</fieldset>
+		</div>
 		<?php
 	}
 
@@ -1569,19 +1550,9 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		$data = wp_parse_args( $data, $defaults );
 
 		ob_start();
-		?>
-		<tr valign="top">
-			<td colspan="2" class="wcsdm-no-padding">
-				<table id="wcsdm-table--advanced-rate" class="form-table wcsdm-table wcsdm-table--advanced-rate">
-					<?php
-					foreach ( $this->get_rates_fields( 'advanced' ) as $key => $data ) {
-						$this->generate_settings_html( array( 'fake--field--' . $key => $this->populate_field( $key, $data ) ) );
-					}
-					?>
-				</table>
-			</td>
-		</tr>
-		<?php
+		foreach ( $this->get_rates_fields( 'advanced' ) as $key => $data ) {
+			$this->generate_settings_html( array( 'fake--field--' . $key => $this->populate_field( $key, $data ) ) );
+		}
 		return ob_get_clean();
 	}
 
@@ -2172,7 +2143,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 
 		$this->show_debug( array( 'TABLE_RATES_DATA' => $table_rates ) );
 
-		if ( $table_rates ) {
+		if ( $table_rates && is_array( $table_rates ) ) {
 			$table_rates_match = array();
 
 			foreach ( $table_rates as $index => $rate ) {
@@ -3027,5 +2998,30 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		}
 
 		return implode( ' ', $texts );
+	}
+
+	/**
+	 * Prints scripts or data before the default footer scripts.
+	 *
+	 * @since ??
+	 *
+	 * @return void
+	 */
+	public function enqueue_admin_js() {
+		?>
+		<script type="text/template" id="tmpl-wcsdm-buttons">
+			<div id="wcsdm-buttons" class="wcsdm-buttons">
+				<# if(data.btn_left) { #>
+				<button id="wcsdm-btn--{{data.btn_left.id}}" class="button button-primary button-large wcsdm-buttons-item wcsdm-buttons-item--left">{{data.btn_left.label}}</button>
+				<# } #>
+				<# if(data.btn_right) { #>
+				<button id="wcsdm-btn--{{data.btn_right.id}}" class="button button-primary button-large wcsdm-buttons-item wcsdm-buttons-item--right">{{data.btn_right.label}}</button>
+				<# } #>
+			</div>
+		</script>
+		<script type="text/template" id="tmpl-wcsdm-map-wrap">
+			<div id="wcsdm-map-wrap" style="height:{{data.height}};"><div id="wcsdm-map-canvas" style="height:{{data.height}};"></div></div>
+		</script>
+		<?php
 	}
 }

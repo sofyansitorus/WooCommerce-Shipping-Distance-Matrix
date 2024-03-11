@@ -66,6 +66,16 @@ const assets = [
     isPrefixed: true,
   },
   {
+    type: 'styles',
+    target: 'backend-legacy',
+    sources: [
+      'backend-legacy.scss',
+    ],
+    targetDir: 'assets/css/',
+    sourcesDir: 'assets/src/scss/',
+    isPrefixed: true,
+  },
+  {
     type: 'php',
     target: 'php',
     sources: [

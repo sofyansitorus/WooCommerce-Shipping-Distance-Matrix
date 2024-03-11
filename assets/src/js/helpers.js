@@ -25,22 +25,18 @@ function wcsdmGetButtons(args) {
   var buttonLabels = wcsdmBackendVars.i18n.buttons;
 
   var leftButtonDefaultId = 'add-rate';
-  var leftButtonDefaultIcon = 'plus';
-  var leftButtonDefaultLabel = 'Add New Rate';
+  var leftButtonDefaultLabel = wcsdmI18n('Add New Rate');
 
   var leftButtonDefault = {
     id: leftButtonDefaultId,
-    icon: leftButtonDefaultIcon,
     label: leftButtonDefaultLabel
   };
 
-  var rightButtonDefaultIcon = 'yes';
   var rightButtonDefaultId = 'save-settings';
-  var rightButtonDefaultLabel = 'Save Changes';
+  var rightButtonDefaultLabel = wcsdmI18n('Save Changes');
 
   var rightButtonDefault = {
     id: rightButtonDefaultId,
-    icon: rightButtonDefaultIcon,
     label: rightButtonDefaultLabel
   };
 
@@ -90,19 +86,7 @@ function wcsdmGetButtons(args) {
 }
 
 function wcsdmI18n(path) {
-  if (typeof path === 'string') {
-    path = path.split('.');
-  }
-
-  return _.property(path)(wcsdmBackendVars.i18n);
-}
-
-function wcsdmError(path) {
-  if (typeof path === 'string') {
-    path = path.split('.');
-  }
-
-  return _.property(path)(wcsdmBackendVars.i18n.errors);
+  return _.get(wcsdmBackendVars.i18n, path, path);
 }
 
 function wcsdmSprintf() {
