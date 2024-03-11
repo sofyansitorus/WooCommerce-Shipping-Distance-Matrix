@@ -3007,7 +3007,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	 *
 	 * @return void
 	 */
-	public function enqueue_admin_js() {
+	public static function enqueue_admin_js() {
 		?>
 		<script type="text/template" id="tmpl-wcsdm-buttons">
 			<div id="wcsdm-buttons" class="wcsdm-buttons">
