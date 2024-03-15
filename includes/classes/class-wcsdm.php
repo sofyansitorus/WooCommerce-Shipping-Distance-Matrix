@@ -82,12 +82,22 @@ class Wcsdm {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_backend_assets' ), 999 );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ), 999 );
 
-		// Hook to declare compatibility with High-Performance Order Storage.
+		// Hook to declare compatibility with the High-Performance Order Storage.
 		add_action(
 			'before_woocommerce_init',
 			function() {
 				if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
 					\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', WCSDM_FILE, true );
+				}
+			}
+		);
+
+		// Hook to declare incompatibility with the Cart and Checkout Blocks.
+		add_action(
+			'before_woocommerce_init',
+			function() {
+				if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
+					\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'cart_checkout_blocks', __FILE__, false );
 				}
 			}
 		);
