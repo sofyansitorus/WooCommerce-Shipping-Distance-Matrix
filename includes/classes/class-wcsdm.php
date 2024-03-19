@@ -97,7 +97,7 @@ class Wcsdm {
 			'before_woocommerce_init',
 			function() {
 				if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
-					\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'cart_checkout_blocks', __FILE__, false );
+					\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'cart_checkout_blocks', WCSDM_FILE, false );
 				}
 			}
 		);
