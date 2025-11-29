@@ -12,7 +12,7 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 WooReer (formerly WooCommerce Shipping Distance Matrix) calculates shipping rates based on distance via Google Maps, Mapbox, or DistanceMatrix.ai.
 
 == Description ==
-WooReer (formerly WooCommerce Shipping Distance Matrix) is a powerful WooCommerce shipping rates calculator that allows you to offer shipping rates based on distance and duration. The plugin features a flexible API provider architecture, supporting Google Maps Routes API, Mapbox Matrix API, and DistanceMatrix.ai, giving you more choice and control over your mapping services.
+WooReer (formerly WooCommerce Shipping Distance Matrix) is a powerful WooCommerce shipping rates calculator that allows you to offer shipping rates based on distance. The plugin features a flexible API provider architecture, supporting Google Maps Routes API, Mapbox Matrix API, and DistanceMatrix.ai, giving you more choice and control over your mapping services.
 
 This plugin is perfect for store owners who want to charge customers for delivery based on the distance from the store. It is ideal for online stores selling flowers, food, or beverages, but is versatile enough for any business that offers local delivery services.
 
