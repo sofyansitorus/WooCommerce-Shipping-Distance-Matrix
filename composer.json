@@ -14,11 +14,15 @@
 		"phpcompatibility/phpcompatibility-wp": "^2.1",
 		"wp-coding-standards/wpcs": "^2.3",
 		"dealerdirect/phpcodesniffer-composer-installer": "^0.7.1",
-		"sirbrillig/phpcs-variable-analysis": "^2.10"
+		"sirbrillig/phpcs-variable-analysis": "^2.10",
+		"yoast/phpunit-polyfills": "^4.0",
+		"phpunit/phpunit": "^9.6"
 	},
 	"scripts": {
 		"run-phpcs": "vendor/bin/phpcs",
-		"run-phpcbf": "vendor/bin/phpcbf"
+		"run-phpcbf": "vendor/bin/phpcbf",
+		"makepot": "wp i18n make-pot . languages/wcsdm.pot",
+		"test": "vendor/bin/phpunit"
 	},
 	"config": {
 		"allow-plugins": {

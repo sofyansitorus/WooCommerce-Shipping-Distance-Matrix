@@ -3,13 +3,15 @@
  * The file that defines the core plugin class
  *
  * A class definition that includes attributes and functions used across both the
- * public-facing side of the site and the admin area.
- *
- * @link       https://github.com/sofyansitorus
- * @since      1.0.0
+ * public-facing side of the site and the admin area. This class acts as the
+ * central coordinator for WooReer plugin functionality, managing initialization,
+ * asset loading, and integration with WooCommerce shipping system.
  *
  * @package    Wcsdm
- * @subpackage Wcsdm/includes
+ * @subpackage Classes
+ * @since      1.0.0
+ * @author     Sofyan Sitorus <sofyansitorus@gmail.com>
+ * @link       https://github.com/sofyansitorus/WooCommerce-Shipping-Distance-Matrix
  */
 
 // If this file is called directly, abort.
@@ -18,33 +20,43 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * The core plugin class.
+ * The core plugin class for WooReer.
  *
- * This is used to define internationalization, admin-specific hooks, and
- * public-facing site hooks.
+ * This is the main orchestrator class for WooReer, responsible for:
+ * - Defining internationalization and loading plugin text domain
+ * - Registering admin-specific hooks and action links
+ * - Integrating with WooCommerce shipping methods system
+ * - Managing frontend and backend asset enqueueing
+ * - Declaring compatibility with WooCommerce features (HPOS, Custom Order Tables)
+ * - Filtering REST API requests for shipping calculator functionality
  *
- * Also maintains the unique identifier of this plugin as well as the current
- * version of the plugin.
+ * This class implements the Singleton pattern to ensure only one instance
+ * exists throughout the plugin lifecycle.
  *
  * @since      1.0.0
- * @package    Wcsdm
- * @subpackage Wcsdm/includes
- * @author     Sofyan Sitorus <sofyansitorus@gmail.com>
  */
 class Wcsdm {
 
 	/**
 	 * Hold an instance of the class
 	 *
-	 * @var Wcsdm
+	 * Singleton instance of the Wcsdm class to ensure only one instance
+	 * is created and used throughout the plugin lifecycle.
+	 *
+	 * @since 1.0.0
+	 * @var Wcsdm|null
 	 */
 	private static $instance = null;
 
 	/**
-	 * The object is created from within the class itself
-	 * only if the class has no instance.
+	 * Get the singleton instance of the class.
 	 *
-	 * @return Wcsdm
+	 * The object is created from within the class itself only if the class
+	 * has no instance. This ensures that only one instance of the class
+	 * exists throughout the plugin lifecycle (Singleton pattern).
+	 *
+	 * @since 1.0.0
+	 * @return Wcsdm The singleton instance of the class.
 	 */
 	public static function get_instance() {
 		if ( null === self::$instance ) {
@@ -55,52 +67,100 @@ class Wcsdm {
 	}
 
 	/**
-	 * Class Constructor
+	 * Class Constructor.
+	 *
+	 * Private constructor to prevent direct instantiation. This enforces the
+	 * Singleton pattern - use get_instance() to obtain the class instance.
+	 *
+	 * Initializes the plugin by registering all necessary WordPress and WooCommerce hooks:
+	 *
+	 * - Loads plugin translations for internationalization
+	 * - Adds settings link to the plugins list page
+	 * - Registers the WooReer shipping method with WooCommerce
+	 * - Enqueues admin assets (CSS/JS) for the settings interface
+	 * - Declares compatibility with WooCommerce High-Performance Order Storage (HPOS)
+	 * - Conditionally disables address validation for shipping calculator contexts to allow
+	 *   shipping cost estimation with minimal address information (city, state, postcode only)
+	 * - Sets data version when new shipping method instances are created for migration tracking
 	 *
 	 * @since 1.0.0
 	 */
 	private function __construct() {
-		// Hook to load plugin textdomain.
+		/**
+		 * Load plugin textdomain for internationalization.
+		 *
+		 * Fires on plugins_loaded to ensure WordPress translation functions are available.
+		 * Loads translation files from the /languages directory.
+		 */
 		add_action( 'plugins_loaded', array( $this, 'load_textdomain' ) );
 
-		// Hook to add plugin action links.
+		/**
+		 * Add "Settings" link to plugin action links on the plugins page.
+		 *
+		 * Creates a direct link to the WooCommerce shipping settings page for WooReer
+		 * configuration. The link appears alongside Activate/Deactivate/Delete actions.
+		 */
 		add_action( 'plugin_action_links_' . plugin_basename( WCSDM_FILE ), array( $this, 'plugin_action_links' ) );
 
-		// Hook to register the shipping method.
+		/**
+		 * Register WooReer as a WooCommerce shipping method.
+		 *
+		 * Adds Wcsdm_Shipping_Method to the list of available shipping methods, making it
+		 * selectable when configuring shipping zones in WooCommerce settings.
+		 */
 		add_filter( 'woocommerce_shipping_methods', array( $this, 'register_shipping_method' ) );
 
-		// Hook to AJAX actions.
-		add_action( 'wp_ajax_wcsdm_validate_api_key_server', array( $this, 'validate_api_key_server' ) );
-
-		// Hook to modify after shipping calculator form.
-		add_action( 'woocommerce_after_shipping_calculator', array( $this, 'after_shipping_calculator' ) );
-
-		// Hook to woocommerce_cart_shipping_packages to inject filed address_2.
-		add_filter( 'woocommerce_cart_shipping_packages', array( $this, 'inject_cart_shipping_packages' ) );
-
-		// Hook to enqueue scripts & styles assets.
+		/**
+		 * Enqueue backend CSS and JavaScript assets for the admin interface.
+		 *
+		 * Loads styles and scripts on WooCommerce settings pages. Priority 999 ensures
+		 * styles load after WooCommerce core styles for proper cascading.
+		 */
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_backend_assets' ), 999 );
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_assets' ), 999 );
 
-		// Hook to declare compatibility with the High-Performance Order Storage.
-		add_action(
-			'before_woocommerce_init',
-			function() {
-				if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
-					\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', WCSDM_FILE, true );
-				}
-			}
-		);
+		/**
+		 * Declare compatibility with WooCommerce High-Performance Order Storage (HPOS).
+		 *
+		 * Registers plugin support for WooCommerce custom order tables feature, enabling
+		 * improved performance for stores with large numbers of orders.
+		 */
+		add_action( 'before_woocommerce_init', array( $this, 'declare_compatibility_custom_order_tables' ) );
 
-		// Hook to declare incompatibility with the Cart and Checkout Blocks.
-		add_action(
-			'before_woocommerce_init',
-			function() {
-				if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
-					\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'cart_checkout_blocks', WCSDM_FILE, false );
-				}
-			}
-		);
+		/**
+		 * Skip address line validation for REST API shipping calculator requests.
+		 *
+		 * Detects block-based cart/checkout shipping calculator usage via Store API batch
+		 * requests and disables address_1/address_2 validation to allow shipping estimation
+		 * with partial address data (typically city, state, postcode only).
+		 */
+		add_filter( 'rest_pre_dispatch', array( $this, 'maybe_skip_address_fields_validation' ), 10, 3 );
+
+		/**
+		 * Skip address line validation for classic (non-block) shipping calculator.
+		 *
+		 * Detects traditional cart page shipping calculator form submissions and disables
+		 * address_1/address_2 field validation to enable shipping cost estimation without
+		 * requiring full street address details.
+		 */
+		add_filter( 'wp', array( $this, 'maybe_skip_address_fields_validation_classic' ), 10 );
+
+		/**
+		 * Skip address line validation when viewing the cart page.
+		 *
+		 * Automatically disables address_1/address_2 validation on cart pages to allow
+		 * shipping rate calculation with minimal address information, improving user
+		 * experience during the shopping process.
+		 */
+		add_filter( 'wp', array( $this, 'maybe_skip_address_fields_validation_on_cart_page' ), 10 );
+
+		/**
+		 * Initialize data version when a new shipping method instance is added to a zone.
+		 *
+		 * Sets the data_version option for new WooReer instances to track configuration
+		 * schema version. This facilitates data migrations when the plugin is updated to
+		 * newer versions with different settings structures.
+		 */
+		add_action( 'woocommerce_shipping_zone_method_added', array( $this, 'set_instance_data_version' ), 10, 2 );
 	}
 
 	/**
@@ -113,49 +173,80 @@ class Wcsdm {
 	}
 
 	/**
-	 * Add plugin action links.
+	 * Add plugin action links on the plugins page.
 	 *
-	 * Add a link to the settings page on the plugins.php page.
+	 * Adds a "Settings" link to the WooReer plugin row on the WordPress plugins page
+	 * (wp-admin/plugins.php). The link directs to the WooCommerce shipping settings page,
+	 * specifically to the WooReer shipping method instance configuration.
+	 *
+	 * The method searches for an active WooReer shipping method instance across all
+	 * shipping zones, prioritizing the default zone (zone 0), and constructs the
+	 * appropriate settings URL.
 	 *
 	 * @since 1.1.3
 	 *
 	 * @param  array $links List of existing plugin action links.
-	 * @return array         List of modified plugin action links.
+	 * @return array        List of modified plugin action links with Settings link prepended.
 	 */
 	public function plugin_action_links( $links ) {
-		$zone_id = 0;
+		$instance_id = 0;
 
+		// Ensure WooCommerce shipping zones class is available.
 		if ( ! class_exists( 'WC_Shipping_Zones' ) ) {
 			return $links;
 		}
 
-		foreach ( WC_Shipping_Zones::get_zones() as $zone ) {
-			if ( empty( $zone['shipping_methods'] ) || empty( $zone['zone_id'] ) ) {
-				continue;
-			}
+		// Try to find WooReer shipping method instance from the default zone first (zone 0).
+		$zone             = WC_Shipping_Zones::get_zone( 0 );
+		$shipping_methods = $zone->get_shipping_methods( true );
 
-			foreach ( $zone['shipping_methods'] as $zone_shipping_method ) {
-				if ( $zone_shipping_method instanceof Wcsdm_Shipping_Method ) {
-					$zone_id = $zone['zone_id'];
-					break;
-				}
-			}
-
-			if ( $zone_id ) {
+		foreach ( $shipping_methods as $zone_shipping_method ) {
+			if ( $zone_shipping_method instanceof Wcsdm_Shipping_Method ) {
+				$instance_id = $zone_shipping_method->get_instance_id();
 				break;
 			}
 		}
 
+		// If not found in default zone, search through all other configured shipping zones.
+		if ( ! $instance_id ) {
+			foreach ( WC_Shipping_Zones::get_zones() as $zone ) {
+				if ( empty( $zone['shipping_methods'] ) || empty( $zone['zone_id'] ) ) {
+					continue;
+				}
+
+				foreach ( $zone['shipping_methods'] as $zone_shipping_method ) {
+					if ( $zone_shipping_method instanceof Wcsdm_Shipping_Method ) {
+						$instance_id = $zone_shipping_method->get_instance_id();
+						break;
+					}
+				}
+
+				if ( $instance_id ) {
+					break;
+				}
+			}
+		}
+
+		// Build the query arguments for the settings URL.
+		$query_args = array(
+			'page' => 'wc-settings',
+			'tab'  => 'shipping',
+		);
+
+		if ( $instance_id ) {
+			// Direct link to the specific WooReer instance settings.
+			$query_args['instance_id'] = $instance_id;
+		} else {
+			// Fallback to zone ID 0 (Locations not covered by your other zones).
+			$query_args['zone_id'] = 0;
+		}
+
+		// Prepend the Settings link to the existing plugin action links.
 		$links = array_merge(
 			array(
 				'<a href="' . esc_url(
 					add_query_arg(
-						array(
-							'page'           => 'wc-settings',
-							'tab'            => 'shipping',
-							'zone_id'        => $zone_id,
-							'wcsdm_settings' => true,
-						),
+						$query_args,
 						admin_url( 'admin.php' )
 					)
 				) . '">' . __( 'Settings', 'wcsdm' ) . '</a>',
@@ -167,7 +258,17 @@ class Wcsdm {
 	}
 
 	/**
-	 * Enqueue backend scripts.
+	 * Enqueue backend scripts and styles for WooReer admin interface.
+	 *
+	 * Loads the CSS and JavaScript assets required for WooReer's admin settings
+	 * interface in the WooCommerce shipping settings page. Assets are only loaded
+	 * on the WooCommerce settings pages to avoid unnecessary resource loading.
+	 *
+	 * In development environment (determined by wcsdm_is_dev_env()), non-minified
+	 * versions are loaded with cache-busting timestamp parameters for easier debugging.
+	 *
+	 * The JavaScript file receives localized data including internationalization strings
+	 * for use in the admin interface.
 	 *
 	 * @since 1.0.0
 	 * @param string $hook Passed screen ID in admin area.
@@ -180,41 +281,24 @@ class Wcsdm {
 		$is_dev_env = wcsdm_is_dev_env();
 
 		// Define the styles URL.
-		$css_url = WCSDM_URL . 'assets/css/wcsdm-backend-legacy.min.css';
+		$css_url = WCSDM_URL . 'assets/css/wcsdm-backend.css';
 		if ( $is_dev_env ) {
-			$css_url = add_query_arg( array( 't' => time() ), str_replace( '.min', '', $css_url ) );
+			$css_url = add_query_arg( array( 't' => time() ), $css_url );
 		}
 
 		// Enqueue admin styles.
 		wp_enqueue_style(
-			'wcsdm-backend-legacy', // Give the script a unique ID.
-			$css_url, // Define the path to the JS file.
+			'wcsdm-backend', // Give the script a unique ID.
+			$css_url, // Define the path to the CSS file.
 			array(), // Define dependencies.
 			WCSDM_VERSION, // Define a version (optional).
 			false // Specify whether to put in footer (leave this false).
 		);
 
-		if ( version_compare( WC()->version, '8.4.0', '>=' ) ) {
-			// Define the styles URL.
-			$css_url = WCSDM_URL . 'assets/css/wcsdm-backend.min.css';
-			if ( $is_dev_env ) {
-				$css_url = add_query_arg( array( 't' => time() ), str_replace( '.min', '', $css_url ) );
-			}
-
-			// Enqueue admin styles.
-			wp_enqueue_style(
-				'wcsdm-backend', // Give the script a unique ID.
-				$css_url, // Define the path to the JS file.
-				array(), // Define dependencies.
-				WCSDM_VERSION, // Define a version (optional).
-				false // Specify whether to put in footer (leave this false).
-			);
-		}
-
 		// Define the scripts URL.
-		$js_url = WCSDM_URL . 'assets/js/wcsdm-backend.min.js';
+		$js_url = WCSDM_URL . 'assets/js/wcsdm-backend.js';
 		if ( $is_dev_env ) {
-			$js_url = add_query_arg( array( 't' => time() ), str_replace( '.min', '', $js_url ) );
+			$js_url = add_query_arg( array( 't' => time() ), $js_url );
 		}
 
 		// Enqueue admin scripts.
@@ -225,88 +309,6 @@ class Wcsdm {
 			WCSDM_VERSION, // Define a version (optional).
 			true // Specify whether to put in footer (leave this true).
 		);
-
-		// Localize the script data.
-		wp_localize_script(
-			'wcsdm-backend',
-			'wcsdmBackendVars',
-			array(
-				'showSettings'           => isset( $_GET['wcsdm_settings'] ) && is_admin(), // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-				'methodId'               => WCSDM_METHOD_ID,
-				'methodTitle'            => WCSDM_METHOD_TITLE,
-				'marker'                 => WCSDM_URL . 'assets/img/marker.png',
-				'defaultLat'             => WCSDM_DEFAULT_LAT,
-				'defaultLng'             => WCSDM_DEFAULT_LNG,
-				'testLat'                => WCSDM_TEST_LAT,
-				'testLng'                => WCSDM_TEST_LNG,
-				'language'               => get_locale(),
-				'isDevEnv'               => $is_dev_env,
-				'i18n'                   => wcsdm_i18n(),
-				'ajax_url'               => admin_url( 'admin-ajax.php' ),
-				'validate_api_key_nonce' => wp_create_nonce( 'wcsdm_validate_api_key_server' ),
-			)
-		);
-	}
-
-	/**
-	 * Enqueue frontend scripts.
-	 *
-	 * @since 1.0.0
-	 */
-	public function enqueue_frontend_assets() {
-		// Bail early if there is no instances enabled.
-		if ( ! wcsdm_instances() ) {
-			return;
-		}
-
-		$is_cart_page     = function_exists( 'is_cart' ) && is_cart();
-		$is_checkout_page = function_exists( 'is_checkout' ) && is_checkout();
-
-		$enqueue_frontend_assets = apply_filters( 'wcsdm_enqueue_frontend_assets', ( $is_cart_page | $is_checkout_page ) );
-
-		if ( ! $enqueue_frontend_assets ) {
-			return;
-		}
-
-		$is_dev_env = wcsdm_is_dev_env();
-
-		// Define scripts URL.
-		$js_url = WCSDM_URL . 'assets/js/wcsdm-frontend.min.js';
-
-		if ( $is_dev_env ) {
-			$js_url = add_query_arg( array( 't' => time() ), str_replace( '.min', '', $js_url ) );
-		}
-
-		// Enqueue scripts.
-		wp_enqueue_script(
-			'wcsdm-frontend', // Give the script a unique ID.
-			$js_url, // Define the path to the JS file.
-			array( 'jquery', 'wp-util' ), // Define dependencies.
-			WCSDM_VERSION, // Define a version (optional).
-			true // Specify whether to put in footer (leave this true).
-		);
-
-		$wcsdm_frontend_vars = apply_filters(
-			'wcsdm_frontend_vars',
-			array(
-				'forms' => array(
-					'calc_shipping' => array(
-						'wrapper' => '.shipping-calculator-form',
-						'fields'  => wcsdm_calc_shipping_fields(),
-					),
-					'billing'       => array(
-						'wrapper' => '.woocommerce-billing-fields__field-wrapper',
-						'fields'  => wcsdm_billing_fields(),
-					),
-					'shipping'      => array(
-						'wrapper' => '.woocommerce-shipping-fields__field-wrapper',
-						'fields'  => wcsdm_shipping_fields(),
-					),
-				),
-			)
-		);
-
-		wp_localize_script( 'wcsdm-frontend', 'wcsdmFrontendVars', $wcsdm_frontend_vars );
 	}
 
 	/**
@@ -324,115 +326,141 @@ class Wcsdm {
 	}
 
 	/**
-	 * Print hidden element for the custom address 1 field and address 2 field value
-	 * in shipping calculator form.
+	 * Set the data version for a shipping method instance.
 	 *
-	 * @since 2.0
+	 * This method is triggered when a new shipping method instance is added to a WooCommerce
+	 * shipping zone. It initializes the method's settings by setting the data_version option,
+	 * which is used to track the schema version of the shipping method's configuration data.
+	 * This is particularly useful for managing data migrations when the plugin is updated.
+	 *
+	 * @since 3.0
+	 *
+	 * @param int    $instance_id The unique instance ID of the shipping method being added.
+	 * @param string $type        The shipping method type/ID being added.
 	 * @return void
 	 */
-	public function after_shipping_calculator() {
-		// Bail early if there is no instances enabled.
-		if ( ! wcsdm_instances() ) {
+	public function set_instance_data_version( int $instance_id, string $type ) {
+		if ( WCSDM_METHOD_ID !== $type ) {
 			return;
 		}
 
-		$calc_shipping_fields = wcsdm_calc_shipping_fields();
+		$method = new Wcsdm_Shipping_Method( $instance_id );
 
-		if ( ! $calc_shipping_fields ) {
-			return;
-		}
-
-		$custom_fields = array(
-			'address_1',
-			'address_2',
-		);
-
-		foreach ( $calc_shipping_fields as $key => $field ) {
-			if ( ! in_array( $key, $custom_fields, true ) ) {
-				continue;
-			}
-
-			$value = call_user_func( array( WC()->cart->get_customer(), 'get_shipping_' . $key ) );
-			?>
-			<input type="hidden" id="wcsdm-calc-shipping-value-field--<?php echo esc_attr( $key ); ?>" value="<?php echo esc_attr( $value ); ?>" />
-			<script type="text/template" id="tmpl-wcsdm-calc-shipping-custom-field--<?php echo esc_attr( $key ); ?>">
-				<p class="form-row form-row-wide" id="calc_shipping_{{ data.fieldKey }}_field">
-					<input type="text" class="input-text" value="{{ data.value }}" placeholder="{{ data.placeholder }}" name="calc_shipping_{{ data.fieldKey }}" id="calc_shipping_{{ data.fieldKey }}" />
-				</p>
-			</script>
-			<?php
-		}
-	}
-
-	/**
-	 * AJAX handler for Server Side API Key validation.
-	 *
-	 * @since 2.0.8
-	 *
-	 * @return void
-	 */
-	public function validate_api_key_server() {
-		$key = isset( $_POST['key'] ) ? sanitize_text_field( wp_unslash( $_POST['key'] ) ) : '';
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'wcsdm_validate_api_key_server' ) ) {
-			wp_send_json_error( 'Sorry, your nonce did not verify.', 400 );
-		}
-
-		if ( ! $key ) {
-			$key = 'InvalidKey';
-		}
-
-		$distance = Wcsdm_API::calculate_distance(
+		update_option(
+			$method->get_instance_option_key(),
 			array(
-				'key' => $key,
+				'data_version' => WCSDM_DATA_VERSION,
 			),
-			true
+			'yes'
 		);
+	}
 
-		if ( is_wp_error( $distance ) ) {
-			wp_send_json_error( $distance->get_error_message(), 400 );
+
+
+	/**
+	 * Declares compatibility with WooCommerce Custom Order Tables (HPOS).
+	 *
+	 * This method integrates WooReer with WooCommerce's High-Performance Order Storage (HPOS)
+	 * feature by declaring this plugin's compatibility with custom order tables.
+	 * HPOS is WooCommerce's modern approach to storing order data in dedicated custom tables
+	 * instead of using WordPress post types, which significantly improves performance for
+	 * stores with large numbers of orders.
+	 *
+	 * @since 3.0
+	 *
+	 * @return void
+	 */
+	public function declare_compatibility_custom_order_tables() {
+		if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+			// Declare compatibility with WooCommerce Custom Order Tables feature.
+			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', WCSDM_FILE, true );
 		}
-
-		wp_send_json_success( $distance );
 	}
 
 	/**
-	 * Inject cart cart packages to calculate shipping for address fields.
+	 * Skip address fields validation for REST API shipping calculator requests.
 	 *
-	 * @since 1.0.0
-	 * @param array $packages Current cart contents packages.
-	 * @return array
+	 * This method filters REST API requests to detect when the shipping calculator
+	 * is being used in the WooCommerce Store API (block-based cart/checkout).
+	 * It analyzes batch requests to /wc/store/v1/batch endpoint and identifies
+	 * cart customer update requests that only include shipping_address without
+	 * billing_address, which indicates a shipping calculator form submission.
+	 *
+	 * When the shipping calculator is detected, validation for address_1 and address_2
+	 * fields is disabled to allow shipping cost calculation with minimal address
+	 * information (typically just city, state, and postcode).
+	 *
+	 * @since 3.0
+	 *
+	 * @param mixed           $result  Response to replace the requested version with. May be null, WP_REST_Response, or WP_Error.
+	 * @param WP_REST_Server  $server  Server instance handling the request.
+	 * @param WP_REST_Request $request Request object used to generate the response.
+	 * @return mixed The unmodified $result (this filter is used for side effects only).
 	 */
-	public function inject_cart_shipping_packages( $packages ) {
-		if ( ! wcsdm_is_calc_shipping() ) {
-			return $packages;
-		}
+	public function maybe_skip_address_fields_validation( $result, WP_REST_Server $server, WP_REST_Request $request ) {
+		// Check if this is a batch request to the WooCommerce Store API.
+		if ( '/wc/store/v1/batch' === untrailingslashit( $request->get_route() ) ) {
+			$batch_requests = $request->get_param( 'requests' );
 
-		$address_fields = array(
-			'address_1' => false,
-			'address_2' => false,
-		);
+			if ( $batch_requests && is_array( $batch_requests ) ) {
+				$calc_shipping_request = wcsdm_array_find(
+					$batch_requests,
+					function ( $request_item ) {
+						return wcsdm_str_ends_with( $request_item['path'], '/wc/store/v1/cart/update-customer' ) || wcsdm_str_ends_with( $request_item['path'], '/wc/store/v1/cart/select-shipping-rate' );
+					}
+				);
 
-		foreach ( array_keys( $address_fields ) as $field_key ) {
-			$address_fields[ $field_key ] = wcsdm_calc_shipping_field_value( 'calc_shipping_' . $field_key );
-		}
+				if ( $calc_shipping_request ) {
+					$referer  = $request->get_header( 'referer' );
+					$cart_url = wc_get_cart_url();
 
-		foreach ( array_keys( $packages ) as $package_key ) {
-			foreach ( $address_fields as $field_key => $field_value ) {
-				if ( false === $field_value ) {
-					continue;
+					if ( $referer && strpos( $referer, $cart_url ) !== false ) {
+						add_filter( 'wcsdm_validate_address_field_address_1', '__return_false' );
+						add_filter( 'wcsdm_validate_address_field_address_2', '__return_false' );
+					}
 				}
-
-				// Set customer billing address.
-				call_user_func( array( WC()->customer, 'set_billing_' . $field_key ), $field_value );
-
-				// Set customer shipping address.
-				call_user_func( array( WC()->customer, 'set_shipping_' . $field_key ), $field_value );
-
-				// Set package destination address.
-				$packages[ $package_key ]['destination'][ $field_key ] = $field_value;
 			}
 		}
 
-		return $packages;
+		return $result;
+	}
+
+	/**
+	 * Skip address fields validation for classic shipping calculator.
+	 *
+	 * This method hooks into the 'wp' action to detect when the classic (non-block)
+	 * shipping calculator is being used in the cart page. When detected, it disables
+	 * validation for address_1 and address_2 fields to allow shipping cost calculation
+	 * with minimal address information (typically just city, state, and postcode).
+	 *
+	 * @since 3.0
+	 *
+	 * @return void
+	 */
+	public function maybe_skip_address_fields_validation_classic() {
+		if ( wcsdm_is_calc_shipping() ) {
+			add_filter( 'wcsdm_validate_address_field_address_1', '__return_false' );
+			add_filter( 'wcsdm_validate_address_field_address_2', '__return_false' );
+		}
+	}
+
+	/**
+	 * Skip address fields validation on the cart page.
+	 *
+	 * This method hooks into the 'wp' action to detect when the user is viewing
+	 * the cart page. When on the cart page, it disables validation for address_1
+	 * and address_2 fields to allow shipping cost calculation with minimal address
+	 * information. This is useful for cart page scenarios where full address details
+	 * may not be required yet.
+	 *
+	 * @since 3.0
+	 *
+	 * @return void
+	 */
+	public function maybe_skip_address_fields_validation_on_cart_page() {
+		if ( is_cart() ) {
+			add_filter( 'wcsdm_validate_address_field_address_1', '__return_false' );
+			add_filter( 'wcsdm_validate_address_field_address_2', '__return_false' );
+		}
 	}
 }
