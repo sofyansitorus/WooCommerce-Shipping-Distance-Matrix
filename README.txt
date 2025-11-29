@@ -96,13 +96,13 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 
 == Screenshots ==
 
-1. Store Location Settings
-2. Route Settings
-3. Global Rates Settings
-4. Table Rates Settings
-5. Advanced Rate Settings
-6. Store Location Picker
-6. Shopping Cart
+1. General Settings
+2. Distance Calculator API Settings
+3. Store Location Settings
+4. Total Cost Settings
+5. Table Rates Settings
+6. Edit Rate Item
+7. Add New Rate Item
 
 == Changelog ==
 
