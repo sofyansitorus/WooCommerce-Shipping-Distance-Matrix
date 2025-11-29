@@ -1540,8 +1540,8 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			return;
 		}
 
-		// Handle legacy shipping calculation for instances with data version < 3.0.0.
-		if ( version_compare( $data_version, '3.0.', '<' ) ) {
+		// Handle legacy shipping calculation for instances with data version < 3.0.0.0.
+		if ( version_compare( $data_version, '3.0.0.', '<' ) ) {
 			// Wrap API calls and rate calculations in try-catch to gracefully handle:
 			// 1. Network errors and API failures when making distance calculation requests.
 			// 2. Invalid response data that could cause runtime errors.

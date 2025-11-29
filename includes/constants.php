@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Define plugin constants.
 define( 'WCSDM_VERSION', '2.2.4' );
-define( 'WCSDM_DATA_VERSION', '3.0' );
+define( 'WCSDM_DATA_VERSION', '3.0.0' );
 define( 'WCSDM_METHOD_ID', 'wcsdm' );
 define( 'WCSDM_METHOD_TITLE', 'WooReer' );
 define( 'WCSDM_TEST_ORIGIN_LAT', 37.423021 );
