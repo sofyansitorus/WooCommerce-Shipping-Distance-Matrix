@@ -16,10 +16,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Define plugin constants.
 define( 'WCSDM_VERSION', '2.2.4' );
-define( 'WCSDM_DATA_VERSION', '2.1.0' );
+define( 'WCSDM_DATA_VERSION', '3.0' );
 define( 'WCSDM_METHOD_ID', 'wcsdm' );
 define( 'WCSDM_METHOD_TITLE', 'WooReer' );
-define( 'WCSDM_DEFAULT_LAT', '-6.178784361374902' );
-define( 'WCSDM_DEFAULT_LNG', '106.82303292695315' );
-define( 'WCSDM_TEST_LAT', '-6.181472315327319' );
-define( 'WCSDM_TEST_LNG', '106.8170462364319' );
+define( 'WCSDM_TEST_ORIGIN_LAT', 37.423021 );
+define( 'WCSDM_TEST_ORIGIN_LNG', -122.083739 );
+define( 'WCSDM_TEST_DESTINATION_LAT', 37.4259 );
+define( 'WCSDM_TEST_DESTINATION_LNG', -122.1704 );
