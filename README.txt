@@ -1,6 +1,6 @@
 === WooReer ===
 Contributors: sofyansitorus
-Tags: woocommerce,woocommerce-shipping,local-shipping,private-shipping
+Tags: woocommerce,distance-based-shipping,shipping-calculator,local-delivery,google-maps
 Donate link: https://www.buymeacoffee.com/sofyansitorus?utm_source=wooreer_plugin_page&utm_medium=referral
 Requires at least: 6.4
 Tested up to: 6.9
