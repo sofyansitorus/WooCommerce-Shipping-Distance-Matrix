@@ -1,20 +1,70 @@
 #!/bin/bash
 
-# Note that this does not use pipefail
-# because if the grep later doesn't match any deleted files,
-# which is likely the majority case,
-# it does not exit with a 0, and I only care about the final exit.
-# set -eo
+set -eo pipefail
 
 help() {
     echo "Usage: ./deploy-wp.sh [ -s | --slug ] Plugin slug.
                       [ -v | --version ] Plugin version.
-                      [ -d | --dir ] Source files directory.
+                      [ -d | --dir ] Optional source files directory (defaults to freshly built dist/).
                       [ -u | --username ] WP.org username.
                       [ -p | --password ] WP.org password.
                       [ -m | --message ] Commit message.
                       [ -h | --help  ]"
     exit 2
+}
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+DIST_DIR="${PROJECT_ROOT}/dist"
+PACKAGE_MANAGER=""
+AUTO_SVN_SRC=true
+
+detect_package_manager() {
+    if command -v yarn >/dev/null 2>&1; then
+        PACKAGE_MANAGER="yarn"
+    elif command -v npm >/dev/null 2>&1; then
+        PACKAGE_MANAGER="npm"
+    else
+        echo "✗ Neither yarn nor npm found. Install one to run the build."
+        exit 1
+    fi
+}
+
+run_build() {
+    detect_package_manager
+
+    echo "➤ Running project build with ${PACKAGE_MANAGER}..."
+    if [ "$PACKAGE_MANAGER" = "yarn" ]; then
+        (cd "$PROJECT_ROOT" && yarn build)
+    else
+        (cd "$PROJECT_ROOT" && npm run build)
+    fi
+
+    echo "➤ Running makepot..."
+    composer makepot
+}
+
+prepare_dist_dir() {
+    echo "➤ Preparing dist directory..."
+    rm -rf "$DIST_DIR"
+    mkdir -p "$DIST_DIR"
+
+    local rsync_includes=(
+        "--include" "assets/"
+        "--include" "assets/**"
+        "--include" "includes/"
+        "--include" "includes/**"
+        "--include" "legacy/"
+        "--include" "legacy/**"
+        "--include" "languages/"
+        "--include" "languages/**"
+        "--include" "index.php"
+        "--include" "wcsdm.php"
+        "--include" "README.txt"
+        "--exclude" "*"
+    )
+
+    rsync -a --delete "${rsync_includes[@]}" "$PROJECT_ROOT/" "$DIST_DIR/"
 }
 
 while [ "$1" ]; do
@@ -29,6 +79,7 @@ while [ "$1" ]; do
         ;;
     -d | --dir)
         SVN_SRC_DIR="$2"
+        AUTO_SVN_SRC=false
         shift 2
         ;;
     -u | --username)
@@ -65,14 +116,6 @@ while [[ -z "$VERSION" ]]; do
     read -p 'Plugin version: ' VERSION
 done
 
-while [ -z "$SVN_SRC_DIR" ] || [ ! -d "$SVN_SRC_DIR" ]; do
-    read -p 'Source directory: ' SVN_SRC_DIR
-
-    if [ -d "$SVN_SRC_DIR" ]; then
-        SVN_SRC_DIR=$(cd "$SVN_SRC_DIR"; pwd)
-    fi
-done
-
 while [[ -z "$SVN_USERNAME" ]]; do
     read -p 'SVN username: ' SVN_USERNAME
 done
@@ -83,8 +126,22 @@ while [[ -z "$SVN_PASSWORD" ]]; do
 done
 
 while [[ -z "$COMMIT_MSG" ]]; do
-    read -e -p "Commit message: " -i "Update to version $VERSION" COMMIT_MSG
+    default_msg="Update to version $VERSION"
+    read -e -p "Commit message [${default_msg}]: " COMMIT_MSG
+    COMMIT_MSG="${COMMIT_MSG:-$default_msg}"
 done
+
+run_build
+prepare_dist_dir
+
+if [ "$AUTO_SVN_SRC" = true ]; then
+    SVN_SRC_DIR="$DIST_DIR"
+elif [ ! -d "$SVN_SRC_DIR" ]; then
+    echo "✗ Provided source directory '$SVN_SRC_DIR' does not exist."
+    exit 1
+fi
+
+SVN_SRC_DIR=$(cd "$SVN_SRC_DIR" && pwd)
 
 SVN_URL="https://plugins.svn.wordpress.org/${SLUG}/"
 SVN_LOCAL_DIR="${HOME}/.deploy-wp/plugins/${SLUG}"
@@ -135,7 +192,9 @@ svn add . --force >/dev/null
 
 # SVN delete all deleted files
 # Also suppress stdout here
-svn status | grep '^\!' | sed 's/! *//' | xargs -I% svn rm %@ >/dev/null
+svn status | grep '^\!' | sed 's/! *//' | while read -r file; do
+    svn rm "$file" >/dev/null
+done
 
 if [ -z "$(svn status)" ]; then
     echo "✗ Nothing to commit, working tree clean"
