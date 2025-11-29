@@ -1532,7 +1532,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	 * @return void Adds rates to WooCommerce via add_rate() or logs errors.
 	 */
 	public function calculate_shipping( $package = array() ) {
-		$data_version = $this->get_data_version( 'data_version' );
+		$data_version = $this->get_data_version();
 
 		// Bail early when no data version is found.
 		// It is likely the instance is not properly set up yet.
