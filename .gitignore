@@ -11,3 +11,5 @@ package-lock.json
 /assets/css/wcsdm.min.css
 /assets/css/
 /assets/js/
+.phpunit.result.cache
+tests/.env

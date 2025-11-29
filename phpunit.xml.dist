@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit
+	bootstrap="tests/phpunit/bootstrap.php"
+	colors="true"
+	backupGlobals="false"
+	backupStaticAttributes="false"
+>
+		<testsuites>
+			<testsuite name="WooReer Unit Tests">
+				<directory suffix=".php">tests/phpunit/cases</directory>
+			</testsuite>
+		</testsuites>
+	<php>
+		<ini name="error_reporting" value="-1" />
+		<ini name="display_errors" value="1" />
+	</php>
+</phpunit>
