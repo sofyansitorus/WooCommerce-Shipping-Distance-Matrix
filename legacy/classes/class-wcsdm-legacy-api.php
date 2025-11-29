@@ -2,11 +2,11 @@
 /**
  * The file that defines the api request class
  *
- * @link       https://github.com/sofyansitorus
- * @since      2.0.8
- *
  * @package    Wcsdm
- * @subpackage Wcsdm/includes
+ * @subpackage Legacy
+ * @since      2.0.8
+ * @author     Sofyan Sitorus <sofyansitorus@gmail.com>
+ * @link       https://github.com/sofyansitorus/WooCommerce-Shipping-Distance-Matrix
  */
 
 // If this file is called directly, abort.
@@ -18,11 +18,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  * The API request class.
  *
  * @since      2.0.8
- * @package    Wcsdm
- * @subpackage Wcsdm/includes
- * @author     Sofyan Sitorus <sofyansitorus@gmail.com>
  */
-abstract class Wcsdm_API {
+abstract class Wcsdm_Legacy_API {
 
 	/**
 	 * URL of Google Maps Distance Matrix API

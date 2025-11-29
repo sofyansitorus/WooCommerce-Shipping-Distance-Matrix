@@ -2,11 +2,11 @@
 /**
  * The file that defines the data migration plugin class
  *
- * @link       https://github.com/sofyansitorus
- *
- * @since      2.1.10
  * @package    Wcsdm
- * @subpackage Wcsdm/includes
+ * @subpackage Legacy
+ * @since      2.1.10
+ * @author     Sofyan Sitorus <sofyansitorus@gmail.com>
+ * @link       https://github.com/sofyansitorus/WooCommerce-Shipping-Distance-Matrix
  */
 
 // If this file is called directly, abort.
@@ -18,11 +18,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  * The data migration plugin class.
  *
  * @since      2.1.10
- * @package    Wcsdm
- * @subpackage Wcsdm/includes
- * @author     Sofyan Sitorus <sofyansitorus@gmail.com>
  */
-abstract class Wcsdm_Migration {
+abstract class Wcsdm_Legacy_Migration {
 
 	/**
 	 * WC Shipping instance

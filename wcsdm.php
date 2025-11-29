@@ -46,6 +46,15 @@ if ( function_exists( 'wcsdm_autoload' ) ) {
 	spl_autoload_register( 'wcsdm_autoload' );
 }
 
+// Load the legacy helpers.
+require_once WCSDM_PATH . '/legacy/constants.php';
+require_once WCSDM_PATH . '/legacy/helpers.php';
+
+// Register the legacy class autoload.
+if ( function_exists( 'wcsdm_legacy_autoload' ) ) {
+	spl_autoload_register( 'wcsdm_legacy_autoload' );
+}
+
 /**
  * Boot the plugin
  */
