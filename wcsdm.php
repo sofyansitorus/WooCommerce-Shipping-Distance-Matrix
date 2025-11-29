@@ -7,7 +7,7 @@
  * registers the activation and deactivation functions, and defines a function
  * that starts the plugin.
  *
- * @link              https://github.com/sofyansitorus
+ * @link              https://github.com/sofyansitorus/WooCommerce-Shipping-Distance-Matrix
  * @since             1.0.0
  * @package           Wcsdm
  *
@@ -15,7 +15,7 @@
  * Plugin Name:       WooReer
  * Plugin URI:        https://wooreer.com
  * Description:       WooCommerce shipping rates calculator allows you to easily offer shipping rates based on the distance calculated using Google Maps Distance Matrix Service API.
- * Version:           2.2.4
+ * Version:           3.0.0
  * Author:            Sofyan Sitorus
  * Author URI:        https://github.com/sofyansitorus
  * License:           GPL-2.0+
@@ -23,8 +23,8 @@
  * Text Domain:       wcsdm
  * Domain Path:       /languages
  *
- * WC requires at least: 3.0.0
- * WC tested up to: 8.6.1
+ * WC requires at least: 8.8.0
+ * WC tested up to: 10.3.5
  */
 
 // If this file is called directly, abort.

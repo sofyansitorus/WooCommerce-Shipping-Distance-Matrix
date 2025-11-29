@@ -2,10 +2,10 @@
 Contributors: sofyansitorus
 Tags: woocommerce,woocommerce-shipping,local-shipping,private-shipping
 Donate link: https://www.buymeacoffee.com/sofyansitorus?utm_source=wooreer_plugin_page&utm_medium=referral
-Requires at least: 4.8
-Tested up to: 6.4.3
+Requires at least: 6.4
+Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 2.2.4
+Stable tag: 3.0.0
 License: GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -71,8 +71,8 @@ Please use the link below to if you would like to buy me some coffee:
 
 = Minimum Requirements =
 
-* WordPress 4.8 or later
-* WooCommerce 3.0 or later
+* WordPress 6.4 or later
+* WooCommerce 8.8 or later
 
 = AUTOMATIC INSTALLATION =
 
@@ -128,13 +128,18 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 
 == Changelog ==
 
-> **WARNING:**
->
-> Upgrading to version 2.1.0 has some breaking changes. Some **settings data will be lost** and **re-setup the plugin** after the upgrade is required.
->
-> Upgrading from version 1.x to version 2.x is a major update and has breaking changes. Some **settings data will be lost** and **re-setup the plugin** after the upgrade is required.
->
-> **Please upgrade wisely and carefully.**
+= 3.0.0 =
+
+* Major - Complete codebase refactoring with improved architecture.
+* Enhancement - Migrated frontend JavaScript to TypeScript for better type safety and maintainability.
+* Enhancement - Refactored SCSS architecture for better organization and maintainability.
+* Enhancement - Added new API provider architecture with support for multiple distance calculation services.
+* Enhancement - Introduced utility classes for better code organization and reusability.
+* Enhancement - Improved build process with support for both minified and unminified assets.
+* Enhancement - Reorganized legacy code into dedicated legacy directory for better code structure.
+* Enhancement - Added comprehensive PHPDoc blocks throughout the codebase.
+* Enhancement - Added automated testing infrastructure.
+* Enhancement - Improved deployment scripts and configuration.
 
 = 2.2.4 =
 
