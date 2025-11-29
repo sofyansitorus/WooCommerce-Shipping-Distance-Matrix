@@ -1,45 +1,65 @@
 {
 	"name": "wcsdm",
-	"title": "WooCommerce shipping rates calculator based on products shipping class and distances",
-	"author": "Sofyan Sitorus",
-	"homepage": "https://github.com/sofyansitorus/",
-	"version": "2.2.4",
+	"version": "1.0.0",
+	"description": "Calculate WooCommerce shipping rates based on distance via Google Maps Distance Matrix Service API",
+	"author": "",
+	"license": "GPL-2.0-or-later",
+	"keywords": [
+		"woocommerce"
+	],
+	"homepage": "https://github.com/sofyansitorus/WooCommerce-Shipping-Distance-Matrix#readme",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/sofyansitorus/WooCommerce-Shipping-Distance-Matrix.git"
+		"url": "https://github.com/sofyansitorus/WooCommerce-Shipping-Distance-Matrix"
 	},
-	"engines": {
-		"node": ">=8.0.0 =<10"
+	"bugs": {
+		"url": "https://github.com/sofyansitorus/WooCommerce-Shipping-Distance-Matrix/issues"
 	},
 	"devDependencies": {
-		"browser-sync": "^2.24.4",
-		"gulp": "^3.9.1",
-		"gulp-autoprefixer": "^5.0.0",
-		"gulp-bump": "^3.1.1",
-		"gulp-clean-css": "^3.9.3",
-		"gulp-concat": "^2.6.1",
-		"gulp-if": "^2.0.2",
-		"gulp-iife": "^0.3.0",
-		"gulp-jshint": "^2.1.0",
-		"gulp-notify": "^3.2.0",
-		"gulp-phpcs": "^2.1.0",
-		"gulp-plumber": "^1.2.0",
-		"gulp-rename": "^1.2.2",
-		"gulp-sass": "^4.0.1",
-		"gulp-sourcemaps": "^2.6.4",
-		"gulp-uglify": "3.0.0",
-		"gulp-wp-pot": "^2.2.0",
-		"gulp-zip": "^4.1.0",
-		"jshint": "^2.11.0",
-		"jshint-stylish": "^2.2.1",
-		"yargs": "^11.0.0"
+		"@babel/core": "^7.28.4",
+		"@babel/preset-env": "^7.28.3",
+		"@babel/preset-react": "^7.27.1",
+		"@babel/preset-typescript": "^7.18.6",
+		"@types/jquery": "^3.5.33",
+		"@types/underscore": "^1.13.0",
+		"@types/webpack": "^5.28.5",
+		"@typescript-eslint/eslint-plugin": "^8.46.1",
+		"@typescript-eslint/parser": "^8.46.1",
+		"@wordpress/scripts": "^30.10.0",
+		"autoprefixer": "^10.4.20",
+		"babel-loader": "^10.0.0",
+		"clean-webpack-plugin": "^4.0.0",
+		"copy-webpack-plugin": "^13.0.0",
+		"css-loader": "^7.1.2",
+		"jest": "^29.7.0",
+		"mini-css-extract-plugin": "^2.9.2",
+		"sass": "^1.83.0",
+		"npm-run-all": "^4.1.5",
+		"postcss-loader": "^8.1.1",
+		"prettier": "^3.4.2",
+		"sass-loader": "^16.0.4",
+		"style-loader": "^4.0.0",
+		"typescript": "^5.9.3",
+		"underscore": "^1.13.7",
+		"webpack": "^5.97.1",
+		"webpack-cli": "^6.0.1"
 	},
 	"scripts": {
-		"start": "./node_modules/.bin/gulp",
-		"build": "./node_modules/.bin/gulp build",
-		"lintScripts": "./node_modules/.bin/gulp lintScripts",
-		"bump": "./node_modules/.bin/gulp bump",
-		"dist": "./node_modules/.bin/gulp dist",
-		"deploy": "yarn dist && ./deploy-wp.sh"
-	}
+		"build": "wp-scripts build",
+		"build:ts": "tsc --project tsconfig.json",
+		"watch:ts": "tsc --project tsconfig.json --watch",
+		"check-engines": "wp-scripts check-engines",
+		"check-licenses": "wp-scripts check-licenses --prod --gpl2",
+		"format": "wp-scripts format ./src",
+		"lint": "npm-run-all --parallel lint:css lint:ts lint:pkg-json",
+		"lint:css": "wp-scripts lint-style 'src/**/*.scss'",
+		"lint:ts": "eslint 'src/**/*.ts'",
+		"lint:pkg-json": "wp-scripts lint-pkg-json",
+		"packages-update": "wp-scripts packages-update",
+		"plugin-zip": "wp-scripts plugin-zip",
+		"start": "wp-scripts start --mode development",
+		"test:unit": "wp-scripts test-unit-js",
+		"type-check": "tsc --noEmit"
+	},
+	"packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }

@@ -1,0 +1,448 @@
+.wcsdm {
+
+	&-hidden {
+		display: none !important;
+	}
+
+	&-disabled {
+		pointer-events: none !important;
+		cursor: not-allowed !important;
+		opacity: 0.4 !important;
+	}
+
+	&-no-padding {
+		padding: 0 !important;
+	}
+
+	&-no-border {
+		border: none !important;
+		box-sizing: border-box !important;
+	}
+
+	&-table {
+		width: auto !important;
+	}
+
+	&-col {
+		box-sizing: border-box !important;
+		padding: 15px 10px !important;
+		display: table-cell !important;
+
+		&:not(:last-of-type, :only-of-type) {
+			border-right: 1px solid rgb(195, 196, 199) !important;
+			border-spacing: 0px !important;
+		}
+
+		&--row_number {
+			width: 50px !important;
+			text-align: center !important;
+			font-weight: 600 !important;
+			color: #6c757d !important;
+		}
+
+		&--action {
+			width: 108px !important;
+		}
+	}
+
+	&-link {
+		outline: none !important;
+		text-decoration: none !important;
+		box-shadow: none !important;
+
+		&:active,
+		&:focus {
+			outline: none !important;
+			text-decoration: none !important;
+			box-shadow: none !important;
+		}
+	}
+
+	&-rate-actions {
+		display: flex;
+		gap: 4px;
+		white-space: nowrap;
+		justify-content: flex-end;
+
+		a {
+			display: inline-flex;
+			width: 24px;
+			height: 17px;
+			justify-content: center;
+			align-items: center;
+		}
+	}
+
+	&-modal {
+
+		// Modal overlay/backdrop
+		&-overlay {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background-color: rgba(0, 0, 0, 0.5);
+			z-index: 9999;
+			opacity: 0;
+			visibility: hidden;
+			transition:
+				opacity 0.3s ease,
+				visibility 0.3s ease;
+
+			&.wcsdm-modal-show {
+				opacity: 1;
+				visibility: visible;
+			}
+
+			// For dynamically added elements - start with transition-ready state
+			&.wcsdm-modal-enter {
+				opacity: 0;
+				visibility: visible;
+				transition: opacity 0.3s ease;
+
+				&.wcsdm-modal-enter-active {
+					opacity: 1;
+				}
+			}
+
+			// Exit transition for modal removal
+			&.wcsdm-modal-exit {
+				opacity: 1;
+				visibility: visible;
+				transition: opacity 0.3s ease;
+
+				&.wcsdm-modal-exit-active {
+					opacity: 0;
+				}
+			}
+		}
+
+		// Modal container for centering
+		&-container {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			z-index: 10000;
+			padding: 20px;
+			box-sizing: border-box;
+		}
+
+		// Main modal content
+		&-content {
+			background: #fff;
+			border-radius: 8px;
+			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+			max-height: 90vh;
+			width: 100%;
+			max-width: 620px;
+			min-width: 300px;
+			transform: scale(0.8) translateY(-20px);
+			opacity: 0;
+			transition:
+				transform 0.3s ease,
+				opacity 0.3s ease;
+			overflow: hidden;
+			display: flex;
+			flex-direction: column;
+
+			.wcsdm-modal-show & {
+				transform: scale(1) translateY(0);
+				opacity: 1;
+			}
+
+			// For dynamically added elements - start with transition-ready state
+			&.wcsdm-modal-enter {
+				transform: scale(0.8) translateY(-20px);
+				opacity: 0;
+				transition:
+					transform 0.3s ease,
+					opacity 0.3s ease;
+
+				&.wcsdm-modal-enter-active {
+					transform: scale(1) translateY(0);
+					opacity: 1;
+				}
+			}
+
+			// Exit transition for modal removal
+			&.wcsdm-modal-exit {
+				transform: scale(1) translateY(0);
+				opacity: 1;
+				transition:
+					transform 0.3s ease,
+					opacity 0.3s ease;
+
+				&.wcsdm-modal-exit-active {
+					transform: scale(0.8) translateY(-20px);
+					opacity: 0;
+				}
+			}
+
+			// Responsive adjustments
+			@media (max-width: 768px) {
+				max-width: 95vw;
+				margin: 10px;
+				max-height: 95vh;
+			}
+
+			@media (max-width: 480px) {
+				max-width: 100vw;
+				margin: 5px;
+				border-radius: 4px;
+			}
+		}
+
+		// Modal header
+		&-header {
+			padding: 20px 24px 16px;
+			border-bottom: 1px solid #e1e5e9;
+			background: #f8f9fa;
+			flex-shrink: 0;
+
+			h2,
+			h3,
+			h4 {
+				margin: 0;
+				font-size: 18px;
+				font-weight: 600;
+				color: #1d2327;
+				line-height: 1.4;
+			}
+
+			@media (max-width: 480px) {
+				padding: 16px 20px 12px;
+
+				h2,
+				h3,
+				h4 {
+					font-size: 16px;
+				}
+			}
+		}
+
+		// Modal body
+		&-body {
+			padding: 24px;
+			flex: 1;
+			overflow-y: auto;
+			color: #1d2327;
+			line-height: 1.6;
+
+			// Custom scrollbar for webkit browsers
+			&::-webkit-scrollbar {
+				width: 6px;
+			}
+
+			&::-webkit-scrollbar-track {
+				background: #f1f1f1;
+			}
+
+			&::-webkit-scrollbar-thumb {
+				background: #c1c1c1;
+				border-radius: 3px;
+			}
+
+			&::-webkit-scrollbar-thumb:hover {
+				background: #a8a8a8;
+			}
+
+			@media (max-width: 480px) {
+				padding: 20px;
+			}
+		}
+
+		// Modal footer
+		&-footer {
+
+			&-actions {
+				padding: 16px 24px 20px;
+				border-top: 1px solid #e1e5e9;
+				background: #f8f9fa;
+				display: flex;
+				justify-content: flex-end;
+				gap: 12px;
+				flex-shrink: 0;
+
+				// Single button layout
+				&.wcsdm-modal-footer--single {
+					justify-content: center;
+				}
+
+				// Two buttons layout
+				&.wcsdm-modal-footer--dual {
+					justify-content: space-between;
+
+					.wcsdm-modal-btn--secondary {
+						order: 1;
+					}
+
+					.wcsdm-modal-btn--primary {
+						order: 2;
+					}
+				}
+
+				@media (max-width: 480px) {
+					padding: 12px 20px 16px;
+					flex-direction: column;
+					gap: 8px;
+
+					&.wcsdm-modal-footer--dual {
+						flex-direction: column;
+
+						.wcsdm-modal-btn--secondary,
+						.wcsdm-modal-btn--primary {
+							order: unset;
+							width: 100%;
+						}
+					}
+				}
+			}
+		}
+
+		// Modal buttons
+		&-btn {
+			padding: 8px 16px;
+			border: 1px solid transparent;
+			border-radius: 4px;
+			font-size: 14px;
+			font-weight: 500;
+			cursor: pointer;
+			transition: all 0.2s ease;
+			text-decoration: none;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			min-width: 80px;
+			box-sizing: border-box;
+			position: relative;
+
+			// Tooltip styling for title attribute
+			&[title]:hover::after {
+				content: attr(title);
+				position: absolute;
+				bottom: 100%;
+				left: 50%;
+				transform: translateX(-50%);
+				background-color: #1d2327;
+				color: #fff;
+				padding: 6px 8px;
+				border-radius: 4px;
+				font-size: 12px;
+				white-space: nowrap;
+				z-index: 10001;
+				margin-bottom: 4px;
+				box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+			}
+
+			&[title]:hover::before {
+				content: "";
+				position: absolute;
+				bottom: 100%;
+				left: 50%;
+				transform: translateX(-50%);
+				border: 4px solid transparent;
+				border-top-color: #1d2327;
+				z-index: 10001;
+				margin-bottom: -4px;
+			}
+
+			&:focus {
+				outline: 2px solid #0073aa;
+				outline-offset: 2px;
+			}
+
+			// Primary button (Save/Confirm)
+			&--primary {
+				background-color: #0073aa;
+				color: #fff;
+				border-color: #0073aa;
+
+				&:hover {
+					background-color: #005a87;
+					border-color: #005a87;
+				}
+
+				&:active {
+					background-color: #004a6b;
+					border-color: #004a6b;
+				}
+			}
+
+			// Secondary button (Cancel)
+			&--secondary {
+				background-color: #fff;
+				color: #1d2327;
+				border-color: #c3c4c7;
+
+				&:hover {
+					background-color: #f6f7f7;
+					border-color: #8c8f94;
+				}
+
+				&:active {
+					background-color: #f0f0f1;
+					border-color: #8c8f94;
+				}
+			}
+
+			// Danger button (Delete)
+			&--danger {
+				background-color: #d63638;
+				color: #fff;
+				border-color: #d63638;
+
+				&:hover {
+					background-color: #b32d2e;
+					border-color: #b32d2e;
+				}
+
+				&:active {
+					background-color: #8a2424;
+					border-color: #8a2424;
+				}
+			}
+
+			// Disabled state
+			&:disabled {
+				opacity: 0.6;
+				cursor: not-allowed;
+
+				&:hover {
+					background-color: inherit;
+					border-color: inherit;
+				}
+			}
+
+			@media (max-width: 480px) {
+				padding: 10px 16px;
+				font-size: 16px; // Prevent zoom on iOS
+			}
+		}
+	}
+
+	@media screen and (max-width: 782px) {
+		&-col {
+			&:not(&--persistent) {
+				display: none !important;
+			}
+
+			&--row_number {
+				width: 40px !important;
+			}
+		}
+	}
+
+	@media screen and (max-width: 1110px) {
+		&-col--location--head {
+			.woocommerce-help-tip {
+				display: none !important;
+			}
+		}
+	}
+}
