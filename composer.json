@@ -18,7 +18,8 @@
 	},
 	"scripts": {
 		"run-phpcs": "vendor/bin/phpcs",
-		"run-phpcbf": "vendor/bin/phpcbf"
+		"run-phpcbf": "vendor/bin/phpcbf",
+		"makepot": "wp i18n make-pot . languages/wcsdm.pot"
 	},
 	"config": {
 		"allow-plugins": {
