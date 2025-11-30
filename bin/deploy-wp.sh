@@ -144,7 +144,7 @@ fi
 SVN_SRC_DIR=$(cd "$SVN_SRC_DIR" && pwd)
 
 SVN_URL="https://plugins.svn.wordpress.org/${SLUG}/"
-SVN_LOCAL_DIR="${HOME}/.deploy-wp/plugins/${SLUG}"
+SVN_LOCAL_DIR="${PROJECT_ROOT}/svn"
 
 echo "Plugin slug: $SLUG"
 echo "Plugin version: $VERSION"

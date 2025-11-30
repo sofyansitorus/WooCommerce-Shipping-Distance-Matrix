@@ -5,6 +5,7 @@ package-lock.json
 /node_modules
 /build
 /dist
+/svn
 /vendor
 /languages/wcsdm.pot
 /assets/js/wcsdm.min.js
