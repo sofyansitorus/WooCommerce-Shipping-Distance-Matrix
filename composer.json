@@ -22,7 +22,7 @@
 	"scripts": {
 		"run-phpcs": "vendor/bin/phpcs",
 		"run-phpcbf": "vendor/bin/phpcbf",
-		"makepot": "wp i18n make-pot . languages/wcsdm.pot",
+		"makepot": "wp i18n make-pot . languages/wcsdm.pot --headers='{\"POT-Creation-Date\":\"\"}'",
 		"test": "vendor/bin/phpunit"
 	},
 	"config": {
