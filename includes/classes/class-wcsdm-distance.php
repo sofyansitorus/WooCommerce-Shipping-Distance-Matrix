@@ -324,6 +324,6 @@ class Wcsdm_Distance {
 			$value = ceil( $value );
 		}
 
-		return wc_format_decimal( $value );
+		return wc_format_decimal( $value, '' );
 	}
 }

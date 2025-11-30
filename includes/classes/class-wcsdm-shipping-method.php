@@ -2964,7 +2964,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			$cost = $max_cost;
 		}
 
-		return wc_format_decimal( $cost );
+		return wc_format_decimal( $cost, '' );
 	}
 
 	/**
