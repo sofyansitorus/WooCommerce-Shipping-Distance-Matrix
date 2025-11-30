@@ -2971,7 +2971,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	 * Get the shipping rate label to display to the customer.
 	 *
 	 * Constructs the shipping method label shown during checkout. Uses the rate-specific
-	 * label if defined, otherwise falls back to the instance label or method title.
+	 * title if defined, otherwise falls back to the instance title or method title.
 	 * Optionally appends the calculated distance if the 'show_distance' option is enabled.
 	 *
 	 * @since 3.0
@@ -2982,7 +2982,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	 * @return string The formatted shipping rate label, optionally including distance information.
 	 */
 	private function get_rate_label_by_rate_row( array $rate_row_match, Wcsdm_Distance $distance ):string {
-		$label = $this->get_rate_row_value( 'label', $rate_row_match, '' );
+		$label = $this->get_rate_row_value( 'title', $rate_row_match, '' );
 
 		if ( ! strlen( $label ) ) {
 			$label = $this->get_option( 'title', $this->get_method_title() );
