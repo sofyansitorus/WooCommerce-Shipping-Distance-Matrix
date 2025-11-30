@@ -1,6 +1,6 @@
 {
 	"name": "wcsdm",
-	"version": "1.0.0",
+	"version": "3.0.1",
 	"description": "Calculate WooCommerce shipping rates based on distance via Google Maps Distance Matrix Service API",
 	"author": "",
 	"license": "GPL-2.0-or-later",
