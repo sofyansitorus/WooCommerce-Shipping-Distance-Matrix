@@ -193,8 +193,9 @@ svn add . --force >/dev/null
 # SVN delete all deleted files
 # Also suppress stdout here
 svn status | grep '^\!' | sed 's/! *//' | while read -r file; do
+    echo "➤ Delete all deleted files..."
     svn rm "$file" >/dev/null
-done
+done || true
 
 if [ -z "$(svn status)" ]; then
     echo "✗ Nothing to commit, working tree clean"
@@ -206,6 +207,6 @@ if [[ -z "$COMMIT_MSG" ]]; then
 fi
 
 echo "➤ Committing changes..."
-svn commit -m "$COMMIT_MSG" --no-auth-cache --non-interactive --username "$SVN_USERNAME" --password "$SVN_PASSWORD"
+svn commit --username "$SVN_USERNAME" --password "$SVN_PASSWORD" -m "$COMMIT_MSG"
 
 echo "✓ Plugin deployed!"
