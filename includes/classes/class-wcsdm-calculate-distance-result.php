@@ -460,10 +460,10 @@ class Wcsdm_Calculate_Distance_Result {
 	 * Example usage:
 	 * ```php
 	 * // Debug output
-	 * error_log('Result state: ' . print_r($result->vars(), true));
+	 * error_log('Result state: ' . print_r($result->to_array(), true));
 	 *
 	 * // Conditional inspection
-	 * $vars = $result->vars();
+	 * $vars = $result->to_array();
 	 * if ($vars['is_error']) {
 	 *     error_log('Error occurred: ' . $vars['error']);
 	 * }
@@ -472,7 +472,7 @@ class Wcsdm_Calculate_Distance_Result {
 	 * @since  3.0
 	 * @return array Associative array of all object properties with their current values.
 	 */
-	public function vars():array {
+	public function to_array():array {
 		return get_object_vars( $this );
 	}
 
