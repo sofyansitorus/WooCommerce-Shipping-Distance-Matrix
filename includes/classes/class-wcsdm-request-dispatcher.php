@@ -416,12 +416,12 @@ class Wcsdm_Request_Dispatcher {
 	 * @since 3.0
 	 *
 	 * @param array $path    Array path to the desired item (e.g., ['data', 'user', 'name']).
-	 * @param mixed $default Optional. Default value to return if path not found. Default null.
+	 * @param mixed $fallback_value Optional. Default value to return if path not found. Default null.
 	 *
 	 * @return mixed The value at the specified path or default if not found.
 	 */
-	public function get_response_body_json_item( array $path, $default = null ) {
-		return wcsdm_array_get( $this->response_body_json ?? array(), $path, $default );
+	public function get_response_body_json_item( array $path, $fallback_value = null ) {
+		return wcsdm_array_get( $this->response_body_json ?? array(), $path, $fallback_value );
 	}
 
 	/**
@@ -454,20 +454,21 @@ class Wcsdm_Request_Dispatcher {
 	 *     }
 	 * }
 	 */
-	public function vars():array {
+	public function to_array():array {
 		// Compile request information.
 		$request = array(
 			'method'  => $this->request_method,
 			'url'     => $this->request_url,
-			'headers' => $this->request_headers->get_headers(),
 			'params'  => $this->request_params->get_params(),
+			'headers' => $this->request_headers->get_headers(),
 		);
 
 		// Compile response information, prefer JSON parsed body if available.
 		$response = array(
-			'code'    => $this->response_code,
-			'headers' => $this->response_headers,
-			'body'    => $this->response_body_json ?? $this->response_body,
+			'code'      => $this->response_code ?? null,
+			'headers'   => $this->response_headers ?? null,
+			'body'      => $this->response_body ?? null,
+			'body_json' => $this->response_body_json ?? null,
 		);
 
 		$vars = array(
@@ -484,5 +485,53 @@ class Wcsdm_Request_Dispatcher {
 		}
 
 		return $vars;
+	}
+
+	/**
+	 * Create a dispatcher instance from an array of request/response data.
+	 *
+	 * Factory method that reconstructs a dispatcher object from serialized data,
+	 * typically used for caching or logging purposes. This bypasses the actual
+	 * HTTP request execution and directly populates the instance with stored data.
+	 *
+	 * @since 3.0
+	 *
+	 * @param array $vars {
+	 *     Array containing request and response data.
+	 *
+	 *     @type array $request {
+	 *         Request information.
+	 *
+	 *         @type string $method  HTTP method (GET or POST).
+	 *         @type string $url     Full request URL.
+	 *         @type array  $params  Request parameters.
+	 *         @type array  $headers Request headers.
+	 *     }
+	 *     @type array $response {
+	 *         Response information.
+	 *
+	 *         @type int|string $code      HTTP response code.
+	 *         @type array      $headers   Response headers.
+	 *         @type string     $body      Raw response body.
+	 *         @type array|null $body_json Optional. Parsed JSON response body.
+	 *     }
+	 * }
+	 *
+	 * @return Wcsdm_Request_Dispatcher Dispatcher instance populated with provided data.
+	 */
+	public static function from_array( array $vars ): Wcsdm_Request_Dispatcher {
+		$dispatcher = new self(
+			$vars['request']['method'],
+			$vars['request']['url'],
+			new Wcsdm_Request_Params( $vars['request']['params'] ),
+			new Wcsdm_Request_Headers( $vars['request']['headers'] )
+		);
+
+		$dispatcher->response_code      = $vars['response']['code'];
+		$dispatcher->response_headers   = $vars['response']['headers'];
+		$dispatcher->response_body      = $vars['response']['body'];
+		$dispatcher->response_body_json = $vars['response']['body_json'];
+
+		return $dispatcher;
 	}
 }

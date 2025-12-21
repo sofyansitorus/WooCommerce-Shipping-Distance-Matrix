@@ -1634,7 +1634,11 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			}
 
 			if ( $result->is_error() ) {
-				$this->maybe_write_log( 'error', 'API Error: ' . $result->get_error(), $result->get_dispatcher()->vars() );
+				$this->maybe_write_log(
+					'error',
+					'API Error: ' . $result->get_error(),
+					$result->get_dispatcher()->to_array()
+				);
 				return;
 			}
 
@@ -1664,7 +1668,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'cost'      => $this->get_rate_cost_by_rate_row( $rate_row_matched, $distance, $package ),
 				'label'     => $this->get_rate_label_by_rate_row( $rate_row_matched, $distance ),
 				'package'   => $package,
-				'meta_data' => $result->get_dispatcher()->vars(),
+				'meta_data' => $result->get_dispatcher()->to_array(),
 			);
 
 			$this->add_rate( $rate );
