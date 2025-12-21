@@ -362,6 +362,34 @@ class Wcsdm_Distance {
 	}
 
 	/**
+	 * Get distance in the given unit.
+	 *
+	 * Supported units:
+	 * - 'm'  (meters)
+	 * - 'km' (kilometers)
+	 * - 'mi' (miles)
+	 *
+	 * If an unsupported unit is provided, this defaults to kilometers.
+	 *
+	 * @since 3.0.2
+	 *
+	 * @param string $unit Target unit identifier ('m', 'km', or 'mi').
+	 *
+	 * @return string Distance formatted according to the active formatter and ceiling rules.
+	 */
+	public function in_unit( string $unit ):string {
+		switch ( $unit ) {
+			case 'm':
+				return $this->in_m();
+			case 'mi':
+				return $this->in_mi();
+			case 'km':
+			default:
+				return $this->in_km();
+		}
+	}
+
+	/**
 	 * Format distance value with optional ceiling.
 	 *
 	 * This method applies the ceiling operation to the distance value if enabled
