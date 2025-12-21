@@ -166,7 +166,7 @@ abstract class Wcsdm_API_Provider_Base implements Wcsdm_API_Provider_Interface {
 	 * @param string                $context  The context ('settings' or 'calculation').
 	 * @return Wcsdm_Request_Headers The populated request headers object.
 	 */
-	final protected function populate_request_headers( Wcsdm_Shipping_Method $instance, string $context ):Wcsdm_Request_Headers {
+	final public function populate_request_headers( Wcsdm_Shipping_Method $instance, string $context ):Wcsdm_Request_Headers {
 		// Initialize an empty request headers object.
 		$request_headers = new Wcsdm_Request_Headers();
 
@@ -238,7 +238,7 @@ abstract class Wcsdm_API_Provider_Base implements Wcsdm_API_Provider_Interface {
 	 * @param string                $context  The context ('settings' or 'calculation').
 	 * @return Wcsdm_Request_Params The populated request parameters object.
 	 */
-	final protected function populate_request_params( Wcsdm_Shipping_Method $instance, string $context ):Wcsdm_Request_Params {
+	final public function populate_request_params( Wcsdm_Shipping_Method $instance, string $context ):Wcsdm_Request_Params {
 		// Initialize an empty request parameters object.
 		$request_params = new Wcsdm_Request_Params();
 

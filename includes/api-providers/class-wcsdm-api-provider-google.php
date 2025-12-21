@@ -180,7 +180,7 @@ class Wcsdm_API_Provider_Google extends Wcsdm_API_Provider_Base {
 		);
 
 		if ( $result->is_error() ) {
-			$instance->maybe_write_log( 'error', $result->get_error(), $result->get_dispatcher()->vars() );
+			$instance->maybe_write_log( 'error', $result->get_error(), $result->get_dispatcher()->to_array() );
 
 			if ( $instance->is_log_enabled() ) {
 				throw new Exception( trim( $result->get_error(), '.' ) . ' » ' . __( 'Check the log for more details.', 'wcsdm' ) );

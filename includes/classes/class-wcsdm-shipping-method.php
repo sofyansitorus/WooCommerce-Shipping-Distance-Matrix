@@ -179,7 +179,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	 * @since 3.0
 	 * @var Wcsdm_Fields_Group
 	 */
-	private $total_cost_group_fields;
+	private $fields_group_total_cost;
 
 	/**
 	 * Table rates settings fields group.
@@ -191,13 +191,12 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	 * @since 3.0
 	 * @var Wcsdm_Fields_Group
 	 */
-	private $table_rates_group_fields;
+	private $fields_group_table_rates;
 
 	/**
 	 * Shipping rules settings fields group.
 	 *
 	 * Contains fields for configuring shipping rate rules:
-	 * - Rate per kilometer
 	 * - Maximum distance
 	 * - Min/max order amount
 	 * - Min/max order quantity
@@ -207,34 +206,40 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	 * @since 3.0
 	 * @var Wcsdm_Fields_Group
 	 */
-	private $shipping_rules_group_fields;
+	private $fields_group_shipping_rules;
 
 	/**
 	 * Rates per shipping class settings fields group.
 	 *
-	 * Contains fields for setting per-kilometer rates for each
-	 * WooCommerce shipping class. Enables class-based pricing
-	 * differentiation for products.
+	 * Contains fields for setting per distance unit.
 	 *
 	 * Dynamically generates fields based on configured shipping classes.
 	 *
 	 * @since 3.0
 	 * @var Wcsdm_Fields_Group
 	 */
-	private $rates_per_kilometer_group_fields;
+	private $fields_group_rates;
 
 	/**
-	 * Compiled rate rule callback functions.
+	 * Rates per shipping class settings fields group.
 	 *
-	 * Cached array of rule callbacks extracted from rate fields for performance optimization.
-	 * Populated on first call to is_rate_row_match_rules() and reused for all subsequent
-	 * rate row validation checks.
-	 *
-	 * Each entry maps a field key to its corresponding rule_callback function which validates
-	 * whether a rate row matches the shipping criteria (distance, order amount, quantity, etc.).
+	 * Dynamically generates fields based on configured shipping classes.
 	 *
 	 * @since 3.0
-	 * @var array|null
+	 * @var Wcsdm_Fields_Group
+	 */
+	private $fields_group_per_shipping_class_rates;
+
+	/**
+	 * Cached rule callbacks for rate-row matching.
+	 *
+	 * Built on-demand from rate fields marked as rules (via `is_rule` + `rule_callback`).
+	 * Used by {@see Wcsdm_Shipping_Method::is_rate_row_match_rules()} to avoid
+	 * re-scanning and re-validating callbacks for every row check.
+	 *
+	 * @since 3.0
+	 *
+	 * @var array<string, callable>|null Map of rate field key to rule callback.
 	 */
 	private $rate_rules_fields;
 
@@ -363,7 +368,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	 * - Store location settings group
 	 * - Total cost calculation settings group
 	 * - Table rates settings group
-	 * - Rates per kilometer settings group
+	 * - Rates per distance unit settings group
 	 * - Shipping rules settings group
 	 *
 	 * @since 3.0
@@ -378,7 +383,8 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		$this->fields_group_factory->add( $this->get_fields_group_store_location() );
 		$this->fields_group_factory->add( $this->get_fields_group_total_cost() );
 		$this->fields_group_factory->add( $this->get_fields_group_table_rates() );
-		$this->fields_group_factory->add( $this->get_fields_group_rates_per_kilometer() );
+		$this->fields_group_factory->add( $this->get_fields_group_rates() );
+		$this->fields_group_factory->add( $this->get_fields_group_per_shipping_class_rates() );
 		$this->fields_group_factory->add( $this->get_fields_group_shipping_rules() );
 	}
 
@@ -505,7 +511,8 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		$fields_group = $this->fields_group_factory->get_items(
 			array(
 				'fields_group_general',
-				'fields_group_rates_per_kilometer',
+				'fields_group_rates',
+				'fields_group_per_shipping_class_rates',
 				'fields_group_shipping_rules',
 				'fields_group_total_cost',
 			)
@@ -1393,6 +1400,28 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	}
 
 	/**
+	 * Get the currently selected API provider instance.
+	 *
+	 * Retrieves the API provider object that is currently configured for this shipping
+	 * method instance. The provider is determined by the 'api_provider' option setting.
+	 *
+	 * @since 3.0.2
+	 *
+	 * @param string $context Optional. The context for retrieving the provider: 'calculation' or 'settings'. Default 'calculation'.
+	 *
+	 * @return Wcsdm_API_Provider_Base|null The selected provider instance, or null if no valid provider is configured.
+	 */
+	public function get_selected_provider( string $context = 'calculation' ):?Wcsdm_API_Provider_Base {
+		if ( 'settings' === $context ) {
+			$api_provider = $this->get_post_data_value( 'api_provider' );
+		} else {
+			$api_provider = $this->get_option( 'api_provider', '' );
+		}
+
+		return $this->providers->get_provider( $api_provider );
+	}
+
+	/**
 	 * Gets the data version of the shipping method instance.
 	 *
 	 * Retrieves the stored data version for this shipping method instance, which is used
@@ -1453,24 +1482,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			return $pre;
 		}
 
-		// Initialize empty destination info array.
-		$destination_info_as_array = array();
-
-		// Get the list of allowed address fields from helper function.
-		$allowed_fields = wcsdm_include_address_fields();
-
-		// Iterate through allowed fields and extract values from package destination.
-		foreach ( $allowed_fields as $allowed_field ) {
-			// Skip fields that don't exist in the package destination.
-			if ( ! isset( $package['destination'][ $allowed_field ] ) ) {
-				continue;
-			}
-
-			// Add the field value to our destination info array.
-			$destination_info_as_array[ $allowed_field ] = $package['destination'][ $allowed_field ];
-		}
-
-		$calculate_distance_destination = Wcsdm_Location::from_address_array( $destination_info_as_array );
+		$calculate_distance_destination = Wcsdm_Location::from_address_array( $package['destination'] ?? array() );
 
 		return apply_filters(
 			'wcsdm_calculate_distance_destination',
@@ -1564,7 +1576,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			return;
 		}
 
-		$provider = $this->providers->get_provider( $this->get_option( 'api_provider' ) );
+		$provider = $this->get_selected_provider();
 
 		// If provider is not available, do not proceed with distance calculation.
 		// It is likely the API provider is not configured yet.
@@ -1575,14 +1587,12 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		$calculate_distance_destination = $this->get_calculate_distance_destination( $package );
 
 		if ( $calculate_distance_destination->is_error() ) {
-			$this->maybe_write_log( 'error', 'Error occured to populate the calculate distance destination.', $calculate_distance_destination->vars() );
 			return;
 		}
 
 		$calculate_distance_origin = $this->get_calculate_distance_origin( $package );
 
 		if ( $calculate_distance_origin->is_error() ) {
-			$this->maybe_write_log( 'error', 'Error occured to populate the calculate distance origin.', $calculate_distance_origin->vars() );
 			return;
 		}
 
@@ -1611,7 +1621,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				null,
 				$calculate_distance_destination,
 				$calculate_distance_origin,
-				$this,
+				$this
 			);
 
 			// If no pre-calculated result is provided, proceed with API call.
@@ -1629,12 +1639,16 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					$result,
 					$calculate_distance_destination,
 					$calculate_distance_origin,
-					$this,
+					$this
 				);
 			}
 
 			if ( $result->is_error() ) {
-				$this->maybe_write_log( 'error', 'API Error: ' . $result->get_error(), $result->get_dispatcher()->vars() );
+				$this->maybe_write_log(
+					'error',
+					'API Error: ' . $result->get_error(),
+					$result->get_dispatcher()->to_array()
+				);
 				return;
 			}
 
@@ -1651,7 +1665,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					'info',
 					'No rate row matched for the calculated distance.',
 					array(
-						'distance'    => $distance->in_km(),
+						'distance'    => $distance->in_unit( $this->get_option( 'distance_unit', 'km' ) ),
 						'table_rates' => $this->get_option( 'table_rates', array() ),
 						'package'     => $package,
 					)
@@ -1664,7 +1678,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'cost'      => $this->get_rate_cost_by_rate_row( $rate_row_matched, $distance, $package ),
 				'label'     => $this->get_rate_label_by_rate_row( $rate_row_matched, $distance ),
 				'package'   => $package,
-				'meta_data' => $result->get_dispatcher()->vars(),
+				'meta_data' => $result->get_dispatcher()->to_array(),
 			);
 
 			$this->add_rate( $rate );
@@ -1727,7 +1741,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			array(
 				// Field settings.
 				'type'       => 'tab_title',
-				'title'      => __( 'General Settings', 'wcsdm' ),
+				'title'      => __( 'General', 'wcsdm' ),
 				'tab_title'  => __( 'General', 'wcsdm' ),
 
 				// Rate field settings.
@@ -1756,11 +1770,21 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'description' => __( 'Write data to WooCommerce System Status Report Log for importance event such API response error and shipping calculation failures. <a href="admin.php?page=wc-status&tab=logs" target="_blank">Click here</a> to view the log data.', 'wcsdm' ),
 				'label'       => __( 'Yes', 'wcsdm' ),
 			),
+			'distance_unit'     => array(
+				'title'       => __( 'Distance Units', 'wcsdm' ),
+				'description' => __( 'Sets whether distance is measured in miles or kilometers.', 'wcsdm' ),
+				'type'        => 'select',
+				'default'     => 'km',
+				'options'     => array(
+					'km' => __( 'Kilometer', 'wcsdm' ),
+					'mi' => __( 'Mile', 'wcsdm' ),
+				),
+			),
 			'round_up_distance' => array(
 				// Field settings.
 				'type'        => 'checkbox',
 				'title'       => __( 'Round Up Distance', 'wcsdm' ),
-				'description' => __( 'When enabled, the calculated shipping distance is always rounded up to the next whole number (for example, 3.1 km becomes 4 km).', 'wcsdm' ),
+				'description' => __( 'When enabled, the calculated shipping distance is always rounded up to the next whole number (for example, 3.1 becomes 4).', 'wcsdm' ),
 				'label'       => __( 'Yes', 'wcsdm' ),
 			),
 			'show_distance'     => array(
@@ -1989,16 +2013,16 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	 * @return Wcsdm_Fields_Group The total cost calculation settings fields group instance.
 	 */
 	public function get_fields_group_total_cost():Wcsdm_Fields_Group {
-		if ( ! empty( $this->total_cost_group_fields ) ) {
-			return $this->total_cost_group_fields;
+		if ( ! empty( $this->fields_group_total_cost ) ) {
+			return $this->fields_group_total_cost;
 		}
 
-		$this->total_cost_group_fields = new Wcsdm_Fields_Group(
+		$this->fields_group_total_cost = new Wcsdm_Fields_Group(
 			'fields_group_total_cost',
 			array(
 				// Field settings.
 				'type'       => 'tab_title',
-				'title'      => __( 'Total Cost Settings', 'wcsdm' ),
+				'title'      => __( 'Total Cost', 'wcsdm' ),
 				'tab_title'  => __( 'Total Cost', 'wcsdm' ),
 
 				// Rate field settings.
@@ -2231,10 +2255,10 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		);
 
 		foreach ( $fields as $key => $field ) {
-			$this->total_cost_group_fields->add_field( $field, $key );
+			$this->fields_group_total_cost->add_field( $field, $key );
 		}
 
-		return $this->total_cost_group_fields;
+		return $this->fields_group_total_cost;
 	}
 
 	/**
@@ -2251,11 +2275,11 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	 * @return Wcsdm_Fields_Group The table rates settings fields group instance.
 	 */
 	public function get_fields_group_table_rates():Wcsdm_Fields_Group {
-		if ( ! empty( $this->table_rates_group_fields ) ) {
-			return $this->table_rates_group_fields;
+		if ( ! empty( $this->fields_group_table_rates ) ) {
+			return $this->fields_group_table_rates;
 		}
 
-		$this->table_rates_group_fields = new Wcsdm_Fields_Group(
+		$this->fields_group_table_rates = new Wcsdm_Fields_Group(
 			'fields_group_table_rates',
 			array(
 				'type'        => 'tab_title',
@@ -2274,17 +2298,16 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		);
 
 		foreach ( $fields as $key => $field ) {
-			$this->table_rates_group_fields->add_field( $field, $key );
+			$this->fields_group_table_rates->add_field( $field, $key );
 		}
 
-		return $this->table_rates_group_fields;
+		return $this->fields_group_table_rates;
 	}
 
 	/**
 	 * Get or create the shipping rules settings fields group.
 	 *
 	 * Creates and returns a Wcsdm_Fields_Group for configuring shipping rate rules:
-	 * - Rate per kilometer (base rate or for no shipping class)
 	 * - Maximum distance threshold
 	 * - Minimum order amount requirement
 	 * - Maximum order amount limit
@@ -2300,15 +2323,15 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	 * @return Wcsdm_Fields_Group The shipping rules settings fields group instance.
 	 */
 	public function get_fields_group_shipping_rules():Wcsdm_Fields_Group {
-		if ( ! empty( $this->shipping_rules_group_fields ) ) {
-			return $this->shipping_rules_group_fields;
+		if ( ! empty( $this->fields_group_shipping_rules ) ) {
+			return $this->fields_group_shipping_rules;
 		}
 
-		$this->shipping_rules_group_fields = new Wcsdm_Fields_Group(
+		$this->fields_group_shipping_rules = new Wcsdm_Fields_Group(
 			'fields_group_shipping_rules',
 			array(
 				'type'       => 'title',
-				'title'      => __( 'Shipping Rules Settings', 'wcsdm' ),
+				'title'      => __( 'Shipping Rules', 'wcsdm' ),
 
 				// Rate field settings.
 				'rate_field' => array(
@@ -2318,26 +2341,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		);
 
 		$fields = array(
-			'rate_class_0'       => array(
-				// Field settings.
-				'type'              => 'price',
-				'title'             => __( 'Rate Per Kilometer', 'wcsdm' ),
-				'description'       => __( 'Enter the price charged per kilometer; set 0 to offer free shipping.', 'wcsdm' ),
-				'default'           => '',
-				'custom_attributes' => array(
-					'min' => '0',
-				),
-
-				// Rate field settings.
-				'is_persistent'     => true,
-				'is_required'       => true,
-				'is_rate'           => true,
-				'rate_field'        => array(
-					'hidden'   => true,
-					'dummy'    => true,
-					'advanced' => true,
-				),
-			),
 			'max_distance'       => array(
 				// Field settings.
 				'type'              => 'number',
@@ -2354,7 +2357,10 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'is_required'       => true,
 				'is_rule'           => true,
 				'rule_callback'     => function( array $rate_row, array $package, Wcsdm_Distance $distance ):bool {
-					return $distance->in_km() <= ( $rate_row['max_distance'] ?? 0 );
+					$distance_in_unit = $distance->in_unit( $this->get_option( 'distance_unit', 'km' ) );
+					$max_distance     = $rate_row['max_distance'] ?? 0;
+
+					return $distance_in_unit <= $max_distance;
 				},
 				'rate_field'        => array(
 					'hidden'   => true,
@@ -2472,48 +2478,102 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			),
 		);
 
-		$shipping_classes = WC()->shipping->get_shipping_classes();
-
-		if ( ! empty( $shipping_classes ) ) {
-			unset( $fields['rate_class_0'] );
-		}
-
 		foreach ( $fields as $key => $field ) {
-			$this->shipping_rules_group_fields->add_field( $field, $key );
+			$this->fields_group_shipping_rules->add_field( $field, $key );
 		}
 
-		return $this->shipping_rules_group_fields;
+		return $this->fields_group_shipping_rules;
 	}
 
-
 	/**
-	 * Get or create the rates per kilometer (shipping class) settings fields group.
+	 * Get or create the rates per distance unit settings fields group.
 	 *
-	 * Creates and returns a Wcsdm_Fields_Group for configuring per-kilometer rates for
-	 * different shipping classes. If WooCommerce has shipping classes configured, this
-	 * group will contain a field for each shipping class plus "No Shipping Class".
-	 *
-	 * Each field allows setting a custom rate per kilometer for that shipping class,
-	 * enabling class-based pricing differentiation.
+	 * Creates and returns a Wcsdm_Fields_Group containing the base rate field.
+	 * This field defines the cost per distance unit (kilometer or mile) for shipping
+	 * calculations. The base rate applies to all products unless overridden by
+	 * shipping class-specific rates.
 	 *
 	 * The fields group is cached after first creation for performance.
 	 *
 	 * @since 3.0
 	 *
-	 * @return Wcsdm_Fields_Group The rates per kilometer settings fields group instance.
+	 * @return Wcsdm_Fields_Group The rates per distance unit settings fields group instance.
 	 */
-	public function get_fields_group_rates_per_kilometer():Wcsdm_Fields_Group {
-		if ( ! empty( $this->rates_per_kilometer_group_fields ) ) {
-			return $this->rates_per_kilometer_group_fields;
+	public function get_fields_group_rates():Wcsdm_Fields_Group {
+		if ( ! empty( $this->fields_group_rates ) ) {
+			return $this->fields_group_rates;
 		}
 
-		$this->rates_per_kilometer_group_fields = new Wcsdm_Fields_Group(
-			'fields_group_rates_per_kilometer',
+		$this->fields_group_rates = new Wcsdm_Fields_Group(
+			'fields_group_rates',
+			array(
+				// Field settings.
+				'type'       => 'title',
+				'title'      => __( 'Shipping Rates', 'wcsdm' ),
+
+				// Rate field settings.
+				'rate_field' => array(
+					'advanced' => true,
+				),
+			)
+		);
+
+		$this->fields_group_rates->add_field(
+			array(
+				// Field settings.
+				'type'              => 'price',
+				'title'             => __( 'Distance Rate', 'wcsdm' ),
+				'description'       => __( 'The rate charged per kilometer/mile traveled. Set to 0 to set as free shipping.', 'wcsdm' ),
+				'default'           => '',
+				'custom_attributes' => array(
+					'min' => '0',
+				),
+
+				// Rate field settings.
+				'is_persistent'     => true,
+				'is_required'       => true,
+				'is_rate'           => true,
+				'rate_field'        => array(
+					'hidden'   => true,
+					'dummy'    => true,
+					'advanced' => true,
+				),
+			),
+			'rate_class_0'
+		);
+
+		return $this->fields_group_rates;
+	}
+
+	/**
+	 * Get or create the rates per shipping class settings fields group.
+	 *
+	 * Creates and returns a Wcsdm_Fields_Group containing per-shipping-class rate fields.
+	 * Dynamically generates fields based on WooCommerce shipping classes configured
+	 * in the system. Each shipping class gets its own rate field that overrides the
+	 * base rate when specified.
+	 *
+	 * If no shipping classes are defined in WooCommerce, only the group header is created
+	 * without any rate fields.
+	 *
+	 * The fields group is cached after first creation for performance.
+	 *
+	 * @since 3.0
+	 *
+	 * @return Wcsdm_Fields_Group The rates per shipping class settings fields group instance.
+	 */
+	public function get_fields_group_per_shipping_class_rates():Wcsdm_Fields_Group {
+		if ( ! empty( $this->fields_group_per_shipping_class_rates ) ) {
+			return $this->fields_group_per_shipping_class_rates;
+		}
+
+		$this->fields_group_per_shipping_class_rates = new Wcsdm_Fields_Group(
+			'fields_group_per_shipping_class_rates',
 			array(
 				// Field settings.
 				'type'        => 'title',
-				'title'       => __( 'Rate Per Kilometer Settings', 'wcsdm' ),
-				'description' => __( 'Set the rate per kilometer for the shipping class.', 'wcsdm' ),
+				'title'       => __( 'Per Shipping Class Rates', 'wcsdm' ),
+				'description' => __( 'Set rate charged per kilometer/mile traveled for selected shipping classes.', 'wcsdm' ),
 
 				// Rate field settings.
 				'rate_field'  => array(
@@ -2525,62 +2585,33 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		$shipping_classes = WC()->shipping->get_shipping_classes();
 
 		if ( $shipping_classes ) {
-			$fields = array(
-				'rate_class_0' => array(
-					// Field settings.
-					'type'              => 'price',
-					'title'             => __( 'No Shipping Class', 'wcsdm' ),
-					'default'           => '',
-					'custom_attributes' => array(
-						'min' => '0',
-					),
-
-					// Rate field settings.
-					'is_persistent'     => true,
-					'is_required'       => true,
-					'is_rate'           => true,
-					'rate_field'        => array(
-						'hidden'   => array(
-							'title'       => __( 'Rate Per Kilometer', 'wcsdm' ),
-							'description' => __( 'The base rate charged per kilometer for distance-based shipping calculations. Set to 0 to set as free shipping.', 'wcsdm' ),
-						),
-						'dummy'    => array(
-							'title'       => __( 'Rate Per Kilometer', 'wcsdm' ),
-							'description' => __( 'The base rate charged per kilometer for distance-based shipping calculations. Set to 0 to set as free shipping.', 'wcsdm' ),
-						),
-						'advanced' => true,
-					),
-				),
-			);
-
 			foreach ( $shipping_classes as $shipping_class ) {
-				$fields[ 'rate_class_' . $shipping_class->term_id ] = array(
-					// Field settings.
-					'type'              => 'price',
-					// translators: %s is the shipping class name.
-					'title'             => sprintf( __( '%s Shipping Class', 'wcsdm' ), $shipping_class->name ),
-					'description'       => __( 'The base rate charged per kilometer for distance-based shipping calculations. Set to 0 to set as free shipping. Leave empty to disable rate for this shipping class.', 'wcsdm' ),
-					'default'           => '',
-					'custom_attributes' => array(
-						'min' => '0',
-					),
+				$this->fields_group_per_shipping_class_rates->add_field(
+					array(
+						// Field settings.
+						'type'              => 'price',
+						// translators: %s is the shipping class name.
+						'title'             => sprintf( __( 'Shipping Class: %s', 'wcsdm' ), $shipping_class->name ),
+						'description'       => __( 'Set to 0 to set as free shipping. Leave blank to disable the class-specific override.', 'wcsdm' ),
+						'default'           => '',
+						'custom_attributes' => array(
+							'min' => '0',
+						),
 
-					// Rate field settings.
-					'is_required'       => false,
-					'is_rate'           => true,
-					'rate_field'        => array(
-						'hidden'   => true,
-						'advanced' => true,
+						// Rate field settings.
+						'is_required'       => false,
+						'is_rate'           => true,
+						'rate_field'        => array(
+							'hidden'   => true,
+							'advanced' => true,
+						),
 					),
+					'rate_class_' . $shipping_class->term_id
 				);
-			}
-
-			foreach ( $fields as $key => $field ) {
-				$this->rates_per_kilometer_group_fields->add_field( $field, $key );
 			}
 		}
 
-		return $this->rates_per_kilometer_group_fields;
+		return $this->fields_group_per_shipping_class_rates;
 	}
 
 	/**
@@ -2815,6 +2846,8 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		// Hold costs data for progressive total_cost_type.
 		$progressive = array();
 
+		$distance_unit = $this->get_option( 'distance_unit', 'km' );
+
 		foreach ( $package['contents'] as $item ) {
 			if ( ! $item['data']->needs_shipping() ) {
 				continue;
@@ -2834,7 +2867,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			}
 
 			// Multiply shipping cost with distance unit.
-			$item_cost *= $distance->in_km();
+			$item_cost *= $distance->in_unit( $distance_unit );
 
 			// Add cost data for flat total_cost_type.
 			$flat[] = $item_cost;
@@ -2989,7 +3022,15 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		}
 
 		if ( 'yes' === $this->get_option( 'show_distance', 'no' ) ) {
-			return sprintf( '%s (%s: %s)', $label, __( 'Distance', 'wcsdm' ), wc_format_localized_decimal( $distance->in_km() ) . ' ' . __( 'km', 'wcsdm' ) );
+			$distance_unit = $this->get_option( 'distance_unit', 'km' );
+
+			return sprintf(
+				'%s (%s: %s %s)',
+				$label,
+				__( 'Distance', 'wcsdm' ),
+				wc_format_localized_decimal( $distance->in_unit( $distance_unit ) ),
+				$distance_unit
+			);
 		}
 
 		return $label;

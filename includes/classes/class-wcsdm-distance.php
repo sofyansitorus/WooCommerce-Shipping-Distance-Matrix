@@ -49,26 +49,56 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Wcsdm_Distance {
 
 	/**
+	 * Conversion factor: kilometers in one meter.
+	 *
+	 * Used to convert between meters and kilometers.
+	 *
+	 * @since 3.0
+	 * @var string
+	 */
+	public const KM_IN_M = '1000';
+
+	/**
+	 * Conversion factor: meters in one mile.
+	 *
+	 * Used to convert between meters and miles.
+	 *
+	 * @since 3.0
+	 * @var string
+	 */
+	public const MI_IN_M = '1609.34';
+
+	/**
+	 * Conversion factor: kilometers in one mile.
+	 *
+	 * Used to convert between kilometers and miles.
+	 *
+	 * @since 3.0
+	 * @var string
+	 */
+	public const MI_IN_KM = '1.60934';
+
+	/**
 	 * Allowed unit types.
 	 *
 	 * Defines the valid distance units supported by this class.
 	 * Currently supports metric (m, km) and imperial (mi) units.
 	 *
 	 * @since 3.0
-	 * @var array Array of allowed unit strings: 'm' (meters), 'km' (kilometers), 'mi' (miles).
+	 * @var string[] Array of allowed unit strings: 'm' (meters), 'km' (kilometers), 'mi' (miles).
 	 */
 	private $allowed_units = array( 'm', 'km', 'mi' );
 
 	/**
-	 * Distance value.
+	 * Distance numeric value.
 	 *
-	 * The numeric distance value in the unit specified by $unit property.
-	 * This value is immutable after construction.
+	 * Stored as a numeric-string because provider APIs and WooCommerce formatting
+	 * functions often deal in strings; conversion methods cast as needed.
 	 *
 	 * @since 3.0
-	 * @var string The distance value.
+	 * @var string
 	 */
-	private $distance;
+	private $number;
 
 	/**
 	 * Distance unit.
@@ -94,6 +124,18 @@ class Wcsdm_Distance {
 	private $ceiling = false;
 
 	/**
+	 * Optional formatter callable.
+	 *
+	 * When set, this callable is used to format the numeric distance value produced
+	 * by conversions.
+	 *
+	 * @since 3.0
+	 *
+	 * @var callable|null Callable with signature fn( float $value ): string.
+	 */
+	private $formatter;
+
+	/**
 	 * Constructor.
 	 *
 	 * Initializes a new distance value object with the specified distance and unit.
@@ -101,20 +143,20 @@ class Wcsdm_Distance {
 	 *
 	 * @since 3.0
 	 *
-	 * @param string $distance Distance value.
-	 * @param string $unit     Distance unit identifier: 'm' (meters), 'km' (kilometers), or 'mi' (miles).
+	 * @param string $number Distance value as a numeric-string.
+	 * @param string $unit   Distance unit identifier: 'm' (meters), 'km' (kilometers), or 'mi' (miles).
 	 *
 	 * @throws Exception If invalid unit type is provided (not in allowed_units).
 	 */
-	public function __construct( string $distance, string $unit ) {
+	public function __construct( string $number, string $unit ) {
 		// Validate that the unit is one of the supported types.
 		if ( ! in_array( $unit, $this->allowed_units, true ) ) {
 			throw new Exception( 'Invalid unit type!' );
 		}
 
 		// Store the distance value and unit for later conversions.
-		$this->distance = $distance;
-		$this->unit     = $unit;
+		$this->number = $number;
+		$this->unit   = $unit;
 	}
 
 	/**
@@ -187,6 +229,22 @@ class Wcsdm_Distance {
 	}
 
 	/**
+	 * Set a custom formatter for conversion results.
+	 *
+	 * When provided, this callable will receive the calculated (and optionally
+	 * ceiled) float value and should return a formatted string.
+	 *
+	 * @since 3.0
+	 *
+	 * @param callable $formatter Callable with signature fn( float $value ): string.
+	 *
+	 * @return void
+	 */
+	public function set_formatter( callable $formatter ):void {
+		$this->formatter = $formatter;
+	}
+
+	/**
 	 * Get distance in kilometers.
 	 *
 	 * Converts the stored distance value to kilometers using standard conversion factors.
@@ -206,18 +264,18 @@ class Wcsdm_Distance {
 		switch ( $this->unit ) {
 			case 'm':
 				// Convert meters to kilometers (1 km = 1000 m).
-				$value = $this->distance / 1000;
+				$value = $this->number / self::KM_IN_M;
 				break;
 
 			case 'mi':
 				// Convert miles to kilometers (1 mi = 1.60934 km).
-				$value = $this->distance * 1.60934;
+				$value = $this->number * self::MI_IN_KM;
 				break;
 
 			case 'km':
 			default:
 				// Already in kilometers, no conversion needed.
-				$value = $this->distance;
+				$value = $this->number;
 				break;
 		}
 
@@ -245,18 +303,18 @@ class Wcsdm_Distance {
 		switch ( $this->unit ) {
 			case 'm':
 				// Convert meters to miles (1 mi = 1609.34 m).
-				$value = $this->distance / 1609.34;
+				$value = $this->number / self::MI_IN_M;
 				break;
 
 			case 'km':
 				// Convert kilometers to miles (1 mi = 1.60934 km).
-				$value = $this->distance / 1.60934;
+				$value = $this->number / self::MI_IN_KM;
 				break;
 
 			case 'mi':
 			default:
 				// Already in miles, no conversion needed.
-				$value = $this->distance;
+				$value = $this->number;
 				break;
 		}
 
@@ -284,23 +342,51 @@ class Wcsdm_Distance {
 		switch ( $this->unit ) {
 			case 'km':
 				// Convert kilometers to meters (1 km = 1000 m).
-				$value = $this->distance * 1000;
+				$value = $this->number * self::KM_IN_M;
 				break;
 
 			case 'mi':
 				// Convert miles to meters (1 mi = 1609.34 m).
-				$value = $this->distance * 1609.34;
+				$value = $this->number * self::MI_IN_M;
 				break;
 
 			case 'm':
 			default:
 				// Already in meters, no conversion needed.
-				$value = $this->distance;
+				$value = $this->number;
 				break;
 		}
 
 		// Apply formatting and optional ceiling.
 		return $this->number_format( $value );
+	}
+
+	/**
+	 * Get distance in the given unit.
+	 *
+	 * Supported units:
+	 * - 'm'  (meters)
+	 * - 'km' (kilometers)
+	 * - 'mi' (miles)
+	 *
+	 * If an unsupported unit is provided, this defaults to kilometers.
+	 *
+	 * @since 3.0.2
+	 *
+	 * @param string $unit Target unit identifier ('m', 'km', or 'mi').
+	 *
+	 * @return string Distance formatted according to the active formatter and ceiling rules.
+	 */
+	public function in_unit( string $unit ):string {
+		switch ( $unit ) {
+			case 'm':
+				return $this->in_m();
+			case 'mi':
+				return $this->in_mi();
+			case 'km':
+			default:
+				return $this->in_km();
+		}
 	}
 
 	/**
@@ -324,6 +410,41 @@ class Wcsdm_Distance {
 			$value = ceil( $value );
 		}
 
-		return wc_format_decimal( $value, '' );
+		if ( is_callable( $this->formatter ) ) {
+			return call_user_func( $this->formatter, $value );
+		}
+
+		return wc_format_decimal( $value, '', true );
+	}
+
+	/**
+	 * Get array representation of the distance.
+	 *
+	 * @since 3.0.2
+	 *
+	 * @return array Array with keys 'number' and 'unit'.
+	 */
+	public function to_array():array {
+		return array(
+			'number' => $this->number,
+			'unit'   => $this->unit,
+		);
+	}
+
+	/**
+	 * Re-create an instance from an array representation.
+	 *
+	 * @since 3.0.2
+	 *
+	 * @param array $data Distance array as returned by to_array().
+	 *
+	 * @return Wcsdm_Distance New instance initialized from the given data.
+	 *
+	 * @throws Exception If the unit is invalid.
+	 */
+	public static function from_array( array $data ):Wcsdm_Distance {
+		$instance = new self( $data['number'], $data['unit'] );
+
+		return $instance;
 	}
 }

@@ -37,26 +37,36 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Wcsdm_Location {
 
 	/**
-	 * Array of allowed location types.
+	 * Location type constant for address string format.
 	 *
-	 * Defines the valid location type values that can be used when creating
-	 * location instances. This ensures type safety and prevents invalid location types.
-	 *
-	 * @since 3.0
-	 * @var array List of valid location types: 'address', 'address_array', 'coordinates'.
+	 * @since 3.0.2
+	 * @var string
 	 */
-	private $allowed_location_types = array( 'address', 'address_array', 'coordinates' );
+	const LOCATION_TYPE_ADDRESS = 'address';
 
 	/**
-	 * Flag to track validation errors.
+	 * Location type constant for address array format.
 	 *
-	 * Set to true if validation fails during location data assignment.
-	 * Used to prevent access to invalid location data.
-	 *
-	 * @since 3.0
-	 * @var bool True if validation error occurred, false otherwise.
+	 * @since 3.0.2
+	 * @var string
 	 */
-	private $error = false;
+	const LOCATION_TYPE_ADDRESS_ARRAY = 'address_array';
+
+	/**
+	 * Location type constant for coordinates format.
+	 *
+	 * @since 3.0.2
+	 * @var string
+	 */
+	const LOCATION_TYPE_COORDINATES = 'coordinates';
+
+	/**
+	 * Array to hold error messages.
+	 *
+	 * @since 3.0.2
+	 * @var array
+	 */
+	private $errors = array();
 
 	/**
 	 * The type of location ('address', 'address_array', or 'coordinates').
@@ -121,6 +131,23 @@ class Wcsdm_Location {
 	}
 
 	/**
+	 * Gets all available location types.
+	 *
+	 * Returns an array of all valid location type constants that can be used
+	 * when creating or working with location instances.
+	 *
+	 * @since 3.0.2
+	 * @return array Array of location type constants.
+	 */
+	public function get_location_types(): array {
+		return array(
+			self::LOCATION_TYPE_ADDRESS,
+			self::LOCATION_TYPE_ADDRESS_ARRAY,
+			self::LOCATION_TYPE_COORDINATES,
+		);
+	}
+
+	/**
 	 * Sets the location type.
 	 *
 	 * Validates and sets the type of location for this instance. Only allows
@@ -132,9 +159,9 @@ class Wcsdm_Location {
 	 * @throws Exception If an invalid location type is provided.
 	 * @return void
 	 */
-	public function set_location_type( string $location_type ) {
+	private function set_location_type( string $location_type ) {
 		// Validate that the location type is one of the allowed values (address, address_array, or coordinates).
-		if ( ! in_array( $location_type, $this->allowed_location_types, true ) ) {
+		if ( ! in_array( $location_type, $this->get_location_types(), true ) ) {
 			throw new Exception( 'Invalid location type!' );
 		}
 
@@ -152,7 +179,7 @@ class Wcsdm_Location {
 	 * @return Wcsdm_Location A new location instance with the specified address.
 	 */
 	public static function from_address( string $address ):Wcsdm_Location {
-		$location = new self( 'address' );
+		$location = new self( self::LOCATION_TYPE_ADDRESS );
 
 		$location->set_address( $address );
 
@@ -170,14 +197,11 @@ class Wcsdm_Location {
 	 * @return void
 	 */
 	public function set_address( string $address ) {
-		// Verify location type matches and validate the address string format.
-		if ( 'address' === $this->get_location_type() && wcsdm_validate_address( $address ) ) {
-			$this->address = $address;
-		} else {
-			// Mark as error and clear address if validation fails.
-			$this->error   = true;
-			$this->address = null;
+		if ( ! wcsdm_validate_address( $address ) ) {
+			$this->errors[ self::LOCATION_TYPE_ADDRESS ] = true;
 		}
+
+		$this->address = $address;
 	}
 
 	/**
@@ -190,13 +214,49 @@ class Wcsdm_Location {
 	 * @return string The address string.
 	 * @throws Exception If location type is invalid or location data is in error state.
 	 */
-	public function get_address():string {
+	public function get_address(): string {
 		// Verify location type and error state before returning the address.
-		$this->maybe_throw_error( 'address' );
+		$this->maybe_throw_error( self::LOCATION_TYPE_ADDRESS );
 
 		return $this->address;
 	}
 
+	/**
+	 * Normalizes an address array to contain only allowed address fields.
+	 *
+	 * This method filters and standardizes address component arrays by extracting
+	 * only the fields defined by wcsdm_include_address_fields(). It handles the
+	 * special case where 'address' can be used as a fallback for 'address_1'.
+	 * Fields not present in the input array are omitted from the result.
+	 *
+	 * @since 3.0.2
+	 * @param array $address_array The raw address array with various address components.
+	 * @return array The normalized address array containing only allowed fields.
+	 */
+	private function normalize_address_array( array $address_array ): array {
+		$normalized_address_array = array();
+
+		// Get the list of allowed address fields from helper function.
+		$allowed_fields = wcsdm_include_address_fields();
+
+		// Iterate through allowed fields and extract values from package destination.
+		foreach ( $allowed_fields as $allowed_field ) {
+			$target_field = $allowed_field;
+
+			// Fallback to 'address' field if 'address_1' is empty but 'address' is available.
+			if ( 'address_1' === $target_field && empty( $address_array['address_1'] ) && ! empty( $address_array['address'] ) ) {
+				$target_field = 'address';
+			}
+
+			if ( ! isset( $address_array[ $target_field ] ) ) {
+				continue;
+			}
+
+			$normalized_address_array[ $allowed_field ] = $address_array[ $target_field ];
+		}
+
+		return $normalized_address_array;
+	}
 
 	/**
 	 * Creates a new location instance from an address array.
@@ -210,7 +270,7 @@ class Wcsdm_Location {
 	 * @return Wcsdm_Location A new location instance with the specified address array.
 	 */
 	public static function from_address_array( array $address_array ):Wcsdm_Location {
-		$location = new self( 'address_array' );
+		$location = new self( self::LOCATION_TYPE_ADDRESS_ARRAY );
 
 		$location->set_address_array( $address_array );
 
@@ -228,14 +288,13 @@ class Wcsdm_Location {
 	 * @return void
 	 */
 	public function set_address_array( array $address_array ) {
-		// Verify location type matches and validate the address array structure.
-		if ( 'address_array' === $this->get_location_type() && wcsdm_validate_address_array( $address_array ) ) {
-			$this->address_array = $address_array;
-		} else {
-			// Mark as error and clear address array if validation fails.
-			$this->error         = true;
-			$this->address_array = null;
+		$normalize_address_array = $this->normalize_address_array( $address_array );
+
+		if ( ! wcsdm_validate_address_array( $normalize_address_array ) ) {
+			$this->errors[ self::LOCATION_TYPE_ADDRESS_ARRAY ] = true;
 		}
+
+		$this->address_array = $normalize_address_array;
 	}
 
 	/**
@@ -250,7 +309,7 @@ class Wcsdm_Location {
 	 */
 	public function get_address_array():array {
 		// Verify location type and error state before returning the address array.
-		$this->maybe_throw_error( 'address_array' );
+		$this->maybe_throw_error( self::LOCATION_TYPE_ADDRESS_ARRAY );
 
 		return $this->address_array;
 	}
@@ -266,8 +325,8 @@ class Wcsdm_Location {
 	 * @param float $lng The longitude coordinate (typically -180 to 180).
 	 * @return Wcsdm_Location A new location instance with the specified coordinates.
 	 */
-	public static function from_coordinates( float $lat, float $lng ):Wcsdm_Location {
-		$location = new self( 'coordinates' );
+	public static function from_coordinates( float $lat, float $lng ): Wcsdm_Location {
+		$location = new self( self::LOCATION_TYPE_COORDINATES );
 
 		$location->set_coordinates( $lat, $lng );
 
@@ -287,18 +346,14 @@ class Wcsdm_Location {
 	 * @return void
 	 */
 	public function set_coordinates( float $lat, float $lng ) {
-		// Verify location type matches and validate the coordinate values.
-		if ( 'coordinates' === $this->get_location_type() && wcsdm_validate_coordinates( $lat, $lng ) ) {
-			// Store coordinates as an associative array with latitude and longitude keys.
-			$this->coordinates = array(
-				'latitude'  => $lat,
-				'longitude' => $lng,
-			);
-		} else {
-			// Mark as error and clear coordinates if validation fails.
-			$this->error       = true;
-			$this->coordinates = null;
+		if ( ! wcsdm_validate_coordinates( $lat, $lng ) ) {
+			$this->errors[ self::LOCATION_TYPE_COORDINATES ] = true;
 		}
+
+		$this->coordinates = array(
+			'latitude'  => $lat,
+			'longitude' => $lng,
+		);
 	}
 
 	/**
@@ -314,7 +369,7 @@ class Wcsdm_Location {
 	 */
 	public function get_coordinates():array {
 		// Verify location type and error state before returning the coordinates.
-		$this->maybe_throw_error( 'coordinates' );
+		$this->maybe_throw_error( self::LOCATION_TYPE_COORDINATES );
 
 		return $this->coordinates;
 	}
@@ -332,7 +387,7 @@ class Wcsdm_Location {
 	 */
 	public function get_coordinates_latitude():float {
 		// Verify location type and error state before accessing coordinates.
-		$this->maybe_throw_error( 'coordinates' );
+		$this->maybe_throw_error( self::LOCATION_TYPE_COORDINATES );
 
 		return $this->coordinates['latitude'];
 	}
@@ -350,7 +405,7 @@ class Wcsdm_Location {
 	 */
 	public function get_coordinates_longitude():float {
 		// Verify location type and error state before accessing coordinates.
-		$this->maybe_throw_error( 'coordinates' );
+		$this->maybe_throw_error( self::LOCATION_TYPE_COORDINATES );
 
 		return $this->coordinates['longitude'];
 	}
@@ -380,7 +435,7 @@ class Wcsdm_Location {
 	}
 
 	/**
-	 * Gets the location type.
+	 * Gets the current location type.
 	 *
 	 * Returns the location type identifier that indicates which format the
 	 * location data is stored in (address, address_array, or coordinates).
@@ -403,7 +458,7 @@ class Wcsdm_Location {
 	 * @return bool True if there are errors, false otherwise.
 	 */
 	public function is_error():bool {
-		return $this->error;
+		return $this->errors[ $this->get_location_type() ] ?? false;
 	}
 
 	/**
@@ -416,8 +471,40 @@ class Wcsdm_Location {
 	 * @since 3.0
 	 * @return array An array containing all object variables and their values.
 	 */
-	public function vars():array {
+	public function to_array():array {
 		return get_object_vars( $this );
 	}
 
+	/**
+	 * Creates a new location instance from a location array.
+	 *
+	 * Factory method to create a location object from an array containing location data.
+	 * The array must include a 'location_type' key that determines which factory
+	 * method to use internally. Supports creating locations from address strings, address
+	 * component arrays, or coordinate pairs.
+	 *
+	 * @since 3.0.2
+	 * @param array $location_array The location data array with type and corresponding data.
+	 * @return Wcsdm_Location A new location instance with the specified location data.
+	 * @throws Exception If the location type is invalid or missing.
+	 */
+	public static function from_array( array $location_array ):Wcsdm_Location {
+		$location_type = $location_array['location_type'] ?? '';
+
+		switch ( $location_type ) {
+			case self::LOCATION_TYPE_ADDRESS:
+				$location = self::from_address( $location_array['address'] ?? '' );
+				break;
+			case self::LOCATION_TYPE_ADDRESS_ARRAY:
+				$location = self::from_address_array( $location_array['address_array'] ?? array() );
+				break;
+			case self::LOCATION_TYPE_COORDINATES:
+				$location = self::from_coordinates( $location_array['coordinates']['latitude'], $location_array['coordinates']['longitude'] );
+				break;
+			default:
+				throw new Exception( 'Invalid location type!' );
+		}
+
+		return $location;
+	}
 }
