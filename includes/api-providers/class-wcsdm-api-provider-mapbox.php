@@ -150,8 +150,16 @@ class Wcsdm_API_Provider_Mapbox extends Wcsdm_API_Provider_Base {
 		$destination = Wcsdm_Location::from_coordinates( WCSDM_TEST_DESTINATION_LAT, WCSDM_TEST_DESTINATION_LNG );
 		$origin      = Wcsdm_Location::from_coordinates( WCSDM_TEST_ORIGIN_LAT, WCSDM_TEST_ORIGIN_LNG );
 
-		// Populate request data and headers from settings context (not yet saved).
-		$request_params  = $this->populate_request_params( $instance, 'settings' );
+		// Populate request data from settings context.
+		$request_params = $this->populate_request_params(
+			$instance,
+			'settings',
+			array(
+				'annotations' => 'distance',
+			)
+		);
+
+		// Populate request headers from settings context.
 		$request_headers = $this->populate_request_headers( $instance, 'settings' );
 
 		// Get the routing profile from POST data, defaulting to 'mapbox/driving' if not set.
@@ -226,8 +234,16 @@ class Wcsdm_API_Provider_Mapbox extends Wcsdm_API_Provider_Base {
 		$destination = $this->maybe_geocode_location( $destination, $access_token );
 		$origin      = $this->maybe_geocode_location( $origin, $access_token );
 
-		// Prepare request data and headers for the calculation context.
-		$request_data    = $this->populate_request_params( $instance, 'calculation' );
+		// Prepare request data for the calculation context.
+		$request_data = $this->populate_request_params(
+			$instance,
+			'calculation',
+			array(
+				'annotations' => 'distance',
+			)
+		);
+
+		// Prepare request headers for the calculation context.
 		$request_headers = $this->populate_request_headers( $instance, 'calculation' );
 
 		// Get the configured routing profile for distance calculation.
