@@ -413,6 +413,14 @@ class Wcsdm_API_Provider_Mapbox extends Wcsdm_API_Provider_Base {
 			if ( $latitude && $longitude ) {
 				return Wcsdm_Location::from_coordinates( (float) $latitude, (float) $longitude );
 			}
+
+			// Fallback: GeoJSON coordinates array is [longitude, latitude].
+			$geojson_lng = $dispatcher->get_response_body_json_item( array( 'features', 0, 'geometry', 'coordinates', 0 ) );
+			$geojson_lat = $dispatcher->get_response_body_json_item( array( 'features', 0, 'geometry', 'coordinates', 1 ) );
+
+			if ( is_numeric( $geojson_lat ) && is_numeric( $geojson_lng ) ) {
+				return Wcsdm_Location::from_coordinates( $geojson_lat, $geojson_lng );
+			}
 		}
 
 		// Return the original location if no geocoding was needed or if it failed.
