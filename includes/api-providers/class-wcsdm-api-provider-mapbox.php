@@ -307,7 +307,7 @@ class Wcsdm_API_Provider_Mapbox extends Wcsdm_API_Provider_Base {
 			);
 		}
 
-		$distance_in_meters = (int) $dispatcher->get_response_body_json_item( array( 'destinations', 0, 'distance' ), 0 );
+		$distance_in_meters = (int) $dispatcher->get_response_body_json_item( array( 'distances', 0, 1 ), 0 );
 
 		if ( $distance_in_meters ) {
 			return Wcsdm_Calculate_Distance_Result::distance(
