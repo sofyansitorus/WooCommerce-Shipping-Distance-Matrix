@@ -236,11 +236,19 @@ abstract class Wcsdm_API_Provider_Base implements Wcsdm_API_Provider_Interface {
 	 *
 	 * @param Wcsdm_Shipping_Method $instance The shipping method instance containing settings.
 	 * @param string                $context  The context ('settings' or 'calculation').
+	 * @param array                 $default_params Optional associative array of default parameters to include.
+	 *
 	 * @return Wcsdm_Request_Params The populated request parameters object.
 	 */
-	final public function populate_request_params( Wcsdm_Shipping_Method $instance, string $context ):Wcsdm_Request_Params {
+	final public function populate_request_params( Wcsdm_Shipping_Method $instance, string $context, array $default_params = array() ):Wcsdm_Request_Params {
 		// Initialize an empty request parameters object.
 		$request_params = new Wcsdm_Request_Params();
+
+		if ( ! empty( $default_params ) ) {
+			foreach ( $default_params as $key => $value ) {
+				$request_params->add_param( $value, $key );
+			}
+		}
 
 		// Get settings fields for the current context.
 		$settings_fields = $this->get_settings_fields( $context );
@@ -273,6 +281,9 @@ abstract class Wcsdm_API_Provider_Base implements Wcsdm_API_Provider_Interface {
 			// indicates that this value should overwrite any existing parameter with the same key.
 			if ( null !== $option_value ) {
 				$request_params->add_param( $option_value, $field['api_request_params_key'], true );
+			} else {
+				// If the value is null, ensure the parameter is removed.
+				$request_params->remove_param( $field['api_request_params_key'] );
 			}
 		}
 

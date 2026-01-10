@@ -150,8 +150,16 @@ class Wcsdm_API_Provider_Mapbox extends Wcsdm_API_Provider_Base {
 		$destination = Wcsdm_Location::from_coordinates( WCSDM_TEST_DESTINATION_LAT, WCSDM_TEST_DESTINATION_LNG );
 		$origin      = Wcsdm_Location::from_coordinates( WCSDM_TEST_ORIGIN_LAT, WCSDM_TEST_ORIGIN_LNG );
 
-		// Populate request data and headers from settings context (not yet saved).
-		$request_params  = $this->populate_request_params( $instance, 'settings' );
+		// Populate request data from settings context.
+		$request_params = $this->populate_request_params(
+			$instance,
+			'settings',
+			array(
+				'annotations' => 'distance',
+			)
+		);
+
+		// Populate request headers from settings context.
 		$request_headers = $this->populate_request_headers( $instance, 'settings' );
 
 		// Get the routing profile from POST data, defaulting to 'mapbox/driving' if not set.
@@ -223,11 +231,19 @@ class Wcsdm_API_Provider_Mapbox extends Wcsdm_API_Provider_Base {
 		$access_token = $instance->get_option( $this->get_field_key( 'access_token' ) );
 
 		// Convert address-based locations to coordinates if needed via Mapbox Geocoding API.
-		$destination = $this->maybe_geocode_location( $destination, $instance->get_option( $this->get_field_key( 'access_token' ) ) );
+		$destination = $this->maybe_geocode_location( $destination, $access_token );
 		$origin      = $this->maybe_geocode_location( $origin, $access_token );
 
-		// Prepare request data and headers for the calculation context.
-		$request_data    = $this->populate_request_params( $instance, 'calculation' );
+		// Prepare request data for the calculation context.
+		$request_data = $this->populate_request_params(
+			$instance,
+			'calculation',
+			array(
+				'annotations' => 'distance',
+			)
+		);
+
+		// Prepare request headers for the calculation context.
 		$request_headers = $this->populate_request_headers( $instance, 'calculation' );
 
 		// Get the configured routing profile for distance calculation.
@@ -291,7 +307,7 @@ class Wcsdm_API_Provider_Mapbox extends Wcsdm_API_Provider_Base {
 			);
 		}
 
-		$distance_in_meters = (int) $dispatcher->get_response_body_json_item( array( 'destinations', 0, 'distance' ), 0 );
+		$distance_in_meters = (int) $dispatcher->get_response_body_json_item( array( 'distances', 0, 1 ), 0 );
 
 		if ( $distance_in_meters ) {
 			return Wcsdm_Calculate_Distance_Result::distance(
@@ -370,6 +386,12 @@ class Wcsdm_API_Provider_Mapbox extends Wcsdm_API_Provider_Base {
 			// Add search query parameter (the address to geocode).
 			$request_params->add_param( $address_to_geocode, 'q' );
 
+			// Limit to a single best result.
+			$request_params->add_param( 1, 'limit' );
+
+			// Server-side geocoding should not rely on autocomplete.
+			$request_params->add_param( 'false', 'autocomplete' );
+
 			// Create and configure the geocoding request dispatcher for Mapbox Geocoding API v6.
 			$dispatcher = Wcsdm_Request_Dispatcher::get(
 				// Request URL - Mapbox Geocoding API v6 forward geocoding endpoint.
@@ -390,6 +412,14 @@ class Wcsdm_API_Provider_Mapbox extends Wcsdm_API_Provider_Base {
 			// If geocoding was successful and coordinates were found, create a new coordinate-based location.
 			if ( $latitude && $longitude ) {
 				return Wcsdm_Location::from_coordinates( (float) $latitude, (float) $longitude );
+			}
+
+			// Fallback: GeoJSON coordinates array is [longitude, latitude].
+			$geojson_lng = $dispatcher->get_response_body_json_item( array( 'features', 0, 'geometry', 'coordinates', 0 ) );
+			$geojson_lat = $dispatcher->get_response_body_json_item( array( 'features', 0, 'geometry', 'coordinates', 1 ) );
+
+			if ( is_numeric( $geojson_lat ) && is_numeric( $geojson_lng ) ) {
+				return Wcsdm_Location::from_coordinates( $geojson_lat, $geojson_lng );
 			}
 		}
 
