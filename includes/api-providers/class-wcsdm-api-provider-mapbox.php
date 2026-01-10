@@ -386,6 +386,12 @@ class Wcsdm_API_Provider_Mapbox extends Wcsdm_API_Provider_Base {
 			// Add search query parameter (the address to geocode).
 			$request_params->add_param( $address_to_geocode, 'q' );
 
+			// Limit to a single best result.
+			$request_params->add_param( 1, 'limit' );
+
+			// Server-side geocoding should not rely on autocomplete.
+			$request_params->add_param( 'false', 'autocomplete' );
+
 			// Create and configure the geocoding request dispatcher for Mapbox Geocoding API v6.
 			$dispatcher = Wcsdm_Request_Dispatcher::get(
 				// Request URL - Mapbox Geocoding API v6 forward geocoding endpoint.
