@@ -223,7 +223,7 @@ class Wcsdm_API_Provider_Mapbox extends Wcsdm_API_Provider_Base {
 		$access_token = $instance->get_option( $this->get_field_key( 'access_token' ) );
 
 		// Convert address-based locations to coordinates if needed via Mapbox Geocoding API.
-		$destination = $this->maybe_geocode_location( $destination, $instance->get_option( $this->get_field_key( 'access_token' ) ) );
+		$destination = $this->maybe_geocode_location( $destination, $access_token );
 		$origin      = $this->maybe_geocode_location( $origin, $access_token );
 
 		// Prepare request data and headers for the calculation context.
