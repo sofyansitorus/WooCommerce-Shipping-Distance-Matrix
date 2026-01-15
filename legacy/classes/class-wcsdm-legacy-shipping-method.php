@@ -1112,7 +1112,8 @@ class Wcsdm_Legacy_Shipping_Method extends WC_Shipping_Method {
 	 * @since    1.0.0
 	 * @param array $package Package data array.
 	 * @throws Exception Throw error if validation not passed.
-	 * @return void
+	 *
+	 * @return array|WP_Error Shipping cost data array or WP_Error on failure.
 	 */
 	public function calculate_shipping( $package = array() ) {
 		$api_response = $this->api_request(
@@ -1123,51 +1124,47 @@ class Wcsdm_Legacy_Shipping_Method extends WC_Shipping_Method {
 			)
 		);
 
-		try {
-			// Bail early if the API request error.
-			if ( is_wp_error( $api_response ) ) {
-				throw new Exception( $api_response->get_error_message() );
-			}
-
-			// Bail early if the API response is empty.
-			if ( ! $api_response ) {
-				throw new Exception( __( 'API Response data is empty', 'wcsdm' ) );
-			}
-
-			$calculated = $this->calculate_shipping_cost( $api_response, $package );
-
-			// Bail early if there is no rate found.
-			if ( is_wp_error( $calculated ) ) {
-				throw new Exception( $calculated->get_error_message() );
-			}
-
-			// Bail early if the calculated data format is invalid.
-			if ( ! is_array( $calculated ) || ! isset( $calculated['cost'] ) ) {
-				throw new Exception( __( 'Calculated shipping data format is invalid', 'wcsdm' ) );
-			}
-
-			$calculated = wp_parse_args(
-				$calculated,
-				array(
-					'id'        => $this->get_rate_id(),
-					'label'     => $this->title,
-					'package'   => $package,
-					'meta_data' => array( 'api_response' => $api_response ),
-				)
-			);
-
-			// Show the distance info.
-			$show_distance = $this->get_option( 'show_distance', 'no' );
-
-			if ( 'yes' === $show_distance && ! empty( $api_response['distance_text'] ) ) {
-				$calculated['label'] = sprintf( '%s (%s)', $calculated['label'], $api_response['distance_text'] );
-			}
-
-			// Register shipping rate to cart.
-			$this->add_rate( $calculated );
-		} catch ( Exception $e ) {
-			$this->maybe_write_log( 'error', $e->getMessage() );
+		// Bail early if the API request error.
+		if ( is_wp_error( $api_response ) ) {
+			return $api_response;
 		}
+
+		// Bail early if the API response is empty.
+		if ( ! $api_response ) {
+			return new WP_Error( 'wcsdm_legacy_empty_api_response', __( 'API Response data is empty', 'wcsdm' ) );
+		}
+
+		$calculated = $this->calculate_shipping_cost( $api_response, $package );
+
+		// Bail early if there is no rate found.
+		if ( is_wp_error( $calculated ) ) {
+			return $calculated;
+		}
+
+		// Bail early if the calculated data format is invalid.
+		if ( ! is_array( $calculated ) || ! isset( $calculated['cost'] ) ) {
+			return new WP_Error( 'wcsdm_legacy_invalid_calculated_data', __( 'Calculated shipping data format is invalid', 'wcsdm' ) );
+		}
+
+		$calculated = wp_parse_args(
+			$calculated,
+			array(
+				'id'        => $this->get_rate_id(),
+				'label'     => $this->title,
+				'package'   => $package,
+				'meta_data' => array( 'api_response' => $api_response ),
+			)
+		);
+
+		// Show the distance info.
+		$show_distance = $this->get_option( 'show_distance', 'no' );
+
+		if ( 'yes' === $show_distance && ! empty( $api_response['distance_text'] ) ) {
+			$calculated['label'] = sprintf( '%s (%s)', $calculated['label'], $api_response['distance_text'] );
+		}
+
+		// Register shipping rate to cart.
+		return $calculated;
 	}
 
 	/**
