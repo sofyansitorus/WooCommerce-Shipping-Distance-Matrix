@@ -1800,6 +1800,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'title'       => __( 'Enable Log', 'wcsdm' ),
 				'description' => __( 'Write data to WooCommerce System Status Report Log for importance event such API response error and shipping calculation failures. <a href="admin.php?page=wc-status&tab=logs" target="_blank">Click here</a> to view the log data.', 'wcsdm' ),
 				'label'       => __( 'Yes', 'wcsdm' ),
+				'default'     => 'yes',
 			),
 			'distance_unit'     => array(
 				'title'       => __( 'Distance Units', 'wcsdm' ),
@@ -3091,7 +3092,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		 */
 		$log_enabled = apply_filters(
 			'wcsdm_log_enabled',
-			'yes' === $this->get_option( 'enable_log' ),
+			'yes' === $this->get_option( 'enable_log', 'yes' ),
 			$this
 		);
 
