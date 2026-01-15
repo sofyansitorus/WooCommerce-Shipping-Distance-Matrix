@@ -1982,7 +1982,8 @@ class Wcsdm_Legacy_Shipping_Method extends WC_Shipping_Method {
 		}
 
 		/*** Hours */
-		$hours = (int) ( ( $duration / 3600 ) % 24 );
+		$houres_total = ceil( $duration / 3600 );
+		$hours        = $houres_total % 24;
 
 		if ( $hours > 0 ) {
 			// translators: %s is number of hours.
@@ -1990,7 +1991,8 @@ class Wcsdm_Legacy_Shipping_Method extends WC_Shipping_Method {
 		}
 
 		/*** Minutes */
-		$minutes = (int) ( ( $duration / 60 ) % 60 );
+		$minutesl_total = ceil( $duration / 60 );
+		$minutes        = $minutesl_total % 60;
 
 		if ( $minutes > 0 ) {
 			// translators: %s is number of minutes.
