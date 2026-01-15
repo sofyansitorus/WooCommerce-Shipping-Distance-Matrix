@@ -1568,8 +1568,9 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					$this->maybe_write_log(
 						'error',
 						sprintf(
-							// translators: %s: error message.
-							__( 'Legacy shipping calculation error: %s', 'wcsdm' ),
+							// translators: %1$s: data version, %2$s: error message.
+							__( 'Legacy shipping calculation error with data version %1$s: %2$s', 'wcsdm' ),
+							$data_version,
 							$legacy_calculation->get_error_message()
 						),
 						array(
@@ -1590,8 +1591,8 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 
 				$this->maybe_write_log(
 					'info',
-					// translators: %s: data version.
-					sprintf( __( 'Using legacy shipping calculation for data version %s', 'wcsdm' ), $data_version ),
+					// translators: %1$s: data version.
+					sprintf( __( 'Legacy shipping calculation result with data version %1$s', 'wcsdm' ), $data_version ),
 					$rate
 				);
 
@@ -1600,8 +1601,9 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				$this->maybe_write_log(
 					'error',
 					sprintf(
-							// translators: %s: error message.
-						__( 'Legacy shipping calculation error: %s', 'wcsdm' ),
+							// translators: %1$s: data version, %2$s: error message.
+						__( 'Legacy shipping calculation error with data version %1$s: %2$s', 'wcsdm' ),
+						$data_version,
 						$th->getMessage()
 					),
 					array(
