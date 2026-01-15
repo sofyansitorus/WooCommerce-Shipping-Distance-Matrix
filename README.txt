@@ -5,7 +5,7 @@ Donate link: https://www.buymeacoffee.com/sofyansitorus?utm_source=wooreer_plugi
 Requires at least: 6.4
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 3.0.3
+Stable tag: 3.0.4
 License: GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -105,6 +105,10 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 7. Add New Rate Item
 
 == Changelog ==
+
+= 3.0.4 =
+
+* Fix - Fix legacy shipping calculation not working after update to version 3.
 
 = 3.0.3 =
 
