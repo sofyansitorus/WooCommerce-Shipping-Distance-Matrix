@@ -1554,15 +1554,6 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 
 		// Handle legacy shipping calculation for instances with data version < 3.0.0.0.
 		if ( version_compare( $data_version, '3.0.0.', '<' ) ) {
-			$this->maybe_write_log(
-				'info',
-				// translators: %s: data version.
-				sprintf( __( 'Using legacy shipping calculation for data version %s', 'wcsdm' ), $data_version ),
-				array(
-					'package' => $package,
-				)
-			);
-
 			// Wrap API calls and rate calculations in try-catch to gracefully handle:
 			// 1. Network errors and API failures when making distance calculation requests.
 			// 2. Invalid response data that could cause runtime errors.
@@ -1576,7 +1567,11 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				if ( is_wp_error( $legacy_calculation ) ) {
 					$this->maybe_write_log(
 						'error',
-						'Legacy Calculation Error: ' . $legacy_calculation->get_error_message(),
+						sprintf(
+							// translators: %s: error message.
+							__( 'Legacy shipping calculation error: %s', 'wcsdm' ),
+							$legacy_calculation->get_error_message()
+						),
 						array(
 							'package' => $package,
 						)
@@ -1593,11 +1588,22 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 					'meta_data' => $legacy_calculation['meta_data'] ?? array(),
 				);
 
+				$this->maybe_write_log(
+					'info',
+					// translators: %s: data version.
+					sprintf( __( 'Using legacy shipping calculation for data version %s', 'wcsdm' ), $data_version ),
+					$rate
+				);
+
 				$this->add_rate( $rate );
 			} catch ( \Throwable $th ) {
 				$this->maybe_write_log(
 					'error',
-					$th->getMessage(),
+					sprintf(
+							// translators: %s: error message.
+						__( 'Legacy shipping calculation error: %s', 'wcsdm' ),
+						$th->getMessage()
+					),
 					array(
 						'package' => $package,
 					)
