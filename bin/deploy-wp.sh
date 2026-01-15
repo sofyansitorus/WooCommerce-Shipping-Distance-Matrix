@@ -209,4 +209,7 @@ fi
 echo "➤ Committing changes..."
 svn commit --username "$SVN_USERNAME" --password "$SVN_PASSWORD" -m "$COMMIT_MSG"
 
+cd "$PROJECT_ROOT" || exit
+rm -rf "$SVN_LOCAL_DIR"
+
 echo "✓ Plugin deployed!"
