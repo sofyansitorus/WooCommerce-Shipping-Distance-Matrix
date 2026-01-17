@@ -164,11 +164,12 @@ abstract class Wcsdm_API_Provider_Base implements Wcsdm_API_Provider_Interface {
 	 *
 	 * @param Wcsdm_Shipping_Method $instance The shipping method instance containing settings.
 	 * @param string                $context  The context ('settings' or 'calculation').
+	 * @param array                 $initial_headers Optional associative array of initial headers to include.
 	 * @return Wcsdm_Request_Headers The populated request headers object.
 	 */
-	final public function populate_request_headers( Wcsdm_Shipping_Method $instance, string $context ):Wcsdm_Request_Headers {
+	final public function populate_request_headers( Wcsdm_Shipping_Method $instance, string $context, array $initial_headers = array() ):Wcsdm_Request_Headers {
 		// Initialize an empty request headers object.
-		$request_headers = new Wcsdm_Request_Headers();
+		$request_headers = new Wcsdm_Request_Headers( $initial_headers );
 
 		// Get settings fields for the current context.
 		$settings_fields = $this->get_settings_fields( $context );
@@ -236,19 +237,13 @@ abstract class Wcsdm_API_Provider_Base implements Wcsdm_API_Provider_Interface {
 	 *
 	 * @param Wcsdm_Shipping_Method $instance The shipping method instance containing settings.
 	 * @param string                $context  The context ('settings' or 'calculation').
-	 * @param array                 $default_params Optional associative array of default parameters to include.
+	 * @param array                 $initial_params Optional associative array of initial parameters to include.
 	 *
 	 * @return Wcsdm_Request_Params The populated request parameters object.
 	 */
-	final public function populate_request_params( Wcsdm_Shipping_Method $instance, string $context, array $default_params = array() ):Wcsdm_Request_Params {
+	final public function populate_request_params( Wcsdm_Shipping_Method $instance, string $context, array $initial_params = array() ):Wcsdm_Request_Params {
 		// Initialize an empty request parameters object.
-		$request_params = new Wcsdm_Request_Params();
-
-		if ( ! empty( $default_params ) ) {
-			foreach ( $default_params as $key => $value ) {
-				$request_params->add_param( $value, $key );
-			}
-		}
+		$request_params = new Wcsdm_Request_Params( $initial_params );
 
 		// Get settings fields for the current context.
 		$settings_fields = $this->get_settings_fields( $context );
