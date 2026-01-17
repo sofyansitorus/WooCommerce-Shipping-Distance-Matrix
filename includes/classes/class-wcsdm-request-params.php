@@ -42,6 +42,20 @@ class Wcsdm_Request_Params {
 	private array $params = array();
 
 	/**
+	 * Constructor.
+	 *
+	 * Initialize the request params collection with optional initial values.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @param array<string,mixed>|null $initial_params Optional. Initial params to set.
+	 * @return void
+	 */
+	public function __construct( ?array $initial_params = array() ) {
+		$this->params = $initial_params ?? array();
+	}
+
+	/**
 	 * Add a param to the collection.
 	 *
 	 * Adds a new param with the specified key and value. If the merge parameter is true

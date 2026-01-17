@@ -242,13 +242,7 @@ abstract class Wcsdm_API_Provider_Base implements Wcsdm_API_Provider_Interface {
 	 */
 	final public function populate_request_params( Wcsdm_Shipping_Method $instance, string $context, array $default_params = array() ):Wcsdm_Request_Params {
 		// Initialize an empty request parameters object.
-		$request_params = new Wcsdm_Request_Params();
-
-		if ( ! empty( $default_params ) ) {
-			foreach ( $default_params as $key => $value ) {
-				$request_params->add_param( $value, $key );
-			}
-		}
+		$request_params = new Wcsdm_Request_Params( $default_params );
 
 		// Get settings fields for the current context.
 		$settings_fields = $this->get_settings_fields( $context );
