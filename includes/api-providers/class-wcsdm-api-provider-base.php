@@ -164,11 +164,12 @@ abstract class Wcsdm_API_Provider_Base implements Wcsdm_API_Provider_Interface {
 	 *
 	 * @param Wcsdm_Shipping_Method $instance The shipping method instance containing settings.
 	 * @param string                $context  The context ('settings' or 'calculation').
+	 * @param array                 $initial_headers Optional associative array of initial headers to include.
 	 * @return Wcsdm_Request_Headers The populated request headers object.
 	 */
-	final public function populate_request_headers( Wcsdm_Shipping_Method $instance, string $context ):Wcsdm_Request_Headers {
+	final public function populate_request_headers( Wcsdm_Shipping_Method $instance, string $context, array $initial_headers = array() ):Wcsdm_Request_Headers {
 		// Initialize an empty request headers object.
-		$request_headers = new Wcsdm_Request_Headers();
+		$request_headers = new Wcsdm_Request_Headers( $initial_headers );
 
 		// Get settings fields for the current context.
 		$settings_fields = $this->get_settings_fields( $context );

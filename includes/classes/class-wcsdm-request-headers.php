@@ -39,6 +39,20 @@ class Wcsdm_Request_Headers {
 	private array $headers = array();
 
 	/**
+	 * Constructor.
+	 *
+	 * Initialize the request headers collection with optional initial values.
+	 *
+	 * @since 3.1.0
+	 *
+	 * @param array<string,string>|null $initial_headers Optional. Initial headers to set.
+	 * @return void
+	 */
+	public function __construct( ?array $initial_headers = array() ) {
+		$this->headers = $initial_headers ?? array();
+	}
+
+	/**
 	 * Add a header to the collection.
 	 *
 	 * Stores a new header or updates an existing header with the provided
