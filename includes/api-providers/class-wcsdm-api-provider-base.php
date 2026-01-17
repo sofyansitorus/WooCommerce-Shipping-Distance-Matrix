@@ -237,13 +237,13 @@ abstract class Wcsdm_API_Provider_Base implements Wcsdm_API_Provider_Interface {
 	 *
 	 * @param Wcsdm_Shipping_Method $instance The shipping method instance containing settings.
 	 * @param string                $context  The context ('settings' or 'calculation').
-	 * @param array                 $default_params Optional associative array of default parameters to include.
+	 * @param array                 $initial_params Optional associative array of initial parameters to include.
 	 *
 	 * @return Wcsdm_Request_Params The populated request parameters object.
 	 */
-	final public function populate_request_params( Wcsdm_Shipping_Method $instance, string $context, array $default_params = array() ):Wcsdm_Request_Params {
+	final public function populate_request_params( Wcsdm_Shipping_Method $instance, string $context, array $initial_params = array() ):Wcsdm_Request_Params {
 		// Initialize an empty request parameters object.
-		$request_params = new Wcsdm_Request_Params( $default_params );
+		$request_params = new Wcsdm_Request_Params( $initial_params );
 
 		// Get settings fields for the current context.
 		$settings_fields = $this->get_settings_fields( $context );
