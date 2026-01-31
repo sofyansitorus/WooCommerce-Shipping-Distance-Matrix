@@ -167,6 +167,17 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	private $fields_group_store_location;
 
 	/**
+	 * Checkout fields settings fields group.
+	 *
+	 * Contains settings that control which checkout address fields are required
+	 * for distance calculation (address, city, state, postcode, country).
+	 *
+	 * @since 3.0
+	 * @var Wcsdm_Fields_Group
+	 */
+	private $fields_group_checkout_fields;
+
+	/**
 	 * Total cost calculation settings fields group.
 	 *
 	 * Contains fields for configuring how shipping costs are calculated:
@@ -381,6 +392,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		$this->fields_group_factory->add( $this->get_fields_group_general() );
 		$this->fields_group_factory->add( $this->get_fields_group_api_provider() );
 		$this->fields_group_factory->add( $this->get_fields_group_store_location() );
+		$this->fields_group_factory->add( $this->get_fields_group_checkout_fields() );
 		$this->fields_group_factory->add( $this->get_fields_group_total_cost() );
 		$this->fields_group_factory->add( $this->get_fields_group_table_rates() );
 		$this->fields_group_factory->add( $this->get_fields_group_rates() );
@@ -431,6 +443,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 				'fields_group_general',
 				'fields_group_api_provider',
 				'fields_group_store_location',
+				'fields_group_checkout_fields',
 				'fields_group_total_cost',
 				'fields_group_table_rates',
 			)
@@ -1470,7 +1483,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	 *
 	 * @return Wcsdm_Location The destination location object.
 	 */
-	private function get_calculate_distance_destination( $package ):Wcsdm_Location {
+	private function get_calculate_distance_destination( $package ):?Wcsdm_Location {
 		$pre = apply_filters(
 			'wcsdm_calculate_distance_destination_pre',
 			null,
@@ -1482,7 +1495,49 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			return $pre;
 		}
 
-		$calculate_distance_destination = Wcsdm_Location::from_address_array( $package['destination'] ?? array() );
+		$is_shipping_calculator       = wcsdm_is_calc_shipping();
+		$shipping_calculator_excludes = array( 'address_1', 'address_2' );
+		$destination                  = $package['destination'] ?? array();
+		$destination_filtered         = array();
+		$include_fields               = wcsdm_include_address_fields();
+
+		foreach ( $include_fields as $field ) {
+			$value       = $destination[ $field ] ?? '';
+			$is_required = 'yes' === $this->get_option( 'checkout_fields_required_' . $field );
+			$is_exclude  = $is_shipping_calculator && in_array( $field, $shipping_calculator_excludes, true );
+
+			if ( '' === $value && $is_required && ! $is_exclude ) {
+				$this->maybe_write_log(
+					'error',
+					sprintf(
+						// translators: %s: field name.
+						__( 'Required destination address field "%s" is missing for distance calculation', 'wcsdm' ),
+						$field
+					),
+					array(
+						'package' => $package,
+					)
+				);
+
+				return null;
+			}
+
+			$destination_filtered[ $field ] = $value;
+		}
+
+		if ( empty( $destination_filtered ) ) {
+			$this->maybe_write_log(
+				'error',
+				__( 'No destination address fields available for distance calculation', 'wcsdm' ),
+				array(
+					'package' => $package,
+				)
+			);
+
+			return null;
+		}
+
+		$calculate_distance_destination = Wcsdm_Location::from_address_array( $destination_filtered );
 
 		return apply_filters(
 			'wcsdm_calculate_distance_destination',
@@ -1506,10 +1561,38 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 	 *
 	 * @return Wcsdm_Location The origin location object.
 	 */
-	private function get_calculate_distance_origin( $package ):Wcsdm_Location {
+	private function get_calculate_distance_origin( $package ):?Wcsdm_Location {
+		$origin_lat = $this->get_option( 'origin_lat' );
+
+		if ( ! wcsdm_validate_latitude( $origin_lat ) ) {
+			$this->maybe_write_log(
+				'error',
+				__( 'Invalid origin latitude for distance calculation', 'wcsdm' ),
+				array(
+					'package' => $package,
+				)
+			);
+
+			return null;
+		}
+
+		$origin_lng = $this->get_option( 'origin_lng' );
+
+		if ( ! wcsdm_validate_longitude( $origin_lng ) ) {
+			$this->maybe_write_log(
+				'error',
+				__( 'Invalid origin longitude for distance calculation', 'wcsdm' ),
+				array(
+					'package' => $package,
+				)
+			);
+
+			return null;
+		}
+
 		$calculate_distance_origin = Wcsdm_Location::from_coordinates(
-			(float) $this->get_option( 'origin_lat' ),
-			(float) $this->get_option( 'origin_lng' )
+			(float) $origin_lat,
+			(float) $origin_lng
 		);
 
 		return apply_filters(
@@ -1625,13 +1708,13 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 
 		$calculate_distance_destination = $this->get_calculate_distance_destination( $package );
 
-		if ( $calculate_distance_destination->is_error() ) {
+		if ( ! $calculate_distance_destination ) {
 			return;
 		}
 
 		$calculate_distance_origin = $this->get_calculate_distance_origin( $package );
 
-		if ( $calculate_distance_origin->is_error() ) {
+		if ( ! $calculate_distance_origin ) {
 			return;
 		}
 
@@ -2032,6 +2115,87 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		}
 
 		return $this->fields_group_store_location;
+	}
+
+		/**
+		 * Get or create the checkout fields settings fields group.
+		 *
+		 * Creates and returns a Wcsdm_Fields_Group that controls which checkout
+		 * address fields are required for distance calculation. The group is cached
+		 * after first creation for performance.
+		 *
+		 * @since 3.0
+		 *
+		 * @return Wcsdm_Fields_Group The checkout fields settings fields group instance.
+		 */
+	public function get_fields_group_checkout_fields():Wcsdm_Fields_Group {
+		if ( ! empty( $this->fields_group_checkout_fields ) ) {
+			return $this->fields_group_checkout_fields;
+		}
+
+		$this->fields_group_checkout_fields = new Wcsdm_Fields_Group(
+			'fields_group_checkout_fields',
+			array(
+				// Field settings.
+				'type'        => 'tab_title',
+				'title'       => __( 'Checkout Fields', 'wcsdm' ),
+				'description' => __( 'Configure the fields that are required to calculate distance during checkout.', 'wcsdm' ),
+
+				// Custom settings.
+				'tab_title'   => __( 'Checkout Fields', 'wcsdm' ),
+			)
+		);
+
+		$fields = array(
+			'checkout_fields_required_address_1' => array(
+				// Field settings.
+				'title'   => __( 'Address 1', 'wcsdm' ),
+				'type'    => 'checkbox',
+				'label'   => __( 'Required', 'wcsdm' ),
+				'default' => 'yes',
+			),
+			'checkout_fields_required_address_2' => array(
+				// Field settings.
+				'title'   => __( 'Address 2', 'wcsdm' ),
+				'type'    => 'checkbox',
+				'label'   => __( 'Required', 'wcsdm' ),
+				'default' => 'no',
+			),
+			'checkout_fields_required_city'      => array(
+				// Field settings.
+				'title'   => __( 'City', 'wcsdm' ),
+				'type'    => 'checkbox',
+				'label'   => __( 'Required', 'wcsdm' ),
+				'default' => 'yes',
+			),
+			'checkout_fields_required_state'     => array(
+				// Field settings.
+				'title'   => __( 'State/Province', 'wcsdm' ),
+				'type'    => 'checkbox',
+				'label'   => __( 'Required', 'wcsdm' ),
+				'default' => 'no',
+			),
+			'checkout_fields_required_postcode'  => array(
+				// Field settings.
+				'title'   => __( 'Postcode/Zip Code', 'wcsdm' ),
+				'type'    => 'checkbox',
+				'label'   => __( 'Required', 'wcsdm' ),
+				'default' => 'yes',
+			),
+			'checkout_fields_required_country'   => array(
+				// Field settings.
+				'title'   => __( 'Country', 'wcsdm' ),
+				'type'    => 'checkbox',
+				'label'   => __( 'Required', 'wcsdm' ),
+				'default' => 'yes',
+			),
+		);
+
+		foreach ( $fields as $key => $field ) {
+			$this->fields_group_checkout_fields->add_field( $field, $key );
+		}
+
+		return $this->fields_group_checkout_fields;
 	}
 
 	/**
