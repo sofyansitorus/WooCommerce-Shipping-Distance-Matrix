@@ -197,7 +197,11 @@ class Wcsdm_Location {
 	 * @return void
 	 */
 	public function set_address( string $address ) {
-		if ( ! wcsdm_validate_address( $address ) ) {
+		if ( isset( $this->errors[ self::LOCATION_TYPE_ADDRESS ] ) ) {
+			unset( $this->errors[ self::LOCATION_TYPE_ADDRESS ] );
+		}
+
+		if ( empty( $address ) ) {
 			$this->errors[ self::LOCATION_TYPE_ADDRESS ] = true;
 		}
 
@@ -244,15 +248,17 @@ class Wcsdm_Location {
 			$target_field = $allowed_field;
 
 			// Fallback to 'address' field if 'address_1' is empty but 'address' is available.
-			if ( 'address_1' === $target_field && empty( $address_array['address_1'] ) && ! empty( $address_array['address'] ) ) {
-				$target_field = 'address';
+			if ( 'address_1' === $target_field ) {
+				$value = $address_array[ $target_field ] ?? $address_array['address'] ?? '';
+			} else {
+				$value = $address_array[ $target_field ] ?? '';
 			}
 
-			if ( ! isset( $address_array[ $target_field ] ) ) {
+			if ( '' === $value ) {
 				continue;
 			}
 
-			$normalized_address_array[ $allowed_field ] = $address_array[ $target_field ];
+			$normalized_address_array[ $allowed_field ] = $value;
 		}
 
 		return $normalized_address_array;
@@ -288,13 +294,15 @@ class Wcsdm_Location {
 	 * @return void
 	 */
 	public function set_address_array( array $address_array ) {
-		$normalize_address_array = $this->normalize_address_array( $address_array );
+		if ( isset( $this->errors[ self::LOCATION_TYPE_ADDRESS_ARRAY ] ) ) {
+			unset( $this->errors[ self::LOCATION_TYPE_ADDRESS_ARRAY ] );
+		}
 
-		if ( ! wcsdm_validate_address_array( $normalize_address_array ) ) {
+		if ( empty( $address_array ) ) {
 			$this->errors[ self::LOCATION_TYPE_ADDRESS_ARRAY ] = true;
 		}
 
-		$this->address_array = $normalize_address_array;
+		$this->address_array = $this->normalize_address_array( $address_array );
 	}
 
 	/**
@@ -346,6 +354,10 @@ class Wcsdm_Location {
 	 * @return void
 	 */
 	public function set_coordinates( float $lat, float $lng ) {
+		if ( isset( $this->errors[ self::LOCATION_TYPE_COORDINATES ] ) ) {
+			unset( $this->errors[ self::LOCATION_TYPE_COORDINATES ] );
+		}
+
 		if ( ! wcsdm_validate_coordinates( $lat, $lng ) ) {
 			$this->errors[ self::LOCATION_TYPE_COORDINATES ] = true;
 		}
