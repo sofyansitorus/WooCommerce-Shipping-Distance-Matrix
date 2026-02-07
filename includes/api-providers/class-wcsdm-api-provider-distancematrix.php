@@ -498,7 +498,7 @@ class Wcsdm_API_Provider_Distancematrix extends Wcsdm_API_Provider_Base {
 	 * @uses   Wcsdm_Location::get_address_array() To get the structured address.
 	 * @uses   Wcsdm_Location::get_coordinates_latitude() To get the latitude.
 	 * @uses   Wcsdm_Location::get_coordinates_longitude() To get the longitude.
-	 * @uses   WC()->countries->get_formatted_address() For locale-aware address array formatting.
+	 * @uses   wcsdm_format_address_array() For locale-aware address array formatting.
 	 */
 	private function format_location( Wcsdm_Location $location ):string {
 		// Format location based on type: address, address_array, or coordinates.
@@ -510,7 +510,7 @@ class Wcsdm_API_Provider_Distancematrix extends Wcsdm_API_Provider_Base {
 			// Structured address array format - converts WooCommerce address components
 			// into a formatted string using country-specific formatting rules.
 			case 'address_array':
-				return WC()->countries->get_formatted_address( $location->get_address_array(), ', ' );
+				return wcsdm_format_address_array( $location->get_address_array() );
 
 			// Geographic coordinates format (default) - most precise location format.
 			// Used when latitude/longitude are available. Output format: "lat,lng".

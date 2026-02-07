@@ -357,7 +357,7 @@ class Wcsdm_API_Provider_Google extends Wcsdm_API_Provider_Base {
 			// Format address array using WooCommerce address formatting.
 			case 'address_array':
 				return array(
-					'address' => WC()->countries->get_formatted_address( $location->get_address_array(), ', ' ),
+					'address' => wcsdm_format_address_array( $location->get_address_array() ),
 				);
 
 			// Format as latitude/longitude coordinates (default).

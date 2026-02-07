@@ -1537,7 +1537,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			return null;
 		}
 
-		$calculate_distance_destination = Wcsdm_Location::from_address_array( $destination_filtered );
+		$calculate_distance_destination = Wcsdm_Location::from_address_array( $destination );
 
 		return apply_filters(
 			'wcsdm_calculate_distance_destination',
