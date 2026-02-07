@@ -368,7 +368,7 @@ class Wcsdm_API_Provider_Mapbox extends Wcsdm_API_Provider_Base {
 		if ( $location->get_location_type() === 'address_array' ) {
 			// Format the address array into a comma-separated string suitable for geocoding.
 			// WooCommerce's formatter handles proper ordering and formatting based on country.
-			$address_to_geocode = WC()->countries->get_formatted_address( $location->get_address_array(), ', ' );
+			$address_to_geocode = wcsdm_format_address_array( $location->get_address_array() );
 		}
 
 		// Check if location is provided as a plain address string (e.g., from settings).

@@ -1128,3 +1128,23 @@ if ( ! function_exists( 'wcsdm_array_map_deep' ) ) :
 		return $value;
 	}
 endif;
+
+if ( ! function_exists( 'wcsdm_format_address_array' ) ) :
+	/**
+	 * Formats an address array into a human-readable string using WooCommerce's address formatting.
+	 *
+	 * This function leverages WooCommerce's built-in address formatting capabilities to convert
+	 * an associative array of address components into a properly formatted address string.
+	 * It uses the default formatting rules defined by WooCommerce, ensuring consistency with
+	 * other parts of the WooCommerce ecosystem.
+	 *
+	 * @since 3.1
+	 *
+	 * @param array $address_array An associative array containing address components.
+	 *                             Example keys: 'address_1', 'address_2', 'city', 'state', 'postcode', 'country'.
+	 * @return string The formatted address string.
+	 */
+	function wcsdm_format_address_array( array $address_array ):string {
+		return WC()->countries->get_formatted_address( $address_array, ', ' );
+	}
+endif;
