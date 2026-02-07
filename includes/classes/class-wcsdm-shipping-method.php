@@ -1495,40 +1495,56 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 			return $pre;
 		}
 
-		$is_shipping_calculator       = wcsdm_is_calc_shipping();
-		$shipping_calculator_excludes = array( 'address_1', 'address_2' );
-		$destination                  = $package['destination'] ?? array();
-		$destination_filtered         = array();
-		$include_fields               = wcsdm_include_address_fields();
+		$include_fields  = wcsdm_include_address_fields();
+		$destination     = array();
+		$filled_fields   = array();
+		$empty_fields    = array();
+		$required_fields = array();
 
 		foreach ( $include_fields as $field ) {
-			$value       = $destination[ $field ] ?? '';
-			$is_required = 'yes' === $this->get_option( 'checkout_fields_required_' . $field );
-			$is_exclude  = $is_shipping_calculator && in_array( $field, $shipping_calculator_excludes, true );
+			$value = $package['destination'][ $field ] ?? '';
 
-			if ( '' === $value && $is_required && ! $is_exclude ) {
-				$this->maybe_write_log(
-					'error',
-					sprintf(
-						// translators: %s: field name.
-						__( 'Required destination address field "%s" is missing for distance calculation', 'wcsdm' ),
-						$field
-					),
-					array(
-						'package' => $package,
-					)
-				);
-
-				return null;
+			if ( '' !== $value ) {
+				$filled_fields[] = $field;
 			}
 
-			$destination_filtered[ $field ] = $value;
+			$destination[ $field ]     = $value;
+			$required_fields[ $field ] = 'yes' === $this->get_option( 'checkout_fields_required_' . $field );
 		}
 
-		if ( empty( $destination_filtered ) ) {
+		// If only country and state are filled, we cannot calculate a meaningful distance.
+		// Return null to indicate insufficient address data.
+		// Skip the log here as by default WooCommerce auto fills these fields during checkout.
+		if ( 2 === count( $filled_fields ) && in_array( 'country', $filled_fields, true ) && in_array( 'state', $filled_fields, true ) ) {
+			return null;
+		}
+
+		// During shipping calculator or cart page, address_1 and address_2 are not required.
+		// Override required fields accordingly.
+		if ( wcsdm_is_calc_shipping() || is_cart() ) {
+			if ( isset( $required_fields['address_1'] ) ) {
+				$required_fields['address_1'] = false;
+			}
+
+			if ( isset( $required_fields['address_2'] ) ) {
+				$required_fields['address_2'] = false;
+			}
+		}
+
+		foreach ( $required_fields as $field => $is_required ) {
+			if ( $is_required && '' === ( $destination[ $field ] ?? '' ) ) {
+				$empty_fields[] = $field;
+			}
+		}
+
+		if ( ! empty( $empty_fields ) ) {
 			$this->maybe_write_log(
 				'error',
-				__( 'No destination address fields available for distance calculation', 'wcsdm' ),
+				sprintf(
+					// translators: %s: comma-separated list of field names.
+					__( 'Required destination address fields "%s" are missing for distance calculation', 'wcsdm' ),
+					implode( ', ', $empty_fields )
+				),
 				array(
 					'package' => $package,
 				)
