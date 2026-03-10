@@ -23,8 +23,8 @@
  * Text Domain:       wcsdm
  * Domain Path:       /languages
  *
- * WC requires at least: 8.8.0
- * WC tested up to: 10.5.0
+ * WC requires at least: 8.8
+ * WC tested up to: 10.5
  */
 
 // If this file is called directly, abort.
