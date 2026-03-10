@@ -1532,7 +1532,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 		}
 
 		foreach ( $required_fields as $field => $is_required ) {
-			if ( $is_required && '' === ( $destination[ $field ] ?? '' ) ) {
+			if ( $is_required && wcsdm_is_empty_string( $destination[ $field ] ?? '' ) ) {
 				$empty_fields[] = $field;
 			}
 		}
