@@ -2932,7 +2932,7 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 
 		$value = $rate_row[ $key ] ?? $field['default'] ?? '';
 
-		if ( ! is_null( $empty_value ) && '' === $value ) {
+		if ( ! is_null( $empty_value ) && wcsdm_is_empty_string( $value ) ) {
 			$value = $empty_value;
 		}
 
