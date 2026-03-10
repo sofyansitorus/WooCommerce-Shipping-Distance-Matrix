@@ -1148,3 +1148,20 @@ if ( ! function_exists( 'wcsdm_format_address_array' ) ) :
 		return WC()->countries->get_formatted_address( $address_array, ', ' );
 	}
 endif;
+
+if ( ! function_exists( 'wcsdm_is_empty_string' ) ) :
+	/**
+	 * Checks if a value is an empty string or null.
+	 *
+	 * This function returns true if the given value is null or consists entirely
+	 * of whitespace (i.e., trimming yields an empty string).
+	 *
+	 * @since 3.1.3
+	 *
+	 * @param string|null $value The value to check.
+	 * @return bool True if the value is null or an empty/whitespace-only string, false otherwise.
+	 */
+	function wcsdm_is_empty_string( ?string $value ):bool {
+		return ! strlen( trim( $value ) ) || is_null( $value );
+	}
+endif;
