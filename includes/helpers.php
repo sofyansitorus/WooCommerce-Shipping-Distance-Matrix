@@ -421,19 +421,19 @@ if ( ! function_exists( 'wcsdm_validate_option_required' ) ) :
 	 *
 	 * @since 3.0
 	 *
-	 * @param mixed $value The field value to validate (string, number, or other scalar type).
-	 * @param array $field The field configuration array containing:
-	 *                     - 'is_required' (bool): Whether the field is required.
-	 *                     - 'title' (string): The field title/label used in error messages.
+	 * @param string|null $value The field value to validate.
+	 * @param array       $field The field configuration array containing:
+	 *                           - 'is_required' (bool): Whether the field is required.
+	 *                           - 'title' (string): The field title/label used in error messages.
 	 * @return void
 	 * @throws Exception When the field is marked as required ('is_required' => true) but the value
 	 *                   is empty (empty string after trim) or null. The exception message includes
 	 *                   the field title for user-friendly error reporting.
 	 */
-	function wcsdm_validate_option_required( $value, array $field ):void {
+	function wcsdm_validate_option_required( ?string $value, array $field ):void {
 		$is_required = $field['is_required'] ?? false;
 
-		if ( $is_required && ( ! strlen( trim( $value ) ) || is_null( $value ) ) ) {
+		if ( $is_required && wcsdm_is_empty_string( $value ) ) {
 			// translators: %s is the field title.
 			throw new Exception( wp_sprintf( __( '%s field is required', 'wcsdm' ), $field['title'] ) );
 		}
@@ -1146,5 +1146,22 @@ if ( ! function_exists( 'wcsdm_format_address_array' ) ) :
 	 */
 	function wcsdm_format_address_array( array $address_array ):string {
 		return WC()->countries->get_formatted_address( $address_array, ', ' );
+	}
+endif;
+
+if ( ! function_exists( 'wcsdm_is_empty_string' ) ) :
+	/**
+	 * Checks if a value is an empty string or null.
+	 *
+	 * This function returns true if the given value is null or consists entirely
+	 * of whitespace (i.e., trimming yields an empty string).
+	 *
+	 * @since 3.1.3
+	 *
+	 * @param string|null $value The value to check.
+	 * @return bool True if the value is null or an empty/whitespace-only string, false otherwise.
+	 */
+	function wcsdm_is_empty_string( ?string $value ):bool {
+		return ! strlen( trim( $value ) ) || is_null( $value );
 	}
 endif;

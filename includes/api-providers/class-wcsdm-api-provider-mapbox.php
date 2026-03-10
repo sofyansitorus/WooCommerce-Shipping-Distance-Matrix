@@ -142,7 +142,7 @@ class Wcsdm_API_Provider_Mapbox extends Wcsdm_API_Provider_Base {
 
 		// Bail early if access token is empty.
 		// It will be caught by the required field validation in the parent class.
-		if ( '' === $access_token ) {
+		if ( wcsdm_is_empty_string( $access_token ) ) {
 			return;
 		}
 

@@ -165,7 +165,7 @@ class Wcsdm_API_Provider_Google extends Wcsdm_API_Provider_Base {
 
 		// Bail early if no API key provided.
 		// It will be caught by required field validation.
-		if ( '' === $api_key ) {
+		if ( wcsdm_is_empty_string( $api_key ) ) {
 			return;
 		}
 

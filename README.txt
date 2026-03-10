@@ -5,7 +5,7 @@ Donate link: https://www.buymeacoffee.com/sofyansitorus?utm_source=wooreer_plugi
 Requires at least: 6.4
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 3.1.2
+Stable tag: 3.1.3
 License: GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -105,6 +105,10 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 7. Add New Rate Item
 
 == Changelog ==
+
+= 3.1.3 =
+
+* Enhancement - Improved reliability of empty value detection to correctly handle null and whitespace-only inputs in shipping calculations.
 
 = 3.1.2 =
 

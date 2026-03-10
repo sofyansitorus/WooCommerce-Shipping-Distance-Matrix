@@ -15,7 +15,7 @@
  * Plugin Name:       WooReer
  * Plugin URI:        https://wooreer.com
  * Description:       WooCommerce shipping rates calculator allows you to offer shipping rates based on distance using Google Maps, Mapbox, or DistanceMatrix.ai.
- * Version:           3.1.2
+ * Version:           3.1.3
  * Author:            Sofyan Sitorus
  * Author URI:        https://github.com/sofyansitorus
  * License:           GPL-2.0+
@@ -23,8 +23,8 @@
  * Text Domain:       wcsdm
  * Domain Path:       /languages
  *
- * WC requires at least: 8.8.0
- * WC tested up to: 10.5.0
+ * WC requires at least: 8.8
+ * WC tested up to: 10.5
  */
 
 // If this file is called directly, abort.
