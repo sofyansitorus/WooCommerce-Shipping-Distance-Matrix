@@ -254,7 +254,7 @@ class Wcsdm_Location {
 				$value = $address_array[ $target_field ] ?? '';
 			}
 
-			if ( '' === $value ) {
+			if ( wcsdm_is_empty_string( $value ) ) {
 				continue;
 			}
 
