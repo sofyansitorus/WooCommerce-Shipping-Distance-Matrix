@@ -59,11 +59,20 @@ You need an API Key with access to the [Routing API](https://www.here.com/docs/b
 
 = Donation =
 
-If you find WooReer useful for your business, please consider supporting its development. Your donation helps ensure the plugin stays up-to-date, secure, and feature-rich.
+WooReer is a passion project developed and maintained in my free time, provided completely free of charge. If it saves you time, helps grow your business, or simply works the way you need it to, please consider supporting its continued development.
 
-Every contribution, no matter the size, is deeply appreciated and motivates further improvements.
+Your donation directly funds:
 
-[Buy me a coffee](https://www.buymeacoffee.com/sofyansitorus?utm_source=wooreer_plugin_page&utm_medium=referral)
+* New features and API provider integrations
+* Compatibility updates with the latest WordPress and WooCommerce releases
+* Bug fixes and ongoing maintenance
+* Better documentation and support
+
+Every contribution — no matter how small — makes a real difference and keeps this plugin alive and improving.
+
+[Buy me a coffee ☕](https://www.buymeacoffee.com/sofyansitorus?utm_source=wooreer_plugin_page&utm_medium=referral)
+
+Thank you for your support — it truly means a lot!
 
 == Installation ==
 
