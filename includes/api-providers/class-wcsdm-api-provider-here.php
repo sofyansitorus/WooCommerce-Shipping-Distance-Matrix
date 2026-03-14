@@ -1,6 +1,6 @@
 <?php
 /**
- * HERE Routing API Provider for WooReer Distance Matrix
+ * HERE Routing API Provider for WooReer
  *
  * This file contains the Wcsdm_API_Provider_Here class which implements
  * distance calculation using the HERE Routing API v8 for the WooReer plugin.
@@ -24,8 +24,8 @@
  * @link       https://github.com/sofyansitorus/WooCommerce-Shipping-Distance-Matrix
  *
  * @see        Wcsdm_API_Provider_Base For base provider functionality
- * @see        https://developer.here.com/documentation/routing-api HERE Routing API Documentation
- * @see        https://developer.here.com/documentation/geocoding-search-api HERE Geocoding API Documentation
+ * @see        https://www.here.com/docs/category/routing-api-v8 HERE Routing API Documentation
+ * @see        https://www.here.com/docs/bundle/geocoding-and-search-api-developer-guide/page/README.html HERE Geocoding API Documentation
  */
 
 // Prevent direct access.

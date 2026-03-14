@@ -42,20 +42,20 @@ Please visit the link below for the live demo:
 
 This plugin requires an API Key from your chosen provider (Google Maps, Mapbox, DistanceMatrix.ai, Geoapify, or HERE).
 
-**For Google Maps:**
-You need to have the **Routes API** enabled.
+**For [Google Maps](https://mapsplatform.google.com/):**
+You need an API Key with access to the [Routes API](https://developers.google.com/maps/documentation/routes).
 
-**For Mapbox:**
-You need a Mapbox Access Token with access to the Matrix API.
+**For [Mapbox](https://www.mapbox.com/):**
+You need an Access Token with access to the [Matrix API](https://docs.mapbox.com/api/navigation/matrix/) and [Geocoding API](https://docs.mapbox.com/api/search/geocoding/).
 
-**For DistanceMatrix.ai:**
-You need an API Key from DistanceMatrix.ai.
+**For [DistanceMatrix.ai](https://distancematrix.ai/):**
+You need an API Key with access to the [Distance Matrix API](https://distancematrix.ai/distance-matrix-api).
 
-**For Geoapify:**
-You need an API Key from Geoapify with access to the Route Matrix API.
+**For [Geoapify](https://www.geoapify.com/):**
+You need an API Key with access to the [Route Matrix API](https://apidocs.geoapify.com/docs/route-matrix/) and [Forward Geocoding API](https://apidocs.geoapify.com/docs/geocoding/forward-geocoding/).
 
-**For HERE:**
-You need an API Key from HERE with access to the Routing API and Geocoding & Search API.
+**For [HERE](https://www.here.com/):**
+You need an API Key with access to the [Routing API](https://www.here.com/docs/bundle/routing-api-developer-guide-v8/page/README.html) and [Geocoding & Search API](https://www.here.com/docs/bundle/geocoding-and-search-api-developer-guide/page/README.html).
 
 = Donation =
 

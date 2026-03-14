@@ -22,6 +22,10 @@
  * @since      3.0
  * @author     Sofyan Sitorus <sofyansitorus@gmail.com>
  * @link       https://github.com/sofyansitorus/WooCommerce-Shipping-Distance-Matrix
+ *
+ * @see        Wcsdm_API_Provider_Base For base provider functionality
+ * @see        https://docs.mapbox.com/api/navigation/matrix/ Mapbox Matrix API
+ * @see        https://docs.mapbox.com/api/search/geocoding/ Mapbox Geocoding API
  */
 
 // Prevent direct access.

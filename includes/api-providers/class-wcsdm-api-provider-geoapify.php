@@ -1,14 +1,31 @@
 <?php
 /**
- * Geoapify API Provider for WooReer Distance Matrix
+ * Geoapify API Provider for WooReer
  *
- * Implements the Geoapify Routing API for distance calculations.
+ * This file contains the Wcsdm_API_Provider_Geoapify class which implements
+ * distance calculation using the Geoapify Routing API for the WooReer plugin.
+ * It provides integration with Geoapify's routing service, supporting multiple
+ * travel modes (drive, truck variants, bus, scooter, motorcycle, bicycle, walk)
+ * with built-in geocoding via Geoapify Forward Geocoding API for address conversion.
+ *
+ * Key Features:
+ * - Support for multiple travel modes (drive, truck variants, bus, scooter, motorcycle, bicycle, walk)
+ * - Built-in geocoding via Geoapify Forward Geocoding API for address conversion
+ * - API key validation during configuration
+ * - Comprehensive error handling and logging
+ * - Support for address strings, address arrays, and coordinate-based locations
+ * - Automatic sensitive data masking in logs (API key protection)
+ * - Distance returned in meters
  *
  * @package    Wcsdm
  * @subpackage ApiProviders
  * @since      3.1.0
  * @author     Sofyan Sitorus <sofyansitorus@gmail.com>
- * @link       https://apidocs.geoapify.com/docs/routing/
+ * @link       https://github.com/sofyansitorus/WooCommerce-Shipping-Distance-Matrix
+ *
+ * @see        Wcsdm_API_Provider_Base For base provider functionality
+ * @see        https://apidocs.geoapify.com/docs/route-matrix/ Geoapify Route Matrix API
+ * @see        https://apidocs.geoapify.com/docs/geocoding/forward-geocoding/ Geoapify Forward Geocoding API
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

@@ -1,25 +1,20 @@
 <?php
 /**
- * Google Routes API provider implementation for WooReer.
+ * Google Routes API Provider for WooReer
  *
- * This file implements the Google Routes API v2 provider for calculating distances
- * and routes between locations. It handles authentication, route preferences, and
- * response parsing for the Google Maps Platform Routes API.
+ * This file contains the Wcsdm_API_Provider_Google class which implements
+ * distance calculation using the Google Routes API v2 for the WooReer plugin.
+ * It provides integration with Google's routing service, supporting multiple
+ * travel modes (driving, walking, cycling, transit, two-wheeler) with route
+ * optimization options and field masking for efficient API responses.
  *
- * ## Key Features
- *
+ * Key Features:
  * - Support for multiple travel modes (driving, walking, cycling, transit, two-wheeler)
  * - Route optimization with avoidance options (tolls, highways, ferries, indoor)
  * - Field masking for efficient API responses
  * - Comprehensive error handling and validation
- * - Support for various location formats (coordinates, addresses, address arrays)
- *
- * ## API Integration
- *
- * Uses Google Routes API v2 (computeRoutes endpoint) with:
+ * - Support for address strings, address arrays, and coordinate-based locations
  * - API Key authentication via X-Goog-Api-Key header
- * - Field masks to optimize response payload
- * - JSON request/response format
  * - Distance returned in meters
  *
  * @package    Wcsdm

@@ -22,6 +22,9 @@
  * @since      3.0
  * @author     Sofyan Sitorus <sofyansitorus@gmail.com>
  * @link       https://github.com/sofyansitorus/WooCommerce-Shipping-Distance-Matrix
+ *
+ * @see        Wcsdm_API_Provider_Base For base provider functionality
+ * @see        https://distancematrix.ai/distance-matrix-api DistanceMatrix.ai Distance Matrix API
  */
 
 // Prevent direct access.
