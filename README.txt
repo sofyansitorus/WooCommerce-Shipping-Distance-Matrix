@@ -5,20 +5,20 @@ Donate link: https://www.buymeacoffee.com/sofyansitorus?utm_source=wooreer_plugi
 Requires at least: 6.4
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 3.1.3
+Stable tag: 3.1.4
 License: GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
-WooReer (formerly WooCommerce Shipping Distance Matrix) calculates shipping rates based on distance via Google Maps, Mapbox, or DistanceMatrix.ai.
+WooReer (formerly WooCommerce Shipping Distance Matrix) calculates shipping rates based on distance via Google Maps, Mapbox, DistanceMatrix.ai, Geoapify, or HERE.
 
 == Description ==
-WooReer (formerly WooCommerce Shipping Distance Matrix) is a powerful WooCommerce shipping rates calculator that allows you to offer shipping rates based on distance. The plugin features a flexible API provider architecture, supporting Google Maps Routes API, Mapbox Matrix API, and DistanceMatrix.ai, giving you more choice and control over your mapping services.
+WooReer (formerly WooCommerce Shipping Distance Matrix) is a powerful WooCommerce shipping rates calculator that allows you to offer shipping rates based on distance. The plugin features a flexible API provider architecture, supporting Google Maps Routes API, Mapbox Matrix API, DistanceMatrix.ai, Geoapify, and HERE Routing API, giving you more choice and control over your mapping services.
 
 This plugin is perfect for store owners who want to charge customers for delivery based on the distance from the store. It is ideal for online stores selling flowers, food, or beverages, but is versatile enough for any business that offers local delivery services.
 
 = Key Features =
 
-* **Multi-Provider Support:** Choose between Google Maps, Mapbox, or DistanceMatrix.ai for the most accurate and cost-effective distance calculations. (More providers coming soon!)
+* **Multi-Provider Support:** Choose between Google Maps, Mapbox, DistanceMatrix.ai, Geoapify, or HERE for the most accurate and cost-effective distance calculations.
 * **Flexible Table Rates:** Create unlimited shipping rules with granular control per WooCommerce shipping zone.
 * **Advanced Calculation Logic:** Calculate shipping based on distance, with options for progressive or flat rates.
 * **Dynamic Pricing Rules:**
@@ -40,7 +40,7 @@ Please visit the link below for the live demo:
 
 = Dependencies =
 
-This plugin requires an API Key from your chosen provider (Google Maps, Mapbox, or DistanceMatrix.ai).
+This plugin requires an API Key from your chosen provider (Google Maps, Mapbox, DistanceMatrix.ai, Geoapify, or HERE).
 
 **For Google Maps:**
 You need to have the **Routes API** enabled.
@@ -50,6 +50,12 @@ You need a Mapbox Access Token with access to the Matrix API.
 
 **For DistanceMatrix.ai:**
 You need an API Key from DistanceMatrix.ai.
+
+**For Geoapify:**
+You need an API Key from Geoapify with access to the Route Matrix API.
+
+**For HERE:**
+You need an API Key from HERE with access to the Routing API and Geocoding & Search API.
 
 = Donation =
 
@@ -105,6 +111,12 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 7. Add New Rate Item
 
 == Changelog ==
+
+= 3.1.4 =
+
+* Enhancement - Add new API provider: HERE Routing API v8 with built-in geocoding via HERE Geocoding & Search API.
+* Documentation - Updated README to include HERE as a supported API provider.
+* Compatibility - Confirmed compatibility with WooCommerce 10.6.
 
 = 3.1.3 =
 
