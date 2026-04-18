@@ -17,7 +17,7 @@
 		"dealerdirect/phpcodesniffer-composer-installer": "^0.7.1",
 		"sirbrillig/phpcs-variable-analysis": "^2.10",
 		"yoast/phpunit-polyfills": "^4.0",
-		"phpunit/phpunit": "^9.6"
+		"phpunit/phpunit": "^12.5"
 	},
 	"scripts": {
 		"run-phpcs": "vendor/bin/phpcs",
