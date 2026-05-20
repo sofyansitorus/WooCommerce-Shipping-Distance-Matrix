@@ -3,9 +3,9 @@ Contributors: sofyansitorus
 Tags: woocommerce,distance-based-shipping,shipping-calculator,local-delivery,google-maps
 Donate link: https://www.buymeacoffee.com/sofyansitorus?utm_source=wooreer_plugin_page&utm_medium=referral
 Requires at least: 6.4
-Tested up to: 6.9
+Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 3.1.4
+Stable tag: 3.1.5
 License: GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -120,6 +120,10 @@ I always welcome and encourage contributions to this plugin. Please visit the pl
 7. Add New Rate Item
 
 == Changelog ==
+
+= 3.1.5 =
+
+* Fix - Resolved an issue where the "Min Order Quantity" rule was not working properly.
 
 = 3.1.4 =
 
