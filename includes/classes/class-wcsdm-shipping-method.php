@@ -2600,11 +2600,11 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 
 				// Rate field settings.
 				'is_rule'           => true,
-				'rule_callback'     => function( array $rate_row, array $package ):bool {
+				'rule_callback'     => function( array $rate_row ):bool {
 					$min_order_amount = $rate_row['min_order_amount'] ?? 0;
 
 					if ( $min_order_amount ) {
-						return $min_order_amount <= $package['cart_subtotal'];
+						return $min_order_amount <= WC()->cart->get_subtotal();
 					}
 
 					return true;
@@ -2627,11 +2627,11 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 
 				// Rate field settings.
 				'is_rule'           => true,
-				'rule_callback'     => function( array $rate_row, array $package ):bool {
+				'rule_callback'     => function( array $rate_row ):bool {
 					$max_order_amount = $rate_row['max_order_amount'] ?? 0;
 
 					if ( $max_order_amount ) {
-						return $max_order_amount >= $package['cart_subtotal'];
+						return $max_order_amount >= WC()->cart->get_subtotal();
 					}
 
 					return true;
@@ -2655,11 +2655,11 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 
 				// Rate field settings.
 				'is_rule'           => true,
-				'rule_callback'     => function( array $rate_row, array $package ):bool {
+				'rule_callback'     => function( array $rate_row ):bool {
 					$min_order_quantity = $rate_row['min_order_quantity'] ?? 0;
 
 					if ( $min_order_quantity ) {
-						return $min_order_quantity <= count( $package['contents'] );
+						return $min_order_quantity <= WC()->cart->get_cart_contents_count();
 					}
 
 					return true;
@@ -2682,11 +2682,11 @@ class Wcsdm_Shipping_Method extends WC_Shipping_Method {
 
 				// Rate field settings.
 				'is_rule'           => true,
-				'rule_callback'     => function( array $rate_row, array $package ):bool {
+				'rule_callback'     => function( array $rate_row ):bool {
 					$max_order_quantity = $rate_row['max_order_quantity'] ?? 0;
 
 					if ( $max_order_quantity ) {
-						return $max_order_quantity >= count( $package['contents'] );
+						return $max_order_quantity >= WC()->cart->get_cart_contents_count();
 					}
 
 					return true;
